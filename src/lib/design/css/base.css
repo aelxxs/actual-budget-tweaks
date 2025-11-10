@@ -1,0 +1,795 @@
+:root {
+	--color-budgetCurrentMonth: var(--ctp-crust);
+	--color-budgetHeaderCurrentMonth: var(--ctp-base);
+	--color-budgetHeaderOtherMonth: var(--ctp-base);
+	--color-budgetOtherMonth: var(--ctp-mantle);
+
+	--color-buttonBareBackground: transparent;
+	--color-buttonBareBackgroundActive: rgba(205, 214, 244, 0.1);
+	--color-buttonBareBackgroundHover: var(--ctp-surface0);
+	--color-buttonBareDisabledBackground: transparent;
+	--color-buttonBareDisabledText: var(--ctp-overlay1);
+	--color-buttonBareText: var(--ctp-subtext1);
+	--color-buttonBareTextHover: var(--ctp-text);
+
+	--color-buttonMenuBackground: transparent;
+	--color-buttonMenuBackgroundHover: rgba(205, 214, 244, 0.07);
+	--color-buttonMenuBorder: var(--ctp-surface0);
+	--color-buttonMenuSelectedBackground: var(--ctp-yellow);
+	--color-buttonMenuSelectedBackgroundHover: var(--ctp-peach);
+	--color-buttonMenuSelectedBorder: var(--ctp-yellow);
+	--color-buttonMenuSelectedText: var(--ctp-crust);
+	--color-buttonMenuSelectedTextHover: var(--ctp-base);
+	--color-buttonMenuText: var(--ctp-subtext0);
+	--color-buttonMenuTextHover: var(--ctp-text);
+
+	--color-buttonNormalBackground: var(--ctp-mantle);
+	--color-buttonNormalBackgroundHover: var(--ctp-crust);
+	--color-buttonNormalBorder: var(--ctp-surface0);
+	--color-buttonNormalDisabledBackground: var(--ctp-surface0);
+	--color-buttonNormalDisabledBorder: var(--ctp-surface2);
+	--color-buttonNormalDisabledText: var(--ctp-overlay0);
+	--color-buttonNormalSelectedBackground: var(--ctp-mauve);
+	--color-buttonNormalSelectedText: var(--ctp-base);
+	--color-buttonNormalShadow: rgba(0, 0, 0, 0.4);
+	--color-buttonNormalText: var(--ctp-text);
+	--color-buttonNormalTextHover: var(--ctp-subtext1);
+
+	--color-buttonPrimaryBackground: var(--ctp-lavender);
+	--color-buttonPrimaryBackgroundHover: var(--ctp-mauve);
+	--color-buttonPrimaryBorder: var(--ctp-lavender);
+	--color-buttonPrimaryDisabledBackground: var(--ctp-surface1);
+	--color-buttonPrimaryDisabledBorder: var(--ctp-surface2);
+	--color-buttonPrimaryDisabledText: var(--ctp-overlay0);
+	--color-buttonPrimaryShadow: rgba(0, 0, 0, 0.6);
+	--color-buttonPrimaryText: var(--ctp-crust);
+	--color-buttonPrimaryTextHover: var(--ctp-base);
+
+	--color-calendarBackground: var(--ctp-base);
+	--color-calendarCellBackground: var(--ctp-mantle);
+	--color-calendarItemBackground: var(--ctp-surface0);
+	--color-calendarItemText: var(--ctp-text);
+	--color-calendarSelectedBackground: var(--ctp-blue);
+	--color-calendarText: var(--ctp-text);
+
+	--color-cardBackground: var(--ctp-crust);
+	--color-cardBorder: var(--ctp-lavender);
+	--color-cardShadow: var(--ctp-crust);
+
+	--color-checkboxBackgroundSelected: var(--ctp-green);
+	--color-checkboxBorderSelected: var(--ctp-green);
+	--color-checkboxShadowSelected: transparentf;
+	--color-checkboxText: var(--ctp-crust);
+	--color-checkboxToggleBackground: var(--ctp-surface0);
+	--color-checkboxToggleBackgroundSelected: var(--ctp-green);
+	--color-checkboxToggleDisabled: var(--ctp-overlay0);
+
+	--color-errorBackground: var(--ctp-base);
+	--color-errorBorder: var(--ctp-maroon);
+	--color-errorText: var(--ctp-red);
+	--color-errorTextDark: var(--ctp-flamingo);
+	--color-errorTextDarker: var(--ctp-red);
+	--color-errorTextMenu: var(--ctp-rosewater);
+
+	--color-floatingActionBarBackground: var(--ctp-mauve);
+	--color-floatingActionBarBorder: var(--ctp-mauve);
+	--color-floatingActionBarText: var(--ctp-base);
+
+	--color-formInputBackground: var(--ctp-surface0);
+	--color-formInputBackgroundSelected: var(--ctp-surface1);
+	--color-formInputBackgroundSelection: var(--ctp-blue);
+	--color-formInputBorder: var(--ctp-surface0);
+	--color-formInputBorderSelected: var(--ctp-blue);
+	--color-formInputShadowSelected: transparent;
+	--color-formInputText: var(--ctp-text);
+	--color-formInputTextHighlight: var(--ctp-mauve);
+	--color-formInputTextPlaceholder: var(--ctp-overlay0);
+	--color-formInputTextPlaceholderSelected: var(--ctp-subtext1);
+	--color-formInputTextReadOnlySelection: var(--ctp-surface1);
+	--color-formInputTextSelected: var(--ctp-crust);
+	--color-formInputTextSelection: var(--ctp-surface0);
+
+	--color-formLabelBackground: var(--ctp-surface2);
+	--color-formLabelText: var(--ctp-lavender);
+
+	--color-markdownDark: var(--ctp-mauve);
+	--color-markdownLight: var(--ctp-lavender);
+	--color-markdownNormal: var(--ctp-text);
+
+	--color-menuAutoCompleteBackground: var(--ctp-base);
+	--color-menuAutoCompleteBackgroundHover: var(--ctp-surface1);
+	--color-menuAutoCompleteItemText: var(--ctp-text);
+	--color-menuAutoCompleteItemTextHover: var(--ctp-text);
+	--color-menuAutoCompleteText: var(--ctp-subtext0);
+	--color-menuAutoCompleteTextHeader: var(--ctp-blue);
+	--color-menuAutoCompleteTextHover: var(--ctp-blue);
+	--color-menuBackground: var(--ctp-mantle);
+	--color-menuBorder: var(--ctp-surface0);
+	--color-menuBorderHover: var(--ctp-blue);
+	--color-menuItemBackground: var(--ctp-surface0);
+	--color-menuItemBackgroundHover: var(--ctp-base);
+	--color-menuItemText: var(--ctp-subtext1);
+	--color-menuItemTextHeader: var(--ctp-blue);
+	--color-menuItemTextHover: var(--ctp-text);
+	--color-menuItemTextSelected: var(--ctp-blue);
+
+	--color-menuKeybindingText: var(--ctp-lavender);
+
+	--color-mobileAccountShadow: var(--ctp-crust);
+	--color-mobileAccountText: var(--ctp-blue);
+	--color-mobileConfigServerViewTheme: var(--ctp-mauve);
+	--color-mobileHeaderBackground: var(--ctp-base);
+	--color-mobileHeaderText: var(--ctp-lavender);
+	--color-mobileHeaderTextHover: rgba(205, 214, 244, 0.07);
+	--color-mobileHeaderTextSubdued: var(--ctp-subtext0);
+	--color-mobileNavBackground: var(--ctp-mantle);
+	--color-mobileNavItem: var(--ctp-text);
+	--color-mobileNavItemSelected: var(--ctp-lavender);
+	--color-mobilePageBackground: var(--ctp-base);
+	--color-mobileTransactionSelected: var(--ctp-lavender);
+	--color-mobileViewTheme: var(--ctp-base);
+	--color-modalBackground: var(--ctp-crust);
+	--color-modalBorder: var(--ctp-surface0);
+
+	--color-noteTagBackground: var(--ctp-mauve);
+	--color-noteTagBackgroundHover: var(--ctp-pink);
+	--color-noteTagText: var(--ctp-crust);
+
+	--color-noticeBackground: var(--ctp-green);
+	--color-noticeBackgroundDark: var(--ctp-teal);
+	--color-noticeBackgroundLight: var(--ctp-surface1);
+	--color-noticeBorder: var(--ctp-green);
+	--color-noticeText: var(--ctp-text);
+	--color-noticeTextDark: var(--ctp-base);
+	--color-noticeTextLight: var(--ctp-green);
+	--color-noticeTextMenu: var(--ctp-teal);
+	--color-noticeTextMenuHover: var(--ctp-green);
+
+	--color-pageBackground: var(--ctp-crust);
+	--color-pageBackgroundBottomRight: var(--ctp-surface0);
+	--color-pageBackgroundLineBottom: var(--ctp-text);
+	--color-pageBackgroundLineMid: var(--ctp-crust);
+	--color-pageBackgroundLineTop: var(--ctp-lavender);
+	--color-pageBackgroundModalActive: var(--ctp-mantle);
+	--color-pageBackgroundTopLeft: var(--ctp-mantle);
+	--color-pageText: var(--ctp-text);
+	--color-pageTextDark: var(--ctp-subtext1);
+	--color-pageTextLight: var(--ctp-subtext0);
+	--color-pageTextLink: var(--ctp-blue);
+	--color-pageTextLinkLight: var(--ctp-sky);
+	--color-pageTextPositive: var(--ctp-green);
+	--color-pageTextSubdued: var(--ctp-overlay0);
+
+	--color-pillBackground: var(--ctp-mantle);
+	--color-pillBackgroundLight: var(--ctp-surface0);
+	--color-pillBackgroundSelected: var(--ctp-mauve);
+	--color-pillBorder: var(--ctp-surface0);
+	--color-pillBorderDark: var(--ctp-surface0);
+	--color-pillBorderSelected: var(--ctp-lavender);
+	--color-pillText: var(--ctp-subtext1);
+	--color-pillTextHighlighted: var(--ctp-text);
+	--color-pillTextSelected: var(--ctp-base);
+	--color-pillTextSubdued: var(--ctp-overlay0);
+
+	--color-reportsBlue: var(--ctp-blue);
+	--color-reportsGray: var(--ctp-overlay1);
+	--color-reportsGreen: var(--ctp-green);
+	--color-reportsInnerLabel: var(--ctp-surface2);
+	--color-reportsLabel: var(--ctp-text);
+	--color-reportsRed: var(--ctp-red);
+
+	--color-sidebarBackground: var(--ctp-mantle);
+	--color-sidebarItemAccentSelected: var(--ctp-mauve);
+	--color-sidebarItemBackgroundFailed: var(--ctp-red);
+	--color-sidebarItemBackgroundHover: var(--ctp-surface0);
+	--color-sidebarItemBackgroundPending: var(--ctp-yellow);
+	--color-sidebarItemBackgroundPositive: var(--ctp-green);
+	--color-sidebarItemText: var(--ctp-text);
+	--color-sidebarItemTextSelected: var(--ctp-mauve);
+
+	--color-tableBackground: var(--ctp-mantle);
+	--color-tableBorder: var(--ctp-surface0);
+	--color-tableBorderHover: var(--ctp-mauve);
+	--color-tableBorderSelected: var(--ctp-blue);
+	--color-tableBorderSeparator: var(--ctp-overlay0);
+	--color-tableHeaderBackground: var(--ctp-base);
+	--color-tableHeaderText: var(--ctp-subtext0);
+	--color-tableHeaderSubText: var(--ctp-text);
+	--color-tableRowBackgroundHighlight: var(--ctp-base);
+	--color-tableRowBackgroundHighlightText: var(--ctp-text);
+	--color-tableRowBackgroundHover: var(--ctp-base);
+	--color-tableRowHeaderBackground: var(--ctp-base);
+	--color-tableRowHeaderText: var(--ctp-text);
+	--color-tableText: var(--ctp-text);
+	--color-tableTextHover: var(--ctp-overlay1);
+	--color-tableTextInactive: var(--ctp-overlay1);
+	--color-tableTextLight: var(--ctp-text);
+	--color-tableTextSelected: var(--ctp-overlay2);
+	--color-tableTextSubdued: var(--ctp-subtext0);
+
+	--color-tooltipBackground: var(--ctp-mantle);
+	--color-tooltipBorder: var(--ctp-surface0);
+	--color-tooltipText: var(--ctp-text);
+
+	--color-upcomingBackground: var(--ctp-mauve);
+	--color-upcomingBorder: var(--ctp-surface0);
+	--color-upcomingText: var(--ctp-mantle);
+
+	--color-warningBackground: var(--ctp-base);
+	--color-warningBorder: var(--ctp-peach);
+	--color-warningText: var(--ctp-yellow);
+	--color-warningTextDark: var(--ctp-text);
+	--color-warningTextLight: var(--ctp-peach);
+
+	--border: 1px solid var(--color-tableBorder);
+}
+
+* {
+	overscroll-behavior: none;
+}
+
+/* select budget */
+.css-19un6lv {
+	box-shadow: none;
+	border-radius: var(--border-radius);
+	border: var(--border);
+	background-color: var(--color-buttonNormalBackground);
+}
+
+/* sidebar */
+.css-1jm6zlx {
+	border-right: var(--border);
+}
+
+/* sidebar -- floating */
+.css-1jm6zlx {
+	background-color: var(--color-sidebarBackground);
+}
+
+.css-udnprb {
+	border-top-right-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+	border: var(--border);
+}
+
+/* sidebar -- section title */
+.css-hfi7l9 {
+	border-bottom: 2.5px solid var(--ctp-blue);
+	padding-bottom: 0.5rem;
+}
+
+/* sidebar -- acct title */
+.css-15e1mkk {
+	padding-block: 0.25rem;
+}
+
+/* sidebar -- small link */
+.css-13d5vlg,
+.css-e5dykp {
+	padding-block: 0.55rem;
+}
+
+/* sidebar -- account links */
+.css-11jfeu7,
+.css-1s4ggjo {
+	padding-left: 1.75rem;
+}
+
+.css-ifjmjt {
+	left: 8px;
+}
+
+/* sidebar -- budget name dropdown arrow */
+.css-1am57kc {
+	margin-right: 0.2rem;
+}
+
+/* budget -- month highlighting */
+/* current month */
+.css-2o5ejk {
+	align-items: center;
+	padding: 3px;
+	width: 35px;
+	border-radius: min(var(--border-radius), 0.5rem);
+	border: medium;
+	font-size: 13px;
+	background-color: var(--color-buttonBareBackgroundHover);
+	font-weight: bold;
+}
+
+/* highlighted month -- left */
+.css-cti7tr,
+.css-8rskyq,
+.css-kqrp3f,
+.css-17to6kw,
+.css-1mi3lsa {
+	padding: 3px;
+	width: 35px;
+	border-radius: min(var(--border-radius), 0.5rem) 0px 0px min(var(--border-radius), 0.5rem);
+	border: medium;
+	font-size: 13px;
+	background-color: var(--color-tableBorderHover);
+	color: var(--color-buttonPrimaryText);
+}
+
+/* highlighted month -- middle */
+.css-4qeb42,
+.css-lj3nyx,
+.css-1eb02hy,
+.css-evoqxd {
+	padding: 3px;
+	width: 35px;
+	border-radius: 0px;
+	border: medium;
+	font-size: 13px;
+	background-color: var(--color-tableBorderHover);
+	color: var(--color-buttonPrimaryText);
+}
+
+/* highlighted month -- right */
+.css-i0tmtm,
+.css-jnxqh2,
+.css-1ezcl0o,
+.css-1skvape,
+.css-q5nm5x {
+	padding: 3px;
+	width: 35px;
+	border-radius: 0px min(var(--border-radius), 0.5rem) min(var(--border-radius), 0.5rem) 0px;
+	border: medium;
+	font-size: 13px;
+	background-color: var(--color-tableBorderHover);
+	color: var(--color-buttonPrimaryText);
+}
+
+/* hover over month -- left */
+.css-1ugnqh7,
+.css-1ihd5su,
+.css-10x6adq {
+	padding: 3px;
+	width: 35px;
+	border-radius: min(var(--border-radius), 0.5rem) 0px 0px min(var(--border-radius), 0.5rem);
+	border: medium;
+	font-size: 13px;
+	background-color: var(--color-buttonBareBackgroundHover);
+}
+
+/* hover over month -- middle */
+.css-1pd5dj,
+.css-1xcgr8,
+.css-1j355lw {
+	padding: 3px;
+	width: 35px;
+	border-radius: 0px;
+	border: medium;
+	font-size: 13px;
+	background-color: var(--color-buttonBareBackgroundHover);
+}
+
+/* hover over month -- right */
+.css-1pd5dj,
+.css-1jx7wnq,
+.css-11ig21n {
+	padding: 3px;
+	width: 35px;
+	border-radius: 0px min(var(--border-radius), 0.5rem) min(var(--border-radius), 0.5rem) 0px;
+	border: medium;
+	font-size: 13px;
+	background-color: var(--color-buttonBareBackgroundHover);
+}
+
+.css-rg8rv9 {
+	top: -18px;
+}
+
+/* /budget -- budget cards */
+.css-1szeyz4,
+.css-1asnaqj {
+	box-shadow: none;
+	border-radius: var(--border-radius);
+	border: var(--border);
+}
+
+/* /budget -- budget cards margin */
+.css-1gcc5nw {
+	margin-bottom: 0rem;
+}
+
+/* /budget -- table header */
+.css-1bgvp0b {
+	border-radius: var(--border-radius) var(--border-radius) 0px 0px;
+	border: var(--border);
+	border-bottom-width: 0px;
+	box-shadow: none;
+	background-color: var(--ctp-crust);
+}
+
+/* /budget -- table body. */
+.css-1e35cxr,
+.css-1t7se8i {
+	box-shadow: none;
+	border-radius: 0rem 0rem var(--border-radius) var(--border-radius);
+	border: var(--border);
+	margin-bottom: 1rem;
+}
+
+/* /budget -- table hover */
+.css-9r3avc:hover,
+.css-1lv865u:hover {
+	box-shadow: none;
+	background-color: var(--ctp-surface0);
+}
+
+.css-9r3avc,
+.css-1lv865u {
+	border-radius: 0.25rem;
+	padding-inline: 0.25rem;
+	flex: 0.865 1 0%;
+}
+
+/* /budget -- card padding */
+.css-1gbzxai > div > div {
+	padding-inline: 0.42rem;
+}
+
+.css-1gbzxai {
+	flex: 1 1 0%;
+	overflow: hidden;
+	margin-bottom: 0.45rem;
+}
+
+/* /budget -- date selection */
+.css-1usd1tv {
+	padding-bottom: 0.45rem;
+}
+
+/* /reports -- card */
+.css-105xu6l {
+	display: block;
+	height: 100%;
+	overflow: visible;
+}
+
+/* reports -- sidebar & header */
+.css-ylkow6 {
+	padding-left: 12px;
+}
+
+.css-1m2essh {
+	margin-left: 20px;
+}
+
+.css-bqm9fa {
+	padding-right: 12px;
+}
+
+.css-17nqm2r,
+.css-1mkkiaa,
+.css-s6nmt0,
+.css-o1urms {
+	height: 100%;
+	width: 100%;
+	border: var(--border);
+	border-radius: var(--border-radius);
+	box-shadow: none;
+}
+
+.recharts-surface {
+	border-bottom-left-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+}
+
+/* /reports -- top border */
+.css-tf9rsr {
+	border-top: var(--border);
+}
+
+/* /settings -- card */
+.css-htvse6 {
+	border-radius: var(--border-radius);
+	border: var(--border);
+}
+
+/* /settings -- card gap */
+.css-1inkr25 {
+	gap: 1.25rem;
+}
+
+/* table checkmark border */
+.css-1n00cfy {
+	border-bottom: var(--border);
+	padding-inline: 1rem;
+}
+
+/* top navigation */
+.css-lcyxda {
+	padding: 1rem;
+	padding-block: 1.5rem;
+	height: 3.25rem;
+	border-bottom: var(--border);
+	position: sticky;
+	background-color: var(--ctp-crust);
+}
+
+/* /schedules -- table header */
+.css-kfjpij {
+	border-radius: var(--border-radius) var(--border-radius) 0px 0px;
+	border-inline: var(--border);
+	border-top: var(--border);
+	overflow: hidden;
+}
+
+/* /schedules -- table body */
+.css-1v84gns:not(:has(.css-12vlum8)) {
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	border: var(--border);
+	border-top-width: 0px;
+	overflow: hidden;
+}
+
+/* /schedules -- pills */
+.css-1whggh0,
+.css-f0xl0f,
+.css-6k1ng3,
+.css-1kc57on {
+	border-radius: var(--border-radius);
+}
+.css-6k1ng3,
+.css-f0xl0f,
+.css-1whggh0 {
+	background-color: var(--color-tableBorder);
+}
+
+/* content top padding */
+.css-1qse97y,
+.css-1g810ry,
+.css-x9hok8,
+.css-wmwuaj,
+.css-w4guu2 {
+	padding-top: 1.5rem;
+}
+
+/* search inputs */
+textarea,
+.css-1rcej9u,
+.css-ic9hwk,
+.css-xup3jb,
+.css-g8rqad {
+	color: var(--color-formInputText);
+	border-radius: var(--border-radius);
+	border: var(--border);
+	background-color: var(--ctp-mantle);
+	padding: 0.35rem;
+}
+
+.css-xup3jb,
+.css-1rcej9u {
+	border-color: var(--ctp-blue);
+}
+
+/* consistent popups/modals */
+[role="tooltip"],
+[role="dialog"],
+[data-placement]:not(:has([role="dialog"])) {
+	box-shadow: none;
+	border-radius: var(--border-radius);
+	border: var(--border);
+	overflow: hidden;
+}
+
+[data-placement]:has([role="dialog"]) {
+	border-radius: var(--border-radius);
+	border-width: 0px;
+}
+
+.css-tz2vqy {
+	border: 0px;
+}
+
+.css-1jb61p2 {
+	margin-top: 0.35rem;
+}
+
+/* tables */
+.css-eons5 {
+	border: none;
+}
+
+.css-1431ujr,
+.css-x43rvq,
+.css-1ok43ac,
+.css-oiw7fa,
+.css-19wqxhu,
+.css-1iy0uj3,
+.css-1hx64bf,
+.css-1wo18st,
+.css-9493py,
+.css-aclsme,
+.css-1m0snnq,
+.css-1xrj088 {
+	border-inline: var(--border);
+}
+
+.css-1431ujr .css-x43rvq,
+.css-1ok43ac,
+.css-1m0snnq,
+.css-19wqxhu {
+	border-bottom: var(--border);
+}
+
+.css-1xx9nfp {
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+	border: none;
+	border-bottom: var(--border);
+}
+
+.css-1gtw3sc {
+	background-color: var(--ctp-base);
+}
+
+.css-1job1cn,
+.css-17gaw25,
+.css-8gg4lr {
+	border-width: 0px;
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+}
+
+.css-12vlum8 {
+	border-bottom: var(--border);
+	border-inline: var(--border);
+	background-color: var(--ctp-mantle);
+	border-bottom-left-radius: var(--border-radius);
+	border-bottom-right-radius: var(--border-radius);
+}
+
+[data-testid="transaction-table"] > .css-j7ipk5,
+[data-testid="table"] > .css-j7ipk5 {
+	border-inline: 0px !important;
+}
+
+.css-j7ipk5:not(:has(.css-12vlum8)) {
+	border-bottom: var(--border);
+	border-inline: var(--border) !important;
+	background-color: var(--ctp-mantle);
+}
+
+/* text color */
+.css-70zz4x {
+	color: var(--ctp-text) !important;
+}
+
+.css-ecyk1h {
+	color: var(--ctp-crust);
+}
+
+/* cmd + k command menu */
+.css-1nn1iu8 {
+	border-bottom: var(--border);
+}
+
+/* buttons */
+.css-myul91,
+.css-189odvl,
+.css-3uywls {
+	border-radius: min(var(--border-radius), 0.5rem);
+}
+
+/* /payees -- dropdown */
+.css-kmyxpd {
+	padding: 0px;
+}
+
+/* bank syncing */
+.css-13486lo,
+.css-6idhvp,
+.css-dzxlm1 {
+	z-index: 100;
+	position: relative;
+}
+
+/* bank sync banner */
+.css-1vdv159,
+.css-8cf5j3 {
+	z-index: 1000 !important;
+	position: absolute !important;
+}
+
+/* sidebar */
+.css-3b1tne {
+	border: var(--border);
+	border-radius: var(--border-radius);
+}
+
+.css-10iiizv {
+	border: var(--border);
+	box-shadow: none;
+}
+
+.css-15zy6me {
+	border-bottom: none;
+}
+
+.css-1dvwaht,
+.css-nd83lm {
+	margin: 0.75rem;
+	border-radius: var(--border-radius);
+	background-color: var(--color-cardBackground);
+	box-shadow: none;
+	border: var(--border);
+}
+
+.css-1b0h10j {
+	margin-top: 1rem;
+	margin-bottom: 0rem;
+}
+
+/* keyboard shortcuts */
+.css-yvyj5l,
+      /* search */
+      .css-m142m {
+	/* table */
+	border-radius: var(--border-radius);
+}
+
+/* reports */
+.css-1bfuvke {
+	border-top-left-radius: var(--border-radius);
+	border-left: var(--border);
+	border-top: var(--border);
+}
+
+.css-v9r713 {
+	border: var(--border);
+}
+
+.css-zhaihp,
+.css-g775qt,
+.css-tt47xn {
+	border-radius: var(--border-radius);
+	border: var(--border);
+}
+
+.css-s6nmt0,
+.css-o1urms {
+	width: 100%;
+	height: 100%;
+	transition: box-shadow 0.25s;
+	background-color: report-card-color;
+}
+
+/* charts */
+.recharts-cartesian-axis-line,
+.recharts-cartesian-grid-vertical line,
+.recharts-cartesian-grid-horizontal line {
+	stroke: #a3aac5;
+}
+
+.css-16q21s1,
+.css-1uqbql0 {
+	border-bottom-width: 0px;
+	border-top-width: 0px;
+	border-inline: var(--border);
+}
+
+.recharts-tooltip-wrapper {
+	border-radius: var(--border-radius);
+	border: var(--border);
+	overflow: hidden;
+}
+
+.css-e9kbw1 {
+	border-inline: var(--border);
+}
+
+.css-7hr554 code {
+	background-color: var(--color-markdownLight);
+	padding: 0.1rem 0.5rem;
+	border-radius: 0.25rem;
+	color: var(--ctp-mantle);
+}
+
+.css-1oedne5 {
+	border: var(--border);
+}
