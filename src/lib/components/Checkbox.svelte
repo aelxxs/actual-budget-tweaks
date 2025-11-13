@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { SettingContext } from "../scripts/types";
 	import { getValue } from "../utilities/store";
 
 	const { labelText, ctx, onChange } = $props<{
 		labelText: string;
-		ctx: { key: string; defaultValue: boolean };
+		ctx: SettingContext;
 		onChange: (value: boolean, ctx: any) => void;
 	}>();
 	let value = $state(false);
@@ -21,15 +22,7 @@
 	}
 </script>
 
-<div
-	style="
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		cursor: pointer;
-		user-select: none;
-"
->
+<div class="cluster" style="--gutter: 0.25rem;">
 	<input type="checkbox" class="checkbox" bind:checked={value} onchange={handleChange} />
 	<span>{labelText}</span>
 </div>

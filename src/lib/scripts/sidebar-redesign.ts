@@ -1,12 +1,12 @@
 import { applyGlobalCSS } from "../utilities/dom";
 import { getValue, setValue } from "../utilities/store";
-import { CheckboxSetting } from "./types";
+import { defineSetting } from "./types";
 
-export const sidebarRedesign: CheckboxSetting = {
+export const sidebarRedesign = defineSetting({
 	type: "checkbox",
 	label: "Improved Sidebar Design",
 	context: {
-		key: "improvedSidebarDesign",
+		key: "improved-sidebar-design",
 		defaultValue: true,
 		css: () => `
             /* sidebar -- budget name */
@@ -40,15 +40,12 @@ export const sidebarRedesign: CheckboxSetting = {
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
 		if (enabled && ctx.css) applyGlobalCSS(ctx.css(), ctx.key);
 	},
-	onChange: async (val, ctx) => {
-		await setValue(ctx.key, val);
-		if (val && ctx.css) {
+	onChange: async (value, ctx) => {
+		await setValue(ctx.key, value);
+		if (value) {
 			applyGlobalCSS(ctx.css(), ctx.key);
 		} else {
-			const styleTag = document.getElementById(ctx.key);
-			if (styleTag) {
-				styleTag.remove();
-			}
+			applyGlobalCSS("", ctx.key);
 		}
 	},
-};
+});

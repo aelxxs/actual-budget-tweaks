@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { SettingContext } from "../scripts/types";
 	import { getValue, setValue } from "../utilities/store";
 
 	// receive props in runes mode
 	const props = $props();
 	const labelText: string = props.labelText;
 	const options: { value: string; label: string }[] = props.options;
-	const ctx: { key: string; defaultValue: string } = props.ctx;
+	const ctx: SettingContext = props.ctx;
 	const onChange: (value: string, ctx: any) => void = props.onChange;
 
 	// local reactive state for select value
@@ -26,7 +27,7 @@
 	}
 </script>
 
-<div style="display: flex; flex-direction: column; gap: 0.5rem;">
+<div class="stack">
 	<span style="font-weight: 500;">{labelText}</span>
 	<select {value} class="select" onchange={handleChange}>
 		{#each options as option}

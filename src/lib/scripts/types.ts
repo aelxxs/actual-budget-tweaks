@@ -1,28 +1,32 @@
 export interface SettingContext {
 	key: string;
-	defaultValue: any;
-	css?: (value?: any) => string;
+	defaultValue: unknown;
 	[key: string]: unknown;
-	// Additional context fields as needed
 }
 
 export type SettingType = "select" | "checkbox";
 
-export interface BaseSetting {
+export interface BaseSetting<C extends SettingContext> {
 	type: SettingType;
 	label: string;
-	context: SettingContext;
-	init?: (ctx: SettingContext) => Promise<void>;
-	onChange?: (value: any, ctx: SettingContext) => Promise<void> | void;
+	context: C;
+	init: (ctx: C) => Promise<void> | void;
+	onChange: (value: any, ctx: C) => Promise<void> | void;
 }
 
-export interface SelectSetting extends BaseSetting {
+export interface SelectSetting<C extends SettingContext> extends BaseSetting<C> {
 	type: "select";
 	options: { value: string; label: string }[];
+	onChange: (value: C["defaultValue"], ctx: C) => Promise<void> | void;
 }
 
-export interface CheckboxSetting extends BaseSetting {
+export interface CheckboxSetting<C extends SettingContext> extends BaseSetting<C> {
 	type: "checkbox";
+	onChange: (value: boolean, ctx: C) => Promise<void> | void;
 }
 
-export type Setting = SelectSetting | CheckboxSetting;
+export type Setting<C extends SettingContext = SettingContext> = SelectSetting<C> | CheckboxSetting<C>;
+
+export function defineSetting<C extends SettingContext, S extends Setting<C>>(setting: S & { context: C }): S {
+	return setting;
+}

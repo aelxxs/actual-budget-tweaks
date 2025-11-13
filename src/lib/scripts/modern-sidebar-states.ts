@@ -1,8 +1,8 @@
 import { applyGlobalCSS } from "../utilities/dom";
 import { getValue, setValue } from "../utilities/store";
-import { CheckboxSetting } from "./types";
+import { defineSetting } from "./types";
 
-export const modernSidebarStates: CheckboxSetting = {
+export const modernSidebarStates = defineSetting({
 	type: "checkbox",
 	label: "Pill Sidebar States",
 	context: {
@@ -72,15 +72,26 @@ export const modernSidebarStates: CheckboxSetting = {
 	},
 	init: async (ctx) => {
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (enabled && ctx.css) applyGlobalCSS(ctx.css(), ctx.key);
-	},
-	onChange: async (val, ctx) => {
-		await setValue(ctx.key, val);
-		if (val && ctx.css) {
+		if (enabled && ctx.css) {
 			applyGlobalCSS(ctx.css(), ctx.key);
-		} else {
-			const styleTag = document.getElementById(ctx.key);
-			if (styleTag) styleTag.remove();
+
+			setInterval(() => {
+				const elements = document.getElementsByClassName("css-169sxsz");
+				for (let element of elements) {
+					const style = window.getComputedStyle(element);
+					if (style.opacity === "0") {
+						(element as HTMLElement).style.display = "none"; // hides element completely without animation
+					}
+				}
+			}, 500);
 		}
 	},
-};
+	onChange: async (value, ctx) => {
+		await setValue(ctx.key, value);
+		if (value) {
+			applyGlobalCSS(ctx.css(), ctx.key);
+		} else {
+			applyGlobalCSS("", ctx.key);
+		}
+	},
+});

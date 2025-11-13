@@ -1,6 +1,6 @@
 import { getTheme, themeSelectOptions } from "../design";
 import { getValue, setValue } from "../utilities/store";
-import { SelectSetting } from "./types";
+import { defineSetting } from "./types";
 
 function applyPalette(name: string) {
 	const palette = getTheme(name);
@@ -13,7 +13,7 @@ function applyPalette(name: string) {
 	}
 }
 
-export const themeSelector: SelectSetting = {
+export const themeSelector = defineSetting({
 	type: "select",
 	label: "Theme",
 	options: themeSelectOptions,
@@ -29,4 +29,4 @@ export const themeSelector: SelectSetting = {
 		await setValue(ctx.key, value);
 		applyPalette(value);
 	},
-};
+});

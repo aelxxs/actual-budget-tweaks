@@ -1,7 +1,7 @@
 import { getValue, setValue } from "../utilities/store";
-import { SelectSetting } from "./types";
+import { defineSetting } from "./types";
 
-export const borderRadius: SelectSetting = {
+export const borderRadius = defineSetting({
 	type: "select",
 	label: "Border Radius",
 	options: [
@@ -24,4 +24,4 @@ export const borderRadius: SelectSetting = {
 		await setValue(ctx.key, value);
 		document.documentElement.style.setProperty("--border-radius", value);
 	},
-};
+});

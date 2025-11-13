@@ -1,6 +1,6 @@
 import { applyGlobalCSS } from "../utilities/dom";
 import { getValue, setValue } from "../utilities/store";
-import { SelectSetting } from "./types";
+import { defineSetting } from "./types";
 
 const bgPatterns = {
 	"Polka Dots": `
@@ -33,26 +33,26 @@ const bgPatterns = {
 	None: `background: none;`,
 };
 
-export const backgroundPattern: SelectSetting = {
+export const backgroundPattern = defineSetting({
 	type: "select",
 	label: "Background Pattern",
 	options: Object.keys(bgPatterns).map((key) => ({ value: key, label: key })),
 	context: {
-		key: "bgPattern",
+		key: "background-pattern",
 		defaultValue: "None",
-		css: (value) => `
-                        .css-w4guu2,
-                        .css-wmwuaj,
-                        .css-x9hok8,
-                        .css-1g810ry,
-                        .css-1qse97y,
-                        .css-wvg6b8,
-                        .css-1fi0k29,
-                        .css-136pm7h,
-                        .css-kthgus {
-                            ${bgPatterns[value as keyof typeof bgPatterns]}
-                        }
-                    `,
+		css: (value: string) => `
+            .css-w4guu2,
+            .css-wmwuaj,
+            .css-x9hok8,
+            .css-1g810ry,
+            .css-1qse97y,
+            .css-wvg6b8,
+            .css-1fi0k29,
+            .css-136pm7h,
+            .css-kthgus {
+                ${bgPatterns[value as keyof typeof bgPatterns]}
+            }
+        `,
 	},
 	init: async (ctx) => {
 		const value = await getValue(ctx.key, ctx.defaultValue);
@@ -66,4 +66,4 @@ export const backgroundPattern: SelectSetting = {
 			applyGlobalCSS(ctx.css(value), ctx.key);
 		}
 	},
-};
+});

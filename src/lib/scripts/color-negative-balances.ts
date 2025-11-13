@@ -1,24 +1,22 @@
 import { applyGlobalCSS } from "../utilities/dom";
 import { getValue, setValue } from "../utilities/store";
-import { CheckboxSetting } from "./types";
+import { defineSetting } from "./types";
 
-export const colorNegativeBalances: CheckboxSetting = {
+export const colorNegativeBalances = defineSetting({
 	type: "checkbox",
-	label: "Color Negative Balances",
+	label: "Color Negative Account Balances",
 	context: {
 		key: "actual-balancecolors",
 		defaultValue: true,
-		_observer: null,
+		css: `
+		.error {
+			color: var(--color-errorText);
+			}
+		`,
+		_observer: null as MutationObserver | null,
 	},
 	init: async (ctx) => {
-		applyGlobalCSS(
-			`
-                  .error {
-                    color: var(--color-errorText);
-                  }
-                `,
-			ctx.key
-		);
+		applyGlobalCSS(ctx.css, ctx.key);
 		const BALANCE_SELECTOR =
 			"span[data-testid^='__global!balance-']:not([data-testid^='__global!balance-query']), span[data-testid$='-balance']";
 
@@ -54,24 +52,18 @@ export const colorNegativeBalances: CheckboxSetting = {
 		}
 	},
 	onChange: async (value, ctx) => {
-		if (!value) {
-			applyGlobalCSS("", ctx.key);
-			ctx._observer?.disconnect();
-		} else {
-			applyGlobalCSS(
-				`
-					  .error {
-						color: var(--color-errorText);
-					  }
-					`,
-				ctx.key
-			);
+		await setValue(ctx.key, value);
+
+		if (value) {
+			applyGlobalCSS(ctx.css, ctx.key);
 			ctx._observer?.observe(document.body, {
 				childList: true,
 				subtree: true,
 				characterData: true,
 			});
+		} else {
+			applyGlobalCSS("", ctx.key);
+			ctx._observer?.disconnect();
 		}
-		await setValue(ctx.key, value);
 	},
-};
+});

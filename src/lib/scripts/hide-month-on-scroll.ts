@@ -1,41 +1,40 @@
 import { applyGlobalCSS } from "../utilities/dom";
 import { getValue, setValue } from "../utilities/store";
-import { CheckboxSetting } from "./types";
+import { defineSetting } from "./types";
 
-export const hideMonthOnScroll: CheckboxSetting = {
+export const hideMonthOnScroll = defineSetting({
 	type: "checkbox",
 	label: "Hide Month Selection On Scroll",
 	context: {
 		key: "hide-months-on-scroll",
 		defaultValue: false,
-		_observer: null,
+		css: `
+			.css-1usd1tv,
+			.css-13as0pl,
+			.css-1dngfhi {
+				transition: opacity 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease;
+				overflow: visible;
+			}
+			.tm-collapsed {
+				opacity: 0 !important;
+				height: 0 !important;
+				margin-top: 0 !important;
+				margin-bottom: 0 !important;
+				padding-top: 0 !important;
+				padding-bottom: 0 !important;
+				pointer-events: none;
+			}
+		`,
+		_observer: null as MutationObserver | null,
 	},
 	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
+		applyGlobalCSS(ctx.css, ctx.key);
 
-		applyGlobalCSS(
-			`
-                    .css-16aivw6,
-                    .css-1dngfhi {
-                        transition: opacity 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease;
-                        overflow: visible;
-                    }
-                    .tm-collapsed {
-                        opacity: 0 !important;
-                        height: 0 !important;
-                        margin-top: 0 !important;
-                        margin-bottom: 0 !important;
-                        padding-top: 0 !important;
-                        padding-bottom: 0 !important;
-                        pointer-events: none;
-                    }
-                `,
-			ctx.key
-		);
+		const enabled = await getValue(ctx.key, ctx.defaultValue);
 
 		function setup(container: Element, target: HTMLElement) {
 			let isCollapsed = false;
-			let transitionDuration = 400; // ms
+			let transitionDuration = 400;
 
 			const computed = window.getComputedStyle(target);
 			const original = {
@@ -86,7 +85,9 @@ export const hideMonthOnScroll: CheckboxSetting = {
 		const observer = new MutationObserver(() => {
 			const container: HTMLElement | null = document.querySelector(".css-18o0ncq");
 			const target: HTMLElement | null =
-				document.querySelector(".css-1dngfhi") || document.querySelector(".css-16aivw6");
+				document.querySelector(".css-1dngfhi") ||
+				document.querySelector(".css-16aivw6") ||
+				document.querySelector(".css-1usd1tv");
 
 			if (container && target && !target.dataset.tmInitialized) {
 				setup(container, target);
@@ -103,10 +104,10 @@ export const hideMonthOnScroll: CheckboxSetting = {
 	},
 	onChange: (value, ctx) => {
 		if (!value) {
-			ctx._observer.disconnect();
+			ctx._observer?.disconnect();
 		} else {
-			ctx._observer.observe(document.body, { childList: true, subtree: true });
+			ctx._observer?.observe(document.body, { childList: true, subtree: true });
 		}
 		setValue(ctx.key, value);
 	},
-};
+});
