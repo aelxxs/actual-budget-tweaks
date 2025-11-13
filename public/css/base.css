@@ -139,7 +139,7 @@
 	--color-noticeBackgroundDark: var(--ctp-teal);
 	--color-noticeBackgroundLight: var(--ctp-surface1);
 	--color-noticeBorder: var(--ctp-green);
-	--color-noticeText: var(--ctp-text);
+	--color-noticeText: var(--ctp-green);
 	--color-noticeTextDark: var(--ctp-base);
 	--color-noticeTextLight: var(--ctp-green);
 	--color-noticeTextMenu: var(--ctp-teal);
@@ -792,4 +792,14 @@ textarea,
 
 .css-1oedne5 {
 	border: var(--border);
+}
+
+/* mobile -- overspend */
+
+.css-1qkgmqi {
+	border-radius: var(--border-radius);
+	background-color: var(--ctp-mantle);
+	box-shadow: none;
+	border: var(--border);
+	border-color: var(--ctp-red);
 }
