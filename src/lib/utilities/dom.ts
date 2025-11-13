@@ -1,4 +1,4 @@
-function createElement<K extends keyof HTMLElementTagNameMap>(
+export function createElement<K extends keyof HTMLElementTagNameMap>(
 	tag: K,
 	options: Partial<HTMLElementTagNameMap[K]> & { style?: Partial<CSSStyleDeclaration> } = {}
 ): HTMLElementTagNameMap[K] {
@@ -15,10 +15,11 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
 }
 
 export function applyGlobalCSS(cssText: string, styleId = "global-css"): void {
-	let styleTag = document.getElementById(styleId) as HTMLStyleElement | null;
+	const prefixedStyleId = `ABT-${styleId}`;
+	let styleTag = document.getElementById(prefixedStyleId) as HTMLStyleElement | null;
 	if (!styleTag) {
 		styleTag = createElement("style", {
-			id: styleId,
+			id: prefixedStyleId,
 		});
 		document.documentElement.appendChild(styleTag);
 	}
