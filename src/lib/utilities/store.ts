@@ -6,3 +6,14 @@ export async function getValue(key: string, defaultValue: unknown) {
 export function setValue(key: string, value: unknown) {
 	return browser.storage.local.set({ ["local:" + key]: value });
 }
+
+export async function getBaseUrl() {
+	const userLink = await getValue("user-link", null);
+	if (!userLink) return null;
+	try {
+		const url = new URL(userLink);
+		return `${url.protocol}//${url.host}/`;
+	} catch (e) {
+		return null;
+	}
+}

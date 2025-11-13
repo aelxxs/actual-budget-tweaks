@@ -10,9 +10,21 @@
 	});
 
 	async function onInputChange(event: Event) {
-		const newLink = (event.target as HTMLInputElement).value;
-		userLink = newLink;
-		await setValue("user-link", newLink);
+		const inputValue = (event.target as HTMLInputElement).value;
+
+		try {
+			const url = new URL(inputValue);
+			const baseUrl = url.origin.endsWith("/") ? url.origin : url.origin + "/";
+
+			userLink = baseUrl;
+			await setValue("user-link", baseUrl);
+
+			if (window.location.href === baseUrl) {
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error("Invalid URL entered:", inputValue);
+		}
 	}
 </script>
 

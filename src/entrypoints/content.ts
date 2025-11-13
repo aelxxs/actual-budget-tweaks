@@ -1,22 +1,30 @@
-import "../lib/design/css/base.css";
-
 import Settings from "@/lib/ActualSettings.svelte";
 import { scripts } from "@/lib/scripts";
-import { getValue } from "@/lib/utilities/store";
+import { createElement } from "@/lib/utilities/dom";
+import { getBaseUrl } from "@/lib/utilities/store";
 import { mount, unmount } from "svelte";
 
 export default defineContentScript({
 	matches: ["<all_urls>"],
 	main(ctx) {
 		async function checkAndMount() {
-			const userLink = await getValue("user-link", null);
-			console.log({ userLink });
-			if (userLink && window.location.href.startsWith(userLink)) {
+			const baseUrl = await getBaseUrl();
+			if (baseUrl && window.location.href.startsWith(baseUrl)) {
+				const css = browser.runtime.getURL("/css/base.css");
+
+				document.body.appendChild(
+					createElement("link", {
+						rel: "stylesheet",
+						href: css,
+					})
+				);
+
 				for (const setting of scripts.flat()) {
 					if (setting.init) {
 						setting.init(setting.context);
 					}
 				}
+
 				const ui = createIntegratedUi(ctx, {
 					position: "inline",
 					anchor: "[data-testid='settings'] > :nth-child(2)",
@@ -31,6 +39,7 @@ export default defineContentScript({
 						if (app) unmount(app);
 					},
 				});
+
 				ui.autoMount();
 			}
 		}
