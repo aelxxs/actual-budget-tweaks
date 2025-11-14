@@ -39,18 +39,12 @@ jobs:
 
       - name: Bump version and commit
         if: ${{ steps.check_version.outputs.version_changed == '0' }}
+        id: bump_version
         run: |
-          bunx changelogen@latest --bump
-          NEW_VERSION=$(bun --print 'require("./package.json").version')
           git config user.email "github-actions@users.noreply.github.com"
           git config user.name "GitHub Actions"
-          git add package.json CHANGELOG.md
-          git commit -m "chore(release): v$NEW_VERSION"
-          git tag "v$NEW_VERSION"
-          git push
-          git push --tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npm version patch -m "chore(release): v%s [skip ci]"
+          echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
 
   submit:
     needs: version
