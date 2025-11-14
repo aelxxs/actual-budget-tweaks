@@ -1,4 +1,4 @@
-name: Build and Publish Extensions
+name: Build, Release & Publish Extensions
 
 on:
   push:
@@ -15,38 +15,11 @@ env:
   PROJECT_NAME: actual-budget-tweaks
 
 jobs:
-  version:
-    runs-on: ubuntu-latest
-    outputs:
-      new_version: ${{ steps.bump_version.outputs.new_version }}
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Bump patch version and tag
-        id: bump_version
-        run: |
-          git config user.email "github-actions@users.noreply.github.com"
-          git config user.name "GitHub Actions"
-          NEW_VERSION=$(npm version patch -m "chore(release): bump version to v%s [skip ci]")
-          printf "new_version=%s\n" "${NEW_VERSION#v}" >> $GITHUB_OUTPUT
-          printf "commit_sha=%s\n" "$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          git push origin HEAD --follow-tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  submit:
-    needs: version
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ needs.version.outputs.commit_sha }}
           fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
@@ -59,16 +32,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Zip extensions
+      - name: Bump version & update changelog
+        id: version
+        run: |
+          NEW_VERSION=$(npx changelogen@latest --release --push --no-tag=false)
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build & Zip Extensions
         run: |
           pnpm zip
           pnpm zip:firefox
 
-      - name: Submit to stores
+      - name: Create GitHub Release
+        run: |
+          gh release upload v${{ steps.version.outputs.new_version }} .output/*-chrome.zip .output/*-firefox.zip
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Submit to Stores
         run: |
           pnpm wxt submit \
             --chrome-zip .output/*-chrome.zip \
-            --firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip
+            --firefox-zip .output/*-firefox.zip \
+            --firefox-sources-zip .output/*-sources.zip
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
