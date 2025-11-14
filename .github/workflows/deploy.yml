@@ -49,44 +49,30 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   submit:
-    needs: version
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout updated repo
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: 22
+          cache: 'pnpm'
 
-      - name: Pull latest version bump commit
-        run: git pull origin main
+      - name: Install dependencies
+        run: pnpm install
 
-      - name: Setup Node.js (must come BEFORE pnpm)
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Setup pnpm (must come AFTER setup-node)
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.20.0
-          run_install: true
-          standalone: true
-
-      - name: Build and zip extensions
+      - name: Zip extensions
         run: |
-          pnpm run zip
-          pnpm run zip:firefox
+          pnpm zip
+          pnpm zip:firefox
 
-      - name: Debug output directory
-        run: ls -al .output || true
-
-      - name: Submit extensions with WXT
+      - name: Submit to stores
         run: |
           pnpm wxt submit \
-            --chrome-zip "${DIRECTORY}/${PROJECT_NAME}-${{ needs.version.outputs.new_version }}-chrome.zip" \
-            --firefox-zip "${DIRECTORY}/${PROJECT_NAME}-${{ needs.version.outputs.new_version }}-firefox.zip" \
-            --firefox-sources-zip "${DIRECTORY}/${PROJECT_NAME}-${{ needs.version.outputs.new_version }}-sources.zip"
+            --chrome-zip .output/*-chrome.zip \
+            --firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
@@ -95,9 +81,3 @@ jobs:
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
-
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-zips
-          path: .output/*.zip
