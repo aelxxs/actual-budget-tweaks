@@ -14,63 +14,64 @@ jobs:
   version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      version_changed: ${{ steps.check_version.outputs.version_changed }}
+      new_version: ${{ steps.bump_version.outputs.new_version }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check for version change
-        id: check_version
-        run: |
-          if git diff --name-only HEAD~1..HEAD | grep -q '^package\.json$'; then
-            echo "version_changed=1" >> $GITHUB_OUTPUT
-          else
-            echo "version_changed=0" >> $GITHUB_OUTPUT
-          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
 
-      - name: Get version
-        if: ${{ steps.check_version.outputs.version_changed == '1' }}
-        id: get_version
-        run: |
-          VERSION=$(jq -r .version package.json)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
 
-      - name: Bump version and commit
-        if: ${{ steps.check_version.outputs.version_changed == '0' }}
+      - name: Bump patch version, commit & tag
         id: bump_version
         run: |
           git config user.email "github-actions@users.noreply.github.com"
           git config user.name "GitHub Actions"
-          npm version patch -m "chore(release): v%s [skip ci]"
-          echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+          NEW_VERSION=$(npm version patch -m "chore(release): v%s [skip ci]")
+          printf "new_version=%s\n" "${NEW_VERSION#v}" >> $GITHUB_OUTPUT
+          git push --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   submit:
     needs: version
-    if: ${{ needs.version.outputs.version_changed == '1' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version-file: package.json
+          node-version: 20
+          cache: pnpm
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: true
 
       - name: Build and zip extensions
         run: |
-          bun run zip
-          bun run zip:firefox
+          pnpm run zip
+          pnpm run zip:firefox
 
       - name: Submit extensions with WXT
         run: |
-          bun wxt submit \
-            --chrome-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.version }}-chrome.zip \
-            --firefox-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.version }}-firefox.zip \
-            --firefox-sources-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.version }}-sources.zip
+          pnpm wxt submit \
+            --chrome-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.new_version }}-chrome.zip \
+            --firefox-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.new_version }}-firefox.zip \
+            --firefox-sources-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.new_version }}-sources.zip
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
