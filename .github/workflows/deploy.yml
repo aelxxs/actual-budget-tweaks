@@ -25,17 +25,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Setup Node.js (no cache in version job)
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: pnpm
 
-      - name: Setup pnpm
+      - name: Setup pnpm (standalone)
         uses: pnpm/action-setup@v4
         with:
           version: 10.20.0
           run_install: false
+          standalone: true
 
       - name: Bump patch version and tag
         id: bump_version
@@ -60,17 +60,18 @@ jobs:
       - name: Pull latest version bump commit
         run: git pull origin main
 
-      - name: Setup Node.js
+      - name: Setup Node.js (with pnpm cache)
         uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: pnpm
 
-      - name: Setup pnpm and install dependencies
+      - name: Setup pnpm and install dependencies (standalone)
         uses: pnpm/action-setup@v4
         with:
           version: 10.20.0
           run_install: true
+          standalone: true
 
       - name: Build and zip extensions
         run: |
@@ -78,7 +79,7 @@ jobs:
           pnpm run zip:firefox
 
       - name: Debug output directory
-        run: ls -R .output
+        run: ls -al .output || true
 
       - name: Submit extensions with WXT
         run: |
