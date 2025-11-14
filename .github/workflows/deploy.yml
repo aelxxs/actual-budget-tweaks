@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   DIRECTORY: .output
   PROJECT_NAME: actual-budget-tweaks
@@ -16,23 +20,22 @@ jobs:
     outputs:
       new_version: ${{ steps.bump_version.outputs.new_version }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: pnpm
 
-      - name: Install pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.20.0
           run_install: false
 
-      - name: Bump patch version, commit & tag
+      - name: Bump patch version and tag
         id: bump_version
         run: |
           git config user.email "github-actions@users.noreply.github.com"
@@ -47,18 +50,19 @@ jobs:
     needs: version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: pnpm
 
-      - name: Install pnpm
+      - name: Setup pnpm and install dependencies
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.20.0
           run_install: true
 
       - name: Build and zip extensions
