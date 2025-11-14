@@ -28,6 +28,7 @@ jobs:
             echo "version_changed=1" >> $GITHUB_OUTPUT
           else
             echo "version_changed=0" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get version
         if: ${{ steps.check_version.outputs.version_changed == '1' }}
