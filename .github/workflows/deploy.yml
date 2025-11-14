@@ -19,48 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.bump_version.outputs.new_version }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
         with:
-          version: 10.20.0
-          run_install: false
-          standalone: true
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
-
-      - name: Bump patch version and tag
-        id: bump_version
-        run: |
-          git config user.email "github-actions@users.noreply.github.com"
-          git config user.name "GitHub Actions"
-          NEW_VERSION=$(npm version patch -m "chore(release): v%s [skip ci]")
-          printf "new_version=%s\n" "${NEW_VERSION#v}" >> $GITHUB_OUTPUT
-          git push --follow-tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  submit:
-    needs: version
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.20.0
-          run_install: true
-          standalone: true
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -68,17 +31,61 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+          run_install: false
+
+      - name: Bump patch version and tag
+        id: bump_version
+        run: |
+          git config user.email "github-actions@users.noreply.github.com"
+          git config user.name "GitHub Actions"
+          NEW_VERSION=$(npm version patch -m "chore(release): bump version to v%s [skip ci]")
+          printf "new_version=%s\n" "${NEW_VERSION#v}" >> $GITHUB_OUTPUT
+          git push origin HEAD --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  submit:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout updated repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Pull latest version bump commit
+        run: git pull origin main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm and install dependencies
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+          run_install: true
+
       - name: Build and zip extensions
         run: |
           pnpm run zip
           pnpm run zip:firefox
 
+      - name: Debug output directory
+        run: ls -R .output
+
       - name: Submit extensions with WXT
         run: |
           pnpm wxt submit \
-            --chrome-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.new_version }}-chrome.zip \
-            --firefox-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.new_version }}-firefox.zip \
-            --firefox-sources-zip ${{ env.DIRECTORY }}/${{ env.PROJECT_NAME }}-${{ needs.version.outputs.new_version }}-sources.zip
+            --chrome-zip "${DIRECTORY}/${PROJECT_NAME}-${{ needs.version.outputs.new_version }}-chrome.zip" \
+            --firefox-zip "${DIRECTORY}/${PROJECT_NAME}-${{ needs.version.outputs.new_version }}-firefox.zip" \
+            --firefox-sources-zip "${DIRECTORY}/${PROJECT_NAME}-${{ needs.version.outputs.new_version }}-sources.zip"
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
@@ -91,4 +98,5 @@ jobs:
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.DIRECTORY }}/*.zip
+          name: extension-zips
+          path: .output/*.zip
