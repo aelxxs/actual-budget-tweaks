@@ -4,6 +4,8 @@ export default defineConfig({
 	srcDir: "src",
 	modules: ["@wxt-dev/module-svelte"],
 	manifest: {
+		name: "Actual Budget – Tweaks",
+		description: "",
 		permissions: ["storage"],
 		browser_specific_settings: {
 			gecko: {
@@ -12,5 +14,11 @@ export default defineConfig({
 				},
 			},
 		},
+		web_accessible_resources: [
+			{
+				resources: ["css/base.css"],
+				matches: ["<all_urls>"],
+			},
+		],
 	},
 });
