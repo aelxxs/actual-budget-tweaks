@@ -20,22 +20,14 @@ jobs:
     outputs:
       new_version: ${{ steps.bump_version.outputs.new_version }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v5
 
-      - name: Setup Node.js (no cache in version job)
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
+      - uses: pnpm/action-setup@v4
 
-      - name: Setup pnpm (standalone)
-        uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          version: 10.20.0
-          run_install: false
-          standalone: true
+          node-version: 22
+          cache: 'pnpm'
 
       - name: Bump patch version and tag
         id: bump_version
@@ -49,6 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   submit:
+    needs: version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
