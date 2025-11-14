@@ -38,13 +38,9 @@ jobs:
         run: pnpm install
 
       - name: Bump version & update changelog
-        run: |
-          npx changelogen@latest --release --push --no-tag=false
-
-      - name: Get new version
         id: version
         run: |
-          NEW_VERSION=$(node -p "require('./package.json').version")
+          NEW_VERSION=$(npx changelogen@latest --release --push --no-tag=false | tail -1)
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build & Zip Extensions
@@ -52,7 +48,11 @@ jobs:
           pnpm zip
           pnpm zip:firefox
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release from Changelog
+        run: |
+          npx changelogen@latest gh release ${{ steps.version.outputs.new_version }} --token ${{ github.token }}
+
+      - name: Upload Extension Zips to GitHub Release
         run: |
           gh release upload v${{ steps.version.outputs.new_version }} .output/*-chrome.zip .output/*-firefox.zip
         env:
