@@ -38,9 +38,13 @@ jobs:
         run: pnpm install
 
       - name: Bump version & update changelog
+        run: |
+          npx changelogen@latest --release --push --no-tag=false
+
+      - name: Get new version
         id: version
         run: |
-          NEW_VERSION=$(npx changelogen@latest --release --push --no-tag=false)
+          NEW_VERSION=$(node -p "require('./package.json').version")
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build & Zip Extensions
