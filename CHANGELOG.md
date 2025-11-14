@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.10
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.9...v0.1.10)
+
+### 🩹 Fixes
+
+- Ci ([3870262](https://github.com/aelxxs/actual-budget-tweaks/commit/3870262))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.9
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.8...v0.1.9)
