@@ -6,12 +6,12 @@ export const toggleNotesColumn = defineSetting({
 	type: "select",
 	label: "Notes Visibility",
 	options: [
-		{ value: "block", label: "Visible (Default)" },
+		{ value: "inline-flex", label: "Visible (Default)" },
 		{ value: "none", label: "Hidden" },
 	],
 	context: {
 		key: "notes-visibility",
-		defaultValue: "block",
+		defaultValue: "inline-flex",
 		css: `
 			[data-testid="notes"] {
 				display: var(--notes-visibility) !important;

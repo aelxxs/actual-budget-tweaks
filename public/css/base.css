@@ -135,17 +135,17 @@
 	--color-noteTagBackgroundHover: var(--ctp-pink);
 	--color-noteTagText: var(--ctp-crust);
 
-	--color-noticeBackground: var(--ctp-green);
+	--color-noticeBackground: var(--ctp-teal);
 	--color-noticeBackgroundDark: var(--ctp-teal);
-	--color-noticeBackgroundLight: var(--ctp-surface1);
+	--color-noticeBackgroundLight: var(--ctp-teal);
 	--color-noticeBorder: var(--ctp-green);
-	--color-noticeText: var(--ctp-green);
+	--color-noticeText: var(--ctp-text);
 	--color-noticeTextDark: var(--ctp-base);
 	--color-noticeTextLight: var(--ctp-green);
 	--color-noticeTextMenu: var(--ctp-teal);
 	--color-noticeTextMenuHover: var(--ctp-green);
 
-	--color-pageBackground: var(--ctp-crust);
+	--color-pageBackground: var(--ctp-base);
 	--color-pageBackgroundBottomRight: var(--ctp-surface0);
 	--color-pageBackgroundLineBottom: var(--ctp-text);
 	--color-pageBackgroundLineMid: var(--ctp-crust);
@@ -192,7 +192,7 @@
 	--color-tableBorderHover: var(--ctp-mauve);
 	--color-tableBorderSelected: var(--ctp-blue);
 	--color-tableBorderSeparator: var(--ctp-overlay0);
-	--color-tableHeaderBackground: var(--ctp-base);
+	--color-tableHeaderBackground: var(--ctp-crust);
 	--color-tableHeaderText: var(--ctp-subtext0);
 	--color-tableHeaderSubText: var(--ctp-text);
 	--color-tableRowBackgroundHighlight: var(--ctp-base);
@@ -252,6 +252,11 @@
 	border: var(--border);
 }
 
+/* sidebar -- budget name */
+.css-1am57kc {
+	font-size: 16.5px;
+}
+
 /* sidebar -- section title */
 .css-hfi7l9 {
 	border-bottom: 2.5px solid var(--ctp-blue);
@@ -272,11 +277,11 @@
 /* sidebar -- account links */
 .css-11jfeu7,
 .css-1s4ggjo {
-	padding-left: 1.75rem;
+	padding-left: 2rem;
 }
 
 .css-ifjmjt {
-	left: 8px;
+	left: 10px;
 }
 
 /* sidebar -- budget name dropdown arrow */
@@ -290,7 +295,7 @@
 	align-items: center;
 	padding: 3px;
 	width: 35px;
-	border-radius: min(var(--border-radius), 0.5rem);
+	border-radius: min(var(--border-radius), 0.35rem);
 	border: medium;
 	font-size: 13px;
 	background-color: var(--color-buttonBareBackgroundHover);
@@ -305,7 +310,7 @@
 .css-1mi3lsa {
 	padding: 3px;
 	width: 35px;
-	border-radius: min(var(--border-radius), 0.5rem) 0px 0px min(var(--border-radius), 0.5rem);
+	border-radius: min(var(--border-radius), 0.35rem) 0px 0px min(var(--border-radius), 0.35rem);
 	border: medium;
 	font-size: 13px;
 	background-color: var(--color-tableBorderHover);
@@ -334,7 +339,7 @@
 .css-q5nm5x {
 	padding: 3px;
 	width: 35px;
-	border-radius: 0px min(var(--border-radius), 0.5rem) min(var(--border-radius), 0.5rem) 0px;
+	border-radius: 0px min(var(--border-radius), 0.35rem) min(var(--border-radius), 0.5rem) 0px;
 	border: medium;
 	font-size: 13px;
 	background-color: var(--color-tableBorderHover);
@@ -347,7 +352,7 @@
 .css-10x6adq {
 	padding: 3px;
 	width: 35px;
-	border-radius: min(var(--border-radius), 0.5rem) 0px 0px min(var(--border-radius), 0.5rem);
+	border-radius: min(var(--border-radius), 0.35rem) 0px 0px min(var(--border-radius), 0.5rem);
 	border: medium;
 	font-size: 13px;
 	background-color: var(--color-buttonBareBackgroundHover);
@@ -371,7 +376,7 @@
 .css-11ig21n {
 	padding: 3px;
 	width: 35px;
-	border-radius: 0px min(var(--border-radius), 0.5rem) min(var(--border-radius), 0.5rem) 0px;
+	border-radius: 0px min(var(--border-radius), 0.35rem) min(var(--border-radius), 0.35rem) 0px;
 	border: medium;
 	font-size: 13px;
 	background-color: var(--color-buttonBareBackgroundHover);
@@ -510,23 +515,6 @@
 	background-color: var(--ctp-crust);
 }
 
-/* /schedules -- table header */
-.css-kfjpij {
-	border-radius: var(--border-radius) var(--border-radius) 0px 0px;
-	border-inline: var(--border);
-	border-top: var(--border);
-	overflow: hidden;
-}
-
-/* /schedules -- table body */
-.css-1v84gns:not(:has(.css-12vlum8)) {
-	border-bottom-left-radius: 0px;
-	border-bottom-right-radius: 0px;
-	border: var(--border);
-	border-top-width: 0px;
-	overflow: hidden;
-}
-
 /* /schedules -- pills */
 .css-1whggh0,
 .css-f0xl0f,
@@ -573,7 +561,7 @@ textarea,
 [data-placement]:not(:has([role="dialog"])) {
 	box-shadow: none;
 	border-radius: var(--border-radius);
-	border: var(--border);
+	border: var(--border) !important;
 	overflow: hidden;
 }
 
@@ -591,70 +579,105 @@ textarea,
 }
 
 /* tables */
-.css-eons5 {
+.css-j7ipk5 {
+	background-color: transparent;
+}
+.css-eons5,
+.css-17gaw25,
+.css-1job1cn,
+.css-1xx9nfp {
 	border: none;
 }
 
+.css-kfjpij {
+	border: var(--border);
+	border-bottom: none;
+}
+
+[data-testid="row"]:has(> [data-testid]:not([data-testid="select"])) {
+	border-inline: var(--border);
+}
+
+.css-1xrj088,
+div:has([data-testid="transaction-table"]) .css-1431ujr,
+div:has([data-testid="transaction-table"]) [data-testid="row"] {
+	border-inline: none !important;
+}
+
+.css-1gtw3sc,
+.css-1lxzxy8,
+.css-1dcpkst {
+	background-color: var(--color-tableHeaderBackground) !important;
+}
+
+[data-testid="table"] .css-j7ipk5,
+[data-testid="table"] .css-1431ujr {
+	overflow: hidden;
+	background-color: var(--color-tableBackground) !important;
+	border-inline: var(--border);
+}
+
+.css-1dw5lqa,
+.css-1gne67y {
+	padding-inline: 0.5rem;
+}
+
+.css-kfjpij,
+.css-kfjpij > * {
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+	background-color: var(--color-tableHeaderBackground);
+}
+
+.css-hhza4t,
+.css-blzdij,
 .css-1431ujr,
 .css-x43rvq,
 .css-1ok43ac,
-.css-oiw7fa,
-.css-19wqxhu,
-.css-1iy0uj3,
-.css-1hx64bf,
-.css-1wo18st,
-.css-9493py,
-.css-aclsme,
 .css-1m0snnq,
-.css-1xrj088 {
+.css-19wqxhu:not(:has([data-testid="row"])) {
 	border-inline: var(--border);
+	border-bottom: var(--border);
 }
 
-.css-1431ujr .css-x43rvq,
+.css-j7ipk5,
+.css-hhza4t,
+.css-blzdij,
+.css-1431ujr,
+.css-x43rvq,
 .css-1ok43ac,
 .css-1m0snnq,
-.css-19wqxhu {
+.css-19wqxhu:not(:has([data-testid="row"])) {
 	border-bottom: var(--border);
 }
 
-.css-1xx9nfp {
-	border-top-left-radius: var(--border-radius);
-	border-top-right-radius: var(--border-radius);
-	border: none;
-	border-bottom: var(--border);
+.css-1m0snnq,
+.css-hhza4t,
+.css-19kjqc5:not(:has([data-testid="row"])) {
+	margin-top: 0px;
+	background-color: var(--color-tableBackground) !important;
+	min-height: 45rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-tableText) !important;
 }
 
-.css-1gtw3sc {
-	background-color: var(--ctp-base);
+.css-hhza4t *,
+.css-19kjqc5 .css-1cmz3zb {
+	color: var(--color-tableText) !important;
 }
 
-.css-1job1cn,
-.css-17gaw25,
-.css-8gg4lr {
-	border-width: 0px;
-	border-top-left-radius: var(--border-radius);
-	border-top-right-radius: var(--border-radius);
+/* no accounts splash */
+.css-os71s2 {
+	background-color: var(--color-tableHeaderBackground);
+	border-top: 0px;
 }
 
-.css-12vlum8 {
-	border-bottom: var(--border);
+/* create tag */
+.css-1a4zw2d {
 	border-inline: var(--border);
-	background-color: var(--ctp-mantle);
-	border-bottom-left-radius: var(--border-radius);
-	border-bottom-right-radius: var(--border-radius);
 }
-
-[data-testid="transaction-table"] > .css-j7ipk5,
-[data-testid="table"] > .css-j7ipk5 {
-	border-inline: 0px !important;
-}
-
-.css-j7ipk5:not(:has(.css-12vlum8)) {
-	border-bottom: var(--border);
-	border-inline: var(--border) !important;
-	background-color: var(--ctp-mantle);
-}
-
 /* text color */
 .css-70zz4x {
 	color: var(--ctp-text) !important;
@@ -727,9 +750,7 @@ textarea,
 
 /* keyboard shortcuts */
 .css-yvyj5l,
-      /* search */
-      .css-m142m {
-	/* table */
+.css-m142m {
 	border-radius: var(--border-radius);
 }
 
@@ -794,12 +815,18 @@ textarea,
 	border: var(--border);
 }
 
-/* mobile -- overspend */
-
-.css-1qkgmqi {
-	border-radius: var(--border-radius);
-	background-color: var(--ctp-mantle);
-	box-shadow: none;
-	border: var(--border);
-	border-color: var(--ctp-red);
+/* /tags */
+.css-1m2essh {
+	margin-left: 20px;
+	margin-bottom: 0.25rem;
+}
+.css-tlyf2w,
+.css-16jbywf {
+	padding-bottom: 0.75rem;
+}
+.css-9ekrea {
+	margin-top: 0.75rem;
+}
+.css-1xszviz {
+	margin-top: 0px;
 }

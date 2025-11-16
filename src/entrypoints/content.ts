@@ -21,6 +21,7 @@ export default defineContentScript({
 
 				for (const setting of scripts.flat()) {
 					if (setting.init) {
+						// @ts-ignore -- TODO: fix this type error
 						setting.init(setting.context);
 					}
 				}

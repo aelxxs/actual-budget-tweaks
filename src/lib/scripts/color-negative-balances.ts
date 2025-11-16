@@ -9,8 +9,8 @@ export const colorNegativeBalances = defineSetting({
 		key: "actual-balancecolors",
 		defaultValue: true,
 		css: `
-		.error {
-			color: var(--color-errorText);
+			.error {
+				color: var(--color-errorText);
 			}
 		`,
 		_observer: null as MutationObserver | null,
