@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.11
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.10...v0.1.11)
+
+### 🚀 Enhancements
+
+- Fix note and table styling ([2df6c4e](https://github.com/aelxxs/actual-budget-tweaks/commit/2df6c4e))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.10
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.9...v0.1.10)
