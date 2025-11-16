@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.12
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.11...v0.1.12)
+
+### 🩹 Fixes
+
+- Update page background ([86dff5e](https://github.com/aelxxs/actual-budget-tweaks/commit/86dff5e))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.11
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.10...v0.1.11)
