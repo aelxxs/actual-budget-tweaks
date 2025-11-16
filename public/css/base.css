@@ -145,7 +145,7 @@
 	--color-noticeTextMenu: var(--ctp-teal);
 	--color-noticeTextMenuHover: var(--ctp-green);
 
-	--color-pageBackground: var(--ctp-base);
+	--color-pageBackground: var(--ctp-crust);
 	--color-pageBackgroundBottomRight: var(--ctp-surface0);
 	--color-pageBackgroundLineBottom: var(--ctp-text);
 	--color-pageBackgroundLineMid: var(--ctp-crust);
