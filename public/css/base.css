@@ -594,16 +594,13 @@ textarea,
 	border-bottom: none;
 }
 
-[data-testid="row"]:has(> [data-testid]:not([data-testid="select"])) {
-	border-inline: var(--border);
-}
-
-.css-1xrj088,
-div:has([data-testid="transaction-table"]) .css-1431ujr,
-div:has([data-testid="transaction-table"]) [data-testid="row"] {
-	border-inline: none !important;
-}
-
+.css-ulr8m0,
+.css-gb8gdb,
+.css-1m3i5st,
+.css-7nyp2b,
+.css-9493py,
+.css-1hx64bf,
+.css-1x69ttp,
 [data-testid="table"] > .css-j7ipk5,
 [data-testid="table"] > .css-1431ujr {
 	overflow: hidden;
@@ -666,6 +663,10 @@ div:has([data-testid="transaction-table"]) [data-testid="row"] {
 	align-items: center;
 	justify-content: center;
 	color: var(--color-tableText) !important;
+}
+
+[data-testid="new-tag"] + .css-1m0snnq {
+	min-height: 0rem;
 }
 
 .css-hhza4t *,
@@ -843,4 +844,15 @@ div:has([data-testid="transaction-table"]) [data-testid="row"] {
 /* account chart */
 .css-17rentn {
 	margin-bottom: 0.75rem;
+}
+
+/* green balance */
+[data-testid="balance"] {
+	color: var(--color-noticeTextLight);
+}
+
+/* red negative balance */
+[data-testid="balance"][data-cellname^="-"] {
+	color: var(--color-errorText);
+	font-weight: bold;
 }

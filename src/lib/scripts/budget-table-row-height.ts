@@ -8,8 +8,8 @@ export const budgetTableRowHeight = defineSetting({
 	options: [
 		{ value: "2.25rem", label: "Normal (Default)" },
 		{ value: "2rem", label: "Slim" },
-		{ value: "1.74rem", label: "Extra Slim" },
-		{ value: "2.65rem", label: "Relaxed" },
+		{ value: "1.75rem", label: "Extra Slim" },
+		{ value: "2.5rem", label: "Relaxed" },
 	],
 	context: {
 		key: "actual-slimmer-budgetrows",
