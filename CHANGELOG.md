@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.14
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.13...v0.1.14)
+
+### 🩹 Fixes
+
+- Notice text ([a55b0de](https://github.com/aelxxs/actual-budget-tweaks/commit/a55b0de))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.13
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.12...v0.1.13)
