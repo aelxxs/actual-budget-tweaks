@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.15
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.14...v0.1.15)
+
+### 🩹 Fixes
+
+- Improve buggy behaviour caused by bad css ([234ce75](https://github.com/aelxxs/actual-budget-tweaks/commit/234ce75))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.14
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.13...v0.1.14)
