@@ -139,8 +139,8 @@
 	--color-noticeBackgroundDark: var(--ctp-teal);
 	--color-noticeBackgroundLight: var(--ctp-teal);
 	--color-noticeBorder: var(--ctp-green);
-	--color-noticeText: var(--ctp-mantle);
-	--color-noticeTextDark: var(--ctp-crust);
+	--color-noticeText: var(--ctp-text);
+	--color-noticeTextDark: var(--ctp-base);
 	--color-noticeTextLight: var(--ctp-green);
 	--color-noticeTextMenu: var(--ctp-teal);
 	--color-noticeTextMenuHover: var(--ctp-green);
