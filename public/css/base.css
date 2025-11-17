@@ -139,8 +139,8 @@
 	--color-noticeBackgroundDark: var(--ctp-teal);
 	--color-noticeBackgroundLight: var(--ctp-teal);
 	--color-noticeBorder: var(--ctp-green);
-	--color-noticeText: var(--ctp-text);
-	--color-noticeTextDark: var(--ctp-base);
+	--color-noticeText: var(--ctp-mantle);
+	--color-noticeTextDark: var(--ctp-crust);
 	--color-noticeTextLight: var(--ctp-green);
 	--color-noticeTextMenu: var(--ctp-teal);
 	--color-noticeTextMenuHover: var(--ctp-green);
@@ -604,17 +604,23 @@ div:has([data-testid="transaction-table"]) [data-testid="row"] {
 	border-inline: none !important;
 }
 
+[data-testid="table"] > .css-j7ipk5,
+[data-testid="table"] > .css-1431ujr {
+	overflow: hidden;
+	background-color: var(--color-tableBackground);
+	border-inline: var(--border);
+}
+
+[data-testid="transaction-table"] .css-j7ipk5,
+[data-testid="transaction-table"] .css-1431ujr {
+	background-color: var(--color-tableHeaderBackground);
+	border-inline: 0px;
+}
+
 .css-1gtw3sc,
 .css-1lxzxy8,
 .css-1dcpkst {
 	background-color: var(--color-tableHeaderBackground) !important;
-}
-
-[data-testid="table"] .css-j7ipk5,
-[data-testid="table"] .css-1431ujr {
-	overflow: hidden;
-	background-color: var(--color-tableBackground) !important;
-	border-inline: var(--border);
 }
 
 .css-1dw5lqa,
@@ -632,7 +638,6 @@ div:has([data-testid="transaction-table"]) [data-testid="row"] {
 .css-hhza4t,
 .css-blzdij,
 .css-1431ujr,
-.css-x43rvq,
 .css-1ok43ac,
 .css-1m0snnq,
 .css-19wqxhu:not(:has([data-testid="row"])) {
@@ -666,6 +671,10 @@ div:has([data-testid="transaction-table"]) [data-testid="row"] {
 .css-hhza4t *,
 .css-19kjqc5 .css-1cmz3zb {
 	color: var(--color-tableText) !important;
+}
+
+.css-1r57ten {
+	background-color: var(--color-tableBackground);
 }
 
 /* no accounts splash */
@@ -829,4 +838,9 @@ div:has([data-testid="transaction-table"]) [data-testid="row"] {
 }
 .css-1xszviz {
 	margin-top: 0px;
+}
+
+/* account chart */
+.css-17rentn {
+	margin-bottom: 0.75rem;
 }
