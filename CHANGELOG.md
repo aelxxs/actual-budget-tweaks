@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.13
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.12...v0.1.13)
+
+### 🚀 Enhancements
+
+- Styling updates ([b807887](https://github.com/aelxxs/actual-budget-tweaks/commit/b807887))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.12
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.11...v0.1.12)
