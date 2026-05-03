@@ -1,3 +1,4 @@
+import { accountIconPicker } from "./account-icon-picker-v2";
 import { backgroundPattern } from "./background-pattern";
 import { borderRadius } from "./border-radius";
 import { budgetPageBorders } from "./budget-page-borders";
@@ -10,6 +11,7 @@ import { hideMonthOnScroll } from "./hide-month-on-scroll";
 import { notificationContrast } from "./notification-contrast";
 import { reportCardBorders } from "./report-card-borders";
 import { reportWidgetBackgroundColor } from "./report-widget-background-color";
+import { resizableTransactionColumns } from "./resizable-transaction-columns";
 import { showDailyAvailable } from "./show-daily-available";
 import { sidebarAccountSpacing } from "./sidebar-account-spacing";
 import { sidebarRedesign } from "./sidebar-redesign";
@@ -28,8 +30,10 @@ export const scripts = [
 		dimReconciled,
 		hideMonthOnScroll,
 		notificationContrast,
+		resizableTransactionColumns,
 		showDailyAvailable,
 		sidebarRedesign,
+		accountIconPicker,
 		categoryTemplateInsights,
 		templateApplyBreakdown,
 		headerBorder,

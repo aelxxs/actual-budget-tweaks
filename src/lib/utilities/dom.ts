@@ -1,15 +1,18 @@
 export function createElement<K extends keyof HTMLElementTagNameMap>(
 	tag: K,
-	options: Partial<HTMLElementTagNameMap[K]> & { style?: Partial<CSSStyleDeclaration> } = {}
+	options?: Omit<Partial<HTMLElementTagNameMap[K]>, "style"> & { style?: Partial<CSSStyleDeclaration> },
 ): HTMLElementTagNameMap[K] {
 	const el = document.createElement(tag);
+	const resolvedOptions = (options ?? {}) as Omit<Partial<HTMLElementTagNameMap[K]>, "style"> & {
+		style?: Partial<CSSStyleDeclaration>;
+	};
 
-	if (options.style) {
-		Object.assign(el.style, options.style);
-		delete options.style;
+	if (resolvedOptions.style) {
+		Object.assign(el.style, resolvedOptions.style);
+		delete resolvedOptions.style;
 	}
 
-	Object.assign(el, options);
+	Object.assign(el, resolvedOptions);
 
 	return el;
 }
