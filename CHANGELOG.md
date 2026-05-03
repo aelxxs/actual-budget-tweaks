@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.17
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.16...v0.1.17)
+
+### 🚀 Enhancements
+
+- Add budget and report card border settings with customizable styles; update css ([957fd9a](https://github.com/aelxxs/actual-budget-tweaks/commit/957fd9a))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.16
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.15...v0.1.16)
