@@ -1,0 +1,397 @@
+/* Income Breakdown Widget — Actual Budget Tweaks
+   Injected inside a native markdown-card grid widget */
+
+/* ── Widget overlay (covers markdown placeholder inside grid item) ──── */
+.abt-ib-widget {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  background: var(--color-tableBackground, #181825);
+  border-radius: 6.5px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.abt-ib-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px 10px 0;
+}
+
+.abt-ib-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+h2.abt-ib-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  margin: 0;
+  padding: 0 0 5px;
+  line-height: 1.2;
+}
+
+.abt-ib-subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+}
+
+/* ── Controls bar ────────────────────────────────────────────────────── */
+.abt-ib-controls {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Date presets ────────────────────────────────────────────────────── */
+.abt-ib-presets {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.abt-ib-preset {
+  background: var(--color-buttonNormalBackground, #181825);
+  border: 0.8px solid var(--color-buttonNormalBorder, #313244);
+  border-radius: 6.5px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.abt-ib-preset:hover {
+  background: var(--color-buttonNormalBackgroundHover, #11111b);
+  color: var(--color-buttonNormalTextHover, #bac2de);
+}
+
+.abt-ib-preset.active {
+  background: var(--color-buttonMenuSelectedBackground, #f9e2af);
+  border-color: var(--color-buttonMenuSelectedBorder, #f9e2af);
+  color: var(--color-buttonMenuSelectedText, #11111b);
+}
+
+.abt-ib-preset.active:hover {
+  background: var(--color-buttonMenuSelectedBackgroundHover, #fab387);
+  color: var(--color-buttonMenuSelectedTextHover, #1e1e2e);
+}
+
+/* ── Date inputs ─────────────────────────────────────────────────────── */
+.abt-ib-date-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.abt-ib-field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+}
+
+.abt-ib-input {
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--color-buttonNormalBackground, #181825);
+  border: 0.8px solid var(--color-buttonNormalBorder, #313244);
+  border-radius: 6.5px;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  color-scheme: dark;
+}
+
+.abt-ib-input:focus {
+  outline: none;
+  border-color: var(--color-buttonPrimaryBackground, #b4befe);
+}
+
+/* ── Toggles ─────────────────────────────────────────────────────────── */
+.abt-ib-toggles {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.abt-ib-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  cursor: pointer;
+  user-select: none;
+}
+
+.abt-ib-toggle input[type="checkbox"] {
+  accent-color: var(--color-buttonPrimaryBackground, #b4befe);
+  cursor: pointer;
+  margin: 0;
+}
+
+.abt-ib-toggle:has(input:disabled) {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Chart container ─────────────────────────────────────────────────── */
+.abt-ib-chart-container {
+  position: relative;
+  padding: 4px 8px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.abt-ib-chart-container svg {
+  display: block;
+  width: 100%;
+}
+
+/* ── Sankey nodes & links ─────────────────────────────────────────────── */
+.abt-ib-node,
+.abt-ib-link {
+  cursor: pointer;
+}
+
+.abt-ib-node {
+  transition: opacity 0.15s;
+}
+
+.abt-ib-node:hover {
+  opacity: 1 !important;
+}
+
+/* ── Labels ──────────────────────────────────────────────────────────── */
+.abt-ib-label {
+  fill: #ffffff;
+  font-size: 11px;
+  font-family: inherit;
+  pointer-events: none;
+  paint-order: stroke fill;
+  stroke: #11111b;
+  stroke-width: 3px;
+}
+
+.abt-ib-label-amount {
+  fill: #e4e4e7;
+  font-size: 10px;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────── */
+.abt-ib-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--color-pageBackground, #11111b);
+  border: 0.8px solid var(--color-formInputBorder, #313244);
+  border-radius: 6.5px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  white-space: nowrap;
+  z-index: 100;
+  transition: opacity 0.12s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.abt-ib-tooltip-hint {
+  font-size: 10px;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+  font-style: italic;
+}
+
+/* ── Loading / empty ─────────────────────────────────────────────────── */
+.abt-ib-loading,
+.abt-ib-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+  font-size: 13px;
+}
+
+/* ── Transaction popover ─────────────────────────────────────────────── */
+.abt-ib-popover {
+  position: fixed;
+  z-index: 9999;
+  background: var(--color-pageBackground, #11111b);
+  border: 0.8px solid var(--color-buttonNormalBorder, #313244);
+  border-radius: 6.5px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.abt-ib-popover-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 0.8px solid var(--color-buttonNormalBorder, #313244);
+  flex-shrink: 0;
+}
+
+.abt-ib-popover-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  flex: 1;
+  min-width: 0;
+}
+
+.abt-ib-popover-total {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.abt-ib-popover-total.positive { color: #a6e3a1; }
+.abt-ib-popover-total.negative { color: #f38ba8; }
+
+.abt-ib-popover-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.abt-ib-popover-count {
+  font-size: 12px;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+  white-space: nowrap;
+}
+
+.abt-ib-view-accounts {
+  background: var(--color-buttonPrimaryBackground, #89b4fa);
+  color: var(--color-buttonPrimaryText, #1e1e2e);
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 3px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.abt-ib-view-accounts:hover {
+  filter: brightness(1.1);
+}
+
+.abt-ib-popover-close {
+  background: none;
+  border: none;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.abt-ib-popover-close:hover {
+  background: var(--color-buttonNormalBackground, #181825);
+  color: var(--color-buttonNormalText, #cdd6f4);
+}
+
+/* ── Popover transaction table ───────────────────────────────────────── */
+.abt-ib-popover-table-wrap {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  border-radius: 0 0 6.5px 6.5px;
+}
+
+.abt-ib-popover-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+}
+
+.abt-ib-popover-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.abt-ib-popover-table th {
+  text-align: left;
+  padding: 5px 8px;
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+  background: var(--color-tableHeaderBackground, #11111b);
+  border-bottom: 0.8px solid var(--color-buttonNormalBorder, #313244);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Column widths for fixed layout */
+.abt-ib-popover-table .col-date { width: 72px; }
+.abt-ib-popover-table .col-account { width: 17%; }
+.abt-ib-popover-table .col-payee { width: 17%; }
+.abt-ib-popover-table .col-category { width: 15%; }
+.abt-ib-popover-table .col-notes { width: auto; }
+.abt-ib-popover-table .col-amount { width: 80px; }
+.abt-ib-popover-table .col-status { width: 36px; text-align: center; }
+
+.abt-ib-popover-table td {
+  padding: 4px 8px;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  border-bottom: 0.8px solid var(--color-buttonNormalBorder, #313244);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.abt-ib-popover-table .notes-col {
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+  font-style: italic;
+}
+
+.abt-ib-popover-table .amount-col {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.abt-ib-popover-table .positive { color: #a6e3a1; }
+.abt-ib-popover-table .negative { color: #f38ba8; }
+
+.abt-ib-popover-table .status-cleared { color: #a6e3a1; }
+.abt-ib-popover-table .status-reconciled { color: #89b4fa; }
+.abt-ib-popover-table .status-uncleared { color: var(--color-buttonNormalDisabledText, #6c7086); }
+
+.abt-ib-tx-row:hover {
+  background: var(--color-tableRowBackgroundHover, #1e1e2e);
+}
+
+.abt-ib-popover-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Let react-grid-layout resize handle sit above the widget overlay */
+.react-grid-item > .react-resizable-handle {
+  z-index: 2;
+}

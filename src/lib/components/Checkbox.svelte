@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { SettingContext } from "../scripts/types";
+	import type { SettingContext } from "../scripts/types";
 	import { getValue } from "../utilities/store";
 
 	const { labelText, ctx, onChange } = $props<{

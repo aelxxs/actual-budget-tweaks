@@ -24,3 +24,7 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Playwright MCP session artifacts
+.playwright-mcp/
+.claude/

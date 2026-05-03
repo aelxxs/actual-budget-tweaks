@@ -1,0 +1,200 @@
+.abt-tab-panel {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10000;
+  width: 360px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-menuBackground, #2a2b2e);
+  color: var(--color-menuItemText, #fff);
+  border: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.abt-tab-panel[data-collapsed="true"] .abt-tab-body,
+.abt-tab-panel[data-collapsed="true"] .abt-tab-footer,
+.abt-tab-panel[data-collapsed="true"] .abt-tab-toggle,
+.abt-tab-panel[data-collapsed="true"] .abt-tab-loading {
+  display: none;
+}
+
+.abt-tab-panel[data-dragging="true"] {
+  user-select: none;
+  cursor: grabbing;
+}
+
+.abt-tab-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
+  background: rgba(255, 255, 255, 0.02);
+  cursor: grab;
+  touch-action: none;
+}
+
+.abt-tab-panel[data-collapsed="true"] .abt-tab-header {
+  border-bottom: none;
+}
+
+.abt-tab-panel[data-dragging="true"] .abt-tab-header {
+  cursor: grabbing;
+}
+
+.abt-tab-title {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+  min-width: 0;
+}
+
+.abt-tab-month {
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.abt-tab-iconbtn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+.abt-tab-iconbtn:hover { opacity: 1; background: rgba(255, 255, 255, 0.08); }
+
+.abt-tab-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.abt-tab-notice {
+  margin: 8px 12px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: rgba(255, 200, 100, 0.12);
+  color: var(--color-warningText, #e0c590);
+}
+.abt-tab-notice[data-type="error"] {
+  background: rgba(255, 100, 100, 0.14);
+  color: var(--color-errorText, #f08383);
+}
+
+.abt-tab-empty {
+  padding: 16px 14px;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.abt-tab-group {
+  padding: 4px 0;
+}
+
+.abt-tab-group-name {
+  padding: 6px 12px 2px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.abt-tab-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 12px;
+}
+
+.abt-tab-row-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.abt-tab-row-delta {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.abt-tab-row-delta[data-sign="pos"] { color: var(--color-pageTextPositive, #4caf50); }
+.abt-tab-row-delta[data-sign="neg"] { color: var(--color-errorText, #e57373); }
+.abt-tab-row-delta[data-sign="zero"] { opacity: 0.5; }
+
+.abt-tab-row[data-changed="false"] .abt-tab-row-name,
+.abt-tab-row[data-changed="false"] .abt-tab-row-delta {
+  opacity: 0.45;
+}
+
+.abt-tab-footer {
+  border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.abt-tab-footer-label { opacity: 0.7; }
+.abt-tab-footer-value { text-align: right; font-weight: 600; }
+
+.abt-tab-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
+  font-size: 11px;
+  opacity: 0.75;
+  cursor: pointer;
+  user-select: none;
+}
+.abt-tab-toggle:hover { opacity: 1; background: rgba(255, 255, 255, 0.04); }
+
+.abt-tab-loading {
+  padding: 16px;
+  text-align: center;
+  opacity: 0.6;
+  font-size: 11px;
+}
+
+.abt-tab-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: abt-tab-spin 0.7s linear infinite;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+@keyframes abt-tab-spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { SettingContext } from "../scripts/types";
+	import type { SettingContext } from "../scripts/types";
 	import { getValue, setValue } from "../utilities/store";
 
 	// receive props in runes mode
@@ -29,7 +29,7 @@
 
 <div class="stack">
 	<span style="font-weight: 500;">{labelText}</span>
-	<select {value} class="select" onchange={handleChange}>
+	<select bind:value class="select" onchange={handleChange}>
 		{#each options as option}
 			<option value={option.value}>{option.label}</option>
 		{/each}
