@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.22
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.21...v0.1.22)
+
+### 🚀 Enhancements
+
+- Add resizable transaction columns functionality ([9fe8864](https://github.com/aelxxs/actual-budget-tweaks/commit/9fe8864))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.21
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.20...v0.1.21)
