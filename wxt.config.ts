@@ -1,10 +1,9 @@
-import { defineConfig } from "wxt";
 import { resolve } from "path";
+import { defineConfig } from "wxt";
 
 export default defineConfig({
 	srcDir: "src",
-	outDir: resolve(__dirname, ".."),
-	outDirTemplate: "actual-budget-tweaks-0.1.15-chrome",
+	outDir: resolve(__dirname, ".output"),
 	modules: ["@wxt-dev/module-svelte"],
 	manifest: {
 		name: "Actual Budget – Tweaks",
