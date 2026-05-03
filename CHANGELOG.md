@@ -1,6 +1,35 @@
 # Changelog
 
 
+## v0.1.16
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.15...v0.1.16)
+
+### 🚀 Enhancements
+
+- Enhance Color Transactions with inflow/upcoming coloring ([8d64511](https://github.com/aelxxs/actual-budget-tweaks/commit/8d64511))
+- Add Category Template Insights tweak ([0007986](https://github.com/aelxxs/actual-budget-tweaks/commit/0007986))
+- Add Dim Reconciled Transactions tweak ([9e70fe2](https://github.com/aelxxs/actual-budget-tweaks/commit/9e70fe2))
+- **color-transactions:** Include account column in upcoming row tint ([43f6931](https://github.com/aelxxs/actual-budget-tweaks/commit/43f6931))
+- **popup:** Redo popup with status ([13c50d2](https://github.com/aelxxs/actual-budget-tweaks/commit/13c50d2))
+- Add schedule highlight redirect to open edit modal ([99c5c83](https://github.com/aelxxs/actual-budget-tweaks/commit/99c5c83))
+- Add Template Apply Breakdown tweak ([c00dc73](https://github.com/aelxxs/actual-budget-tweaks/commit/c00dc73))
+- Add Improve Notification Contrast tweak ([bbe7b47](https://github.com/aelxxs/actual-budget-tweaks/commit/bbe7b47))
+
+### 🩹 Fixes
+
+- Restore income breakdown report and scroll bug ([a6301c3](https://github.com/aelxxs/actual-budget-tweaks/commit/a6301c3))
+- Handle extension context invalidation gracefully ([b2437a3](https://github.com/aelxxs/actual-budget-tweaks/commit/b2437a3))
+- **cti:** Gate initial data load on backend readiness ([4386185](https://github.com/aelxxs/actual-budget-tweaks/commit/4386185))
+- Scope content script injection to configured Actual URL ([14acf86](https://github.com/aelxxs/actual-budget-tweaks/commit/14acf86))
+- **ib:** Toggle transaction popover when clicking the same node ([4867057](https://github.com/aelxxs/actual-budget-tweaks/commit/4867057))
+- Lazy-load Svelte runtime to avoid CSP errors on non-Actual pages ([be73d0c](https://github.com/aelxxs/actual-budget-tweaks/commit/be73d0c))
+- **settings:** Hydrate select dropdowns with persisted value ([6aa7386](https://github.com/aelxxs/actual-budget-tweaks/commit/6aa7386))
+
+### ❤️ Contributors
+
+- Andy Su <andysu1551@gmail.com>
+
 ## v0.1.15
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.14...v0.1.15)
