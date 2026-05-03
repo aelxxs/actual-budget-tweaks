@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.18
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.17...v0.1.18)
+
+### 🩹 Fixes
+
+- **config:** Correct output directory path in wxt configuration ([6589a66](https://github.com/aelxxs/actual-budget-tweaks/commit/6589a66))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.17
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.16...v0.1.17)
