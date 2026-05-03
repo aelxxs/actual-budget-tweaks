@@ -25,6 +25,7 @@ web-ext.config.ts
 *.sln
 *.sw?
 
+.temp/*
 # Playwright MCP session artifacts
 .playwright-mcp/
 .claude/

@@ -41,7 +41,7 @@
 		padding: 0.45rem 0.75rem;
 		font-size: 1em;
 		background-color: var(--color-buttonNormalBackground);
-		border: var(--border);
+		border: 1px solid var(--color-buttonNormalBorder);
 		border-radius: 4px;
 		color: var(--color-buttonNormalText);
 	}

@@ -1,9 +1,15 @@
 :root {
+	/* Budget */
 	--color-budgetCurrentMonth: var(--ctp-crust);
 	--color-budgetHeaderCurrentMonth: var(--ctp-base);
 	--color-budgetHeaderOtherMonth: var(--ctp-base);
 	--color-budgetOtherMonth: var(--ctp-mantle);
+	--color-budgetNumberNegative: var(--ctp-red);
+	--color-budgetNumberNeutral: var(--ctp-overlay1);
+	--color-budgetNumberPositive: var(--ctp-green);
+	--color-budgetNumberZero: var(--ctp-subtext0);
 
+	/* Button – bare */
 	--color-buttonBareBackground: transparent;
 	--color-buttonBareBackgroundActive: rgba(205, 214, 244, 0.1);
 	--color-buttonBareBackgroundHover: var(--ctp-surface0);
@@ -12,6 +18,7 @@
 	--color-buttonBareText: var(--ctp-subtext1);
 	--color-buttonBareTextHover: var(--ctp-text);
 
+	/* Button – menu */
 	--color-buttonMenuBackground: transparent;
 	--color-buttonMenuBackgroundHover: rgba(205, 214, 244, 0.07);
 	--color-buttonMenuBorder: var(--ctp-surface0);
@@ -23,6 +30,7 @@
 	--color-buttonMenuText: var(--ctp-subtext0);
 	--color-buttonMenuTextHover: var(--ctp-text);
 
+	/* Button – normal */
 	--color-buttonNormalBackground: var(--ctp-mantle);
 	--color-buttonNormalBackgroundHover: var(--ctp-crust);
 	--color-buttonNormalBorder: var(--ctp-surface0);
@@ -35,6 +43,7 @@
 	--color-buttonNormalText: var(--ctp-text);
 	--color-buttonNormalTextHover: var(--ctp-subtext1);
 
+	/* Button – primary */
 	--color-buttonPrimaryBackground: var(--ctp-lavender);
 	--color-buttonPrimaryBackgroundHover: var(--ctp-mauve);
 	--color-buttonPrimaryBorder: var(--ctp-lavender);
@@ -45,6 +54,7 @@
 	--color-buttonPrimaryText: var(--ctp-crust);
 	--color-buttonPrimaryTextHover: var(--ctp-base);
 
+	/* Calendar */
 	--color-calendarBackground: var(--ctp-base);
 	--color-calendarCellBackground: var(--ctp-mantle);
 	--color-calendarItemBackground: var(--ctp-surface0);
@@ -52,18 +62,21 @@
 	--color-calendarSelectedBackground: var(--ctp-blue);
 	--color-calendarText: var(--ctp-text);
 
+	/* Card */
 	--color-cardBackground: var(--ctp-crust);
 	--color-cardBorder: var(--ctp-lavender);
 	--color-cardShadow: var(--ctp-crust);
 
+	/* Checkbox */
 	--color-checkboxBackgroundSelected: var(--ctp-green);
 	--color-checkboxBorderSelected: var(--ctp-green);
-	--color-checkboxShadowSelected: transparentf;
+	--color-checkboxShadowSelected: transparent;
 	--color-checkboxText: var(--ctp-crust);
 	--color-checkboxToggleBackground: var(--ctp-surface0);
 	--color-checkboxToggleBackgroundSelected: var(--ctp-green);
 	--color-checkboxToggleDisabled: var(--ctp-overlay0);
 
+	/* Error */
 	--color-errorBackground: var(--ctp-base);
 	--color-errorBorder: var(--ctp-maroon);
 	--color-errorText: var(--ctp-red);
@@ -71,10 +84,12 @@
 	--color-errorTextDarker: var(--ctp-red);
 	--color-errorTextMenu: var(--ctp-rosewater);
 
+	/* Floating action bar */
 	--color-floatingActionBarBackground: var(--ctp-mauve);
 	--color-floatingActionBarBorder: var(--ctp-mauve);
 	--color-floatingActionBarText: var(--ctp-base);
 
+	/* Form input */
 	--color-formInputBackground: var(--ctp-surface0);
 	--color-formInputBackgroundSelected: var(--ctp-surface1);
 	--color-formInputBackgroundSelection: var(--ctp-blue);
@@ -89,13 +104,16 @@
 	--color-formInputTextSelected: var(--ctp-crust);
 	--color-formInputTextSelection: var(--ctp-surface0);
 
+	/* Form label */
 	--color-formLabelBackground: var(--ctp-surface2);
 	--color-formLabelText: var(--ctp-lavender);
 
+	/* Markdown */
 	--color-markdownDark: var(--ctp-mauve);
 	--color-markdownLight: var(--ctp-lavender);
 	--color-markdownNormal: var(--ctp-text);
 
+	/* Menus & autocomplete */
 	--color-menuAutoCompleteBackground: var(--ctp-base);
 	--color-menuAutoCompleteBackgroundHover: var(--ctp-surface1);
 	--color-menuAutoCompleteItemText: var(--ctp-text);
@@ -103,6 +121,7 @@
 	--color-menuAutoCompleteText: var(--ctp-subtext0);
 	--color-menuAutoCompleteTextHeader: var(--ctp-blue);
 	--color-menuAutoCompleteTextHover: var(--ctp-blue);
+
 	--color-menuBackground: var(--ctp-mantle);
 	--color-menuBorder: var(--ctp-surface0);
 	--color-menuBorderHover: var(--ctp-blue);
@@ -112,9 +131,9 @@
 	--color-menuItemTextHeader: var(--ctp-blue);
 	--color-menuItemTextHover: var(--ctp-text);
 	--color-menuItemTextSelected: var(--ctp-blue);
-
 	--color-menuKeybindingText: var(--ctp-lavender);
 
+	/* Mobile */
 	--color-mobileAccountShadow: var(--ctp-crust);
 	--color-mobileAccountText: var(--ctp-blue);
 	--color-mobileConfigServerViewTheme: var(--ctp-mauve);
@@ -128,13 +147,17 @@
 	--color-mobilePageBackground: var(--ctp-base);
 	--color-mobileTransactionSelected: var(--ctp-lavender);
 	--color-mobileViewTheme: var(--ctp-base);
+
 	--color-modalBackground: var(--ctp-crust);
 	--color-modalBorder: var(--ctp-surface0);
 
+	/* Notes */
 	--color-noteTagBackground: var(--ctp-mauve);
 	--color-noteTagBackgroundHover: var(--ctp-pink);
+	--color-noteTagDefault: var(--ctp-mauve);
 	--color-noteTagText: var(--ctp-crust);
 
+	/* Notices */
 	--color-noticeBackground: var(--ctp-teal);
 	--color-noticeBackgroundDark: var(--ctp-teal);
 	--color-noticeBackgroundLight: var(--ctp-teal);
@@ -145,6 +168,15 @@
 	--color-noticeTextMenu: var(--ctp-teal);
 	--color-noticeTextMenuHover: var(--ctp-green);
 
+	/* Numbers */
+	--color-numberNegative: var(--ctp-red);
+	--color-numberNeutral: var(--ctp-overlay1);
+	--color-numberPositive: var(--ctp-green);
+
+	/* Overlay */
+	--color-overlayBackground: rgba(0, 0, 0, 0.3);
+
+	/* Page */
 	--color-pageBackground: var(--ctp-crust);
 	--color-pageBackgroundBottomRight: var(--ctp-surface0);
 	--color-pageBackgroundLineBottom: var(--ctp-text);
@@ -160,6 +192,7 @@
 	--color-pageTextPositive: var(--ctp-green);
 	--color-pageTextSubdued: var(--ctp-overlay0);
 
+	/* Pills */
 	--color-pillBackground: var(--ctp-mantle);
 	--color-pillBackgroundLight: var(--ctp-surface0);
 	--color-pillBackgroundSelected: var(--ctp-mauve);
@@ -171,14 +204,21 @@
 	--color-pillTextSelected: var(--ctp-base);
 	--color-pillTextSubdued: var(--ctp-overlay0);
 
+	/* Reports */
 	--color-reportsBlue: var(--ctp-blue);
+	--color-reportsChartFill: var(--ctp-green);
 	--color-reportsGray: var(--ctp-overlay1);
 	--color-reportsGreen: var(--ctp-green);
 	--color-reportsInnerLabel: var(--ctp-surface2);
 	--color-reportsLabel: var(--ctp-text);
+	--color-reportsNumberNegative: var(--ctp-red);
+	--color-reportsNumberNeutral: var(--ctp-overlay1);
+	--color-reportsNumberPositive: var(--ctp-green);
 	--color-reportsRed: var(--ctp-red);
 
+	/* Sidebar */
 	--color-sidebarBackground: var(--ctp-mantle);
+	--color-sidebarBudgetName: var(--ctp-subtext0);
 	--color-sidebarItemAccentSelected: var(--ctp-mauve);
 	--color-sidebarItemBackgroundFailed: var(--ctp-red);
 	--color-sidebarItemBackgroundHover: var(--ctp-surface0);
@@ -187,6 +227,7 @@
 	--color-sidebarItemText: var(--ctp-text);
 	--color-sidebarItemTextSelected: var(--ctp-mauve);
 
+	/* Table */
 	--color-tableBackground: var(--ctp-mantle);
 	--color-tableBorder: var(--ctp-surface0);
 	--color-tableBorderHover: var(--ctp-mauve);
@@ -207,24 +248,46 @@
 	--color-tableTextSelected: var(--ctp-overlay2);
 	--color-tableTextSubdued: var(--ctp-subtext0);
 
+	/* Template/To Budget */
+	--color-templateNumberFunded: var(--ctp-green);
+	--color-templateNumberUnderFunded: var(--ctp-yellow);
+	--color-toBudgetNegative: var(--ctp-red);
+	--color-toBudgetPositive: var(--ctp-green);
+	--color-toBudgetZero: var(--ctp-green);
+
+	/* Tooltip */
 	--color-tooltipBackground: var(--ctp-mantle);
 	--color-tooltipBorder: var(--ctp-surface0);
 	--color-tooltipText: var(--ctp-text);
 
+	/* Upcoming */
 	--color-upcomingBackground: var(--ctp-mauve);
 	--color-upcomingBorder: var(--ctp-surface0);
 	--color-upcomingText: var(--ctp-mantle);
 
+	/* Warning */
 	--color-warningBackground: var(--ctp-base);
 	--color-warningBorder: var(--ctp-peach);
 	--color-warningText: var(--ctp-yellow);
 	--color-warningTextDark: var(--ctp-text);
 	--color-warningTextLight: var(--ctp-peach);
 
+	/* Charts */
+	--color-chartQual1: var(--ctp-teal);
+	--color-chartQual2: var(--ctp-yellow);
+	--color-chartQual3: var(--ctp-peach);
+	--color-chartQual4: var(--ctp-red);
+	--color-chartQual5: var(--ctp-blue);
+	--color-chartQual6: var(--ctp-pink);
+	--color-chartQual7: var(--ctp-green);
+	--color-chartQual8: var(--ctp-gold);
+	--color-chartQual9: var(--ctp-rosewater);
+
 	--border: 1px solid var(--color-tableBorder);
 }
 
-html, body {
+html,
+body {
 	overscroll-behavior: none;
 }
 
@@ -254,24 +317,13 @@ html, body {
 
 /* sidebar -- budget name */
 .css-1am57kc {
-	font-size: 16.5px;
+	font-size: 15px;
 }
 
 /* sidebar -- section title */
 .css-hfi7l9 {
 	border-bottom: 2.5px solid var(--ctp-blue);
 	padding-bottom: 0.5rem;
-}
-
-/* sidebar -- acct title */
-.css-15e1mkk {
-	padding-block: 0.25rem;
-}
-
-/* sidebar -- small link */
-.css-13d5vlg,
-.css-e5dykp {
-	padding-block: 0.55rem;
 }
 
 /* sidebar -- account links */
@@ -391,7 +443,6 @@ html, body {
 .css-1asnaqj {
 	box-shadow: none;
 	border-radius: var(--border-radius);
-	border: var(--border);
 }
 
 /* /budget -- budget cards margin */
@@ -400,20 +451,17 @@ html, body {
 }
 
 /* /budget -- table header */
-.css-1bgvp0b {
+.css-d5wgg9 {
 	border-radius: var(--border-radius) var(--border-radius) 0px 0px;
-	border: var(--border);
 	border-bottom-width: 0px;
 	box-shadow: none;
-	background-color: var(--ctp-crust);
+	/* background-color: var(--ctp-crust); */
 }
 
 /* /budget -- table body. */
-.css-1e35cxr,
-.css-1t7se8i {
+.css-1kx6xgs {
 	box-shadow: none;
 	border-radius: 0rem 0rem var(--border-radius) var(--border-radius);
-	border: var(--border);
 	margin-bottom: 1rem;
 }
 
@@ -421,7 +469,7 @@ html, body {
 .css-9r3avc:hover,
 .css-1lv865u:hover {
 	box-shadow: none;
-	background-color: var(--ctp-surface0);
+	/* background-color: var(--ctp-surface0); */
 }
 
 .css-9r3avc,
@@ -467,13 +515,13 @@ html, body {
 	padding-right: 12px;
 }
 
+/* reports borders */
 .css-17nqm2r,
 .css-1mkkiaa,
 .css-s6nmt0,
 .css-o1urms {
 	height: 100%;
 	width: 100%;
-	border: var(--border);
 	border-radius: var(--border-radius);
 	box-shadow: none;
 }
@@ -510,9 +558,6 @@ html, body {
 	padding: 1rem;
 	padding-block: 1.5rem;
 	height: 3.25rem;
-	border-bottom: var(--border);
-	position: sticky;
-	background-color: var(--ctp-crust);
 }
 
 /* /schedules -- pills */
@@ -532,9 +577,12 @@ html, body {
 .css-1qse97y,
 .css-1g810ry,
 .css-x9hok8,
-.css-wmwuaj,
-.css-w4guu2 {
+.css-wmwuaj {
 	padding-top: 1.5rem;
+}
+
+.css-w4guu2 {
+	padding-top: 4rem;
 }
 
 /* search inputs */
@@ -546,7 +594,7 @@ textarea,
 	color: var(--color-formInputText);
 	border-radius: var(--border-radius);
 	border: var(--border);
-	background-color: var(--ctp-mantle);
+	/* background-color: var(--ctp-mantle); */
 	padding: 0.35rem;
 }
 
@@ -578,97 +626,6 @@ textarea,
 	margin-top: 0.35rem;
 }
 
-/* tables */
-.css-j7ipk5 {
-	background-color: transparent;
-}
-.css-eons5,
-.css-17gaw25,
-.css-1job1cn,
-.css-1xx9nfp {
-	border: none;
-}
-
-.css-kfjpij {
-	border: var(--border);
-	border-bottom: none;
-}
-
-.css-ulr8m0,
-.css-gb8gdb,
-.css-1m3i5st,
-.css-7nyp2b,
-.css-9493py,
-.css-1hx64bf,
-.css-1x69ttp,
-[data-testid="table"] > .css-j7ipk5,
-[data-testid="table"] > .css-1431ujr {
-	overflow: hidden;
-	background-color: var(--color-tableBackground);
-	border-inline: var(--border);
-}
-
-[data-testid="transaction-table"] .css-j7ipk5,
-[data-testid="transaction-table"] .css-1431ujr {
-	background-color: var(--color-tableHeaderBackground);
-	border-inline: 0px;
-}
-
-.css-1gtw3sc,
-.css-1lxzxy8,
-.css-1dcpkst {
-	background-color: var(--color-tableHeaderBackground) !important;
-}
-
-.css-1dw5lqa,
-.css-1gne67y {
-	padding-inline: 0.5rem;
-}
-
-.css-kfjpij,
-.css-kfjpij > * {
-	border-top-left-radius: var(--border-radius);
-	border-top-right-radius: var(--border-radius);
-	background-color: var(--color-tableHeaderBackground);
-}
-
-.css-hhza4t,
-.css-blzdij,
-.css-1431ujr,
-.css-1ok43ac,
-.css-1m0snnq,
-.css-19wqxhu:not(:has([data-testid="row"])) {
-	border-inline: var(--border);
-	border-bottom: var(--border);
-}
-
-.css-j7ipk5,
-.css-hhza4t,
-.css-blzdij,
-.css-1431ujr,
-.css-x43rvq,
-.css-1ok43ac,
-.css-1m0snnq,
-.css-19wqxhu:not(:has([data-testid="row"])) {
-	border-bottom: var(--border);
-}
-
-.css-1m0snnq,
-.css-hhza4t,
-.css-19kjqc5:not(:has([data-testid="row"])) {
-	margin-top: 0px;
-	background-color: var(--color-tableBackground) !important;
-	min-height: 45rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--color-tableText) !important;
-}
-
-[data-testid="new-tag"] + .css-1m0snnq {
-	min-height: 0rem;
-}
-
 .css-hhza4t *,
 .css-19kjqc5 .css-1cmz3zb {
 	color: var(--color-tableText) !important;
@@ -684,10 +641,6 @@ textarea,
 	border-top: 0px;
 }
 
-/* create tag */
-.css-1a4zw2d {
-	border-inline: var(--border);
-}
 /* text color */
 .css-70zz4x {
 	color: var(--ctp-text) !important;
@@ -759,6 +712,7 @@ textarea,
 }
 
 /* keyboard shortcuts */
+.css-125b5ef,
 .css-yvyj5l,
 .css-m142m {
 	border-radius: var(--border-radius);
@@ -818,7 +772,7 @@ textarea,
 	background-color: var(--color-markdownLight);
 	padding: 0.1rem 0.5rem;
 	border-radius: 0.25rem;
-	color: var(--ctp-mantle);
+	/* color: var(--ctp-mantle); */
 }
 
 .css-1oedne5 {
@@ -855,4 +809,23 @@ textarea,
 [data-testid="balance"][data-cellname^="-"] {
 	color: var(--color-errorText);
 	font-weight: bold;
+}
+
+.css-1wlgp5o button {
+	margin-bottom: 0px !important;
+	padding-block: 0.75rem !important;
+}
+
+/* tables border radius */
+.css-1mq6j8f,
+.css-1x480h3,
+.css-1mivfii,
+.css-hk3yfc {
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+}
+
+/* svg icon in button */
+[data-testid="category-month-spent"] * {
+	flex-shrink: 0;
 }

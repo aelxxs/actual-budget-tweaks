@@ -16,6 +16,7 @@ export const sidebarRedesign = defineSetting({
             /* sidebar -- budget container */
             .css-1njw0n7 {
                 border-bottom: var(--border);
+                border-color: var(--color-sidebarItemBackgroundHover);
                 padding-block: 1rem;
                 padding-inline: 1.5rem;
                 margin: 0px;
@@ -28,6 +29,7 @@ export const sidebarRedesign = defineSetting({
                 flex-shrink: 0;
                 padding: 0px;
                 border-top: var(--border);
+                border-color: var(--color-sidebarItemBackgroundHover);
             }
             .css-1uzqvp6 {
                 margin: 0px;
