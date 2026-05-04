@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.23
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.22...v0.1.23)
+
+### 🚀 Enhancements
+
+- Enhance balance handling and column resizing ([ff1fb27](https://github.com/aelxxs/actual-budget-tweaks/commit/ff1fb27))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.22
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.21...v0.1.22)
