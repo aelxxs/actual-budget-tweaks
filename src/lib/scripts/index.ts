@@ -1,4 +1,4 @@
-import { accountIconPicker } from "./account-icon-picker-v2";
+import { accountIconPicker } from "./account-icon-picker";
 import { backgroundPattern } from "./background-pattern";
 import { borderRadius } from "./border-radius";
 import { budgetPageBorders } from "./budget-page-borders";
