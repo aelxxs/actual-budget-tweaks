@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.24
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.23...v0.1.24)
+
+### 🚀 Enhancements
+
+- Implement search functionality and enhance settings organization ([f49100e](https://github.com/aelxxs/actual-budget-tweaks/commit/f49100e))
+
+### 💅 Refactors
+
+- Update CSS class names and improve styling for budget and report components ([86300a1](https://github.com/aelxxs/actual-budget-tweaks/commit/86300a1))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.23
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.22...v0.1.23)
