@@ -17,18 +17,20 @@ export default defineContentScript({
 		// content script loads — on every <all_urls> page. Sites with strict
 		// trusted-types CSP (e.g. Outlook Web) reject this. Lazy-load
 		// everything Svelte-adjacent only after the URL check passes.
+		let mounted = false;
+
 		async function checkAndMount() {
 			if (isContextInvalidated()) return;
 
 			const baseUrl = await getBaseUrl();
 			if (!baseUrl || !window.location.href.startsWith(baseUrl)) return;
 
-			const [
-				{ default: Settings },
-				{ scripts },
-				{ createElement },
-				{ mount, unmount },
-			] = await Promise.all([
+			// Already mounted — subsequent locationchange events are handled
+			// by the route listeners inside each script (pushState patching).
+			if (mounted) return;
+			mounted = true;
+
+			const [{ default: Settings }, { scripts }, { createElement }, { mount, unmount }] = await Promise.all([
 				import("@/lib/ActualSettings.svelte"),
 				import("@/lib/scripts"),
 				import("@/lib/utilities/dom"),
@@ -39,9 +41,7 @@ export default defineContentScript({
 			let componentCss: string;
 			try {
 				baseCss = browser.runtime.getURL("/css/base.css");
-				componentCss = browser.runtime.getURL(
-					"/content-scripts/content.css"
-				);
+				componentCss = browser.runtime.getURL("/content-scripts/content.css");
 			} catch {
 				return; // Extension context invalidated
 			}
@@ -50,13 +50,13 @@ export default defineContentScript({
 				createElement("link", {
 					rel: "stylesheet",
 					href: baseCss,
-				})
+				}),
 			);
 			document.body.appendChild(
 				createElement("link", {
 					rel: "stylesheet",
 					href: componentCss,
-				})
+				}),
 			);
 
 			for (const setting of scripts.flat()) {

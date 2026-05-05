@@ -828,3 +828,8 @@ textarea,
 [data-testid="category-month-spent"] * {
 	flex-shrink: 0;
 }
+
+/* select checkbox padding */
+[data-testid="select"] {
+	padding-inline: 1rem;
+}

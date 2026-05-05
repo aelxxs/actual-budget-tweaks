@@ -20,11 +20,13 @@ export const colorNegativeBalances = defineSetting({
 		const BALANCE_SELECTOR =
 			"span[data-testid^='__global!balance-']:not([data-testid^='__global!balance-query']), span[data-testid$='-balance']";
 
-		const searchPattern = /^\-\d+/;
+		// Match both ASCII hyphen-minus (-) and Unicode minus sign (−, U+2212),
+		// optionally followed by non-digit chars (currency symbols, spaces) before a digit.
+		const searchPattern = /[-\u2212][^\d]*\d/;
 
 		const setAccountBalanceColors = () => {
 			for (const el of document.querySelectorAll(BALANCE_SELECTOR)) {
-				el.classList.toggle("error", searchPattern.test(el.textContent));
+				el.classList.toggle("error", searchPattern.test(el.textContent ?? ""));
 			}
 		};
 

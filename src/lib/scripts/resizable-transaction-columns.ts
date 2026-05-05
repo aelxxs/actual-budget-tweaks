@@ -2,25 +2,37 @@ import { applyGlobalCSS, createElement } from "../utilities/dom";
 import { getValue, setValue } from "../utilities/store";
 import { defineSetting } from "./types";
 
-type HeaderColumn = "date" | "account" | "payee" | "notes" | "category" | "payment" | "deposit";
+type HeaderColumn = "date" | "account" | "payee" | "notes" | "category" | "payment" | "deposit" | "balance";
 type ResizableColumn = Exclude<HeaderColumn, "date">;
 type StoredWidths = Partial<Record<HeaderColumn, number>>;
 
 const RESIZE_HANDLE_CLASS = "abt-col-resizer";
 const RESET_BUTTON_CLASS = "abt-col-reset-btn";
 const ROOT_TOGGLE_ATTR = "data-abt-resizable-cols";
-const HEADER_COLUMNS: HeaderColumn[] = ["date", "account", "payee", "notes", "category", "payment", "deposit"];
+const ROOT_RESIZING_ATTR = "data-abt-resizing-cols";
+const ROUTE_REFRESH_DELAY_MS = 0;
+const INITIAL_ATTACH_RETRY_FRAMES = 6;
+const HEADER_COLUMNS: HeaderColumn[] = [
+	"date",
+	"account",
+	"payee",
+	"notes",
+	"category",
+	"payment",
+	"deposit",
+	"balance",
+];
 const RESIZABLE_COLUMNS: ResizableColumn[] = ["account", "payee", "notes", "category", "payment"];
+const NON_FREE_COLUMNS = new Set<string>(["select", "cleared", "date"]);
 const MIN_COL_WIDTH = 80;
-const MAX_COL_WIDTH = 620;
+const MAX_COL_WIDTH_SAFETY = 9999;
 const FLEX_SHRINK_FLOOR = 80;
-const MAX_WIDTH_BY_COLUMN: Record<ResizableColumn, number> = {
-	account: 620,
-	payee: 620,
-	notes: 620,
-	category: 620,
+// Only numeric columns have a semantic hard max. Text columns are bounded
+// dynamically by available container space via getMaxResizableWidth.
+const NUMERIC_MAX_WIDTH: Partial<Record<ResizableColumn, number>> = {
 	payment: 190,
 	deposit: 190,
+	balance: 190,
 };
 const FLEX_DEFAULT_COLUMNS = new Set<HeaderColumn>(["account", "payee", "notes", "category"]);
 const STATIC_FIXED_WIDTHS = {
@@ -31,6 +43,7 @@ const DEFAULT_FIXED_WIDTHS: Record<Exclude<HeaderColumn, "account" | "payee" | "
 	date: 110,
 	payment: 100,
 	deposit: 100,
+	balance: 100,
 };
 const LEGACY_COLUMNS: Array<Exclude<HeaderColumn, "account">> = [
 	"date",
@@ -39,6 +52,7 @@ const LEGACY_COLUMNS: Array<Exclude<HeaderColumn, "account">> = [
 	"category",
 	"payment",
 	"deposit",
+	"balance",
 ];
 const LEGACY_DEFAULT_WIDTHS: Record<Exclude<HeaderColumn, "account">, number> = {
 	date: 110,
@@ -47,23 +61,67 @@ const LEGACY_DEFAULT_WIDTHS: Record<Exclude<HeaderColumn, "account">, number> = 
 	category: 190,
 	payment: 130,
 	deposit: 130,
+	balance: 130,
 };
 
-let observer: MutationObserver | null = null;
+let headerObserver: MutationObserver | null = null;
 let scheduled = false;
 let currentStorageKey = "";
 let cachedWidths: StoredWidths = {};
+let storagePrefixKey = "";
+let routeSyncToken = 0;
+const pageWidthsCache = new Map<string, StoredWidths>();
+let routeRefreshTimer: number | null = null;
+let observedRouteKey = "";
+let observedHeaderRow: HTMLElement | null = null;
+let observedHeaderCellCount = 0;
+let initialAttachObserver: MutationObserver | null = null;
+let routePollInterval: number | null = null;
+let routeListenersInstalled = false;
+let originalPushState: History["pushState"] | null = null;
+let originalReplaceState: History["replaceState"] | null = null;
+
+function onRouteSignal(): void {
+	const currentRouteKey = getCurrentRouteKey();
+	if (currentRouteKey === observedRouteKey) return;
+	observedRouteKey = currentRouteKey;
+
+	// Apply widths synchronously before React re-renders the new page so the new
+	// header never paints with the previous page's CSS variable values.
+	if (storagePrefixKey) {
+		const nextKey = getPageStorageKey(storagePrefixKey);
+		if (nextKey !== currentStorageKey) {
+			const cached = pageWidthsCache.get(nextKey);
+			cachedWidths = cached ? { ...cached } : {};
+			applyWidths(cachedWidths);
+		}
+	}
+
+	scheduleRouteRefresh();
+}
+
+function areWidthsEqual(a: StoredWidths, b: StoredWidths): boolean {
+	for (const column of HEADER_COLUMNS) {
+		if (column === "date") continue;
+		if (a[column] !== b[column]) return false;
+	}
+	return true;
+}
 
 function clampWidth(value: number): number {
-	return Math.max(MIN_COL_WIDTH, Math.min(MAX_COL_WIDTH, Math.round(value)));
+	return Math.max(MIN_COL_WIDTH, Math.min(MAX_COL_WIDTH_SAFETY, Math.round(value)));
 }
 
 function clampWidthLive(value: number): number {
-	return Math.max(MIN_COL_WIDTH, Math.min(MAX_COL_WIDTH, value));
+	return Math.max(MIN_COL_WIDTH, Math.min(MAX_COL_WIDTH_SAFETY, value));
+}
+
+function getCurrentRouteKey(): string {
+	return `${window.location.pathname}${window.location.search}${window.location.hash}`;
 }
 
 function getPageStorageKey(prefix: string): string {
-	return `${prefix}:${window.location.pathname}`;
+	return `${prefix}:${getCurrentRouteKey()}`;
 }
 
 function cssVariableName(column: HeaderColumn): string {
@@ -146,6 +204,7 @@ function updateColumnWidth(column: HeaderColumn, width: number): void {
 
 async function persistCurrentWidths(): Promise<void> {
 	if (!currentStorageKey) return;
+	pageWidthsCache.set(currentStorageKey, { ...cachedWidths });
 	await setValue(currentStorageKey, cachedWidths);
 }
 
@@ -155,18 +214,232 @@ async function resetAllWidths(): Promise<void> {
 	await persistCurrentWidths();
 }
 
+async function syncPageWidths(force = false): Promise<void> {
+	if (!storagePrefixKey) return;
+
+	const nextStorageKey = getPageStorageKey(storagePrefixKey);
+	const previousStorageKey = currentStorageKey;
+	if (!force && nextStorageKey === currentStorageKey) {
+		return;
+	}
+
+	currentStorageKey = nextStorageKey;
+
+	const cachedPageWidths = pageWidthsCache.get(nextStorageKey);
+	const fastWidths = cachedPageWidths ? { ...cachedPageWidths } : {};
+	if (force || !areWidthsEqual(cachedWidths, fastWidths)) {
+		cachedWidths = fastWidths;
+		applyWidths(cachedWidths);
+	}
+
+	const syncToken = ++routeSyncToken;
+	const storedWidths = normalizeSavedWidths(await getValue(nextStorageKey, {}));
+	if (syncToken !== routeSyncToken || currentStorageKey !== nextStorageKey) return;
+
+	const changed = !areWidthsEqual(cachedWidths, storedWidths);
+	cachedWidths = storedWidths;
+	pageWidthsCache.set(nextStorageKey, { ...storedWidths });
+	if (changed || force || previousStorageKey !== nextStorageKey) {
+		applyWidths(cachedWidths);
+	}
+	scheduleAttachHandles();
+}
+
+function scheduleRouteRefresh(): void {
+	if (routeRefreshTimer !== null) {
+		window.clearTimeout(routeRefreshTimer);
+	}
+
+	routeRefreshTimer = window.setTimeout(() => {
+		routeRefreshTimer = null;
+		void syncPageWidths();
+	}, ROUTE_REFRESH_DELAY_MS);
+}
+
+function observeHeaderRow(headerRow: HTMLElement | null): void {
+	if (!headerRow) {
+		if (headerObserver) {
+			headerObserver.disconnect();
+			headerObserver = null;
+		}
+		observedHeaderRow = null;
+		observedHeaderCellCount = 0;
+		return;
+	}
+
+	if (initialAttachObserver) {
+		initialAttachObserver.disconnect();
+		initialAttachObserver = null;
+	}
+
+	const headerCells = Array.from(headerRow.querySelectorAll<HTMLElement>(":scope > [data-testid]"));
+	const cellCountChanged = headerCells.length !== observedHeaderCellCount;
+
+	if (observedHeaderRow === headerRow && headerObserver && !cellCountChanged) {
+		return;
+	}
+
+	if (headerObserver) {
+		headerObserver.disconnect();
+	}
+
+	observedHeaderRow = headerRow;
+	observedHeaderCellCount = headerCells.length;
+	headerObserver = new MutationObserver((records) => {
+		let headerStructureChanged = false;
+		for (const record of records) {
+			if (record.type === "childList" && record.target === observedHeaderRow) {
+				headerStructureChanged = true;
+				break;
+			}
+		}
+
+		scheduleAttachHandles();
+		if (headerStructureChanged) {
+			requestAnimationFrame(() => {
+				observeHeaderRow(findHeaderRow());
+			});
+		}
+	});
+
+	headerObserver.observe(headerRow, {
+		childList: true,
+		subtree: false,
+	});
+
+	for (const cell of headerCells) {
+		headerObserver.observe(cell, {
+			attributes: true,
+			attributeFilter: ["style", "class", "hidden"],
+		});
+	}
+}
+
+function installRouteListeners(): void {
+	if (routeListenersInstalled) return;
+	routeListenersInstalled = true;
+
+	originalPushState = window.history.pushState.bind(window.history);
+	originalReplaceState = window.history.replaceState.bind(window.history);
+
+	window.history.pushState = function (...args: Parameters<History["pushState"]>) {
+		const result = originalPushState?.(...args);
+		onRouteSignal();
+		return result;
+	};
+
+	window.history.replaceState = function (...args: Parameters<History["replaceState"]>) {
+		const result = originalReplaceState?.(...args);
+		onRouteSignal();
+		return result;
+	};
+
+	window.addEventListener("popstate", onRouteSignal);
+	window.addEventListener("hashchange", onRouteSignal);
+	if (routePollInterval === null) {
+		routePollInterval = window.setInterval(onRouteSignal, 250);
+	}
+}
+
+function uninstallRouteListeners(): void {
+	if (!routeListenersInstalled) return;
+	routeListenersInstalled = false;
+
+	if (originalPushState) {
+		window.history.pushState = originalPushState;
+		originalPushState = null;
+	}
+
+	if (originalReplaceState) {
+		window.history.replaceState = originalReplaceState;
+		originalReplaceState = null;
+	}
+
+	window.removeEventListener("popstate", onRouteSignal);
+	window.removeEventListener("hashchange", onRouteSignal);
+	if (routePollInterval !== null) {
+		window.clearInterval(routePollInterval);
+		routePollInterval = null;
+	}
+}
+
 function removeHandles(): void {
 	document.querySelectorAll(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => handle.remove());
 	document.querySelectorAll(`.${RESET_BUTTON_CLASS}`).forEach((button) => button.remove());
 }
 
+function getColumnCell(row: HTMLElement, testId: string): HTMLElement | null {
+	return row.querySelector<HTMLElement>(`[data-testid='${testId}']`);
+}
+
+function isVisibleCell(cell: HTMLElement | null): cell is HTMLElement {
+	if (!cell) return false;
+	const style = window.getComputedStyle(cell);
+	if (style.display === "none" || style.visibility === "hidden") return false;
+	return cell.getBoundingClientRect().width > 0;
+}
+
+function isVisibleColumn(row: HTMLElement, testId: string): boolean {
+	return isVisibleCell(getColumnCell(row, testId));
+}
+
+function getVisibleColumnOrder(row: HTMLElement): string[] {
+	const cells = Array.from(row.querySelectorAll<HTMLElement>(":scope > [data-testid]"));
+	return cells
+		.filter((cell) => isVisibleCell(cell))
+		.map((cell) => cell.dataset.testid ?? "")
+		.filter(Boolean);
+}
+
+function getVisibleFreeColumns(row: HTMLElement): ResizableColumn[] {
+	const visibleColumns = getVisibleColumnOrder(row);
+	return visibleColumns.filter((col): col is ResizableColumn => !NON_FREE_COLUMNS.has(col));
+}
+
+function getVisibleResizableColumns(row: HTMLElement): ResizableColumn[] {
+	const freeColumns = getVisibleFreeColumns(row);
+	const anchorColumn = freeColumns[freeColumns.length - 1];
+	const resizableSet = new Set<string>([...RESIZABLE_COLUMNS, "deposit", "balance"]);
+	return freeColumns.filter((col): col is ResizableColumn => col !== anchorColumn && resizableSet.has(col));
+}
+
 function findHeaderRow(): HTMLElement | null {
+	const amountIds = new Set(["payment", "debit", "deposit", "credit", "balance"]);
+	const isHeaderLike = (container: HTMLElement): boolean => {
+		const directCells = Array.from(container.querySelectorAll<HTMLElement>(":scope > [data-testid]"));
+		if (directCells.length < 4) return false;
+		const ids = directCells.map((cell) => cell.dataset.testid ?? "");
+		return ids.includes("date") && ids.some((id) => amountIds.has(id));
+	};
+
 	const rows = document.querySelectorAll<HTMLElement>("[data-testid='row']");
 	for (const row of rows) {
-		if (row.querySelector("[data-testid='payment']") && row.querySelector("[data-testid='deposit']")) {
+		if (isHeaderLike(row)) {
 			return row;
 		}
 	}
+
+	// Fallback: derive a header-like container from known cell parents even when
+	// the row wrapper no longer exposes data-testid='row'.
+	const anchorCells = document.querySelectorAll<HTMLElement>(
+		"[data-testid='date'], [data-testid='payee'], [data-testid='account'], [data-testid='category']",
+	);
+	const visited = new Set<HTMLElement>();
+	for (const cell of anchorCells) {
+		let parent = cell.parentElement;
+		let depth = 0;
+		while (parent && depth < 4) {
+			if (!visited.has(parent)) {
+				visited.add(parent);
+				if (isHeaderLike(parent)) {
+					return parent;
+				}
+			}
+			parent = parent.parentElement;
+			depth += 1;
+		}
+	}
+
 	return null;
 }
 
@@ -175,47 +448,46 @@ function getCellWidth(row: HTMLElement, testId: string): number {
 	return cell ? cell.getBoundingClientRect().width : 0;
 }
 
+function getHardMaxWidth(column: ResizableColumn): number {
+	return NUMERIC_MAX_WIDTH[column] ?? MAX_COL_WIDTH_SAFETY;
+}
+
 function getMaxResizableWidth(column: ResizableColumn): number {
 	const headerRow = findHeaderRow();
-	if (!headerRow) return MAX_WIDTH_BY_COLUMN[column] ?? MAX_COL_WIDTH;
+	if (!headerRow) return getHardMaxWidth(column);
 
 	const containerWidth = headerRow.getBoundingClientRect().width;
-	let reserved = getCellWidth(headerRow, "select") + getCellWidth(headerRow, "cleared");
+	let reserved = 0;
 
-	for (const other of HEADER_COLUMNS) {
+	const visibleColumns = getVisibleColumnOrder(headerRow);
+	for (const other of visibleColumns) {
 		if (other === column) continue;
 
 		const current = getCellWidth(headerRow, other);
-		const isFlexDonor = FLEX_DEFAULT_COLUMNS.has(other) && typeof cachedWidths[other] !== "number";
+		const isKnownColumn = HEADER_COLUMNS.includes(other as HeaderColumn);
+		const isFlexDonor =
+			isKnownColumn &&
+			FLEX_DEFAULT_COLUMNS.has(other as HeaderColumn) &&
+			typeof cachedWidths[other as HeaderColumn] !== "number";
 		reserved += isFlexDonor ? Math.min(current, FLEX_SHRINK_FLOOR) : current;
 	}
 
-	return Math.max(
-		MIN_COL_WIDTH,
-		Math.min(MAX_WIDTH_BY_COLUMN[column] ?? MAX_COL_WIDTH, Math.floor(containerWidth - reserved)),
-	);
+	return Math.max(MIN_COL_WIDTH, Math.min(getHardMaxWidth(column), Math.floor(containerWidth - reserved)));
 }
 
 function getMinWidth(column: ResizableColumn): number {
 	return FLEX_DEFAULT_COLUMNS.has(column) ? FLEX_SHRINK_FLOOR : MIN_COL_WIDTH;
 }
 
-function getNextResizableColumn(column: ResizableColumn): ResizableColumn | null {
-	const index = HEADER_COLUMNS.indexOf(column);
-	for (let nextIndex = index + 1; nextIndex < HEADER_COLUMNS.length; nextIndex += 1) {
-		const nextColumn = HEADER_COLUMNS[nextIndex];
-		if (nextColumn === "date") continue;
-		return nextColumn as ResizableColumn;
-	}
-	return null;
+function getNextResizableColumn(column: ResizableColumn, headerRow: HTMLElement): ResizableColumn | null {
+	const freeColumns = getVisibleFreeColumns(headerRow);
+	const index = freeColumns.indexOf(column);
+	if (index === -1) return null;
+	return freeColumns[index + 1] ?? null;
 }
 
 function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 	if (cell.querySelector(`.${RESIZE_HANDLE_CLASS}`)) return;
-	if (!cell.style.position) {
-		cell.style.position = "relative";
-	}
-	cell.style.paddingRight = "8px";
 
 	const handle = createElement("div", {
 		className: RESIZE_HANDLE_CLASS,
@@ -225,6 +497,7 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 	handle.addEventListener("pointerdown", (event: PointerEvent) => {
 		event.preventDefault();
 		event.stopPropagation();
+		document.documentElement.setAttribute(ROOT_RESIZING_ATTR, "on");
 		handle.setPointerCapture(event.pointerId);
 		handle.dataset.dragging = "true";
 
@@ -233,10 +506,11 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 		let latestX = startX;
 		let framePending = false;
 
-		const nextColumn = getNextResizableColumn(column);
 		const headerRow = findHeaderRow();
-		const nextCell =
-			nextColumn && headerRow ? headerRow.querySelector<HTMLElement>(`[data-testid='${nextColumn}']`) : null;
+		if (!headerRow || !isVisibleColumn(headerRow, column)) return;
+
+		const nextColumn = getNextResizableColumn(column, headerRow);
+		const nextCell = nextColumn && headerRow ? getColumnCell(headerRow, nextColumn) : null;
 		const startNextWidth = nextCell?.getBoundingClientRect().width ?? 0;
 
 		const applyDrag = () => {
@@ -248,10 +522,10 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 				const rawDelta = deltaX;
 				const minDelta = Math.max(
 					getMinWidth(column) - startWidth,
-					startNextWidth - (MAX_WIDTH_BY_COLUMN[nextColumn] ?? MAX_COL_WIDTH),
+					startNextWidth - getHardMaxWidth(nextColumn),
 				);
 				const maxDelta = Math.min(
-					(MAX_WIDTH_BY_COLUMN[column] ?? MAX_COL_WIDTH) - startWidth,
+					getHardMaxWidth(column) - startWidth,
 					startNextWidth - getMinWidth(nextColumn),
 				);
 				const delta = Math.max(minDelta, Math.min(maxDelta, rawDelta));
@@ -277,6 +551,7 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 			window.removeEventListener("pointerup", onPointerUp);
 			window.removeEventListener("pointercancel", onPointerUp);
 			handle.dataset.dragging = "false";
+			document.documentElement.removeAttribute(ROOT_RESIZING_ATTR);
 			if (handle.hasPointerCapture(upEvent.pointerId)) {
 				handle.releasePointerCapture(upEvent.pointerId);
 			}
@@ -321,18 +596,38 @@ function attachResetButton(headerRow: HTMLElement): void {
 
 function attachHandles(): void {
 	const headerRow = findHeaderRow();
-	if (!headerRow) return;
+	observeHeaderRow(headerRow);
+	if (!headerRow) {
+		return;
+	}
 
-	for (const column of RESIZABLE_COLUMNS) {
-		const cell = headerRow.querySelector<HTMLElement>(`[data-testid='${column}']`);
-		if (cell) addHandle(cell, column);
+	const resizable = new Set<string>(getVisibleResizableColumns(headerRow));
+
+	// Remove handles from columns that are now the anchor or hidden.
+	headerRow.querySelectorAll<HTMLElement>(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => {
+		const testId = handle.parentElement?.dataset.testid;
+		if (testId && !resizable.has(testId)) {
+			handle.remove();
+		}
+	});
+
+	for (const column of resizable) {
+		const cell = getColumnCell(headerRow, column);
+		if (cell) {
+			addHandle(cell, column as ResizableColumn);
+		}
 	}
 
 	attachResetButton(headerRow);
 }
 
 function scheduleAttachHandles(): void {
-	if (scheduled) return;
+	// Some app navigations can mutate the URL without going through our patched
+	// history methods. Re-check route key on each attach cycle as a fallback.
+	onRouteSignal();
+	if (scheduled) {
+		return;
+	}
 	scheduled = true;
 	requestAnimationFrame(() => {
 		scheduled = false;
@@ -340,22 +635,71 @@ function scheduleAttachHandles(): void {
 	});
 }
 
-function startObserving(): void {
-	if (observer) observer.disconnect();
-	observer = new MutationObserver(() => {
+function scheduleInitialAttachRetries(): void {
+	let attempts = 0;
+
+	const tick = () => {
+		attempts += 1;
 		scheduleAttachHandles();
+		if (findHeaderRow() || attempts >= INITIAL_ATTACH_RETRY_FRAMES) {
+			return;
+		}
+		requestAnimationFrame(tick);
+	};
+
+	requestAnimationFrame(tick);
+}
+
+function ensureInitialAttachObserver(): void {
+	if (initialAttachObserver || !document.body) {
+		return;
+	}
+
+	initialAttachObserver = new MutationObserver(() => {
+		const headerRow = findHeaderRow();
+		if (!headerRow) {
+			return;
+		}
+
+		observeHeaderRow(headerRow);
+		scheduleAttachHandles();
+		initialAttachObserver?.disconnect();
+		initialAttachObserver = null;
 	});
-	observer.observe(document.body, {
+
+	initialAttachObserver.observe(document.body, {
 		childList: true,
 		subtree: true,
 	});
+}
+
+function startObserving(): void {
+	observedRouteKey = getCurrentRouteKey();
+	installRouteListeners();
+	const headerRow = findHeaderRow();
+	observeHeaderRow(headerRow);
+	void syncPageWidths();
 	scheduleAttachHandles();
+	scheduleInitialAttachRetries();
+	if (!headerRow) {
+		ensureInitialAttachObserver();
+	}
 }
 
 function stopObserving(): void {
-	if (observer) {
-		observer.disconnect();
-		observer = null;
+	if (headerObserver) {
+		headerObserver.disconnect();
+		headerObserver = null;
+	}
+	if (initialAttachObserver) {
+		initialAttachObserver.disconnect();
+		initialAttachObserver = null;
+	}
+	observedHeaderRow = null;
+	uninstallRouteListeners();
+	if (routeRefreshTimer !== null) {
+		window.clearTimeout(routeRefreshTimer);
+		routeRefreshTimer = null;
 	}
 }
 
@@ -369,6 +713,18 @@ export const resizableTransactionColumns = defineSetting({
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="row"] {
 				position: relative;
 			}
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="account"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="payee"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="notes"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="category"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="payment"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="debit"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="deposit"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="credit"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="balance"] {
+				position: relative;
+				padding-right: 8px;
+			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="select"] {
 				width: var(--abt-col-select, 20px) !important;
 				min-width: var(--abt-col-select-min, 20px) !important;
@@ -378,7 +734,6 @@ export const resizableTransactionColumns = defineSetting({
 				left: 0;
 				z-index: 8;
 				background-clip: padding-box;
-                padding-inline: 1rem;
                 overflow: hidden;
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="date"] {
@@ -425,6 +780,12 @@ export const resizableTransactionColumns = defineSetting({
 				max-width: var(--abt-col-deposit-max, 100px) !important;
 				flex: var(--abt-col-deposit-flex, 0 0 100px) !important;
 			}
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="balance"] {
+				width: var(--abt-col-balance, 100px) !important;
+				min-width: var(--abt-col-balance-min, 100px) !important;
+				max-width: var(--abt-col-balance-max, 100px) !important;
+				flex: var(--abt-col-balance-flex, 0 0 100px) !important;
+			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="cleared"] {
 				width: var(--abt-col-cleared, 38px) !important;
 				min-width: var(--abt-col-cleared-min, 38px) !important;
@@ -438,9 +799,6 @@ export const resizableTransactionColumns = defineSetting({
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="row"]:not(:has([data-testid="date"])) [data-testid="payee"] {
 				margin-left: var(--abt-col-date, 110px) !important;
-			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="transaction-table"] [data-testid="row"] > [data-testid] {
-				overflow-y: hidden;
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="transaction-table"] [data-testid="row"] {
 				overflow-x: hidden;
@@ -510,12 +868,13 @@ export const resizableTransactionColumns = defineSetting({
 		const enabled = Boolean(await getValue(ctx.key, ctx.defaultValue));
 		if (!enabled) return;
 
-		currentStorageKey = getPageStorageKey(ctx.key);
-		cachedWidths = normalizeSavedWidths(await getValue(currentStorageKey, {}));
+		storagePrefixKey = ctx.key;
+		currentStorageKey = "";
+		cachedWidths = {};
 
 		applyGlobalCSS(ctx.css, ctx.key);
 		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
-		applyWidths(cachedWidths);
+		await syncPageWidths(true);
 		startObserving();
 	},
 	onChange: async (value, ctx) => {
@@ -524,16 +883,20 @@ export const resizableTransactionColumns = defineSetting({
 			stopObserving();
 			removeHandles();
 			document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
+			document.documentElement.removeAttribute(ROOT_RESIZING_ATTR);
+			storagePrefixKey = "";
+			currentStorageKey = "";
 			applyGlobalCSS("", ctx.key);
 			return;
 		}
 
-		currentStorageKey = getPageStorageKey(ctx.key);
-		cachedWidths = normalizeSavedWidths(await getValue(currentStorageKey, {}));
+		storagePrefixKey = ctx.key;
+		currentStorageKey = "";
+		cachedWidths = {};
 
 		applyGlobalCSS(ctx.css, ctx.key);
 		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
-		applyWidths(cachedWidths);
+		await syncPageWidths(true);
 		startObserving();
 	},
 });
