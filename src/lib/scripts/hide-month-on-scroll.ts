@@ -9,7 +9,7 @@ export const hideMonthOnScroll = defineSetting({
 		key: "hide-months-on-scroll",
 		defaultValue: false,
 		css: `
-			.css-1usd1tv,
+			.css-sqgxa8,
 			.css-13as0pl,
 			.css-1dngfhi {
 				transition: opacity 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease;
@@ -78,7 +78,7 @@ export const hideMonthOnScroll = defineSetting({
 						isCollapsed = false;
 					}
 				},
-				{ passive: true }
+				{ passive: true },
 			);
 		}
 
