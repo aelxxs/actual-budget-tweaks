@@ -20,15 +20,67 @@ import { themeSelector } from "./theme";
 import { toggleNotesColumn } from "./toggle-notes-column";
 import { headerBorder } from "./top-nav-border";
 
+const layoutAndDensity = [
+	backgroundPattern,
+	borderRadius,
+	budgetTableRowHeight,
+	reportWidgetBackgroundColor,
+	toggleNotesColumn,
+	sidebarAccountSpacing,
+	resizableTransactionColumns,
+	hideMonthOnScroll,
+];
+
+const readabilityAndHighlights = [
+	colorNegativeBalances,
+	colorTransactions,
+	dimReconciled,
+	notificationContrast,
+	showDailyAvailable,
+];
+
+const advancedTweaks = [
+	sidebarRedesign,
+	accountIconPicker,
+	categoryTemplateInsights,
+	templateApplyBreakdown,
+	headerBorder,
+	reportCardBorders,
+	budgetPageBorders,
+];
+
+export const scriptSections = [
+	{
+		title: "Theme",
+		description: "Core visual identity for the app",
+		items: [themeSelector],
+	},
+	{
+		title: "Layout and Density",
+		description: "Spacing, borders, columns, and overall compactness",
+		items: layoutAndDensity,
+	},
+	{
+		title: "Readability",
+		description: "Highlights and contrast to make data easier to scan",
+		items: readabilityAndHighlights,
+	},
+	{
+		title: "Advanced Tweaks",
+		description: "Behavioral and workflow improvements",
+		items: advancedTweaks,
+	},
+];
+
 export const scripts = [
-	themeSelector,
+	[themeSelector],
 	[backgroundPattern, borderRadius, budgetTableRowHeight],
 	[reportWidgetBackgroundColor, toggleNotesColumn, sidebarAccountSpacing],
 	[
 		colorNegativeBalances,
 		colorTransactions,
 		dimReconciled,
-		hideMonthOnScroll,
+		// hideMonthOnScroll,
 		notificationContrast,
 		resizableTransactionColumns,
 		showDailyAvailable,
