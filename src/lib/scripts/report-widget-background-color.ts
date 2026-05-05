@@ -13,8 +13,8 @@ export const reportWidgetBackgroundColor = defineSetting({
 		key: "report-card-color",
 		defaultValue: "var(--color-tableBackground)",
 		css: (value: string) => `
-			.css-s6nmt0,
-			.css-o1urms {
+			.css-w4wco7,
+			.css-eiyo5a {
 				width: 100%;
 				height: 100%;
 				transition: box-shadow 0.25s;

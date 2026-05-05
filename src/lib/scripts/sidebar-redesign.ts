@@ -9,12 +9,8 @@ export const sidebarRedesign = defineSetting({
 		key: "improved-sidebar-design",
 		defaultValue: true,
 		css: () => `
-            /* sidebar -- budget name */
-            .css-1am57kc {
-                font-size: 16.5px;
-            }
             /* sidebar -- budget container */
-            .css-1njw0n7 {
+            .css-1q5hn2l {
                 border-bottom: var(--border);
                 border-color: var(--color-sidebarItemBackgroundHover);
                 padding-block: 1rem;
@@ -25,22 +21,24 @@ export const sidebarRedesign = defineSetting({
                 flex-shrink: 0;
             }
             /* sidebar -- add account container */
-            .css-1wlgp5o {
+            .css-37q6ds {
                 flex-shrink: 0;
                 padding: 0px;
                 border-top: var(--border);
                 border-color: var(--color-sidebarItemBackgroundHover);
             }
-            .css-1uzqvp6 {
-                margin: 0px;
-                padding-block: 0.75rem;
-                padding-inline: 1rem;
+            .css-37q6ds button {
+                margin-bottom: 0px !important;
+                padding-block: 0.75rem !important;
+                border-radius: 0px;
             }
         `,
 	},
 	init: async (ctx) => {
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (enabled && ctx.css) applyGlobalCSS(ctx.css(), ctx.key);
+		if (enabled && ctx.css) {
+			applyGlobalCSS(ctx.css(), ctx.key);
+		}
 	},
 	onChange: async (value, ctx) => {
 		await setValue(ctx.key, value);
