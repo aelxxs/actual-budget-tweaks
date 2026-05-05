@@ -292,7 +292,7 @@ body {
 }
 
 /* select budget */
-.css-19un6lv {
+.css-1neanul {
 	box-shadow: none;
 	border-radius: var(--border-radius);
 	border: var(--border);
@@ -300,16 +300,16 @@ body {
 }
 
 /* sidebar */
-.css-1jm6zlx {
+.css-10l5dm1 {
 	border-right: var(--border);
 }
 
 /* sidebar -- floating */
-.css-1jm6zlx {
+.css-10l5dm1 {
 	background-color: var(--color-sidebarBackground);
 }
 
-.css-udnprb {
+.css-t86gtt {
 	border-top-right-radius: var(--border-radius);
 	border-bottom-right-radius: var(--border-radius);
 	border: var(--border);
@@ -321,7 +321,7 @@ body {
 }
 
 /* sidebar -- section title */
-.css-hfi7l9 {
+.css-1wbfbxg {
 	border-bottom: 2.5px solid var(--ctp-blue);
 	padding-bottom: 0.5rem;
 }
@@ -332,198 +332,62 @@ body {
 	padding-left: 2rem;
 }
 
-.css-ifjmjt {
+/* sidebar -- account dot */
+.css-1dtbr3w {
 	left: 10px;
 }
 
-/* sidebar -- budget name dropdown arrow */
-.css-1am57kc {
-	margin-right: 0.2rem;
-}
-
-/* budget -- month highlighting */
-/* current month */
-.css-2o5ejk {
-	align-items: center;
-	padding: 3px;
-	width: 35px;
-	border-radius: min(var(--border-radius), 0.35rem);
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-	font-weight: bold;
-}
-
-/* highlighted month -- left */
-.css-cti7tr,
-.css-8rskyq,
-.css-kqrp3f,
-.css-17to6kw,
-.css-1mi3lsa {
-	padding: 3px;
-	width: 35px;
-	border-radius: min(var(--border-radius), 0.35rem) 0px 0px min(var(--border-radius), 0.35rem);
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-tableBorderHover);
-	color: var(--color-buttonPrimaryText);
-}
-
-/* highlighted month -- middle */
-.css-4qeb42,
-.css-lj3nyx,
-.css-1eb02hy,
-.css-evoqxd {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-tableBorderHover);
-	color: var(--color-buttonPrimaryText);
-}
-
-/* highlighted month -- right */
-.css-i0tmtm,
-.css-jnxqh2,
-.css-1ezcl0o,
-.css-1skvape,
-.css-q5nm5x {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px min(var(--border-radius), 0.35rem) min(var(--border-radius), 0.5rem) 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-tableBorderHover);
-	color: var(--color-buttonPrimaryText);
-}
-
-/* hover over month -- left */
-.css-1ugnqh7,
-.css-1ihd5su,
-.css-10x6adq {
-	padding: 3px;
-	width: 35px;
-	border-radius: min(var(--border-radius), 0.35rem) 0px 0px min(var(--border-radius), 0.5rem);
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-}
-
-/* hover over month -- middle */
-.css-1pd5dj,
-.css-1xcgr8,
-.css-1j355lw {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-}
-
-/* hover over month -- right */
-.css-1pd5dj,
-.css-1jx7wnq,
-.css-11ig21n {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px min(var(--border-radius), 0.35rem) min(var(--border-radius), 0.35rem) 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-}
-
-.css-rg8rv9 {
-	top: -18px;
-}
-
 /* /budget -- budget cards */
-.css-1szeyz4,
-.css-1asnaqj {
+[data-testid="budget-summary"] {
 	box-shadow: none;
 	border-radius: var(--border-radius);
 }
 
-/* /budget -- budget cards margin */
-.css-1gcc5nw {
-	margin-bottom: 0rem;
-}
-
 /* /budget -- table header */
-.css-d5wgg9 {
+[data-testid="budget-totals"] {
 	border-radius: var(--border-radius) var(--border-radius) 0px 0px;
 	border-bottom-width: 0px;
 	box-shadow: none;
-	/* background-color: var(--ctp-crust); */
+	overflow: hidden;
 }
 
 /* /budget -- table body. */
-.css-1kx6xgs {
+.css-5co8lf {
 	box-shadow: none;
 	border-radius: 0rem 0rem var(--border-radius) var(--border-radius);
 	margin-bottom: 1rem;
 }
 
-/* /budget -- table hover */
-.css-9r3avc:hover,
-.css-1lv865u:hover {
-	box-shadow: none;
-	/* background-color: var(--ctp-surface0); */
-}
-
-.css-9r3avc,
-.css-1lv865u {
-	border-radius: 0.25rem;
-	padding-inline: 0.25rem;
-	flex: 0.865 1 0%;
-}
-
 /* /budget -- card padding */
-.css-1gbzxai > div > div {
-	padding-inline: 0.42rem;
+:has([data-testid="budget-summary"]) {
+	padding: 0px;
+	margin: 0px;
 }
 
-.css-1gbzxai {
+[data-testid="budget-summary"] {
 	flex: 1 1 0%;
 	overflow: hidden;
-	margin-bottom: 0.45rem;
-}
-
-/* /budget -- date selection */
-.css-1usd1tv {
-	padding-bottom: 0.45rem;
-}
-
-/* /reports -- card */
-.css-105xu6l {
-	display: block;
-	height: 100%;
-	overflow: visible;
+	margin: 0.8rem;
+	margin-inline: 0.4rem;
 }
 
 /* reports -- sidebar & header */
-.css-ylkow6 {
+.css-1nasyg7 {
 	padding-left: 12px;
 }
 
-.css-1m2essh {
-	margin-left: 20px;
+[data-testid="reports-page"] .css-agc3hr {
+	margin-left: 12px;
+	margin-bottom: 0.75rem;
 }
 
-.css-bqm9fa {
+.css-132j4dj {
 	padding-right: 12px;
 }
 
 /* reports borders */
-.css-17nqm2r,
-.css-1mkkiaa,
-.css-s6nmt0,
-.css-o1urms {
-	height: 100%;
-	width: 100%;
+.react-grid-item {
 	border-radius: var(--border-radius);
-	box-shadow: none;
 }
 
 .recharts-surface {
@@ -531,35 +395,28 @@ body {
 	border-bottom-right-radius: var(--border-radius);
 }
 
-/* /reports -- top border */
-.css-tf9rsr {
-	border-top: var(--border);
+/* /reports -- bottom border */
+.css-142b4ef {
+	border-bottom: var(--border);
 }
 
 /* /settings -- card */
-.css-htvse6 {
+.css-1lr7sla {
 	border-radius: var(--border-radius);
 	border: var(--border);
 }
 
 /* /settings -- card gap */
-.css-1inkr25 {
+[data-testid="settings"] {
 	gap: 1.25rem;
 }
 
-/* table checkmark border */
-.css-1n00cfy {
-	border-bottom: var(--border);
+/* select checkbox padding */
+[data-testid="select"] {
+	padding-inline: 1rem;
 }
 
-/* top navigation */
-.css-lcyxda {
-	padding: 1rem;
-	padding-block: 1.5rem;
-	height: 3.25rem;
-}
-
-/* /schedules -- pills */
+/* /schedules -- pills TODO: these are broken; need to update */
 .css-1whggh0,
 .css-f0xl0f,
 .css-6k1ng3,
@@ -573,23 +430,23 @@ body {
 }
 
 /* content top padding */
-.css-1qse97y,
-.css-1g810ry,
-.css-x9hok8,
-.css-wmwuaj {
-	padding-top: 1.5rem;
+.css-3oa7u7,
+.css-jdrt9o,
+.css-ect7vi,
+.css-k9t6j1,
+.css-xggax0 {
+	padding-top: 3rem;
 }
 
-.css-w4guu2 {
+.css-3oa7u7 {
+	padding-inline: 0.5rem;
 	padding-top: 4rem;
 }
 
 /* search inputs */
 textarea,
-.css-1rcej9u,
-.css-ic9hwk,
-.css-xup3jb,
-.css-g8rqad {
+.css-onc7iq,
+.css-1pc0tw7 {
 	color: var(--color-formInputText);
 	border-radius: var(--border-radius);
 	border: var(--border);
@@ -597,8 +454,7 @@ textarea,
 	padding: 0.35rem;
 }
 
-.css-xup3jb,
-.css-1rcej9u {
+.css-onc7iq {
 	border-color: var(--ctp-blue);
 }
 
@@ -621,6 +477,7 @@ textarea,
 	border: 0px;
 }
 
+/* here down to text color: broken and needs updating */
 .css-1jb61p2 {
 	margin-top: 0.35rem;
 }
@@ -661,53 +518,9 @@ textarea,
 	border-radius: min(var(--border-radius), 0.5rem);
 }
 
-/* /payees -- dropdown */
-.css-kmyxpd {
-	padding: 0px;
-}
-
-/* bank syncing */
-.css-13486lo,
-.css-6idhvp,
-.css-dzxlm1 {
-	z-index: 100;
-	position: relative;
-}
-
 /* bank sync banner */
-.css-1vdv159,
-.css-8cf5j3 {
+.css-u6wtsi {
 	z-index: 1000 !important;
-	position: absolute !important;
-}
-
-/* sidebar */
-.css-3b1tne {
-	border: var(--border);
-	border-radius: var(--border-radius);
-}
-
-.css-10iiizv {
-	border: var(--border);
-	box-shadow: none;
-}
-
-.css-15zy6me {
-	border-bottom: none;
-}
-
-.css-1dvwaht,
-.css-nd83lm {
-	margin: 0.75rem;
-	border-radius: var(--border-radius);
-	background-color: var(--color-cardBackground);
-	box-shadow: none;
-	border: var(--border);
-}
-
-.css-1b0h10j {
-	margin-top: 1rem;
-	margin-bottom: 0rem;
 }
 
 /* keyboard shortcuts */
@@ -718,29 +531,24 @@ textarea,
 }
 
 /* reports */
-.css-1bfuvke {
+[id="custom-report-content"] {
 	border-top-left-radius: var(--border-radius);
 	border-left: var(--border);
 	border-top: var(--border);
 }
 
-.css-v9r713 {
+.css-4hlm7y {
 	border: var(--border);
 }
 
-.css-zhaihp,
-.css-g775qt,
-.css-tt47xn {
+.css-w4wco7,
+.css-eiyo5a {
 	border-radius: var(--border-radius);
-	border: var(--border);
 }
 
-.css-s6nmt0,
-.css-o1urms {
-	width: 100%;
-	height: 100%;
-	transition: box-shadow 0.25s;
-	background-color: report-card-color;
+.css-1eyeead,
+.css-eadiqq {
+	padding-bottom: 0.75rem;
 }
 
 /* charts */
@@ -750,53 +558,18 @@ textarea,
 	stroke: #a3aac5;
 }
 
-.css-16q21s1,
-.css-1uqbql0 {
-	border-bottom-width: 0px;
-	border-top-width: 0px;
-	border-inline: var(--border);
-}
-
 .recharts-tooltip-wrapper {
 	border-radius: var(--border-radius);
 	border: var(--border);
 	overflow: hidden;
 }
 
-.css-e9kbw1 {
-	border-inline: var(--border);
-}
-
-.css-7hr554 code {
-	background-color: var(--color-markdownLight);
-	padding: 0.1rem 0.5rem;
-	border-radius: 0.25rem;
-	/* color: var(--ctp-mantle); */
-}
-
-.css-1oedne5 {
-	border: var(--border);
-}
-
 /* /tags */
-.css-1m2essh {
-	margin-left: 20px;
-	margin-bottom: 0.25rem;
+.css-agc3hr {
+	margin-bottom: 0.5rem;
 }
-.css-tlyf2w,
-.css-16jbywf {
-	padding-bottom: 0.75rem;
-}
-.css-9ekrea {
+.css-g06fz9 {
 	margin-top: 0.75rem;
-}
-.css-1xszviz {
-	margin-top: 0px;
-}
-
-/* account chart */
-.css-17rentn {
-	margin-bottom: 0.75rem;
 }
 
 /* green balance */
@@ -810,16 +583,11 @@ textarea,
 	font-weight: bold;
 }
 
-.css-1wlgp5o button {
-	margin-bottom: 0px !important;
-	padding-block: 0.75rem !important;
-}
-
 /* tables border radius */
-.css-1mq6j8f,
-.css-1x480h3,
-.css-1mivfii,
-.css-hk3yfc {
+.css-g3p8fk,
+.css-1jho2h9,
+.css-4oi62a,
+.css-g06fz9 {
 	border-top-left-radius: var(--border-radius);
 	border-top-right-radius: var(--border-radius);
 }
@@ -827,9 +595,4 @@ textarea,
 /* svg icon in button */
 [data-testid="category-month-spent"] * {
 	flex-shrink: 0;
-}
-
-/* select checkbox padding */
-[data-testid="select"] {
-	padding-inline: 1rem;
 }

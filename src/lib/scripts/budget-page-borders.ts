@@ -10,20 +10,19 @@ export const budgetPageBorders = defineSetting({
 		defaultValue: true,
 		css: () => `
             /* /budget -- budget cards */
-            .css-1szeyz4,
-            .css-1asnaqj {
+            [data-testid="budget-summary"] {
                 border: var(--border);
             }
 
             /* /budget -- table header */
-            .css-d5wgg9 {
-                border-inline: var(--border);
-                border-top: var(--border);
+            [data-testid="budget-totals"] {
+                border: var(--border);
             }
 
             /* /budget -- table body. */
-            .css-1kx6xgs {
+            .css-5co8lf {
                 border: var(--border);
+				border-top: 0px;
             }
         `,
 	},
