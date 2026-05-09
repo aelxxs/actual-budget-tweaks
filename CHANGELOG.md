@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v0.1.26
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.25...v0.1.26)
+
 ## v0.1.25
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.24...v0.1.25)
