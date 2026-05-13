@@ -2,10 +2,12 @@
   'use strict';
 
   const TOGGLE_ATTR = 'data-abt-tab';
-  const PANEL_ID = 'abt-tab-panel';
+  const PANEL_ID = 'abt-template-drawer';
+  const TRIGGER_ID = 'abt-template-drawer-trigger';
+  const LEGACY_PANEL_ID = 'abt-tab-panel';
   const STORAGE_KEY = 'abt-tab-data';
-  const POS_STORAGE_KEY = 'abt-tab-pos';
   const TAB_STORAGE_KEY = 'abt-tab-active';
+  const DRAWER_STORAGE_KEY = 'abt-tab-drawer-open';
   const PRIO_COLLAPSE_STORAGE_KEY = 'abt-tab-prio-collapse';
   // Menu-item button labels we hook. The app's React layer calls the backend
   // via an internal `send()` (not window.$send), so wrapping window.$send
@@ -117,25 +119,6 @@
     } catch { return null; }
   }
 
-  function savePosition() {
-    try {
-      localStorage.setItem(POS_STORAGE_KEY, JSON.stringify({
-        x: panelState.x, y: panelState.y, collapsed: panelState.collapsed,
-      }));
-    } catch {}
-  }
-
-  function loadPosition() {
-    try {
-      const raw = localStorage.getItem(POS_STORAGE_KEY);
-      if (!raw) return;
-      const pos = JSON.parse(raw);
-      if (pos.x != null) panelState.x = pos.x;
-      if (pos.y != null) panelState.y = pos.y;
-      if (pos.collapsed != null) panelState.collapsed = pos.collapsed;
-    } catch {}
-  }
-
   function saveActiveTab() {
     try { localStorage.setItem(TAB_STORAGE_KEY, activeTab); } catch {}
   }
@@ -144,6 +127,17 @@
     try {
       const v = localStorage.getItem(TAB_STORAGE_KEY);
       if (v === 'breakdown' || v === 'priority') activeTab = v;
+    } catch {}
+  }
+
+  function saveDrawerOpen() {
+    try { localStorage.setItem(DRAWER_STORAGE_KEY, drawerOpen ? '1' : '0'); } catch {}
+  }
+
+  function loadDrawerOpen() {
+    try {
+      const v = localStorage.getItem(DRAWER_STORAGE_KEY);
+      drawerOpen = v === '1';
     } catch {}
   }
 
@@ -321,9 +315,57 @@
     return Array.from(sheets);
   }
 
-  function sheetToMonthString(sheet) {
+  function sheetToMonthKey(sheet) {
     const m = sheet && sheet.match(/^budget(\d{4})(\d{2})/);
     return m ? `${m[1]}-${m[2]}` : null;
+  }
+
+  function sheetToMonthLabel(sheet) {
+    const key = sheetToMonthKey(sheet);
+    return formatMonthLabel(key);
+  }
+
+  function formatMonthLabel(value) {
+    if (!value) return null;
+    const key = String(value);
+    const m = key.match(/^(\d{4})-(\d{2})$/);
+    if (!m) return key;
+    const month = Number(m[2]);
+    if (month < 1 || month > 12) return key;
+    const date = new Date(Number(m[1]), month - 1, 1);
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'long',
+      year: 'numeric',
+    }).format(date);
+  }
+
+  function activeMonthLabel() {
+    return sheetToMonthLabel(getCurrentSheet());
+  }
+
+  function monthLabelForHeader(value) {
+    return formatMonthLabel(value) || activeMonthLabel();
+  }
+
+  function priorityCacheIsFreshForSheet(sheet) {
+    return sheet && priorityCache && priorityCache.sheet === sheet &&
+      Date.now() - priorityCache.computedAt < PRIORITY_CACHE_MS;
+  }
+
+  function priorityCacheMatchesSheet(sheet) {
+    return sheet && priorityCache && priorityCache.sheet === sheet;
+  }
+
+  function invalidatePriorityStatus() {
+    priorityCache = null;
+    priorityPromise = null;
+  }
+
+  function setActiveSheet(sheet) {
+    if (sheet === lastSheet) return false;
+    lastSheet = sheet;
+    invalidatePriorityStatus();
+    return true;
   }
 
   function getCurrentSheet() {
@@ -760,6 +802,7 @@
   }
 
   function statusFor(requestedCents, allocatedCents) {
+    if (requestedCents == null) return allocatedCents > 0 ? 'partial' : 'none';
     if (requestedCents <= 0) return 'full';
     if (allocatedCents >= requestedCents) return 'full';
     if (allocatedCents > 0) return 'partial';
@@ -797,6 +840,236 @@
       return amountToCents(entry.amount);
     }
     return null;
+  }
+
+  function breakdownTemplateDemandCents(entry, runningBudgetCents, dryRunCents) {
+    if (!entry) return null;
+    if (Number.isFinite(dryRunCents) && dryRunCents > 0) {
+      return Math.max(0, Math.round(dryRunCents));
+    }
+    if (entry.kind === 'upto' && Number.isFinite(entry.cap)) {
+      return Math.max(0, amountToCents(entry.cap) - runningBudgetCents);
+    }
+    if (entry.kind === 'simple' && Number.isFinite(entry.amount)) {
+      const amountCents = amountToCents(entry.amount);
+      if (Number.isFinite(entry.cap)) {
+        return Math.min(
+          amountCents,
+          Math.max(0, amountToCents(entry.cap) - runningBudgetCents)
+        );
+      }
+      return amountCents;
+    }
+    if ((entry.kind === 'periodic' || entry.kind === 'by' || entry.kind === 'spend') &&
+        Number.isFinite(entry.amount)) {
+      return amountToCents(entry.amount);
+    }
+    return null;
+  }
+
+  function capDemandRowsToGoal(rows, goalCents) {
+    if (!goalCents || goalCents <= 0) return rows;
+    const targetCents = Math.max(0, Math.round(goalCents));
+    const knownTotal = rows.reduce((sum, row) => {
+      return row.requestedCents == null ? sum : sum + Math.max(0, row.requestedCents);
+    }, 0);
+    const unknownRows = rows.filter((row) => row.requestedCents == null);
+    if (unknownRows.length > 0 && knownTotal < targetCents) {
+      const unknownTarget = targetCents - knownTotal;
+      let remainingUnknownTarget = unknownTarget;
+      let unknownIndex = 0;
+      const withResiduals = [];
+      for (const row of rows) {
+        if (row.requestedCents == null) {
+          const isLastUnknown = unknownIndex === unknownRows.length - 1;
+          const requested = isLastUnknown
+            ? remainingUnknownTarget
+            : Math.round(unknownTarget / unknownRows.length);
+          const capped = Math.min(requested, remainingUnknownTarget);
+          unknownIndex += 1;
+          remainingUnknownTarget -= capped;
+          if (capped > 0) {
+            withResiduals.push(Object.assign({}, row, { requestedCents: capped }));
+          }
+          continue;
+        }
+        if (row.requestedCents > 0) withResiduals.push(row);
+      }
+      return withResiduals;
+    }
+
+    let remainingGoal = targetCents;
+    const capped = [];
+    for (const row of rows) {
+      if (remainingGoal <= 0) break;
+      if (row.requestedCents == null) continue;
+      const requested = Math.min(row.requestedCents, remainingGoal);
+      if (requested <= 0) continue;
+      capped.push(Object.assign({}, row, { requestedCents: requested }));
+      remainingGoal -= requested;
+    }
+    return capped;
+  }
+
+  function addBreakdownPriorityTier(tierMap, item) {
+    const key = priorityKey(item.priority);
+    if (!tierMap.has(key)) {
+      tierMap.set(key, {
+        priority: item.priority,
+        requestedCents: 0,
+        hasUnknownDemand: false,
+        allocatedCents: 0,
+        rows: [],
+      });
+    }
+    const tier = tierMap.get(key);
+    tier.allocatedCents += item.allocatedCents;
+    if (item.requestedCents == null) tier.hasUnknownDemand = true;
+    else tier.requestedCents += item.requestedCents;
+    tier.rows.push(item);
+  }
+
+  async function buildBreakdownPrioritySummary(sheet, diff) {
+    if (!sheet || !diff) return null;
+    const monthKey = sheetToMonthKey(sheet);
+    const positiveRows = [];
+    for (const group of diff.groups || []) {
+      for (const row of group.rows || []) {
+        if (row.delta > 0) positiveRows.push(row);
+      }
+    }
+    if (positiveRows.length === 0) return null;
+
+    let templatesByCat;
+    try {
+      templatesByCat = await loadTemplatesByCategoryId();
+    } catch {
+      return null;
+    }
+
+    const tierMap = new Map();
+    let mappedCents = 0;
+    const categories = await loadCategories();
+    const catMap = new Map(categories.map((cat) => [cat.id, cat]));
+    const goalCells = await getCells(sheet, positiveRows.map((row) => 'goal-' + row.id));
+
+    await mapWithConcurrency(positiveRows, 6, async (row) => {
+      const templates = (templatesByCat.get(row.id) || []).filter(isBudgetTemplate);
+      if (templates.length === 0) return;
+
+      const regularTemplates = templates.filter((t) => !isRemainderTemplate(t));
+      const remainderTemplates = templates.filter(isRemainderTemplate);
+      const monthGoalCents = goalCells.get('goal-' + row.id) || 0;
+      const cat = catMap.get(row.id) || {
+        id: row.id,
+        name: row.name,
+        group_name: '',
+        sort_order: 0,
+        group_sort_order: 0,
+      };
+      let dryAmounts = new Map();
+      const dry = await dryRunCategory(monthKey, row.id, templates);
+      if (dry) {
+        dry.engineEntries.forEach((entry, index) => {
+          dryAmounts.set(entry, Math.max(0, dry.result.perTemplate[index] || 0));
+        });
+      }
+
+      let lineItems = regularTemplates
+        .map((entry, index) => ({
+          entry,
+          index,
+          priority: entry.priority,
+          requestedCents: breakdownTemplateDemandCents(
+            entry,
+            Math.max(0, row.before || 0),
+            dryAmounts.get(entry)
+          ),
+        }))
+        .sort((a, b) => comparePriority(a.priority, b.priority) || (a.index - b.index));
+
+      if (!dry) {
+        const fallbackRows = new Map();
+        const priorities = Array.from(new Set(
+          regularTemplates.map((t) => t.priority).filter((p) => p != null)
+        )).sort(comparePriority);
+        addFallbackDemandRows(
+          fallbackRows,
+          cat,
+          templates,
+          monthGoalCents,
+          Math.max(0, row.before || 0),
+          priorities
+        );
+        lineItems = [...fallbackRows.values()]
+          .map((fallback, index) => ({
+            entry: null,
+            index,
+            priority: fallback.priority,
+            requestedCents: fallback.requestedCents,
+          }))
+          .sort((a, b) => comparePriority(a.priority, b.priority) || (a.index - b.index));
+      }
+
+      lineItems = capDemandRowsToGoal(lineItems, monthGoalCents);
+
+      let remainingDelta = row.delta;
+      let alreadyFundedCents = Math.max(0, row.before || 0);
+      for (const item of lineItems) {
+        if (remainingDelta <= 0) break;
+        let requested = item.requestedCents;
+        if (requested != null) {
+          const fundedBefore = Math.min(alreadyFundedCents, requested);
+          alreadyFundedCents -= fundedBefore;
+          requested = Math.max(0, requested - fundedBefore);
+        }
+        if (requested === 0) continue;
+        const allocated = requested == null
+          ? remainingDelta
+          : Math.min(requested, remainingDelta);
+        if (allocated <= 0) continue;
+        remainingDelta -= allocated;
+        mappedCents += allocated;
+        addBreakdownPriorityTier(tierMap, {
+          priority: item.priority,
+          catId: row.id,
+          catName: row.name,
+          requestedCents: requested,
+          allocatedCents: allocated,
+          status: statusFor(requested, allocated),
+        });
+      }
+
+      if (remainingDelta > 0 && remainderTemplates.length > 0) {
+        mappedCents += remainingDelta;
+        addBreakdownPriorityTier(tierMap, {
+          priority: REMAINDER_PRIORITY,
+          catId: row.id,
+          catName: row.name,
+          requestedCents: null,
+          allocatedCents: remainingDelta,
+          status: 'partial',
+        });
+      }
+    });
+
+    const tiers = [...tierMap.values()]
+      .filter((tier) => tier.allocatedCents > 0)
+      .sort((a, b) => comparePriority(a.priority, b.priority));
+    for (const tier of tiers) {
+      tier.rows.sort((a, b) => a.catName.localeCompare(b.catName));
+      tier.status = tier.hasUnknownDemand
+        ? 'partial'
+        : statusFor(tier.requestedCents, tier.allocatedCents);
+    }
+
+    if (tiers.length === 0) return null;
+    return {
+      sheet,
+      month: sheetToMonthLabel(sheet),
+      totalAllocatedCents: mappedCents,
+      tiers,
+    };
   }
 
   function addFallbackDemandRow(rowMap, cat, entry, requestedCents, currentCents, priorities, source) {
@@ -992,19 +1265,21 @@
   //     requestedCents, allocatedCents, gapCents, priorities: number[] }
   let priorityCache = null;
   let priorityPromise = null;
+  let priorityPromiseSheet = null;
+  let priorityLoading = false;
 
   async function computePriorityStatus(force) {
-    if (!force && priorityCache &&
-        Date.now() - priorityCache.computedAt < PRIORITY_CACHE_MS) {
+    const sheet = isBudgetPage() ? getCurrentSheet() : null;
+    if (!force && priorityCacheIsFreshForSheet(sheet)) {
       return priorityCache;
     }
-    if (!force && priorityPromise) return priorityPromise;
+    if (!force && priorityPromise && priorityPromiseSheet === sheet) return priorityPromise;
+    priorityPromiseSheet = sheet;
     priorityPromise = (async () => {
       try {
         if (!isBudgetPage()) {
           return { ok: false, reason: 'not on budget page', computedAt: Date.now() };
         }
-        const sheet = getCurrentSheet();
         if (!sheet) {
           return { ok: false, reason: 'no visible sheet', computedAt: Date.now() };
         }
@@ -1043,6 +1318,7 @@
         await mapWithConcurrency(eligibleCats, 8, async ({ cat, templates }) => {
           const catId = cat.id;
           const currentCents = cellMap.get('budget-' + catId) || 0;
+          const goalCents = cellMap.get('goal-' + catId) || 0;
           currentTemplateBudgetCents += currentCents;
           const priorities = Array.from(
             new Set(
@@ -1052,9 +1328,10 @@
             )
           ).sort(comparePriority);
 
-          const dry = await dryRunCategory(sheetToMonthString(sheet), catId, templates);
+          const dry = await dryRunCategory(sheetToMonthKey(sheet), catId, templates);
           if (dry) {
             usedDryRun = true;
+            const dryDemandRows = [];
             dry.engineEntries.forEach((entry, i) => {
               const amount = Math.max(0, dry.result.perTemplate[i] || 0);
               if (isRemainderTemplate(entry)) {
@@ -1093,28 +1370,42 @@
                 return;
               }
               if (amount <= 0) return;
+              dryDemandRows.push({
+                entry,
+                index: i,
+                priority: entry.priority,
+                requestedCents: amount,
+              });
+            });
+
+            const cappedDemandRows = capDemandRowsToGoal(
+              dryDemandRows.sort((a, b) =>
+                comparePriority(a.priority, b.priority) || (a.index - b.index)
+              ),
+              goalCents
+            );
+            for (const demand of cappedDemandRows) {
               addDemandRow(rowMap, {
                 catId,
                 catName: cat.name,
                 groupName: cat.group_name,
                 sortOrder: cat.sort_order,
                 groupSortOrder: cat.group_sort_order,
-                priority: entry.priority,
-                requestedCents: amount,
+                priority: demand.priority,
+                requestedCents: demand.requestedCents,
                 allocatedCents: 0,
                 currentCents,
                 gapCents: 0,
                 priorities,
                 templateCount: 1,
-                rawTemplates: [entry.raw],
+                rawTemplates: [demand.entry.raw],
                 source: 'dry-run',
               });
-            });
+            }
             return;
           }
 
           fallbackCount += 1;
-          const goalCents = cellMap.get('goal-' + catId) || 0;
           addFallbackDemandRows(rowMap, cat, templates, goalCents, currentCents, priorities);
           for (const entry of templates.filter(isRemainderTemplate)) {
             remainderMap.set(`${catId}:remainder`, {
@@ -1203,10 +1494,14 @@
         );
         const totalGapCents = sortedTiers.reduce((a, t) => a + t.gapCents, 0);
 
+        if (getCurrentSheet() !== sheet) {
+          return { ok: false, reason: 'month changed', sheet, computedAt: Date.now() };
+        }
+
         priorityCache = {
           ok: true,
           sheet,
-          month: sheetToMonthString(sheet),
+          month: sheetToMonthLabel(sheet),
           availableCents,
           toBudgetCents,
           budgetableCents,
@@ -1226,101 +1521,21 @@
         return priorityCache;
       } finally {
         priorityPromise = null;
+        priorityPromiseSheet = null;
       }
     })();
     return priorityPromise;
   }
 
-  // ── Panel UI ─────────────────────────────────────────────────────────
+  // ── Drawer UI ────────────────────────────────────────────────────────
   let activeTab = 'priority'; // 'breakdown' | 'priority'
+  let drawerOpen = false;
   let showAllRows = false;
-  const panelState = {
-    collapsed: false,
-    x: null,
-    y: null,
-  };
   const prioCollapseOverrides = new Map();
 
   // Track the latest breakdown context (for header month label, etc.)
   let breakdownState = null; // { diff, ctx } | null
   let breakdownLoading = false;
-
-  function applyPanelPosition(panel) {
-    if (panelState.x != null && panelState.y != null) {
-      // Must run after the panel is attached — getBoundingClientRect() returns
-      // zero dims on a detached element, which breaks the clamp.
-      const rect = panel.getBoundingClientRect();
-      const pos = clampPosition(panelState.x, panelState.y, rect.width, rect.height);
-      panel.style.left = pos.x + 'px';
-      panel.style.top = pos.y + 'px';
-    }
-    // When panelState.x/y are null, leave the CSS default (top: 16px;
-    // left: 16px;) in place — do not emit inline styles at all.
-    applyEffectiveCollapse(panel);
-  }
-
-  // Collapses the panel visually if the user has explicitly collapsed it OR
-  // if we're off the budget page (auto-collapse). Never mutates the user's
-  // preference (`panelState.collapsed`) — only the DOM attribute.
-  function applyEffectiveCollapse(panel) {
-    const collapsed = panelState.collapsed || !isBudgetPage();
-    if (collapsed) panel.setAttribute('data-collapsed', 'true');
-    else panel.removeAttribute('data-collapsed');
-    // Keep the collapse button chevron in sync with the user's pref (not the
-    // auto state) — so returning to /budget shows their last intent.
-    const collapseBtn = panel.querySelector('.abt-tab-iconbtn');
-    if (collapseBtn) {
-      const userCollapsed = panelState.collapsed;
-      collapseBtn.textContent = userCollapsed ? '▾' : '▴';
-      collapseBtn.setAttribute('aria-label', userCollapsed ? 'Expand' : 'Collapse');
-      collapseBtn.title = userCollapsed ? 'Expand' : 'Collapse';
-    }
-  }
-
-  function clampPosition(x, y, w, h) {
-    const pad = 4;
-    return {
-      x: Math.max(pad, Math.min(window.innerWidth - w - pad, x)),
-      y: Math.max(pad, Math.min(window.innerHeight - h - pad, y)),
-    };
-  }
-
-  function attachDrag(panel, handle) {
-    let dragging = false;
-    let startX = 0, startY = 0, originX = 0, originY = 0;
-    handle.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('button')) return;
-      dragging = true;
-      const rect = panel.getBoundingClientRect();
-      originX = rect.left;
-      originY = rect.top;
-      startX = e.clientX;
-      startY = e.clientY;
-      handle.setPointerCapture(e.pointerId);
-      panel.setAttribute('data-dragging', 'true');
-      e.preventDefault();
-    });
-    handle.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      const rect = panel.getBoundingClientRect();
-      const pos = clampPosition(originX + dx, originY + dy, rect.width, rect.height);
-      panel.style.left = pos.x + 'px';
-      panel.style.top = pos.y + 'px';
-      panelState.x = pos.x;
-      panelState.y = pos.y;
-    });
-    const end = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      panel.removeAttribute('data-dragging');
-      try { handle.releasePointerCapture(e.pointerId); } catch {}
-      savePosition();
-    };
-    handle.addEventListener('pointerup', end);
-    handle.addEventListener('pointercancel', end);
-  }
 
   function actionLabel(kind) {
     switch (kind) {
@@ -1334,6 +1549,20 @@
   function removePanel() {
     const existing = document.getElementById(PANEL_ID);
     if (existing) existing.remove();
+    const trigger = document.getElementById(TRIGGER_ID);
+    if (trigger) trigger.remove();
+    removeLegacyPanel();
+  }
+
+  function removeLegacyPanel() {
+    const legacy = document.getElementById(LEGACY_PANEL_ID);
+    if (legacy) legacy.remove();
+  }
+
+  function setDrawerOpen(open) {
+    drawerOpen = !!open;
+    saveDrawerOpen();
+    renderPanel();
   }
 
   // ── Priority body rendering ──────────────────────────────────────────
@@ -1565,6 +1794,8 @@
       );
     }
 
+    renderBreakdownPrioritySummary(body, ctx.priorityBreakdown);
+
     const groupsToShow = showAllRows ? diff.groups : changedGroups;
 
     if (groupsToShow.length === 0) {
@@ -1600,6 +1831,74 @@
     }
   }
 
+  function formatAllocatedVsRequested(allocatedCents, requestedCents) {
+    if (requestedCents == null || allocatedCents === requestedCents) {
+      return fmtMoney(allocatedCents);
+    }
+    return `${fmtMoney(allocatedCents)} / ${fmtMoney(requestedCents)}`;
+  }
+
+  function renderBreakdownPrioritySummary(body, summary) {
+    if (!summary || !Array.isArray(summary.tiers) || summary.tiers.length === 0) return;
+    const wrap = el('div', { class: 'abt-tab-breakdown-priority' });
+    wrap.appendChild(
+      el('div', { class: 'abt-tab-breakdown-priority-title' }, [
+        el('span', { text: 'Priority movement' }),
+        el('span', {
+          class: 'abt-tab-breakdown-priority-total',
+          text: fmtMoney(summary.totalAllocatedCents, { sign: true }),
+        }),
+      ])
+    );
+
+    for (const tier of summary.tiers) {
+      const badgeChar = tier.status === 'full' ? '✓' : tier.status === 'partial' ? '◐' : '○';
+      const tierEl = el('div', {
+        class: 'abt-tab-breakdown-priority-tier',
+        dataset: { status: tier.status },
+      });
+      tierEl.appendChild(
+        el('div', { class: 'abt-tab-breakdown-priority-tier-header' }, [
+          el('span', {
+            class: 'abt-tab-prio-badge',
+            dataset: { status: tier.status },
+            text: badgeChar,
+          }),
+          el('span', {
+            class: 'abt-tab-breakdown-priority-tier-label',
+            text: priorityLabel(tier.priority),
+          }),
+          el('span', {
+            class: 'abt-tab-breakdown-priority-tier-amount',
+            text: formatAllocatedVsRequested(
+              tier.allocatedCents,
+              tier.hasUnknownDemand ? null : tier.requestedCents
+            ),
+          }),
+        ])
+      );
+
+      const rows = el('div', { class: 'abt-tab-breakdown-priority-rows' });
+      for (const row of tier.rows) {
+        rows.appendChild(
+          el('div', {
+            class: 'abt-tab-breakdown-priority-row',
+            dataset: { status: row.status },
+          }, [
+            el('span', { class: 'abt-tab-breakdown-priority-row-name', text: row.catName }),
+            el('span', {
+              class: 'abt-tab-breakdown-priority-row-amount',
+              text: formatAllocatedVsRequested(row.allocatedCents, row.requestedCents),
+            }),
+          ])
+        );
+      }
+      tierEl.appendChild(rows);
+      wrap.appendChild(tierEl);
+    }
+    body.appendChild(wrap);
+  }
+
   function renderFooter(footer) {
     // Clear
     footer.textContent = '';
@@ -1627,29 +1926,76 @@
     }
   }
 
-  // ── Panel mount ──────────────────────────────────────────────────────
+  function drawerTriggerStatus() {
+    const sheet = getCurrentSheet();
+    if (breakdownLoading || priorityLoading) return 'loading';
+    if (priorityCacheMatchesSheet(sheet) && priorityCache.ok) {
+      return priorityCache.gapCents > 0 ? 'gap' : 'ok';
+    }
+    return 'idle';
+  }
+
+  function drawerTriggerTitle() {
+    if (drawerOpen) return 'Close template plan';
+    const sheet = getCurrentSheet();
+    if (breakdownLoading || priorityLoading) return 'Template plan is updating';
+    if (priorityCacheMatchesSheet(sheet) && priorityCache.ok) {
+      return `Template plan: ${fmtMoney(priorityCache.totalAllocatedCents)} allocated, ${fmtMoney(priorityCache.gapCents)} gap`;
+    }
+    if (breakdownState) {
+      return `${actionLabel(breakdownState.ctx.kind)}: ${fmtMoney(breakdownState.diff.totalAllocated, { sign: true })}`;
+    }
+    return 'Open template plan';
+  }
+
+  function applyDrawerTriggerState(trigger) {
+    trigger.setAttribute('aria-label', drawerOpen ? 'Close template plan' : 'Open template plan');
+    trigger.setAttribute('aria-pressed', String(drawerOpen));
+    trigger.title = drawerTriggerTitle();
+    trigger.dataset.open = String(drawerOpen);
+    trigger.dataset.status = drawerTriggerStatus();
+  }
+
+  function updateDrawerTrigger() {
+    const trigger = document.getElementById(TRIGGER_ID);
+    if (trigger) applyDrawerTriggerState(trigger);
+  }
+
+  function renderDrawerTrigger() {
+    const trigger = el('button', {
+      id: TRIGGER_ID,
+      class: 'abt-template-drawer-trigger',
+      on: { click: () => setDrawerOpen(!drawerOpen) },
+    }, [
+      el('span', { class: 'abt-template-drawer-trigger-text', text: 'Plan' }),
+    ]);
+    applyDrawerTriggerState(trigger);
+    document.body.appendChild(trigger);
+  }
+
+  // ── Drawer mount ─────────────────────────────────────────────────────
   function renderPanel() {
     removePanel();
-    if (!isEnabled()) return;
+    if (!isEnabled() || !isBudgetPage()) return;
+
+    renderDrawerTrigger();
+
+    if (!drawerOpen) {
+      return;
+    }
 
     const body = el('div', { class: 'abt-tab-body' });
     const footer = el('div', { class: 'abt-tab-footer' });
     const toggle = el('div', { class: 'abt-tab-toggle' });
 
-    // Header: title (month if we have one) + collapse button (no X — always-on)
-    const headerMonth = breakdownState && breakdownState.ctx && breakdownState.ctx.month
-      ? breakdownState.ctx.month
-      : (priorityCache && priorityCache.month) || null;
+    // Header: title with month when available.
+    const rawHeaderMonth = activeTab === 'breakdown'
+      ? (breakdownState && breakdownState.ctx && breakdownState.ctx.month)
+      : (priorityCache && priorityCache.month);
+    const headerMonth = monthLabelForHeader(rawHeaderMonth);
     const headerTitleText = activeTab === 'breakdown' && breakdownState
       ? actionLabel(breakdownState.ctx.kind)
       : 'Template plan';
-
-    const collapseBtn = el('button', {
-      class: 'abt-tab-iconbtn',
-      'aria-label': panelState.collapsed ? 'Expand' : 'Collapse',
-      title: panelState.collapsed ? 'Expand' : 'Collapse',
-      text: panelState.collapsed ? '▾' : '▴',
-    });
 
     const titleNode = el('div', { class: 'abt-tab-title' }, [
       document.createTextNode(headerTitleText),
@@ -1658,7 +2004,6 @@
 
     const header = el('div', { class: 'abt-tab-header' }, [
       titleNode,
-      collapseBtn,
     ]);
 
     // Tab switcher
@@ -1683,7 +2028,11 @@
       }
     });
 
-    const panel = el('div', { id: PANEL_ID, class: 'abt-tab-panel' }, [
+    const panel = el('aside', {
+      id: PANEL_ID,
+      class: 'abt-template-drawer',
+      'aria-label': 'Template plan',
+    }, [
       header,
       tabs,
       body,
@@ -1691,19 +2040,7 @@
       toggle,
     ]);
 
-    collapseBtn.addEventListener('click', () => {
-      // When off /budget the button is a no-op — the panel is forced
-      // collapsed anyway, and we don't want to flip the user's saved pref
-      // unintentionally.
-      if (!isBudgetPage()) return;
-      panelState.collapsed = !panelState.collapsed;
-      applyEffectiveCollapse(panel);
-      savePosition();
-    });
-
-    attachDrag(panel, header);
     document.body.appendChild(panel);
-    applyPanelPosition(panel);
 
     redrawActiveBody(body, footer, toggle);
 
@@ -1729,8 +2066,9 @@
     const toggle = panel.querySelector('.abt-tab-toggle');
     const title = panel.querySelector('.abt-tab-title');
     // Update title + month label
-    const monthLabel = (activeTab === 'breakdown' && breakdownState && breakdownState.ctx.month)
+    const rawMonthLabel = (activeTab === 'breakdown' && breakdownState && breakdownState.ctx.month)
       || (priorityCache && priorityCache.month) || null;
+    const monthLabel = monthLabelForHeader(rawMonthLabel);
     title.textContent = '';
     title.appendChild(document.createTextNode(
       activeTab === 'breakdown' && breakdownState
@@ -1759,10 +2097,15 @@
 
   async function refreshPriorityIfNeeded(body, footer, toggle) {
     if (!isBudgetPage()) return;
+    priorityLoading = true;
+    updateDrawerTrigger();
     try {
       await computePriorityStatus(false);
     } catch (e) {
       console.warn('[ABT TAB] priority compute failed', e);
+    } finally {
+      priorityLoading = false;
+      updateDrawerTrigger();
     }
     if (!document.getElementById(PANEL_ID)) return;
     if (activeTab !== 'priority') return;
@@ -1778,7 +2121,10 @@
       // Replace the month chip if present
       const existingChip = title.querySelector('.abt-tab-month');
       if (existingChip) existingChip.remove();
-      title.appendChild(el('span', { class: 'abt-tab-month', text: priorityCache.month }));
+      title.appendChild(el('span', {
+        class: 'abt-tab-month',
+        text: formatMonthLabel(priorityCache.month),
+      }));
     }
   }
 
@@ -1804,6 +2150,8 @@
       activeTab = 'breakdown';
       saveActiveTab();
     }
+    drawerOpen = true;
+    saveDrawerOpen();
     renderPanel();
 
     let beforeMap;
@@ -1851,6 +2199,16 @@
     }
 
     breakdownLoading = false;
+    let priorityBreakdown = null;
+    const prioritySheet = bestSheet || afterMap.keys().next().value;
+    const priorityDiff = bestDiff || null;
+    if (prioritySheet && priorityDiff) {
+      try {
+        priorityBreakdown = await buildBreakdownPrioritySummary(prioritySheet, priorityDiff);
+      } catch (e) {
+        console.warn('[ABT TAB] priority breakdown failed', e);
+      }
+    }
 
     if (!bestDiff || bestScore === 0) {
       const fallbackSheet = afterMap.keys().next().value;
@@ -1864,18 +2222,28 @@
       };
       breakdownState = {
         diff: empty,
-        ctx: { kind, month: sheetToMonthString(fallbackSheet), notification: null },
+        ctx: {
+          kind,
+          month: sheetToMonthLabel(fallbackSheet),
+          notification: null,
+          priorityBreakdown,
+        },
       };
     } else {
       breakdownState = {
         diff: bestDiff,
-        ctx: { kind, month: sheetToMonthString(bestSheet), notification: null },
+        ctx: {
+          kind,
+          month: sheetToMonthLabel(bestSheet),
+          notification: null,
+          priorityBreakdown,
+        },
       };
     }
     saveBreakdown(breakdownState.diff, breakdownState.ctx);
 
     // Invalidate priority cache (budget changed) and re-render
-    priorityCache = null;
+    invalidatePriorityStatus();
     renderPanel();
   }
 
@@ -1896,6 +2264,14 @@
     );
   }
 
+  function installDrawerKeyboard() {
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Escape') return;
+      if (!drawerOpen || !isEnabled() || !isBudgetPage()) return;
+      setDrawerOpen(false);
+    });
+  }
+
   // ── Toggle observation ───────────────────────────────────────────────
   function watchToggle() {
     const obs = new MutationObserver((muts) => {
@@ -1914,28 +2290,50 @@
 
   // ── URL change → invalidate caches & refresh ─────────────────────────
   let lastUrl = location.href;
-  let lastWasBudget = isBudgetPage();
+  let lastSheet = isBudgetPage() ? getCurrentSheet() : null;
   setInterval(() => {
-    if (location.href === lastUrl) return;
-    lastUrl = location.href;
+    const urlChanged = location.href !== lastUrl;
+    if (urlChanged) {
+      lastUrl = location.href;
+      invalidateCategoriesCache();
+    }
+
+    if (!isEnabled()) {
+      removePanel();
+      return;
+    }
+
     const nowBudget = isBudgetPage();
-    const pageTransition = nowBudget !== lastWasBudget;
-    lastWasBudget = nowBudget;
+    if (!nowBudget) {
+      if (drawerOpen) {
+        drawerOpen = false;
+        saveDrawerOpen();
+      }
+      removePanel();
+      return;
+    }
+    removeLegacyPanel();
 
-    invalidateCategoriesCache();
-    // priorityCache is NOT wiped on navigation — its data doesn't change just
-    // because the user visited a different page. Cache lives by its TTL and
-    // is explicitly invalidated by apply/overwrite handlers.
+    const sheetChanged = setActiveSheet(getCurrentSheet());
+    if (sheetChanged) {
+      renderPanel();
+      return;
+    }
 
-    const panel = document.getElementById(PANEL_ID);
-    if (!isEnabled() || !panel) return;
+    let panel = document.getElementById(PANEL_ID);
+    const trigger = document.getElementById(TRIGGER_ID);
+    if (drawerOpen && (!panel || !panel.isConnected)) {
+      renderPanel();
+      panel = document.getElementById(PANEL_ID);
+      if (!panel) return;
+    }
+    if (!drawerOpen && (!trigger || !trigger.isConnected)) {
+      renderPanel();
+      return;
+    }
+    if (!drawerOpen) return;
 
-    // Re-apply the effective collapse state — auto-collapsed off /budget,
-    // restores user's preference on return.
-    if (pageTransition) applyEffectiveCollapse(panel);
-
-    // Only refresh priority view when we're back on the budget page.
-    if (!nowBudget) return;
+    if (!urlChanged) return;
 
     if (activeTab === 'priority') {
       const body = panel.querySelector('.abt-tab-body');
@@ -1943,8 +2341,7 @@
       const toggle = panel.querySelector('.abt-tab-toggle');
       // If the cache is fresh (within TTL), redraw synchronously from it.
       // Otherwise show loading and recompute.
-      const fresh = priorityCache &&
-        Date.now() - priorityCache.computedAt < PRIORITY_CACHE_MS;
+      const fresh = priorityCacheIsFreshForSheet(lastSheet);
       if (fresh) {
         body.textContent = '';
         renderPriorityBody(body, priorityCache);
@@ -1963,22 +2360,13 @@
     await loadCurrencyPreference();
     await loadCategories();
     installClickListener();
-    loadPosition();
+    installDrawerKeyboard();
     loadActiveTab();
+    loadDrawerOpen();
     loadPrioCollapse();
     // Restore persisted breakdown (if any)
     const saved = loadBreakdown();
     if (saved) breakdownState = saved;
     if (isEnabled()) renderPanel();
-
-    // Re-clamp the panel into the viewport whenever the window resizes.
-    // Display-only: we never call savePosition() here, so the saved
-    // coordinates remain authoritative for larger viewports.
-    window.addEventListener('resize', () => {
-      if (panelState.x == null || panelState.y == null) return;
-      const panel = document.getElementById(PANEL_ID);
-      if (!panel) return;
-      applyPanelPosition(panel);
-    });
   })();
 })();
