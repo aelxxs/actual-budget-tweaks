@@ -1,5 +1,18 @@
 import { resolve } from "path";
 import { defineConfig } from "wxt";
+import type { UserManifest } from "wxt";
+
+type GeckoSettings = NonNullable<NonNullable<UserManifest["browser_specific_settings"]>["gecko"]> & {
+	data_collection_permissions?: {
+		required: string[];
+	};
+};
+
+const geckoSettings: GeckoSettings = {
+	data_collection_permissions: {
+		required: ["none"],
+	},
+};
 
 export default defineConfig({
 	srcDir: "src",
@@ -10,11 +23,7 @@ export default defineConfig({
 		description: "",
 		permissions: ["storage", "tabs"],
 		browser_specific_settings: {
-			gecko: {
-				data_collection_permissions: {
-					required: ["none"],
-				},
-			},
+			gecko: geckoSettings,
 		},
 		content_scripts: [
 			{
