@@ -3,15 +3,15 @@
 	import type { SettingContext } from "../scripts/types";
 	import { getValue, setValue } from "../utilities/store";
 
-	// receive props in runes mode
-	const props = $props();
-	const labelText: string = props.labelText;
-	const options: { value: string; label: string }[] = props.options;
-	const ctx: SettingContext = props.ctx;
-	const onChange: (value: string, ctx: any) => void = props.onChange;
+	const { labelText, options, ctx, onChange } = $props<{
+		labelText: string;
+		options: { value: string; label: string }[];
+		ctx: SettingContext;
+		onChange: (value: string, ctx: any) => void;
+	}>();
 
 	// local reactive state for select value
-	let value = $state(ctx.defaultValue);
+	let value = $state("");
 
 	// initialize from storage on mount
 	onMount(async () => {
