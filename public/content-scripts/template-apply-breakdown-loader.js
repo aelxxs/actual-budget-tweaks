@@ -3,10 +3,11 @@
 (function () {
   'use strict';
 
-  function injectScript(src) {
+  function injectScript(src, options) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = chrome.runtime.getURL(src);
+      if (options && options.type) script.type = options.type;
       script.onload = () => {
         script.remove();
         resolve();
@@ -39,8 +40,8 @@
     const baseUrl = await getBaseUrl();
     if (!baseUrl || !window.location.href.startsWith(baseUrl)) return;
     try {
-      injectStylesheet('content-scripts/template-apply-breakdown.css');
-      await injectScript('content-scripts/template-apply-breakdown.js');
+      injectStylesheet('css/template-apply-breakdown.css');
+      await injectScript('content-scripts/template-apply-breakdown.js', { type: 'module' });
     } catch (err) {
       console.error('[ABT Template Apply Breakdown] Failed to inject scripts:', err);
     }

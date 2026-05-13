@@ -39,7 +39,7 @@
     const baseUrl = await getBaseUrl();
     if (!baseUrl || !window.location.href.startsWith(baseUrl)) return;
     try {
-      injectStylesheet('content-scripts/income-breakdown.css');
+      injectStylesheet('css/income-breakdown.css');
       await injectScript('lib/d3.min.js');
       await injectScript('lib/d3-sankey.min.js');
       await injectScript('content-scripts/income-breakdown.js');
