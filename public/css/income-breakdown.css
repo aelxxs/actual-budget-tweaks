@@ -5,7 +5,7 @@
 .abt-ib-widget {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -14,6 +14,26 @@
   color: var(--color-buttonNormalText, #cdd6f4);
   background: var(--color-tableBackground, #181825);
   border-radius: 6.5px;
+}
+
+.react-grid-item.abt-ib-host .hover-visible {
+  display: none;
+}
+
+.abt-ib-widget.abt-ib-editing {
+  cursor: move;
+  filter: grayscale(1);
+}
+
+.abt-ib-widget.abt-ib-editing .abt-ib-node,
+.abt-ib-widget.abt-ib-editing .abt-ib-link {
+  cursor: move;
+}
+
+.abt-ib-widget.abt-ib-privacy .abt-ib-private,
+.abt-ib-widget.abt-ib-privacy .abt-ib-label-amount,
+.abt-ib-popover.abt-ib-privacy .abt-ib-private {
+  font-family: "Redacted Script";
 }
 
 /* ── Header ──────────────────────────────────────────────────────────── */
@@ -39,10 +59,51 @@ h2.abt-ib-title {
   line-height: 1.2;
 }
 
+.abt-ib-rename-input {
+  width: min(28ch, 100%);
+  margin: -4px 0 1px -6px;
+  padding: 3px 6px;
+  font: inherit;
+  color: var(--color-formInputText, var(--color-buttonNormalText, #cdd6f4));
+  background: var(--color-formInputBackground, var(--color-tableBackground, #181825));
+  border: 0.8px solid var(--color-formInputBorder, #313244);
+  border-radius: 4px;
+}
+
+.abt-ib-rename-input:focus {
+  outline: none;
+  border-color: var(--color-buttonPrimaryBackground, #b4befe);
+}
+
 .abt-ib-subtitle {
   font-size: 13px;
   font-weight: 400;
   color: var(--color-buttonNormalDisabledText, #6c7086);
+}
+
+.abt-ib-widget-menu {
+  opacity: 0;
+  background: transparent;
+  border: none;
+  color: var(--color-buttonNormalText, #cdd6f4);
+  cursor: default;
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1;
+  margin: -3px -4px 0 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: opacity 0.15s, background 0.1s;
+}
+
+.abt-ib-host-editing .abt-ib-widget:hover .abt-ib-widget-menu,
+.abt-ib-widget-menu:focus,
+.abt-ib-widget-menu[aria-expanded="true"] {
+  opacity: 1;
+}
+
+.abt-ib-widget-menu:hover {
+  background: var(--color-buttonNormalBackgroundHover, #11111b);
 }
 
 /* ── Controls bar ────────────────────────────────────────────────────── */
@@ -389,6 +450,57 @@ h2.abt-ib-title {
 
 .abt-ib-popover-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* ── Widget dashboard menu ───────────────────────────────────────────── */
+.abt-ib-menu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 180px;
+  max-width: min(280px, calc(100vw - 16px));
+  padding: 3px 0;
+  background: var(--color-menuBackground, var(--color-pageBackground, #11111b));
+  border: 0.8px solid var(--color-menuBorder, var(--color-buttonNormalBorder, #313244));
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.abt-ib-menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: var(--color-menuItemText, var(--color-buttonNormalText, #cdd6f4));
+  cursor: default;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.abt-ib-menu-item:hover,
+.abt-ib-menu-item:focus {
+  outline: none;
+  background: var(--color-menuItemBackgroundHover, var(--color-buttonNormalBackgroundHover, #1e1e2e));
+  color: var(--color-menuItemTextHover, var(--color-buttonNormalTextHover, #bac2de));
+}
+
+.abt-ib-menu-title {
+  margin: 5px 9px 3px;
+  color: var(--color-menuItemTextHeader, var(--color-buttonNormalDisabledText, #6c7086));
+  font-size: 11px;
+  line-height: 1em;
+  text-transform: uppercase;
+}
+
+.abt-ib-menu-empty {
+  padding: 10px;
+  color: var(--color-buttonNormalDisabledText, #6c7086);
+  font-size: 13px;
 }
 
 /* Let react-grid-layout resize handle sit above the widget overlay */

@@ -2,8 +2,14 @@
   'use strict';
 
   const STORAGE_PREFIX = 'abt-income-breakdown-';
-  const WIDGET_ID = 'abt-income-breakdown-widget';
+  const WIDGET_ID_PREFIX = 'abt-income-breakdown-widget';
+  const WIDGET_CLASS = 'abt-ib-widget';
   const PLACEHOLDER_TEXT = 'placeholder — extension will render here';
+  const DEFAULT_WIDGET_NAME = 'Income Breakdown';
+  const DEFAULT_WIDGET_WIDTH = 8;
+  const DEFAULT_WIDGET_HEIGHT = 4;
+  const DASHBOARD_QUERY_KEY = ['dashboards', 'lists'];
+  const NON_DRAGGABLE_CLASS = 'non-draggable-area';
   const POLL_INTERVAL = 1500;
   const DEBOUNCE_MS = 300;
 
@@ -110,6 +116,12 @@
   let accountsCache = null;
   let lastCalculatedData = null;
   let lastTransactions = null;
+  let dashboardWidgetsCache = null;
+  let dashboardPagesCache = null;
+  let isPrivacyMode = false;
+  let isInjecting = false;
+  let activeMenu = null;
+  const resizeObservers = new Map();
 
   // ── Helpers ───────────────────────────────────────────────────────────
   function formatCurrency(amountInCents) {
@@ -127,6 +139,169 @@
   function debounce(fn, ms) {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function parseMeta(meta) {
+    if (!meta) return {};
+    if (typeof meta === 'string') {
+      try { return JSON.parse(meta) || {}; } catch { return {}; }
+    }
+    return meta;
+  }
+
+  function isIncomeBreakdownWidgetRecord(widget) {
+    const meta = parseMeta(widget?.meta);
+    return widget?.type === 'markdown-card' && String(meta.content || '').includes(PLACEHOLDER_TEXT);
+  }
+
+  function getWidgetName(widgetRecord) {
+    const meta = parseMeta(widgetRecord?.meta);
+    return meta.name || DEFAULT_WIDGET_NAME;
+  }
+
+  function getWidgetElementId(widgetRecord) {
+    return `${WIDGET_ID_PREFIX}-${widgetRecord?.id || 'unknown'}`;
+  }
+
+  function invalidateDashboardQueries() {
+    const queryClient = window.__TANSTACK_QUERY_CLIENT__;
+    if (queryClient?.invalidateQueries) {
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+    }
+  }
+
+  function resetDashboardWidgetCaches() {
+    dashboardWidgetsCache = null;
+    dashboardPagesCache = null;
+  }
+
+  async function fetchDashboardWidgets() {
+    if (dashboardWidgetsCache) return dashboardWidgetsCache;
+    const q = window.$q, query = window.$query;
+    if (!q || !query) return [];
+    const result = await query(q('dashboard').select('*'));
+    dashboardWidgetsCache = result.data || [];
+    return dashboardWidgetsCache;
+  }
+
+  async function fetchDashboardPages() {
+    if (dashboardPagesCache) return dashboardPagesCache;
+    const q = window.$q, query = window.$query;
+    if (!q || !query) return [];
+    const result = await query(q('dashboard_pages').select('*'));
+    dashboardPagesCache = result.data || [];
+    return dashboardPagesCache;
+  }
+
+  function getDashboardIdFromUrl() {
+    const match = window.location.pathname.match(/^\/reports\/([^/?#]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+
+  async function getCurrentDashboardId() {
+    const fromUrl = getDashboardIdFromUrl();
+    if (fromUrl) return fromUrl;
+    const pages = await fetchDashboardPages();
+    return pages[0]?.id || null;
+  }
+
+  async function getIncomeBreakdownWidgetRecords() {
+    const currentDashboardId = await getCurrentDashboardId();
+    const widgets = await fetchDashboardWidgets();
+    return widgets
+      .filter(isIncomeBreakdownWidgetRecord)
+      .filter(widget => !currentDashboardId || widget.dashboard_page_id === currentDashboardId)
+      .sort((a, b) => (a.y - b.y) || (a.x - b.x));
+  }
+
+  async function refreshPrivacyMode() {
+    const q = window.$q, query = window.$query;
+    if (!q || !query) return;
+    try {
+      const result = await query(
+        q('preferences')
+          .filter({ id: 'isPrivacyEnabled' })
+          .select('*')
+      );
+      isPrivacyMode = String(result.data?.[0]?.value) === 'true';
+      document.querySelectorAll(`.${WIDGET_CLASS}, .abt-ib-popover`).forEach(el => {
+        el.classList.toggle('abt-ib-privacy', isPrivacyMode);
+      });
+    } catch (err) {
+      console.warn('[ABT Income Breakdown] Failed to read privacy mode:', err);
+    }
+  }
+
+  function isDashboardEditing() {
+    return Array.from(document.querySelectorAll('button'))
+      .some(btn => btn.textContent.trim() === 'Finish editing dashboard');
+  }
+
+  function syncWidgetModeClasses() {
+    const editing = isDashboardEditing();
+    document.querySelectorAll(`.${WIDGET_CLASS}`).forEach(widget => {
+      widget.classList.toggle('abt-ib-editing', editing);
+      widget.closest('.react-grid-item')?.classList.toggle('abt-ib-host-editing', editing);
+    });
+    if (editing) closeTransactionPopover();
+  }
+
+  async function sendDashboardMutation(name, args) {
+    if (typeof window.$send !== 'function') {
+      throw new Error('Actual send API is unavailable.');
+    }
+    const result = await window.$send(name, args);
+    resetDashboardWidgetCaches();
+    invalidateDashboardQueries();
+    setTimeout(() => { void injectWidgets(); }, 250);
+    return result;
+  }
+
+  async function updateDashboardWidgetMeta(widgetRecord, updates) {
+    if (!widgetRecord?.id) return;
+    const nextMeta = { ...parseMeta(widgetRecord.meta), ...updates };
+    widgetRecord.meta = nextMeta;
+    await sendDashboardMutation('dashboard-update-widget', {
+      id: widgetRecord.id,
+      meta: nextMeta,
+    });
+  }
+
+  async function addIncomeBreakdownWidget() {
+    const dashboardId = await getCurrentDashboardId();
+    if (!dashboardId) return;
+    await sendDashboardMutation('dashboard-add-widget', {
+      type: 'markdown-card',
+      width: DEFAULT_WIDGET_WIDTH,
+      height: DEFAULT_WIDGET_HEIGHT,
+      meta: {
+        content: PLACEHOLDER_TEXT,
+        name: DEFAULT_WIDGET_NAME,
+      },
+      dashboard_page_id: dashboardId,
+    });
+  }
+
+  function dismissNativeMenu(anchor) {
+    const eventInit = {
+      key: 'Escape',
+      code: 'Escape',
+      keyCode: 27,
+      which: 27,
+      bubbles: true,
+      cancelable: true,
+    };
+    anchor.dispatchEvent(new KeyboardEvent('keydown', eventInit));
+    document.dispatchEvent(new KeyboardEvent('keydown', eventInit));
   }
 
   // ── Data fetching ─────────────────────────────────────────────────────
@@ -397,6 +572,7 @@
   }
 
   function showTransactionPopover(nodeId, nodeName, anchorX, anchorY, container) {
+    if (isDashboardEditing()) return;
     // Toggle: clicking the same node that's already open dismisses it
     const existing = document.getElementById('abt-ib-popover');
     if (existing && existing.dataset.nodeId === nodeId) {
@@ -413,6 +589,7 @@
     const popover = document.createElement('div');
     popover.id = 'abt-ib-popover';
     popover.className = 'abt-ib-popover';
+    popover.classList.toggle('abt-ib-privacy', isPrivacyMode);
     popover.dataset.nodeId = nodeId;
 
     txs.sort((a, b) => b.date.localeCompare(a.date));
@@ -422,7 +599,7 @@
       <div class="abt-ib-popover-header">
         <div class="abt-ib-popover-title">
           <span>${nodeName}</span>
-          <span class="abt-ib-popover-total ${total >= 0 ? 'positive' : 'negative'}">${formatCurrency(total)}</span>
+          <span class="abt-ib-popover-total abt-ib-private ${total >= 0 ? 'positive' : 'negative'}">${formatCurrency(total)}</span>
         </div>
         <div class="abt-ib-popover-actions">
           <span class="abt-ib-popover-count">${txs.length} transaction${txs.length !== 1 ? 's' : ''}</span>
@@ -458,7 +635,7 @@
                 <td>${payee ? payee.name : '—'}</td>
                 <td>${cat ? cat.name : '—'}</td>
                 <td class="notes-col">${tx.notes || ''}</td>
-                <td class="amount-col ${amtClass}">${formatCurrency(tx.amount)}</td>
+                <td class="amount-col abt-ib-private ${amtClass}">${formatCurrency(tx.amount)}</td>
                 <td class="col-status status-${statusClass}" title="${statusTitle}">${statusIcon}</td>
               </tr>`;
             }).join('')}
@@ -522,8 +699,36 @@
   }
 
   // ── Rendering ─────────────────────────────────────────────────────────
+  function getChartDimensions(container) {
+    const rect = container.getBoundingClientRect();
+    const rawWidth = Math.floor(rect.width || container.clientWidth || 0);
+    const width = rawWidth - 16;
+    if (width <= 0) return null;
+
+    const rawHeight = Math.floor(container.clientHeight || rect.height || 400);
+    return {
+      width,
+      height: Math.max(80, rawHeight),
+    };
+  }
+
+  function retryRenderWhenReady(chart) {
+    if (chart.dataset.abtIbRenderRetry === '1') return;
+    const attempts = Number(chart.dataset.abtIbRenderRetryCount || 0);
+    if (attempts >= 10) return;
+    chart.dataset.abtIbRenderRetryCount = String(attempts + 1);
+    chart.dataset.abtIbRenderRetry = '1';
+    setTimeout(() => {
+      delete chart.dataset.abtIbRenderRetry;
+      void loadAndRender(chart);
+    }, 100);
+  }
+
   function renderSankey(container, sankeyData) {
     const { nodes, links, totalIncome } = sankeyData;
+    const dimensions = getChartDimensions(container);
+    if (!dimensions) return;
+    const { width, height } = dimensions;
 
     const chartOnly = container.querySelector('svg');
     const tooltipEl = container.querySelector('.abt-ib-tooltip');
@@ -540,9 +745,6 @@
       container.insertBefore(empty, container.firstChild);
       return;
     }
-
-    const width = container.clientWidth - 16;
-    const height = container.clientHeight || 400;
 
     const svg = d3.select(container)
       .insert('svg', ':first-child')
@@ -619,15 +821,17 @@
       .attr('stroke-width', d => Math.max(1, d.width))
       .attr('class', 'abt-ib-link')
       .on('mouseenter', function (event, d) {
+        if (isDashboardEditing()) return;
         d3.select(this).attr('stroke-opacity', 0.6);
         const pct = totalIncome > 0 ? ((d.value / totalIncome) * 100).toFixed(1) : '0';
         const node = clickableNodeForLink(d);
         const hint = (node.id !== 'budget' && node.id !== 'net-gain' && node.id !== 'net-loss')
           ? '<br><span class="abt-ib-tooltip-hint">Click to view transactions</span>' : '';
         tooltip.style('opacity', 1)
-          .html(`${d.source.name} → ${d.target.name}<br><strong>${formatCurrency(d.value)} (${pct}%)</strong>${hint}`);
+          .html(`${d.source.name} → ${d.target.name}<br><strong class="abt-ib-private">${formatCurrency(d.value)} (${pct}%)</strong>${hint}`);
       })
       .on('mousemove', function (event) {
+        if (isDashboardEditing()) return;
         tooltip.style('left', (event.offsetX + 12) + 'px').style('top', (event.offsetY - 10) + 'px');
       })
       .on('mouseleave', function () {
@@ -637,6 +841,7 @@
       .on('click', function (event, d) {
         event.stopPropagation();
         tooltip.style('opacity', 0);
+        if (isDashboardEditing()) return;
         const node = clickableNodeForLink(d);
         if (node.id === 'budget' || node.id === 'net-gain' || node.id === 'net-loss') return;
         showTransactionPopover(node.id, node.name, event.offsetX, event.offsetY, container);
@@ -656,12 +861,14 @@
       .attr('opacity', 0.9)
       .attr('class', 'abt-ib-node')
       .on('mouseenter', function (event, d) {
+        if (isDashboardEditing()) return;
         linkSel.attr('stroke-opacity', l => l.source === d || l.target === d ? 0.6 : 0.15);
         const hint = (d.id !== 'budget' && d.id !== 'net-gain' && d.id !== 'net-loss')
           ? '<br><span class="abt-ib-tooltip-hint">Click to view transactions</span>' : '';
-        tooltip.style('opacity', 1).html(`${d.name}<br><strong>${formatCurrency(d.value || 0)}</strong>${hint}`);
+        tooltip.style('opacity', 1).html(`${d.name}<br><strong class="abt-ib-private">${formatCurrency(d.value || 0)}</strong>${hint}`);
       })
       .on('mousemove', function (event) {
+        if (isDashboardEditing()) return;
         tooltip.style('left', (event.offsetX + 12) + 'px').style('top', (event.offsetY - 10) + 'px');
       })
       .on('mouseleave', function () {
@@ -671,6 +878,7 @@
       .on('click', function (event, d) {
         event.stopPropagation();
         tooltip.style('opacity', 0);
+        if (isDashboardEditing()) return;
         if (d.id === 'budget' || d.id === 'net-gain' || d.id === 'net-loss') return;
         showTransactionPopover(d.id, d.name, event.offsetX, event.offsetY, container);
       });
@@ -704,31 +912,33 @@
     setSetting('activePreset', label);
   }
 
-  function createWidget() {
-    const existing = document.getElementById(WIDGET_ID);
-    if (existing) existing.remove();
-
+  function createWidget(widgetRecord) {
     // Apply default preset if no dates set
     if (!state.startDate || !state.endDate) {
       applyPreset(state.activePreset || 'This Month');
     }
 
     const widget = document.createElement('div');
-    widget.id = WIDGET_ID;
-    widget.className = 'abt-ib-widget';
+    widget.id = getWidgetElementId(widgetRecord);
+    widget.className = WIDGET_CLASS;
+    widget.dataset.dashboardWidgetId = widgetRecord?.id || '';
+    widget.__abtWidgetRecord = widgetRecord;
+    widget.classList.toggle('abt-ib-privacy', isPrivacyMode);
 
     const presetButtons = DATE_PRESETS.map(p =>
       `<button class="abt-ib-preset${state.activePreset === p.label ? ' active' : ''}" data-preset="${p.label}">${p.label}</button>`
     ).join('');
+    const widgetName = escapeHtml(getWidgetName(widgetRecord));
 
     widget.innerHTML = `
       <div class="abt-ib-header">
         <div class="abt-ib-header-left">
-          <h2 class="abt-ib-title">Income Breakdown</h2>
+          <h2 class="abt-ib-title">${widgetName}</h2>
           <span class="abt-ib-subtitle">${state.startDate} – ${state.endDate}</span>
         </div>
+        <button type="button" class="abt-ib-widget-menu ${NON_DRAGGABLE_CLASS}" aria-label="Menu" title="Menu">⋮</button>
       </div>
-      <div class="abt-ib-controls">
+      <div class="abt-ib-controls ${NON_DRAGGABLE_CLASS}">
         <div class="abt-ib-presets">${presetButtons}</div>
         <div class="abt-ib-date-row">
           <label class="abt-ib-field-label">From <input type="date" class="abt-ib-input" id="abt-ib-start" value="${state.startDate}"></label>
@@ -742,19 +952,163 @@
           <label class="abt-ib-toggle"><input type="checkbox" id="abt-ib-grouppos" ${state.groupPositiveCategories ? 'checked' : ''}>Group Positive</label>
         </div>
       </div>
-      <div class="abt-ib-chart-container" id="abt-ib-chart"></div>
+      <div class="abt-ib-chart-container"></div>
     `;
 
     return widget;
   }
 
-  function updateSubtitle() {
-    const sub = document.querySelector('.abt-ib-subtitle');
+  function updateSubtitle(widget) {
+    const sub = widget.querySelector('.abt-ib-subtitle');
     if (sub) sub.textContent = `${state.startDate} – ${state.endDate}`;
   }
 
+  function closeActiveMenu() {
+    if (activeMenu) {
+      activeMenu.remove();
+      activeMenu = null;
+    }
+  }
+
+  function positionMenu(menu, x, y) {
+    document.body.appendChild(menu);
+    const rect = menu.getBoundingClientRect();
+    const left = Math.max(8, Math.min(x, window.innerWidth - rect.width - 8));
+    const top = Math.max(8, Math.min(y, window.innerHeight - rect.height - 8));
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+  }
+
+  function makeMenuButton(text, onClick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'abt-ib-menu-item';
+    button.textContent = text;
+    button.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        await onClick();
+      } catch (err) {
+        console.error('[ABT Income Breakdown] Dashboard action failed:', err);
+      }
+    });
+    return button;
+  }
+
+  function openMenu(menu, x, y) {
+    closeActiveMenu();
+    activeMenu = menu;
+    positionMenu(menu, x, y);
+
+    function onOutsideClick(e) {
+      if (!activeMenu) {
+        document.removeEventListener('mousedown', onOutsideClick, true);
+        return;
+      }
+      if (activeMenu.contains(e.target)) return;
+      closeActiveMenu();
+      document.removeEventListener('mousedown', onOutsideClick, true);
+    }
+
+    setTimeout(() => document.addEventListener('mousedown', onOutsideClick, true), 0);
+  }
+
+  function showWidgetMenu(widget, x, y) {
+    const widgetRecord = widget.__abtWidgetRecord;
+    const menu = document.createElement('div');
+    menu.className = 'abt-ib-menu';
+
+    menu.appendChild(makeMenuButton('Rename', async () => {
+      closeActiveMenu();
+      startRename(widget);
+    }));
+    menu.appendChild(makeMenuButton('Remove', async () => {
+      closeActiveMenu();
+      if (!widgetRecord?.id) return;
+      await sendDashboardMutation('dashboard-remove-widget', widgetRecord.id);
+      widget.remove();
+    }));
+    menu.appendChild(makeMenuButton('Copy to dashboard', async () => {
+      await showCopyDashboardMenu(widget, x, y);
+    }));
+
+    openMenu(menu, x, y);
+  }
+
+  async function showCopyDashboardMenu(widget, x, y) {
+    const widgetRecord = widget.__abtWidgetRecord;
+    const menu = document.createElement('div');
+    menu.className = 'abt-ib-menu abt-ib-copy-menu';
+
+    const title = document.createElement('div');
+    title.className = 'abt-ib-menu-title';
+    title.textContent = 'Copy to dashboard';
+    menu.appendChild(title);
+
+    const pages = await fetchDashboardPages();
+    if (pages.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'abt-ib-menu-empty';
+      empty.textContent = 'No dashboard pages available.';
+      menu.appendChild(empty);
+    } else {
+      pages.forEach(page => {
+        menu.appendChild(makeMenuButton(page.name || 'Untitled dashboard', async () => {
+          closeActiveMenu();
+          if (!widgetRecord?.id) return;
+          await sendDashboardMutation('dashboard-copy-widget', {
+            id: widgetRecord.id,
+            targetDashboardPageId: page.id,
+          });
+        }));
+      });
+    }
+
+    openMenu(menu, x, y);
+  }
+
+  function startRename(widget) {
+    const title = widget.querySelector('.abt-ib-title');
+    const widgetRecord = widget.__abtWidgetRecord;
+    if (!title || title.querySelector('input')) return;
+
+    const currentName = getWidgetName(widgetRecord);
+    const input = document.createElement('input');
+    input.className = `abt-ib-rename-input ${NON_DRAGGABLE_CLASS}`;
+    input.value = currentName;
+
+    title.textContent = '';
+    title.appendChild(input);
+    input.focus();
+    input.select();
+
+    let finished = false;
+    const finish = async (save) => {
+      if (finished) return;
+      finished = true;
+      const nextName = input.value.trim() || DEFAULT_WIDGET_NAME;
+      title.textContent = save ? nextName : currentName;
+      if (save && nextName !== currentName) {
+        await updateDashboardWidgetMeta(widgetRecord, { name: nextName });
+      }
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        void finish(true);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        void finish(false);
+      }
+    });
+    input.addEventListener('blur', () => { void finish(true); });
+  }
+
   function attachEventListeners(widget) {
-    const refresh = debounce(() => loadAndRender(), DEBOUNCE_MS);
+    const chart = widget.querySelector('.abt-ib-chart-container');
+    const refresh = debounce(() => loadAndRenderAll(), DEBOUNCE_MS);
 
     // Presets
     widget.querySelectorAll('.abt-ib-preset').forEach(btn => {
@@ -766,7 +1120,7 @@
         // Update date inputs
         widget.querySelector('#abt-ib-start').value = state.startDate;
         widget.querySelector('#abt-ib-end').value = state.endDate;
-        updateSubtitle();
+        updateAllWidgetControls();
         refresh();
       });
     });
@@ -777,8 +1131,7 @@
       state.activePreset = '';
       setSetting('startDate', state.startDate);
       setSetting('activePreset', '');
-      widget.querySelectorAll('.abt-ib-preset').forEach(b => b.classList.remove('active'));
-      updateSubtitle();
+      updateAllWidgetControls();
       refresh();
     });
 
@@ -787,8 +1140,7 @@
       state.activePreset = '';
       setSetting('endDate', state.endDate);
       setSetting('activePreset', '');
-      widget.querySelectorAll('.abt-ib-preset').forEach(b => b.classList.remove('active'));
-      updateSubtitle();
+      updateAllWidgetControls();
       refresh();
     });
 
@@ -806,22 +1158,71 @@
         state[key] = e.target.checked;
         setSetting(key, state[key]);
         if (key === 'showExpense') {
-          widget.querySelector('#abt-ib-subcats').disabled = !state.showExpense;
+          updateAllWidgetControls();
         }
         refresh();
       });
     });
 
     // Close popover when clicking chart background
-    widget.querySelector('#abt-ib-chart').addEventListener('click', (e) => {
+    chart.addEventListener('click', (e) => {
       if (e.target.closest('.abt-ib-popover') || e.target.closest('.abt-ib-node') || e.target.closest('.abt-ib-link')) return;
       closeTransactionPopover();
     });
+
+    widget.addEventListener('mousedown', () => {
+      if (isDashboardEditing()) closeTransactionPopover();
+    }, true);
+
+    widget.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showWidgetMenu(widget, e.clientX, e.clientY);
+    });
+
+    widget.querySelector('.abt-ib-widget-menu').addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      showWidgetMenu(widget, rect.right, rect.bottom);
+    });
   }
 
-  async function loadAndRender() {
-    const chart = document.getElementById('abt-ib-chart');
+  function updateWidgetControls(widget) {
+    widget.querySelectorAll('.abt-ib-preset').forEach(btn => {
+      btn.classList.toggle('active', state.activePreset === btn.dataset.preset);
+    });
+    const start = widget.querySelector('#abt-ib-start');
+    const end = widget.querySelector('#abt-ib-end');
+    if (start) start.value = state.startDate;
+    if (end) end.value = state.endDate;
+    const income = widget.querySelector('#abt-ib-income');
+    const expense = widget.querySelector('#abt-ib-expense');
+    const subcats = widget.querySelector('#abt-ib-subcats');
+    const lossgain = widget.querySelector('#abt-ib-lossgain');
+    const grouppos = widget.querySelector('#abt-ib-grouppos');
+    if (income) income.checked = state.showIncome;
+    if (expense) expense.checked = state.showExpense;
+    if (subcats) {
+      subcats.checked = state.showSubCategories;
+      subcats.disabled = !state.showExpense;
+    }
+    if (lossgain) lossgain.checked = state.showLossGain;
+    if (grouppos) grouppos.checked = state.groupPositiveCategories;
+    updateSubtitle(widget);
+  }
+
+  function updateAllWidgetControls() {
+    document.querySelectorAll(`.${WIDGET_CLASS}`).forEach(updateWidgetControls);
+  }
+
+  async function loadAndRender(chart) {
     if (!chart) return;
+    if (!getChartDimensions(chart)) {
+      retryRenderWhenReady(chart);
+      return;
+    }
+    delete chart.dataset.abtIbRenderRetryCount;
 
     // Show loading only if no existing chart
     if (!chart.querySelector('svg')) {
@@ -838,67 +1239,145 @@
     }
   }
 
+  function loadAndRenderAll() {
+    document.querySelectorAll(`.${WIDGET_CLASS} .abt-ib-chart-container`).forEach(chart => {
+      void loadAndRender(chart);
+    });
+  }
+
   // ── Injection — overlay on top of the markdown placeholder widget ─────
   function isReportsPage() {
     return window.location.pathname.includes('/reports');
   }
 
-  function findPlaceholderWidget() {
-    const gridItems = document.querySelectorAll('.react-grid-item');
-    for (const item of gridItems) {
-      // Only match items we haven't already overlaid
-      if (item.dataset.abtOverlaid) continue;
-      if (item.textContent.includes(PLACEHOLDER_TEXT)) {
-        return item;
-      }
-    }
-    return null;
+  function findPlaceholderWidgets() {
+    return Array.from(document.querySelectorAll('.react-grid-item'))
+      .filter(item => !item.dataset.abtOverlaid)
+      .filter(item => item.textContent.includes(PLACEHOLDER_TEXT))
+      .sort((a, b) => {
+        const aRect = a.getBoundingClientRect();
+        const bRect = b.getBoundingClientRect();
+        return (aRect.top - bRect.top) || (aRect.left - bRect.left);
+      });
   }
 
-  let activeResizeObserver = null;
+  function hidePlaceholderContent(gridItem) {
+    const walker = document.createTreeWalker(gridItem, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (!node.textContent.includes(PLACEHOLDER_TEXT)) continue;
+      let target = node.parentElement;
+      while (
+        target?.parentElement &&
+        target.parentElement !== gridItem &&
+        target.parentElement.textContent.trim() === PLACEHOLDER_TEXT
+      ) {
+        target = target.parentElement;
+      }
+      if (target) {
+        target.style.visibility = 'hidden';
+      }
+      return;
+    }
+  }
 
-  function injectWidget() {
+  function enhanceAddWidgetMenu() {
+    const buttons = Array.from(document.querySelectorAll('button'));
+    const textWidgetButton = buttons.find(btn => btn.textContent.trim() === 'Text widget');
+    if (!textWidgetButton) return;
+
+    const menu = textWidgetButton.parentElement;
+    if (!menu || menu.querySelector('[data-abt-ib-add-widget]')) return;
+    const menuButtons = Array.from(menu.querySelectorAll('button'));
+    const hasAddWidgetItems = menuButtons.some(btn => btn.textContent.trim() === 'Cash flow graph') &&
+      menuButtons.some(btn => btn.textContent.trim() === 'Net worth graph');
+    if (!hasAddWidgetItems) return;
+
+    const incomeButton = textWidgetButton.cloneNode(true);
+    incomeButton.dataset.abtIbAddWidget = '1';
+    const textNode = Array.from(incomeButton.querySelectorAll('*'))
+      .find(el => el.textContent.trim() === 'Text widget');
+    if (textNode) {
+      textNode.textContent = DEFAULT_WIDGET_NAME;
+    } else {
+      incomeButton.textContent = DEFAULT_WIDGET_NAME;
+    }
+    incomeButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        dismissNativeMenu(incomeButton);
+        await addIncomeBreakdownWidget();
+      } catch (err) {
+        console.error('[ABT Income Breakdown] Failed to add dashboard widget:', err);
+      }
+    });
+    textWidgetButton.insertAdjacentElement('afterend', incomeButton);
+  }
+
+  async function injectWidgets() {
     if (!isReportsPage()) return;
-    if (document.getElementById(WIDGET_ID)) return;
+    if (isInjecting) return;
     if (typeof d3 === 'undefined' || typeof d3.sankey !== 'function') return;
     if (!window.$q || !window.$query) return;
 
-    const gridItem = findPlaceholderWidget();
-    if (!gridItem) return;
+    isInjecting = true;
+    try {
+      await refreshPrivacyMode();
+      enhanceAddWidgetMenu();
 
-    // Mark so we don't match again
-    gridItem.dataset.abtOverlaid = '1';
+      const gridItems = findPlaceholderWidgets();
+      if (gridItems.length === 0) return;
 
-    // Hide the original markdown content visually but keep it in the DOM
-    // so React doesn't crash on re-render
-    const originalContent = gridItem.querySelector('div');
-    if (originalContent) originalContent.style.visibility = 'hidden';
+      const usedIds = new Set(
+        Array.from(document.querySelectorAll(`.${WIDGET_CLASS}`))
+          .map(widget => widget.dataset.dashboardWidgetId)
+          .filter(Boolean)
+      );
+      const widgetRecords = (await getIncomeBreakdownWidgetRecords())
+        .filter(record => !usedIds.has(record.id));
 
-    // Create and overlay our widget
-    const widget = createWidget();
-    gridItem.appendChild(widget);
+      gridItems.forEach((gridItem, index) => {
+        const widgetRecord = widgetRecords[index];
+        if (!widgetRecord) return;
 
-    // Fit chart to available space
-    const resizeChart = debounce(() => {
-      const chart = document.getElementById('abt-ib-chart');
-      if (!chart) return;
-      const itemH = gridItem.offsetHeight;
-      const chartTop = chart.getBoundingClientRect().top - gridItem.getBoundingClientRect().top;
-      const available = itemH - chartTop - 4;
-      if (available > 80) chart.style.height = available + 'px';
-    }, 100);
+        // Mark so we don't match again
+        gridItem.dataset.abtOverlaid = '1';
+        gridItem.classList.add('abt-ib-host');
+        hidePlaceholderContent(gridItem);
 
-    // Observe grid item resize
-    if (activeResizeObserver) activeResizeObserver.disconnect();
-    activeResizeObserver = new ResizeObserver(() => {
-      resizeChart();
-      loadAndRender();
-    });
-    activeResizeObserver.observe(gridItem);
+        // Create and overlay our widget
+        const widget = createWidget(widgetRecord);
+        gridItem.appendChild(widget);
 
-    attachEventListeners(widget);
-    resizeChart();
-    loadAndRender();
+        // Fit chart to available space
+        const resizeChart = debounce(() => {
+          const chart = widget.querySelector('.abt-ib-chart-container');
+          if (!chart) return;
+          const itemH = gridItem.offsetHeight;
+          const chartTop = chart.getBoundingClientRect().top - gridItem.getBoundingClientRect().top;
+          const available = itemH - chartTop - 4;
+          if (available > 80) chart.style.height = available + 'px';
+        }, 100);
+
+        // Observe grid item resize
+        const existingObserver = resizeObservers.get(gridItem);
+        if (existingObserver) existingObserver.disconnect();
+        const resizeObserver = new ResizeObserver(() => {
+          resizeChart();
+          void loadAndRender(widget.querySelector('.abt-ib-chart-container'));
+        });
+        resizeObservers.set(gridItem, resizeObserver);
+        resizeObserver.observe(gridItem);
+
+        attachEventListeners(widget);
+        syncWidgetModeClasses();
+        resizeChart();
+        void loadAndRender(widget.querySelector('.abt-ib-chart-container'));
+      });
+    } finally {
+      isInjecting = false;
+    }
   }
 
   // ── Page observer ─────────────────────────────────────────────────────
@@ -911,15 +1390,23 @@
       categoryGroupsCache = null;
       payeesCache = null;
       accountsCache = null;
+      resetDashboardWidgetCaches();
+      closeActiveMenu();
+      closeTransactionPopover();
     }
-    if (isReportsPage() && !document.getElementById(WIDGET_ID)) {
-      setTimeout(injectWidget, 800);
+    if (isReportsPage()) {
+      void refreshPrivacyMode();
+      syncWidgetModeClasses();
+      enhanceAddWidgetMenu();
+      setTimeout(() => { void injectWidgets(); }, 800);
     }
   }
 
   const observer = new MutationObserver(() => {
-    if (isReportsPage() && !document.getElementById(WIDGET_ID)) {
-      injectWidget();
+    if (isReportsPage()) {
+      syncWidgetModeClasses();
+      enhanceAddWidgetMenu();
+      void injectWidgets();
     }
   });
 
