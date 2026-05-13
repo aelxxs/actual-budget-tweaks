@@ -16,7 +16,7 @@
 	// initialize from storage on mount
 	onMount(async () => {
 		const saved = await getValue(ctx.key, ctx.defaultValue);
-		value = saved;
+		value = typeof saved === "string" ? saved : "";
 	});
 
 	async function handleChange(event: Event) {
