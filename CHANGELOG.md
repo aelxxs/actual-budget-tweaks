@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.27
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.26...v0.1.27)
+
+### 🩹 Fixes
+
+- Improve template apply breakdown ([c7378b6](https://github.com/aelxxs/actual-budget-tweaks/commit/c7378b6))
+- Align template priority breakdown ([8d5c771](https://github.com/aelxxs/actual-budget-tweaks/commit/8d5c771))
+- Remove svelte prop warnings ([a07930a](https://github.com/aelxxs/actual-budget-tweaks/commit/a07930a))
+- Normalize select stored value type ([a0d52d2](https://github.com/aelxxs/actual-budget-tweaks/commit/a0d52d2))
+- Resolve type check errors ([cbe6b3b](https://github.com/aelxxs/actual-budget-tweaks/commit/cbe6b3b))
+
+### 🏡 Chore
+
+- Decompose template breakdown scripts ([27ec774](https://github.com/aelxxs/actual-budget-tweaks/commit/27ec774))
+
+### ❤️ Contributors
+
+- Andy Su <andysu1551@gmail.com>
+
 ## v0.1.26
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.25...v0.1.26)
