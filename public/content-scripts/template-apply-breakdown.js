@@ -1,389 +1,393 @@
+import {
+  TOGGLE_ATTR,
+  PANEL_ID,
+  TRIGGER_ID,
+  LEGACY_PANEL_ID,
+  STORAGE_KEY,
+  TAB_STORAGE_KEY,
+  DRAWER_STORAGE_KEY,
+  PRIO_COLLAPSE_STORAGE_KEY,
+  TRIGGER_LABELS,
+  priorityKey,
+  priorityLabel,
+} from './template-apply-breakdown/constants.js';
+import { el } from './template-apply-breakdown/dom.js';
+import { loadCurrencyPreference, fmtMoney } from './template-apply-breakdown/money.js';
+import {
+  waitForBackendReady,
+  loadCategories,
+  invalidateCategoriesCache,
+  getCells,
+  startSnapshotAllVisible,
+  finishSnapshots,
+  getCurrentSheet,
+  sheetToMonthKey,
+  sheetToMonthLabel,
+  formatMonthLabel,
+  monthLabelForHeader,
+  isBudgetPage,
+  waitForQuiescence,
+  diffSnapshots,
+  loadTemplatesByCategoryId,
+} from './template-apply-breakdown/actual-data.js';
+import { createPriorityPlanner, statusFor } from './template-apply-breakdown/priority-plan.js';
+
 (function () {
   'use strict';
-
-  const TOGGLE_ATTR = 'data-abt-tab';
-  const PANEL_ID = 'abt-tab-panel';
-  // Menu-item button labels we hook. The app's React layer calls the backend
-  // via an internal `send()` (not window.$send), so wrapping window.$send
-  // misses these — we hook the click instead.
-  const TRIGGER_LABELS = new Map([
-    ['apply budget template', 'apply'],
-    ['overwrite with budget template', 'overwrite'],
-    ['apply template', 'apply-single'], // single-category context menu
-  ]);
 
   function isEnabled() {
     return document.documentElement.getAttribute(TOGGLE_ATTR) === 'on';
   }
 
-  // ── DOM helper ────────────────────────────────────────────────────────
-  function el(tag, props, children) {
-    const node = document.createElement(tag);
-    if (props) {
-      for (const k in props) {
-        if (k === 'class') node.className = props[k];
-        else if (k === 'style') Object.assign(node.style, props[k]);
-        else if (k === 'dataset') Object.assign(node.dataset, props[k]);
-        else if (k === 'text') node.textContent = props[k];
-        else if (k === 'on') {
-          for (const ev in props.on) node.addEventListener(ev, props.on[ev]);
-        } else node.setAttribute(k, props[k]);
-      }
-    }
-    if (children) {
-      for (const c of children) {
-        if (c == null || c === false) continue;
-        node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-      }
-    }
-    return node;
+  // ── Storage ──────────────────────────────────────────────────────────
+  function saveBreakdown(diff, ctx) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ diff, ctx })); } catch {}
   }
 
-  // ── Currency formatting ───────────────────────────────────────────────
-  // Use Actual's preference if discoverable; fall back to en-US/USD.
-  function fmtMoney(cents, opts) {
-    const sign = opts && opts.sign;
-    const n = (cents || 0) / 100;
-    const abs = Math.abs(n);
-    const str = new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(abs);
-    if (sign && cents > 0) return '+' + str;
-    if (n < 0) return '−' + str;
-    return str;
-  }
-
-  // ── Backend readiness ────────────────────────────────────────────────
-  function isBackendReady() {
-    if (typeof window.$send !== 'function') return false;
-    if (typeof window.$query !== 'function' || typeof window.$q !== 'function') return false;
-    return !!document.querySelector(
-      '[data-testid^="budget2"][data-testid*="!sum-amount-"]'
-    );
-  }
-
-  function waitForBackendReady() {
-    return new Promise((resolve) => {
-      if (isBackendReady()) { resolve(); return; }
-      const tick = () => {
-        if (isBackendReady()) { resolve(); return; }
-        setTimeout(tick, 200);
-      };
-      tick();
-    });
-  }
-
-  // ── Categories cache ─────────────────────────────────────────────────
-  // { id, name, group_id, group_name, sort_order, group_sort_order, hidden }
-  let categoriesCache = null;
-  let categoriesPromise = null;
-
-  async function loadCategories() {
-    if (categoriesCache) return categoriesCache;
-    if (categoriesPromise) return categoriesPromise;
-    categoriesPromise = (async () => {
-      try {
-        const [catsRes, groupsRes] = await Promise.all([
-          window.$query(window.$q('categories').select('*')),
-          window.$query(window.$q('category_groups').select('*')),
-        ]);
-        const cats = (catsRes && catsRes.data) || [];
-        const groups = (groupsRes && groupsRes.data) || [];
-        const groupMap = new Map();
-        for (const g of groups) groupMap.set(g.id, g);
-        categoriesCache = cats.map((c) => {
-          const gid = c.cat_group || c.group;
-          const g = groupMap.get(gid) || {};
-          return {
-            id: c.id,
-            name: c.name,
-            sort_order: c.sort_order || 0,
-            hidden: !!c.hidden,
-            tombstone: !!c.tombstone,
-            group_id: gid || '__none__',
-            group_name: g.name || 'Uncategorized',
-            group_sort_order: g.sort_order || 0,
-          };
-        }).filter((c) => !c.tombstone);
-      } catch (e) {
-        console.warn('[ABT TAB] categories query failed', e);
-        categoriesCache = [];
-      }
-      return categoriesCache;
-    })();
-    return categoriesPromise;
-  }
-
-  function invalidateCategoriesCache() {
-    categoriesCache = null;
-    categoriesPromise = null;
-  }
-
-  // ── Cell snapshot ────────────────────────────────────────────────────
-  async function getCell(sheet, name) {
+  function loadBreakdown() {
     try {
-      const res = await window.$send('get-cell', { sheetName: sheet, name });
-      const v = res && res.value;
-      return typeof v === 'number' ? v : 0;
-    } catch {
-      return 0;
-    }
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
   }
 
-  // SYNC: posts all get-cell messages immediately and returns a descriptor
-  // with the in-flight promises. Must be callable from a click capture
-  // handler so the worker queues these reads BEFORE React's bubble-phase
-  // onClick posts the apply-template message.
-  function startSnapshotMonth(sheet, cats) {
-    const ids = cats.filter((c) => !c.hidden).map((c) => c.id);
-    const promises = [
-      window.$send('get-cell', { sheetName: sheet, name: 'available-funds' }),
-      window.$send('get-cell', { sheetName: sheet, name: 'to-budget' }),
-      ...ids.map((id) =>
-        window.$send('get-cell', { sheetName: sheet, name: 'budget-' + id })
-      ),
-    ];
-    return { sheet, ids, promises };
+  function saveActiveTab() {
+    try { localStorage.setItem(TAB_STORAGE_KEY, activeTab); } catch {}
   }
 
-  async function awaitSnapshotMonth(start) {
-    const vals = await Promise.all(
-      start.promises.map((p) => p.catch(() => null))
-    );
-    const v = (cell) =>
-      cell && typeof cell.value === 'number' ? cell.value : 0;
-    const availableFunds = v(vals[0]);
-    const toBudget = v(vals[1]);
-    const budgets = new Map();
-    start.ids.forEach((id, i) => budgets.set(id, v(vals[i + 2])));
-    return { sheet: start.sheet, availableFunds, toBudget, budgets };
+  function loadActiveTab() {
+    try {
+      const v = localStorage.getItem(TAB_STORAGE_KEY);
+      if (v === 'breakdown' || v === 'priority') activeTab = v;
+    } catch {}
   }
 
-  // Discover all sheets currently rendered in the DOM (one per visible month).
-  function getVisibleSheets() {
-    const cells = document.querySelectorAll(
-      '[data-testid^="budget2"][data-testid*="!sum-amount-"]'
-    );
-    const sheets = new Set();
-    for (const c of cells) {
-      const m = c.getAttribute('data-testid').match(/^(budget\d{6})/);
-      if (m) sheets.add(m[1]);
-    }
-    return Array.from(sheets);
+  function saveDrawerOpen() {
+    try { localStorage.setItem(DRAWER_STORAGE_KEY, drawerOpen ? '1' : '0'); } catch {}
   }
 
-  function sheetToMonthString(sheet) {
-    // sheet = "budget202604" → "2026-04"
-    const m = sheet && sheet.match(/^budget(\d{4})(\d{2})/);
-    return m ? `${m[1]}-${m[2]}` : null;
+  function loadDrawerOpen() {
+    try {
+      const v = localStorage.getItem(DRAWER_STORAGE_KEY);
+      drawerOpen = v === '1';
+    } catch {}
   }
 
-  // SYNC: kicks off snapshot reads for every visible month. Returns an
-  // array of in-flight descriptors to be awaited via finishSnapshots().
-  function startSnapshotAllVisible() {
-    if (!categoriesCache) return [];
-    const sheets = getVisibleSheets();
-    return sheets.map((s) => startSnapshotMonth(s, categoriesCache));
+  // Per-priority explicit collapse overrides. Map<priority-key, collapsed:boolean>.
+  // Absence = "use default" (full → collapsed, otherwise → expanded).
+  function savePrioCollapse() {
+    try {
+      const obj = {};
+      for (const [k, v] of prioCollapseOverrides.entries()) obj[k] = v;
+      localStorage.setItem(PRIO_COLLAPSE_STORAGE_KEY, JSON.stringify(obj));
+    } catch {}
   }
 
-  async function finishSnapshots(starts) {
-    const snaps = await Promise.all(starts.map(awaitSnapshotMonth));
-    const map = new Map();
-    snaps.forEach((s) => map.set(s.sheet, s));
-    return map;
-  }
-
-  // ── DOM quiescence ───────────────────────────────────────────────────
-  // Wait for budget-table cell mutations to settle before snapshotting after.
-  function waitForQuiescence(idleMs, maxMs) {
-    idleMs = idleMs || 250;
-    maxMs = maxMs || 3000;
-    return new Promise((resolve) => {
-      let idleTimer = null;
-      let done = false;
-      const finish = () => {
-        if (done) return;
-        done = true;
-        clearTimeout(idleTimer);
-        clearTimeout(hardStop);
-        obs.disconnect();
-        resolve();
-      };
-      const arm = () => {
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(finish, idleMs);
-      };
-      const obs = new MutationObserver((muts) => {
-        for (const m of muts) {
-          if (m.type === 'attributes' && m.attributeName === 'data-cellname') {
-            arm();
-            return;
-          }
-          if (m.type === 'characterData' || m.type === 'childList') {
-            arm();
-            return;
-          }
-        }
-      });
-      obs.observe(document.body, {
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['data-cellname'],
-        characterData: true,
-        childList: true,
-      });
-      const hardStop = setTimeout(finish, maxMs);
-      // Always arm at least once so we wait the idle window even if no muts arrive.
-      arm();
-    });
-  }
-
-  // ── Diff ─────────────────────────────────────────────────────────────
-  function diffSnapshots(before, after) {
-    const cats = categoriesCache || [];
-    const groups = new Map(); // group_id -> { id, name, sort_order, rows: [] }
-    let totalAllocated = 0;
-    for (const c of cats) {
-      const b = before.budgets.get(c.id) || 0;
-      const a = after.budgets.get(c.id) || 0;
-      const delta = a - b;
-      totalAllocated += delta;
-      const gid = c.group_id || '__none__';
-      if (!groups.has(gid)) {
-        groups.set(gid, {
-          id: gid,
-          name: c.group_name || 'Uncategorized',
-          sort_order: c.group_sort_order || 0,
-          rows: [],
-        });
+  function loadPrioCollapse() {
+    try {
+      const raw = localStorage.getItem(PRIO_COLLAPSE_STORAGE_KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      for (const k in obj) {
+        if (typeof obj[k] === 'boolean') prioCollapseOverrides.set(String(k), obj[k]);
       }
-      groups.get(gid).rows.push({
-        id: c.id,
-        name: c.name,
-        sort_order: c.sort_order || 0,
-        before: b,
-        after: a,
-        delta,
-      });
-    }
-    const groupList = Array.from(groups.values()).sort(
-      (a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name)
-    );
-    for (const g of groupList) {
-      g.rows.sort((a, b) => (a.sort_order - b.sort_order) || a.name.localeCompare(b.name));
-    }
-    return {
-      groups: groupList,
-      totalAllocated,
-      availableBefore: before.availableFunds,
-      availableAfter: after.availableFunds,
-      toBudgetBefore: before.toBudget,
-      toBudgetAfter: after.toBudget,
-    };
+    } catch {}
   }
 
-  // ── Panel rendering ──────────────────────────────────────────────────
+  function isTierCollapsed(tier) {
+    const override = prioCollapseOverrides.get(priorityKey(tier.priority));
+    if (override != null) return override;
+    return tier.status === 'full';
+  }
+
+  function toggleTierCollapsed(tier) {
+    const next = !isTierCollapsed(tier);
+    prioCollapseOverrides.set(priorityKey(tier.priority), next);
+    savePrioCollapse();
+  }
+
+  const priorityPlanner = createPriorityPlanner({
+    getCurrentSheet,
+    isBudgetPage,
+    loadCategories,
+    loadTemplatesByCategoryId,
+    getCells,
+    sheetToMonthKey,
+    sheetToMonthLabel,
+  });
+  const {
+    computePriorityStatus,
+    buildBreakdownPrioritySummary,
+    priorityCacheIsFreshForSheet,
+    priorityCacheMatchesSheet,
+    invalidatePriorityStatus,
+    getCache: getPriorityCache,
+  } = priorityPlanner;
+
+  function setActiveSheet(sheet) {
+    if (sheet === lastSheet) return false;
+    lastSheet = sheet;
+    invalidatePriorityStatus();
+    return true;
+  }
+
+  // ── Drawer UI ────────────────────────────────────────────────────────
+  let activeTab = 'priority'; // 'breakdown' | 'priority'
+  let drawerOpen = false;
   let showAllRows = false;
-  // Persistent panel UI state (preserved across re-renders within a session)
-  const panelState = {
-    collapsed: false,
-    x: null, // left px (null = default top-left)
-    y: null, // top px
-  };
+  const prioCollapseOverrides = new Map();
 
-  function applyPanelPosition(panel) {
-    if (panelState.x != null) panel.style.left = panelState.x + 'px';
-    if (panelState.y != null) panel.style.top = panelState.y + 'px';
-    if (panelState.collapsed) panel.setAttribute('data-collapsed', 'true');
-  }
-
-  function clampPosition(x, y, w, h) {
-    const pad = 4;
-    return {
-      x: Math.max(pad, Math.min(window.innerWidth - w - pad, x)),
-      y: Math.max(pad, Math.min(window.innerHeight - h - pad, y)),
-    };
-  }
-
-  function attachDrag(panel, handle) {
-    let dragging = false;
-    let startX = 0, startY = 0, originX = 0, originY = 0;
-    handle.addEventListener('pointerdown', (e) => {
-      // Don't start drag from button clicks
-      if (e.target.closest('button')) return;
-      dragging = true;
-      const rect = panel.getBoundingClientRect();
-      originX = rect.left;
-      originY = rect.top;
-      startX = e.clientX;
-      startY = e.clientY;
-      handle.setPointerCapture(e.pointerId);
-      panel.setAttribute('data-dragging', 'true');
-      e.preventDefault();
-    });
-    handle.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      const rect = panel.getBoundingClientRect();
-      const pos = clampPosition(originX + dx, originY + dy, rect.width, rect.height);
-      panel.style.left = pos.x + 'px';
-      panel.style.top = pos.y + 'px';
-      panelState.x = pos.x;
-      panelState.y = pos.y;
-    });
-    const end = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      panel.removeAttribute('data-dragging');
-      try { handle.releasePointerCapture(e.pointerId); } catch {}
-    };
-    handle.addEventListener('pointerup', end);
-    handle.addEventListener('pointercancel', end);
-  }
+  // Track the latest breakdown context (for header month label, etc.)
+  let breakdownState = null; // { diff, ctx } | null
+  let breakdownLoading = false;
+  let priorityLoading = false;
 
   function actionLabel(kind) {
     switch (kind) {
       case 'overwrite': return 'Overwrote with template';
       case 'apply-single': return 'Applied template (single)';
+      case 'apply-group': return 'Applied templates (group)';
       default: return 'Applied template';
-    }
-  }
-
-  function fmtMonth() {
-    // Show the timestamp of when the apply ran, not the target month.
-    try {
-      return new Date().toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return '';
     }
   }
 
   function removePanel() {
     const existing = document.getElementById(PANEL_ID);
     if (existing) existing.remove();
+    const trigger = document.getElementById(TRIGGER_ID);
+    if (trigger) trigger.remove();
+    removeLegacyPanel();
   }
 
-  function renderPanel(diff, ctx) {
-    removePanel();
-    if (!isEnabled()) return;
+  function removeLegacyPanel() {
+    const legacy = document.getElementById(LEGACY_PANEL_ID);
+    if (legacy) legacy.remove();
+  }
 
+  function setDrawerOpen(open) {
+    drawerOpen = !!open;
+    saveDrawerOpen();
+    renderPanel();
+  }
+
+  // ── Priority body rendering ──────────────────────────────────────────
+  function renderPriorityBody(body, data) {
+    if (!data) {
+      body.appendChild(
+        el('div', { class: 'abt-tab-loading' }, [
+          el('span', { class: 'abt-tab-spinner' }),
+          document.createTextNode('Computing template plan…'),
+        ])
+      );
+      return;
+    }
+    if (!data.ok) {
+      body.appendChild(
+        el('div', { class: 'abt-tab-empty', text: data.reason || 'Unavailable' })
+      );
+      return;
+    }
+
+    // Summary block
+    const summary = el('div', { class: 'abt-tab-prio-summary' });
+    summary.appendChild(el('div', { class: 'abt-tab-prio-summary-label', text: 'Template demand' }));
+    summary.appendChild(el('div', { class: 'abt-tab-prio-summary-value', text: fmtMoney(data.totalRequestedCents) }));
+
+    summary.appendChild(el('div', { class: 'abt-tab-prio-summary-label', text: 'Will allocate' }));
+    summary.appendChild(
+      el('div', {
+        class: 'abt-tab-prio-summary-value',
+        dataset: { status: data.totalAllocatedCents > 0 ? 'ok' : 'gap' },
+        text: fmtMoney(data.totalAllocatedCents),
+      })
+    );
+
+    summary.appendChild(el('div', { class: 'abt-tab-prio-summary-label', text: 'Gap remaining' }));
+    summary.appendChild(
+      el('div', {
+        class: 'abt-tab-prio-summary-value',
+        dataset: { status: data.gapCents > 0 ? 'gap' : 'ok' },
+        text: fmtMoney(data.gapCents),
+      })
+    );
+
+    summary.appendChild(el('div', { class: 'abt-tab-prio-summary-label', text: 'Budgetable funds' }));
+    summary.appendChild(
+      el('div', {
+        class: 'abt-tab-prio-summary-value',
+        dataset: { status: data.budgetableCents < 0 ? 'gap' : 'ok' },
+        text: fmtMoney(data.budgetableCents),
+      })
+    );
+
+    // Watermark
+    let watermarkText = '';
+    let watermarkStatus = 'full';
+    if (data.tiers.length === 0) {
+      watermarkText = 'No templates found.';
+    } else if (data.watermark == null) {
+      watermarkText = `All ${data.tiers.length} tier${data.tiers.length === 1 ? '' : 's'} funded by the overwrite plan.`;
+      watermarkStatus = 'full';
+    } else {
+      const watermarkTier = data.tiers.find((t) => t.priority === data.watermark);
+      const hf = data.highestFundedPriority;
+      if (watermarkTier && watermarkTier.status === 'partial') {
+        watermarkText =
+          (hf != null ? `Funded through priority ${hf}. ` : '') +
+          `${priorityLabel(data.watermark)} partially allocated.`;
+        watermarkStatus = 'partial';
+      } else {
+        watermarkText =
+          (hf != null ? `Funded through priority ${hf}. ` : '') +
+          `${priorityLabel(data.watermark)}+ unfunded.`;
+        watermarkStatus = 'none';
+      }
+    }
+    summary.appendChild(
+      el('div', {
+        class: 'abt-tab-prio-watermark',
+        dataset: { status: watermarkStatus },
+        text: watermarkText,
+      })
+    );
+    summary.appendChild(
+      el('div', {
+        class: 'abt-tab-prio-mode',
+        text: data.usedDryRun
+          ? (
+              data.fallbackCount > 0
+                ? `Assumes month-wide overwrite; ${data.fallbackCount} categor${data.fallbackCount === 1 ? 'y uses' : 'ies use'} goal-cell estimates.`
+                : 'Assumes month-wide overwrite with budget template.'
+            )
+          : 'Estimate uses goal cells because dry-run data was unavailable.',
+      })
+    );
+    body.appendChild(summary);
+
+    if (data.tiers.length === 0) {
+      body.appendChild(
+        el('div', { class: 'abt-tab-empty', text: 'No #template lines detected in category notes.' })
+      );
+      return;
+    }
+
+    // Per-tier rows
+    for (const tier of data.tiers) {
+      const collapsed = isTierCollapsed(tier);
+      const tierEl = el('div', {
+        class: 'abt-tab-prio-tier',
+        dataset: {
+          status: tier.status,
+          priority: priorityKey(tier.priority),
+          collapsed: String(collapsed),
+        },
+      });
+
+      const badgeChar = tier.status === 'full' ? '✓' : tier.status === 'partial' ? '◐' : '○';
+      const header = el('button', {
+        class: 'abt-tab-prio-tier-header',
+        type: 'button',
+        'aria-expanded': String(!collapsed),
+        on: {
+          click: () => {
+            toggleTierCollapsed(tier);
+            const nowCollapsed = isTierCollapsed(tier);
+            tierEl.dataset.collapsed = String(nowCollapsed);
+            header.setAttribute('aria-expanded', String(!nowCollapsed));
+          },
+        },
+      }, [
+        el('span', { class: 'abt-tab-prio-chevron', text: '▸' }),
+        el('span', {
+          class: 'abt-tab-prio-badge',
+          dataset: { status: tier.status },
+          text: badgeChar,
+        }),
+        el('span', {
+          class: 'abt-tab-prio-tier-label',
+          text: priorityLabel(tier.priority),
+        }),
+        el('span', {
+          class: 'abt-tab-prio-tier-meta',
+          text: `${tier.rows.length} cat${tier.rows.length === 1 ? '' : 's'}`,
+        }),
+        el('span', {
+          class: 'abt-tab-prio-tier-amount',
+          text: tier.allocatedCents === tier.requestedCents
+            ? fmtMoney(tier.requestedCents)
+            : `${fmtMoney(tier.allocatedCents)} / ${fmtMoney(tier.requestedCents)}`,
+        }),
+      ]);
+      tierEl.appendChild(header);
+
+      const rowsWrap = el('div', { class: 'abt-tab-prio-tier-rows' });
+      for (const row of tier.rows) {
+        const otherPriorities = row.priorities.filter((p) => p !== tier.priority && p != null);
+        const multiPrio = otherPriorities.length > 0;
+        const metaText = multiPrio
+          ? `also @ ${otherPriorities.join(', ')}`
+          : row.source === 'goal-cell'
+            ? 'goal-cell estimate'
+            : row.source === 'goal-residual'
+              ? 'goal residual'
+              : row.source === 'parsed-amount'
+                ? 'parsed estimate'
+                : row.templateCount > 1
+                  ? `${row.templateCount} templates`
+                  : null;
+        const amountText = row.allocatedCents === row.requestedCents
+          ? fmtMoney(row.requestedCents)
+          : `${fmtMoney(row.allocatedCents)} / ${fmtMoney(row.requestedCents)}`;
+        const rowEl = el('div', {
+          class: 'abt-tab-prio-row',
+          dataset: { status: statusFor(row.requestedCents, row.allocatedCents) },
+        }, [
+          el('span', { class: 'abt-tab-prio-row-name' }, [
+            document.createTextNode(row.catName),
+            metaText
+              ? el('span', { class: 'abt-tab-prio-row-meta', text: metaText })
+              : null,
+          ]),
+          el('span', {
+            class: 'abt-tab-prio-row-amount',
+            text: amountText,
+          }),
+        ]);
+        rowsWrap.appendChild(rowEl);
+      }
+      tierEl.appendChild(rowsWrap);
+
+      body.appendChild(tierEl);
+    }
+  }
+
+  // ── Breakdown body rendering ─────────────────────────────────────────
+  function renderBreakdownBody(body) {
+    if (breakdownLoading) {
+      body.appendChild(
+        el('div', { class: 'abt-tab-loading' }, [
+          el('span', { class: 'abt-tab-spinner' }),
+          document.createTextNode('Computing breakdown…'),
+        ])
+      );
+      return;
+    }
+    if (!breakdownState) {
+      body.appendChild(
+        el('div', {
+          class: 'abt-tab-empty',
+          text: 'Apply or overwrite a template to see a breakdown here.',
+        })
+      );
+      return;
+    }
+
+    const { diff, ctx } = breakdownState;
     const changedGroups = diff.groups
       .map((g) => ({ ...g, rows: g.rows.filter((r) => r.delta !== 0) }))
       .filter((g) => g.rows.length > 0);
-
     const allEmpty = changedGroups.length === 0;
 
-    const body = el('div', { class: 'abt-tab-body' });
-
-    // Notification surfacing
     const note = ctx.notification;
     if (note && note.message && (note.type === 'error' || note.type === 'warning')) {
       body.appendChild(
@@ -394,6 +398,8 @@
         })
       );
     }
+
+    renderBreakdownPrioritySummary(body, ctx.priorityBreakdown);
 
     const groupsToShow = showAllRows ? diff.groups : changedGroups;
 
@@ -428,104 +434,311 @@
         body.appendChild(groupEl);
       }
     }
+  }
 
-    const footer = el('div', { class: 'abt-tab-footer' }, [
-      el('span', { class: 'abt-tab-footer-label', text: 'Total allocated' }),
-      el('span', {
-        class: 'abt-tab-footer-value',
-        text: fmtMoney(diff.totalAllocated, { sign: true }),
-      }),
+  function formatAllocatedVsRequested(allocatedCents, requestedCents) {
+    if (requestedCents == null || allocatedCents === requestedCents) {
+      return fmtMoney(allocatedCents);
+    }
+    return `${fmtMoney(allocatedCents)} / ${fmtMoney(requestedCents)}`;
+  }
+
+  function renderBreakdownPrioritySummary(body, summary) {
+    if (!summary || !Array.isArray(summary.tiers) || summary.tiers.length === 0) return;
+    const wrap = el('div', { class: 'abt-tab-breakdown-priority' });
+    wrap.appendChild(
+      el('div', { class: 'abt-tab-breakdown-priority-title' }, [
+        el('span', { text: 'Priority movement' }),
+        el('span', {
+          class: 'abt-tab-breakdown-priority-total',
+          text: fmtMoney(summary.totalAllocatedCents, { sign: true }),
+        }),
+      ])
+    );
+
+    for (const tier of summary.tiers) {
+      const badgeChar = tier.status === 'full' ? '✓' : tier.status === 'partial' ? '◐' : '○';
+      const tierEl = el('div', {
+        class: 'abt-tab-breakdown-priority-tier',
+        dataset: { status: tier.status },
+      });
+      tierEl.appendChild(
+        el('div', { class: 'abt-tab-breakdown-priority-tier-header' }, [
+          el('span', {
+            class: 'abt-tab-prio-badge',
+            dataset: { status: tier.status },
+            text: badgeChar,
+          }),
+          el('span', {
+            class: 'abt-tab-breakdown-priority-tier-label',
+            text: priorityLabel(tier.priority),
+          }),
+          el('span', {
+            class: 'abt-tab-breakdown-priority-tier-amount',
+            text: formatAllocatedVsRequested(
+              tier.allocatedCents,
+              tier.hasUnknownDemand ? null : tier.requestedCents
+            ),
+          }),
+        ])
+      );
+
+      const rows = el('div', { class: 'abt-tab-breakdown-priority-rows' });
+      for (const row of tier.rows) {
+        rows.appendChild(
+          el('div', {
+            class: 'abt-tab-breakdown-priority-row',
+            dataset: { status: row.status },
+          }, [
+            el('span', { class: 'abt-tab-breakdown-priority-row-name', text: row.catName }),
+            el('span', {
+              class: 'abt-tab-breakdown-priority-row-amount',
+              text: formatAllocatedVsRequested(row.allocatedCents, row.requestedCents),
+            }),
+          ])
+        );
+      }
+      tierEl.appendChild(rows);
+      wrap.appendChild(tierEl);
+    }
+    body.appendChild(wrap);
+  }
+
+  function renderFooter(footer) {
+    // Clear
+    footer.textContent = '';
+    if (activeTab === 'breakdown' && breakdownState) {
+      footer.appendChild(el('span', { class: 'abt-tab-footer-label', text: 'Total allocated' }));
+      footer.appendChild(
+        el('span', {
+          class: 'abt-tab-footer-value',
+          text: fmtMoney(breakdownState.diff.totalAllocated, { sign: true }),
+        })
+      );
+      footer.style.display = '';
+    } else {
+      footer.style.display = 'none';
+    }
+  }
+
+  function renderToggle(toggle) {
+    toggle.textContent = '';
+    if (activeTab === 'breakdown' && breakdownState) {
+      toggle.textContent = showAllRows ? 'Show only changed' : 'Show unchanged categories';
+      toggle.style.display = '';
+    } else {
+      toggle.style.display = 'none';
+    }
+  }
+
+  function drawerTriggerStatus() {
+    const sheet = getCurrentSheet();
+    const priorityCache = getPriorityCache();
+    if (breakdownLoading || priorityLoading) return 'loading';
+    if (priorityCacheMatchesSheet(sheet) && priorityCache && priorityCache.ok) {
+      return priorityCache.gapCents > 0 ? 'gap' : 'ok';
+    }
+    return 'idle';
+  }
+
+  function drawerTriggerTitle() {
+    if (drawerOpen) return 'Close template plan';
+    const sheet = getCurrentSheet();
+    const priorityCache = getPriorityCache();
+    if (breakdownLoading || priorityLoading) return 'Template plan is updating';
+    if (priorityCacheMatchesSheet(sheet) && priorityCache && priorityCache.ok) {
+      return `Template plan: ${fmtMoney(priorityCache.totalAllocatedCents)} allocated, ${fmtMoney(priorityCache.gapCents)} gap`;
+    }
+    if (breakdownState) {
+      return `${actionLabel(breakdownState.ctx.kind)}: ${fmtMoney(breakdownState.diff.totalAllocated, { sign: true })}`;
+    }
+    return 'Open template plan';
+  }
+
+  function applyDrawerTriggerState(trigger) {
+    trigger.setAttribute('aria-label', drawerOpen ? 'Close template plan' : 'Open template plan');
+    trigger.setAttribute('aria-pressed', String(drawerOpen));
+    trigger.title = drawerTriggerTitle();
+    trigger.dataset.open = String(drawerOpen);
+    trigger.dataset.status = drawerTriggerStatus();
+  }
+
+  function updateDrawerTrigger() {
+    const trigger = document.getElementById(TRIGGER_ID);
+    if (trigger) applyDrawerTriggerState(trigger);
+  }
+
+  function renderDrawerTrigger() {
+    const trigger = el('button', {
+      id: TRIGGER_ID,
+      class: 'abt-template-drawer-trigger',
+      on: { click: () => setDrawerOpen(!drawerOpen) },
+    }, [
+      el('span', { class: 'abt-template-drawer-trigger-text', text: 'Plan' }),
     ]);
+    applyDrawerTriggerState(trigger);
+    document.body.appendChild(trigger);
+  }
 
-    const toggleRow = el('div', {
-      class: 'abt-tab-toggle',
-      on: {
-        click: () => {
-          showAllRows = !showAllRows;
-          renderPanel(diff, ctx);
-        },
-      },
-      text: showAllRows ? 'Show only changed' : 'Show unchanged categories',
-    });
+  // ── Drawer mount ─────────────────────────────────────────────────────
+  function renderPanel() {
+    removePanel();
+    if (!isEnabled() || !isBudgetPage()) return;
 
-    const closeBtn = el('button', {
-      class: 'abt-tab-iconbtn',
-      'aria-label': 'Dismiss',
-      title: 'Dismiss',
-      text: '×',
-      on: { click: removePanel },
-    });
+    renderDrawerTrigger();
 
-    const collapseBtn = el('button', {
-      class: 'abt-tab-iconbtn',
-      'aria-label': panelState.collapsed ? 'Expand' : 'Collapse',
-      title: panelState.collapsed ? 'Expand' : 'Collapse',
-      text: panelState.collapsed ? '▾' : '▴',
-    });
+    if (!drawerOpen) {
+      return;
+    }
+
+    const body = el('div', { class: 'abt-tab-body' });
+    const footer = el('div', { class: 'abt-tab-footer' });
+    const toggle = el('div', { class: 'abt-tab-toggle' });
+
+    // Header: title with month when available.
+    const priorityCache = getPriorityCache();
+    const rawHeaderMonth = activeTab === 'breakdown'
+      ? (breakdownState && breakdownState.ctx && breakdownState.ctx.month)
+      : (priorityCache && priorityCache.month);
+    const headerMonth = monthLabelForHeader(rawHeaderMonth);
+    const headerTitleText = activeTab === 'breakdown' && breakdownState
+      ? actionLabel(breakdownState.ctx.kind)
+      : 'Template plan';
+
+    const titleNode = el('div', { class: 'abt-tab-title' }, [
+      document.createTextNode(headerTitleText),
+      headerMonth ? el('span', { class: 'abt-tab-month', text: headerMonth }) : null,
+    ]);
 
     const header = el('div', { class: 'abt-tab-header' }, [
-      el('div', { class: 'abt-tab-title' }, [
-        document.createTextNode(actionLabel(ctx.kind)),
-        ctx.month ? el('span', { class: 'abt-tab-month', text: fmtMonth(ctx.month) }) : null,
-      ]),
-      collapseBtn,
-      closeBtn,
+      titleNode,
     ]);
 
-    const panel = el('div', { id: PANEL_ID, class: 'abt-tab-panel' }, [
+    // Tab switcher
+    const tabBreakdown = el('button', {
+      class: 'abt-tab-tab',
+      dataset: { active: String(activeTab === 'breakdown') },
+      text: 'Breakdown',
+      on: { click: () => switchTab('breakdown') },
+    });
+    const tabPriority = el('button', {
+      class: 'abt-tab-tab',
+      dataset: { active: String(activeTab === 'priority') },
+      text: 'Priority plan',
+      on: { click: () => switchTab('priority') },
+    });
+    const tabs = el('div', { class: 'abt-tab-tabs' }, [tabBreakdown, tabPriority]);
+
+    toggle.addEventListener('click', () => {
+      if (activeTab === 'breakdown') {
+        showAllRows = !showAllRows;
+        redrawActiveBody(body, footer, toggle);
+      }
+    });
+
+    const panel = el('aside', {
+      id: PANEL_ID,
+      class: 'abt-template-drawer',
+      'aria-label': 'Template plan',
+    }, [
       header,
+      tabs,
       body,
       footer,
-      toggleRow,
+      toggle,
     ]);
 
-    collapseBtn.addEventListener('click', () => {
-      panelState.collapsed = !panelState.collapsed;
-      if (panelState.collapsed) panel.setAttribute('data-collapsed', 'true');
-      else panel.removeAttribute('data-collapsed');
-      collapseBtn.textContent = panelState.collapsed ? '▾' : '▴';
-      collapseBtn.setAttribute('aria-label', panelState.collapsed ? 'Expand' : 'Collapse');
-      collapseBtn.title = panelState.collapsed ? 'Expand' : 'Collapse';
-    });
-
-    applyPanelPosition(panel);
-    attachDrag(panel, header);
     document.body.appendChild(panel);
+
+    redrawActiveBody(body, footer, toggle);
+
+    // If we're on priority tab and haven't computed yet, kick it off.
+    if (activeTab === 'priority') {
+      refreshPriorityIfNeeded(body, footer, toggle);
+    }
   }
 
-  function renderLoading(kind, month) {
-    removePanel();
-    if (!isEnabled()) return;
-    const closeBtn = el('button', {
-      class: 'abt-tab-iconbtn',
-      'aria-label': 'Dismiss',
-      title: 'Dismiss',
-      text: '×',
-      on: { click: removePanel },
+  function switchTab(tab) {
+    if (tab === activeTab) return;
+    activeTab = tab;
+    saveActiveTab();
+    const panel = document.getElementById(PANEL_ID);
+    if (!panel) return;
+    // Update tab active states
+    const buttons = panel.querySelectorAll('.abt-tab-tab');
+    buttons.forEach((b) => {
+      b.setAttribute('data-active', String(b.textContent.toLowerCase().startsWith(tab)));
     });
-    const header = el('div', { class: 'abt-tab-header' }, [
-      el('div', { class: 'abt-tab-title' }, [
-        document.createTextNode(actionLabel(kind)),
-        month ? el('span', { class: 'abt-tab-month', text: fmtMonth(month) }) : null,
-      ]),
-      closeBtn,
-    ]);
-    const panel = el('div', { id: PANEL_ID, class: 'abt-tab-panel' }, [
-      header,
-      el('div', { class: 'abt-tab-loading' }, [
-        el('span', { class: 'abt-tab-spinner' }),
-        document.createTextNode('Computing breakdown…'),
-      ]),
-    ]);
-    applyPanelPosition(panel);
-    attachDrag(panel, header);
-    document.body.appendChild(panel);
+    const body = panel.querySelector('.abt-tab-body');
+    const footer = panel.querySelector('.abt-tab-footer');
+    const toggle = panel.querySelector('.abt-tab-toggle');
+    const title = panel.querySelector('.abt-tab-title');
+    const priorityCache = getPriorityCache();
+    // Update title + month label
+    const rawMonthLabel = (activeTab === 'breakdown' && breakdownState && breakdownState.ctx.month)
+      || (priorityCache && priorityCache.month) || null;
+    const monthLabel = monthLabelForHeader(rawMonthLabel);
+    title.textContent = '';
+    title.appendChild(document.createTextNode(
+      activeTab === 'breakdown' && breakdownState
+        ? actionLabel(breakdownState.ctx.kind)
+        : 'Template plan'
+    ));
+    if (monthLabel) {
+      title.appendChild(el('span', { class: 'abt-tab-month', text: monthLabel }));
+    }
+    redrawActiveBody(body, footer, toggle);
+    if (activeTab === 'priority') {
+      refreshPriorityIfNeeded(body, footer, toggle);
+    }
   }
 
-  // ── Click interception ───────────────────────────────────────────────
-  // Hook clicks on the menu-item buttons. Snapshot every visible month
-  // before, wait for cell mutations to settle, snapshot again, and pick
-  // the month whose budgets actually changed.
+  function redrawActiveBody(body, footer, toggle) {
+    body.textContent = '';
+    if (activeTab === 'breakdown') {
+      renderBreakdownBody(body);
+    } else {
+      renderPriorityBody(body, getPriorityCache());
+    }
+    renderFooter(footer);
+    renderToggle(toggle);
+  }
+
+  async function refreshPriorityIfNeeded(body, footer, toggle) {
+    if (!isBudgetPage()) return;
+    priorityLoading = true;
+    updateDrawerTrigger();
+    try {
+      await computePriorityStatus(false);
+    } catch (e) {
+      console.warn('[ABT TAB] priority compute failed', e);
+    } finally {
+      priorityLoading = false;
+      updateDrawerTrigger();
+    }
+    if (!document.getElementById(PANEL_ID)) return;
+    if (activeTab !== 'priority') return;
+    // Only redraw the priority body; don't disturb other state.
+    const priorityCache = getPriorityCache();
+    body.textContent = '';
+    renderPriorityBody(body, priorityCache);
+    renderFooter(footer);
+    renderToggle(toggle);
+    // Update month label in header too
+    const panel = document.getElementById(PANEL_ID);
+    const title = panel && panel.querySelector('.abt-tab-title');
+    if (title && priorityCache && priorityCache.month) {
+      // Replace the month chip if present
+      const existingChip = title.querySelector('.abt-tab-month');
+      if (existingChip) existingChip.remove();
+      title.appendChild(el('span', {
+        class: 'abt-tab-month',
+        text: formatMonthLabel(priorityCache.month),
+      }));
+    }
+  }
+
+  // ── Click interception (apply/overwrite) ─────────────────────────────
   let runSeq = 0;
   let clickListenerInstalled = false;
 
@@ -541,22 +754,27 @@
 
   async function handleTrigger(kind, beforeStarts) {
     const seq = ++runSeq;
-    renderLoading(kind, null);
+    breakdownLoading = true;
+    // If we're on the priority tab, switch to breakdown so the user sees the loading.
+    if (activeTab !== 'breakdown') {
+      activeTab = 'breakdown';
+      saveActiveTab();
+    }
+    drawerOpen = true;
+    saveDrawerOpen();
+    renderPanel();
+
     let beforeMap;
     try {
       beforeMap = await finishSnapshots(beforeStarts);
     } catch (e) {
       console.warn('[ABT TAB] snapshot before failed', e);
-      removePanel();
+      breakdownLoading = false;
+      renderPanel();
       return;
     }
 
-    // Wait for cell mutations to settle before re-snapshotting.
-    try {
-      await waitForQuiescence();
-    } catch (e) {
-      // ignore
-    }
+    try { await waitForQuiescence(); } catch {}
     if (seq !== runSeq) return;
 
     let afterMap;
@@ -564,19 +782,16 @@
       afterMap = await finishSnapshots(startSnapshotAllVisible());
     } catch (e) {
       console.warn('[ABT TAB] snapshot after failed', e);
-      removePanel();
+      breakdownLoading = false;
+      renderPanel();
       return;
     }
     if (seq !== runSeq) return;
 
-    // Diff per sheet; pick the sheet with the largest absolute change.
     let bestDiff = null;
     let bestSheet = null;
     let bestScore = 0;
-    const sheets = new Set([
-      ...beforeMap.keys(),
-      ...afterMap.keys(),
-    ]);
+    const sheets = new Set([...beforeMap.keys(), ...afterMap.keys()]);
     for (const sheet of sheets) {
       const before = beforeMap.get(sheet);
       const after = afterMap.get(sheet);
@@ -593,9 +808,19 @@
       }
     }
 
+    breakdownLoading = false;
+    let priorityBreakdown = null;
+    const prioritySheet = bestSheet || afterMap.keys().next().value;
+    const priorityDiff = bestDiff || null;
+    if (prioritySheet && priorityDiff) {
+      try {
+        priorityBreakdown = await buildBreakdownPrioritySummary(prioritySheet, priorityDiff);
+      } catch (e) {
+        console.warn('[ABT TAB] priority breakdown failed', e);
+      }
+    }
+
     if (!bestDiff || bestScore === 0) {
-      // Nothing changed — surface an empty-state panel using any sheet
-      // (just for the month label).
       const fallbackSheet = afterMap.keys().next().value;
       const empty = bestDiff || {
         groups: [],
@@ -605,19 +830,31 @@
         toBudgetBefore: 0,
         toBudgetAfter: 0,
       };
-      renderPanel(empty, {
-        kind,
-        month: sheetToMonthString(fallbackSheet),
-        notification: null,
-      });
-      return;
+      breakdownState = {
+        diff: empty,
+        ctx: {
+          kind,
+          month: sheetToMonthLabel(fallbackSheet),
+          notification: null,
+          priorityBreakdown,
+        },
+      };
+    } else {
+      breakdownState = {
+        diff: bestDiff,
+        ctx: {
+          kind,
+          month: sheetToMonthLabel(bestSheet),
+          notification: null,
+          priorityBreakdown,
+        },
+      };
     }
+    saveBreakdown(breakdownState.diff, breakdownState.ctx);
 
-    renderPanel(bestDiff, {
-      kind,
-      month: sheetToMonthString(bestSheet),
-      notification: null,
-    });
+    // Invalidate priority cache (budget changed) and re-render
+    invalidatePriorityStatus();
+    renderPanel();
   }
 
   function installClickListener() {
@@ -629,16 +866,19 @@
         if (!isEnabled()) return;
         const kind = classifyTrigger(ev.target);
         if (!kind) return;
-        if (!categoriesCache) return; // not yet ready
-        // Capture phase fires before React's bubble-phase onClick. Start
-        // get-cell postMessages NOW, synchronously, so the worker queues
-        // them ahead of the impending apply-template message. The Promises
-        // are awaited inside handleTrigger.
         const beforeStarts = startSnapshotAllVisible();
         handleTrigger(kind, beforeStarts);
       },
-      true // capture
+      true
     );
+  }
+
+  function installDrawerKeyboard() {
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Escape') return;
+      if (!drawerOpen || !isEnabled() || !isBudgetPage()) return;
+      setDrawerOpen(false);
+    });
   }
 
   // ── Toggle observation ───────────────────────────────────────────────
@@ -646,7 +886,8 @@
     const obs = new MutationObserver((muts) => {
       for (const m of muts) {
         if (m.type === 'attributes' && m.attributeName === TOGGLE_ATTR) {
-          if (!isEnabled()) removePanel();
+          if (isEnabled()) renderPanel();
+          else removePanel();
         }
       }
     });
@@ -656,12 +897,69 @@
     });
   }
 
-  // ── URL change → invalidate categories cache ─────────────────────────
+  // ── URL change → invalidate caches & refresh ─────────────────────────
   let lastUrl = location.href;
+  let lastSheet = isBudgetPage() ? getCurrentSheet() : null;
   setInterval(() => {
-    if (location.href !== lastUrl) {
+    const urlChanged = location.href !== lastUrl;
+    if (urlChanged) {
       lastUrl = location.href;
       invalidateCategoriesCache();
+    }
+
+    if (!isEnabled()) {
+      removePanel();
+      return;
+    }
+
+    const nowBudget = isBudgetPage();
+    if (!nowBudget) {
+      if (drawerOpen) {
+        drawerOpen = false;
+        saveDrawerOpen();
+      }
+      removePanel();
+      return;
+    }
+    removeLegacyPanel();
+
+    const sheetChanged = setActiveSheet(getCurrentSheet());
+    if (sheetChanged) {
+      renderPanel();
+      return;
+    }
+
+    let panel = document.getElementById(PANEL_ID);
+    const trigger = document.getElementById(TRIGGER_ID);
+    if (drawerOpen && (!panel || !panel.isConnected)) {
+      renderPanel();
+      panel = document.getElementById(PANEL_ID);
+      if (!panel) return;
+    }
+    if (!drawerOpen && (!trigger || !trigger.isConnected)) {
+      renderPanel();
+      return;
+    }
+    if (!drawerOpen) return;
+
+    if (!urlChanged) return;
+
+    if (activeTab === 'priority') {
+      const body = panel.querySelector('.abt-tab-body');
+      const footer = panel.querySelector('.abt-tab-footer');
+      const toggle = panel.querySelector('.abt-tab-toggle');
+      // If the cache is fresh (within TTL), redraw synchronously from it.
+      // Otherwise show loading and recompute.
+      const fresh = priorityCacheIsFreshForSheet(lastSheet);
+      if (fresh) {
+        const priorityCache = getPriorityCache();
+        body.textContent = '';
+        renderPriorityBody(body, priorityCache);
+      } else {
+        body.textContent = '';
+        renderPriorityBody(body, null); // loading
+        refreshPriorityIfNeeded(body, footer, toggle);
+      }
     }
   }, 1500);
 
@@ -669,11 +967,16 @@
   (async function boot() {
     watchToggle();
     await waitForBackendReady();
-    // Pre-load categories so the click handler can start get-cell calls
-    // synchronously without an await delay (which would let React's
-    // onClick post the apply-template message first and corrupt the
-    // "before" snapshot).
+    await loadCurrencyPreference();
     await loadCategories();
     installClickListener();
+    installDrawerKeyboard();
+    loadActiveTab();
+    loadDrawerOpen();
+    loadPrioCollapse();
+    // Restore persisted breakdown (if any)
+    const saved = loadBreakdown();
+    if (saved) breakdownState = saved;
+    if (isEnabled()) renderPanel();
   })();
 })();

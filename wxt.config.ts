@@ -1,5 +1,18 @@
 import { resolve } from "path";
 import { defineConfig } from "wxt";
+import type { UserManifest } from "wxt";
+
+type GeckoSettings = NonNullable<NonNullable<UserManifest["browser_specific_settings"]>["gecko"]> & {
+	data_collection_permissions?: {
+		required: string[];
+	};
+};
+
+const geckoSettings: GeckoSettings = {
+	data_collection_permissions: {
+		required: ["none"],
+	},
+};
 
 export default defineConfig({
 	srcDir: "src",
@@ -10,11 +23,7 @@ export default defineConfig({
 		description: "",
 		permissions: ["storage", "tabs"],
 		browser_specific_settings: {
-			gecko: {
-				data_collection_permissions: {
-					required: ["none"],
-				},
-			},
+			gecko: geckoSettings,
 		},
 		content_scripts: [
 			{
@@ -38,15 +47,21 @@ export default defineConfig({
 			{
 				resources: [
 					"css/base.css",
+					"css/income-breakdown.css",
+					"css/template-apply-breakdown.css",
 					"content-scripts/content.css",
-					"content-scripts/income-breakdown.css",
-					"content-scripts/template-apply-breakdown.css",
 					"lib/d3.min.js",
 					"lib/d3-sankey.min.js",
 					"content-scripts/income-breakdown.js",
 					"content-scripts/category-template-insights.js",
 					"content-scripts/schedule-highlight.js",
 					"content-scripts/template-apply-breakdown.js",
+					"content-scripts/template-apply-breakdown/actual-data.js",
+					"content-scripts/template-apply-breakdown/constants.js",
+					"content-scripts/template-apply-breakdown/dom.js",
+					"content-scripts/template-apply-breakdown/money.js",
+					"content-scripts/template-apply-breakdown/priority-plan.js",
+					"content-scripts/template-apply-breakdown/templates.js",
 				],
 				matches: ["<all_urls>"],
 			},

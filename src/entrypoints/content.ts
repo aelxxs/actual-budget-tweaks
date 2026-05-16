@@ -1,4 +1,7 @@
 import { getBaseUrl } from "@/lib/utilities/store";
+import type { PublicPath } from "wxt/browser";
+
+const contentCssPath = "/content-scripts/content.css" as unknown as PublicPath;
 
 export default defineContentScript({
 	matches: ["<all_urls>"],
@@ -41,7 +44,7 @@ export default defineContentScript({
 			let componentCss: string;
 			try {
 				baseCss = browser.runtime.getURL("/css/base.css");
-				componentCss = browser.runtime.getURL("/content-scripts/content.css");
+				componentCss = browser.runtime.getURL(contentCssPath);
 			} catch {
 				return; // Extension context invalidated
 			}
