@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.29
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.28...v0.1.29)
+
+### 🩹 Fixes
+
+- Harden custom dashboard widget injection ([3f8a9c5](https://github.com/aelxxs/actual-budget-tweaks/commit/3f8a9c5))
+
+### ❤️ Contributors
+
+- Andy Su <andysu1551@gmail.com>
+
 ## v0.1.28
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.27...v0.1.28)
