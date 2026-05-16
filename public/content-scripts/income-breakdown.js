@@ -12,6 +12,34 @@
   const NON_DRAGGABLE_CLASS = 'non-draggable-area';
   const POLL_INTERVAL = 1500;
   const DEBOUNCE_MS = 300;
+  const dashboardWidgetUtils = window.ActualBudgetTweaksDashboardWidgets;
+  const INCOME_BREAKDOWN_WIDGET = dashboardWidgetUtils?.createMarkdownWidgetDefinition?.({
+    key: 'income-breakdown',
+    label: DEFAULT_WIDGET_NAME,
+    placeholderText: PLACEHOLDER_TEXT,
+    width: DEFAULT_WIDGET_WIDTH,
+    height: DEFAULT_WIDGET_HEIGHT,
+  }) || {
+    key: 'income-breakdown',
+    label: DEFAULT_WIDGET_NAME,
+    matchesRecord(widget) {
+      const meta = parseMeta(widget?.meta);
+      return widget?.type === 'markdown-card' && String(meta.content || '').includes(PLACEHOLDER_TEXT);
+    },
+    buildWidgetPayload(dashboardPageId) {
+      return {
+        type: 'markdown-card',
+        width: DEFAULT_WIDGET_WIDTH,
+        height: DEFAULT_WIDGET_HEIGHT,
+        meta: {
+          content: PLACEHOLDER_TEXT,
+          name: DEFAULT_WIDGET_NAME,
+        },
+        dashboard_page_id: dashboardPageId,
+      };
+    },
+  };
+  const CUSTOM_DASHBOARD_WIDGETS = [INCOME_BREAKDOWN_WIDGET];
 
   // ── Settings persistence ──────────────────────────────────────────────
   function getSetting(key, defaultValue) {
@@ -159,8 +187,7 @@
   }
 
   function isIncomeBreakdownWidgetRecord(widget) {
-    const meta = parseMeta(widget?.meta);
-    return widget?.type === 'markdown-card' && String(meta.content || '').includes(PLACEHOLDER_TEXT);
+    return INCOME_BREAKDOWN_WIDGET.matchesRecord(widget);
   }
 
   function getWidgetName(widgetRecord) {
@@ -242,8 +269,7 @@
   }
 
   function isDashboardEditing() {
-    return Array.from(document.querySelectorAll('button'))
-      .some(btn => btn.textContent.trim() === 'Finish editing dashboard');
+    return Boolean(document.querySelector('.react-grid-item .hover-visible.non-draggable-area'));
   }
 
   function syncWidgetModeClasses() {
@@ -276,19 +302,13 @@
     });
   }
 
-  async function addIncomeBreakdownWidget() {
+  async function addCustomDashboardWidget(widgetDefinition) {
     const dashboardId = await getCurrentDashboardId();
     if (!dashboardId) return;
-    await sendDashboardMutation('dashboard-add-widget', {
-      type: 'markdown-card',
-      width: DEFAULT_WIDGET_WIDTH,
-      height: DEFAULT_WIDGET_HEIGHT,
-      meta: {
-        content: PLACEHOLDER_TEXT,
-        name: DEFAULT_WIDGET_NAME,
-      },
-      dashboard_page_id: dashboardId,
-    });
+    await sendDashboardMutation(
+      'dashboard-add-widget',
+      widgetDefinition.buildWidgetPayload(dashboardId)
+    );
   }
 
   function dismissNativeMenu(anchor) {
@@ -1282,37 +1302,12 @@
   }
 
   function enhanceAddWidgetMenu() {
-    const buttons = Array.from(document.querySelectorAll('button'));
-    const textWidgetButton = buttons.find(btn => btn.textContent.trim() === 'Text widget');
-    if (!textWidgetButton) return;
-
-    const menu = textWidgetButton.parentElement;
-    if (!menu || menu.querySelector('[data-abt-ib-add-widget]')) return;
-    const menuButtons = Array.from(menu.querySelectorAll('button'));
-    const hasAddWidgetItems = menuButtons.some(btn => btn.textContent.trim() === 'Cash flow graph') &&
-      menuButtons.some(btn => btn.textContent.trim() === 'Net worth graph');
-    if (!hasAddWidgetItems) return;
-
-    const incomeButton = textWidgetButton.cloneNode(true);
-    incomeButton.dataset.abtIbAddWidget = '1';
-    const textNode = Array.from(incomeButton.querySelectorAll('*'))
-      .find(el => el.textContent.trim() === 'Text widget');
-    if (textNode) {
-      textNode.textContent = DEFAULT_WIDGET_NAME;
-    } else {
-      incomeButton.textContent = DEFAULT_WIDGET_NAME;
-    }
-    incomeButton.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      try {
-        dismissNativeMenu(incomeButton);
-        await addIncomeBreakdownWidget();
-      } catch (err) {
-        console.error('[ABT Income Breakdown] Failed to add dashboard widget:', err);
-      }
+    dashboardWidgetUtils?.enhanceAddWidgetMenu?.({
+      widgetDefinitions: CUSTOM_DASHBOARD_WIDGETS,
+      onWidgetSelected: addCustomDashboardWidget,
+      dismissNativeMenu,
+      logger: console,
     });
-    textWidgetButton.insertAdjacentElement('afterend', incomeButton);
   }
 
   async function injectWidgets() {
