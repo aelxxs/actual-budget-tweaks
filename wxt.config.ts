@@ -52,6 +52,7 @@ export default defineConfig({
 					"content-scripts/content.css",
 					"lib/d3.min.js",
 					"lib/d3-sankey.min.js",
+					"content-scripts/dashboard-widget-utils.js",
 					"content-scripts/income-breakdown.js",
 					"content-scripts/category-template-insights.js",
 					"content-scripts/schedule-highlight.js",

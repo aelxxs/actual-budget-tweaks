@@ -42,6 +42,7 @@
       injectStylesheet('css/income-breakdown.css');
       await injectScript('lib/d3.min.js');
       await injectScript('lib/d3-sankey.min.js');
+      await injectScript('content-scripts/dashboard-widget-utils.js');
       await injectScript('content-scripts/income-breakdown.js');
     } catch (err) {
       console.error('[ABT Income Breakdown] Failed to inject scripts:', err);
