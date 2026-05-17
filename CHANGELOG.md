@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.30
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.29...v0.1.30)
+
+### 🚀 Enhancements
+
+- Add side panel functionality with resizing and dynamic content ([dd2f0c3](https://github.com/aelxxs/actual-budget-tweaks/commit/dd2f0c3))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.29
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.28...v0.1.29)
