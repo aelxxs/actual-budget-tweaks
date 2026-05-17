@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.31
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.30...v0.1.31)
+
+### 🚀 Enhancements
+
+- Move content scripts out of public and into src; begin typescript migration ([177b5b3](https://github.com/aelxxs/actual-budget-tweaks/commit/177b5b3))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.30
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.29...v0.1.30)
