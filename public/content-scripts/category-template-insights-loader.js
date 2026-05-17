@@ -3,11 +3,15 @@
 (function () {
   'use strict';
 
-  function injectScript(src) {
+  function injectScript(src, options) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = chrome.runtime.getURL(src);
-      script.onload = () => { script.remove(); resolve(); };
+      if (options && options.type) script.type = options.type;
+      script.onload = () => {
+        script.remove();
+        resolve();
+      };
       script.onerror = reject;
       document.documentElement.appendChild(script);
     });
@@ -29,7 +33,7 @@
     const baseUrl = await getBaseUrl();
     if (!baseUrl || !window.location.href.startsWith(baseUrl)) return;
     try {
-      await injectScript('content-scripts/category-template-insights.js');
+      await injectScript('content-scripts/category-template-insights.js', { type: "module" });
     } catch (err) {
       console.error('[ABT CTI] Failed to inject script:', err);
     }

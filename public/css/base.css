@@ -596,3 +596,37 @@ textarea,
 [data-testid="category-month-spent"] * {
 	flex-shrink: 0;
 }
+
+/* ── Privacy mode font ─────────────────────────────────────────────── */
+.abt-privacy-enabled .abt-privacy-number {
+	font-family: "Redacted Script", cursive !important;
+	filter: none;
+	transition: font-family 0.15s;
+}
+
+.abt-privacy-enabled .abt-privacy-number:hover {
+	font-family: inherit !important;
+	filter: none;
+}
+
+/* header */
+
+.css-pq65pe {
+	position: sticky;
+	background-color: var(--color-pageBackground);
+	padding: 1rem;
+	padding-block: 1.5rem;
+	height: 3.25rem;
+}
+.css-3oa7u7,
+.css-jdrt9o,
+.css-ect7vi,
+.css-k9t6j1,
+.css-xggax0 {
+	padding-top: 1.5rem;
+}
+
+.abt-side-drawer-sidebar {
+	border-top: var(--border);
+	border-top-left-radius: var(--border-radius);
+}

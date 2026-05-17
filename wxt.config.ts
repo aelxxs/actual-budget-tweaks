@@ -1,6 +1,6 @@
 import { resolve } from "path";
-import { defineConfig } from "wxt";
 import type { UserManifest } from "wxt";
+import { defineConfig } from "wxt";
 
 type GeckoSettings = NonNullable<NonNullable<UserManifest["browser_specific_settings"]>["gecko"]> & {
 	data_collection_permissions?: {
@@ -55,6 +55,7 @@ export default defineConfig({
 					"content-scripts/dashboard-widget-utils.js",
 					"content-scripts/income-breakdown.js",
 					"content-scripts/category-template-insights.js",
+					"content-scripts/privacy-utils.js",
 					"content-scripts/schedule-highlight.js",
 					"content-scripts/template-apply-breakdown.js",
 					"content-scripts/template-apply-breakdown/actual-data.js",

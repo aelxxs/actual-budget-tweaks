@@ -1,3 +1,5 @@
+import { observeSidebarAllAccountsBalance, refreshPrivacyMode } from './privacy-utils.js';
+
 (function () {
   'use strict';
 
@@ -464,7 +466,7 @@
         const rel = displayDate ? relativeDay(displayDate) : '';
         const row1 = el('div', { class: 'abt-cti-sched-row1' }, [
           el('span', { class: 'abt-cti-sched-name', text: sched.name || t.scheduleName }),
-          el('span', { class: 'abt-cti-sched-amt', text: fmtCents(amtCents) }),
+          el('span', { class: 'abt-cti-sched-amt abt-privacy-number', text: fmtCents(amtCents) }),
           el('span', { class: 'abt-cti-sched-status abt-cti-status-' + status, text: status }),
         ]);
         const row2 = el('div', { class: 'abt-cti-sched-row2' }, [
@@ -482,7 +484,19 @@
       return el('li', { class: 'abt-cti-template abt-cti-template-schedule abt-cti-template-missing' }, [priority, body]);
     }
     // Non-schedule template: show raw directive (no redundant line for schedule ones).
-    body.appendChild(el('div', { class: 'abt-cti-template-raw', text: t.raw }));
+    // Wrap numbers in t.raw with <span class="abt-privacy-number"> for privacy font
+    function wrapNumbers(str) {
+      // Matches numbers, including decimals and negative numbers
+      return str.replace(/(-?\d[\d,]*\.?\d*)/g, function (match) {
+        // Don't wrap empty or lone dash
+        if (!match || match === '-') return match;
+        return '<span class="abt-privacy-number">' + match + '</span>';
+      });
+    }
+    const rawHtml = wrapNumbers(t.raw);
+    const rawDiv = el('div', { class: 'abt-cti-template-raw' });
+    rawDiv.innerHTML = rawHtml;
+    body.appendChild(rawDiv);
     return el('li', { class: 'abt-cti-template' }, [priority, body]);
   }
 
@@ -499,10 +513,10 @@
     const ratioPct = Math.round(ratio * 100);
 
     const totals = el('div', { class: 'abt-cti-totals' }, [
-      el('span', { text: fmtCents(numerator) }),
+      el('span', { class: 'abt-privacy-number', text: fmtCents(numerator) }),
       el('span', { class: 'abt-cti-sep', text: '/' }),
-      el('span', { text: denominator ? fmtCents(denominator) : '—' }),
-      denominator ? el('span', { class: 'abt-cti-ratio', text: ratioPct + '%' }) : null,
+      el('span', { class: 'abt-privacy-number', text: denominator ? fmtCents(denominator) : '—' }),
+      denominator ? el('span', { class: 'abt-cti-ratio abt-privacy-number', text: ratioPct + '%' }) : null,
     ]);
 
     const header = el('div', { class: 'abt-cti-header' }, [
@@ -524,6 +538,7 @@
     document.body.appendChild(pop);
     popoverEl = pop;
     positionPopover(pop, anchor);
+    if (refreshPrivacyMode) refreshPrivacyMode();
 
     // First linked schedule — used for the F hotkey jump/open target.
     const firstSched = entry.linkedSchedules[0] && entry.linkedSchedules[0].schedule;
@@ -626,6 +641,7 @@
       if (!entry) return;
       decorateRow(row, entry);
     });
+    if (refreshPrivacyMode) refreshPrivacyMode();
   }
 
   function undecorateAll() {
@@ -839,6 +855,16 @@
     }
   }, POLL_INTERVAL);
 
+  // Listen for privacy mode changes
+  if (typeof window !== 'undefined') {
+    window.addEventListener('abt:privacy:changed', () => {
+      if (refreshPrivacyMode) refreshPrivacyMode();
+    });
+    // Observe sidebar all-accounts balance for privacy reactivity
+    observeSidebarAllAccountsBalance(() => {
+      refreshPrivacyMode();
+    });
+  }
   watchToggle();
   onToggleChange();
 })();

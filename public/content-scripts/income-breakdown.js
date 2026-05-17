@@ -1,3 +1,4 @@
+
 (function () {
   'use strict';
 
@@ -642,14 +643,14 @@
           </thead>
           <tbody>
             ${txs.map(tx => {
-              const payee = payeeMap.get(tx.payee);
-              const cat = catMap.get(tx.category);
-              const acct = accountMap.get(tx.account);
-              const amtClass = tx.amount >= 0 ? 'positive' : 'negative';
-              const statusClass = tx.reconciled ? 'reconciled' : tx.cleared ? 'cleared' : 'uncleared';
-              const statusIcon = tx.reconciled ? '🔒' : tx.cleared ? '✓' : '•';
-              const statusTitle = tx.reconciled ? 'Reconciled' : tx.cleared ? 'Cleared' : 'Not cleared';
-              return `<tr class="abt-ib-tx-row">
+      const payee = payeeMap.get(tx.payee);
+      const cat = catMap.get(tx.category);
+      const acct = accountMap.get(tx.account);
+      const amtClass = tx.amount >= 0 ? 'positive' : 'negative';
+      const statusClass = tx.reconciled ? 'reconciled' : tx.cleared ? 'cleared' : 'uncleared';
+      const statusIcon = tx.reconciled ? '🔒' : tx.cleared ? '✓' : '•';
+      const statusTitle = tx.reconciled ? 'Reconciled' : tx.cleared ? 'Cleared' : 'Not cleared';
+      return `<tr class="abt-ib-tx-row">
                 <td>${formatDate(tx.date)}</td>
                 <td>${acct ? acct.name : '—'}</td>
                 <td>${payee ? payee.name : '—'}</td>
@@ -658,7 +659,7 @@
                 <td class="amount-col abt-ib-private ${amtClass}">${formatCurrency(tx.amount)}</td>
                 <td class="col-status status-${statusClass}" title="${statusTitle}">${statusIcon}</td>
               </tr>`;
-            }).join('')}
+    }).join('')}
           </tbody>
         </table>
       </div>
@@ -1405,7 +1406,22 @@
     }
   });
 
-  function init() {
+  // Wait for backend ($q, $query, and DB) to be available and ready, and test a query
+  function waitForBackendReady() {
+    return new Promise((resolve) => {
+      function check() {
+        if (window.$q && window.$query && document.querySelector('[data-testid="__global!accounts-balance"]')) {
+          resolve();
+        } else {
+          setTimeout(check, 50);
+        }
+      }
+      check();
+    });
+  }
+
+  async function init() {
+    await waitForBackendReady();
     checkAndInject();
     observer.observe(document.body, { childList: true, subtree: true });
     setInterval(checkAndInject, POLL_INTERVAL);

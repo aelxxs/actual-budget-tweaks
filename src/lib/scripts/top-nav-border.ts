@@ -10,19 +10,11 @@ export const headerBorder = defineSetting({
 		defaultValue: true,
 		css: () => `
             .css-pq65pe {
-                position: sticky;
                 border-bottom: var(--border);
-                background-color: var(--color-pageBackground);
-				padding: 1rem;
-				padding-block: 1.5rem;
-				height: 3.25rem;
             }
-			.css-3oa7u7,
-			.css-jdrt9o,
-			.css-ect7vi,
-			.css-k9t6j1,
-			.css-xggax0 {
-				padding-top: 1.5rem;
+			.abt-side-drawer-sidebar {
+				border-top: none;
+				border-top-left-radius: 0px;
 			}
         `,
 	},

@@ -13,6 +13,7 @@ import { reportCardBorders } from "./report-card-borders";
 import { reportWidgetBackgroundColor } from "./report-widget-background-color";
 import { resizableTransactionColumns } from "./resizable-transaction-columns";
 import { showDailyAvailable } from "./show-daily-available";
+import { sidePanel } from "./side-panel";
 import { sidebarAccountSpacing } from "./sidebar-account-spacing";
 import { sidebarRedesign } from "./sidebar-redesign";
 import { templateApplyBreakdown } from "./template-apply-breakdown";
@@ -91,5 +92,6 @@ export const scripts = [
 		headerBorder,
 		reportCardBorders,
 		budgetPageBorders,
+		sidePanel,
 	],
 ];

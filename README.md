@@ -1,3 +1,4 @@
+
 ## Recommended IDE Setup
 
 [VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
@@ -44,6 +45,11 @@
      Customize Actual Budget's interface with user-controlled themes, layouts, and visibility settings.
     <br />
     <a href="https://github.com/aelxxs/actual-budget-tweaks"><strong>Explore the docs (soon) »</strong></a>
+    <br />
+    <br />
+    <b>Install from your browser's extension store:</b><br />
+    <a href="https://addons.mozilla.org/en/firefox/addon/actual-budget-tweaks/">Firefox Add-ons</a> |
+    <a href="https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm">Chrome Web Store</a>
     <br />
     <br />
     <!-- <a href="https://github.com/aelxxs/actual-budget-tweaks">View Demo</a>
@@ -114,9 +120,13 @@ Adds user-configurable interface options to Actual Budget, including dynamic the
 
 
 
+
 ### Installation
 
-Coming Soon.
+**Install Actual Budget Tweaks from your browser's extension store:**
+
+- **Firefox:** [Install from Firefox Add-ons](https://addons.mozilla.org/en/firefox/addon/actual-budget-tweaks/)
+- **Chrome:** [Install from Chrome Web Store](https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm)
 
 
 <!-- USAGE EXAMPLES -->
@@ -239,3 +249,13 @@ Use this space to list resources you find helpful and would like to give credit 
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
 [JQuery-url]: https://jquery.com
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=aelxxs%2Factual-budget-tweaks&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=aelxxs/actual-budget-tweaks&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=aelxxs/actual-budget-tweaks&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=aelxxs/actual-budget-tweaks&type=date&legend=top-left" />
+ </picture>
+</a>
