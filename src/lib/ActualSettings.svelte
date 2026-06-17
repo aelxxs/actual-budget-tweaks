@@ -1,7 +1,7 @@
 <script lang="ts">
 	import CheckboxOption from "./components/Checkbox.svelte";
 	import SelectOption from "./components/Select.svelte";
-	import { scriptSections } from "./scripts";
+	import { scriptSections } from "../features";
 
 	let query = $state("");
 	let collapsed = $state<Record<string, boolean>>({});
@@ -80,6 +80,16 @@
 									ctx={item.context}
 									onChange={item.onChange}
 								/>
+							{:else if item.type === "custom"}
+								{#if item.component}
+									{@const C = item.component}
+									<div class="custom-setting" data-testid={item.context.key}>
+										<span class="setting-label">{item.label}</span>
+										<C ctx={item.context} />
+									</div>
+								{:else}
+									<div data-testid={item.context.key}></div>
+								{/if}
 							{:else if item.type === "checkbox"}
 								<CheckboxOption labelText={item.label} ctx={item.context} onChange={item.onChange} />
 							{/if}
@@ -152,7 +162,7 @@
 			padding: 0;
 			width: 100%;
 			box-sizing: border-box;
-			border-radius: 8px;
+			border-radius: var(--border-radius);
 			border: var(--border);
 			background: var(--color-cardBackground);
 			overflow: hidden;
@@ -210,6 +220,16 @@
 
 		.settings-list {
 			padding: 0 1rem 0.85rem;
+		}
+
+		.custom-setting {
+			display: flex;
+			flex-direction: column;
+			gap: 0.4rem;
+		}
+
+		.setting-label {
+			font-weight: 500;
 		}
 
 		.empty {

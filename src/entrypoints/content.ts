@@ -1,4 +1,4 @@
-import { getBaseUrl } from "@/lib/utilities/store";
+import { getBaseUrl } from "@lib/utilities/store";
 import type { PublicPath } from "wxt/browser";
 
 const contentCssPath = "/content-scripts/content.css" as unknown as PublicPath;
@@ -33,10 +33,10 @@ export default defineContentScript({
 			if (mounted) return;
 			mounted = true;
 
-			const [{ default: Settings }, { scripts }, { createElement }, { mount, unmount }] = await Promise.all([
-				import("@/lib/ActualSettings.svelte"),
-				import("@/lib/scripts"),
-				import("@/lib/utilities/dom"),
+			const [{ default: Settings }, { scripts, coreScripts }, { createElement }, { mount, unmount }] = await Promise.all([
+				import("@lib/ActualSettings.svelte"),
+				import("@features"),
+				import("@lib/utilities/dom"),
 				import("svelte"),
 			]);
 
@@ -62,13 +62,15 @@ export default defineContentScript({
 				}),
 			);
 
-			for (const setting of scripts.flat()) {
-				if (setting.init) {
-					// @ts-ignore -- TODO: fix this type error
-					setting.init(setting.context);
-				}
+			for (const core of coreScripts) {
+				core.init();
 			}
 
+			for (const setting of scripts.flat()) {
+				if (!setting.init) continue;
+				// @ts-ignore -- TODO: fix this type error
+				setting.init(setting.context);
+			}
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
 				anchor: "[data-testid='settings'] > :nth-child(2)",

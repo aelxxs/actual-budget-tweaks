@@ -19,12 +19,12 @@ import {
 	waitForQuiescence,
 } from "./template-apply-breakdown/actual-data.js";
 import {
-	LEGACY_PANEL_ID,
 	PANEL_ID,
 	PRIO_COLLAPSE_STORAGE_KEY,
 	STORAGE_KEY,
 	TAB_STORAGE_KEY,
 	TOGGLE_ATTR,
+	TRIGGER_ID,
 	TRIGGER_LABELS,
 	priorityKey,
 	priorityLabel,
@@ -35,12 +35,11 @@ import { createPriorityPlanner, statusFor } from "./template-apply-breakdown/pri
 
 const PANEL_OPEN_EVENT = "abt:sidepanel:open";
 const PANEL_CLOSE_EVENT = "abt:sidepanel:close";
+const PANEL_DISMISS_EVENT = "abt:sidepanel:dismiss";
 const PANEL_SET_TITLE_EVENT = "abt:sidepanel:set-title";
-const PANEL_SET_TRIGGER_LABEL_EVENT = "abt:sidepanel:set-trigger-label";
 
 const DEBUG_PREFIX = "[ABT TAB]";
 const HOST_SIDEBAR_SELECTOR = "[data-abt-side-drawer-sidebar]";
-const HOST_PANEL_BODY_SELECTOR = ".abt-side-drawer-body";
 
 function createChevronIcon() {
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -71,26 +70,20 @@ function createChevronIcon() {
 		return Boolean(document.querySelector(HOST_SIDEBAR_SELECTOR));
 	}
 
-	function getHostDrawerBody() {
-		return document.querySelector(`${HOST_SIDEBAR_SELECTOR} ${HOST_PANEL_BODY_SELECTOR}`);
-	}
-
 	function getSidePanelApi() {
-		const api = window.abtSidepanel;
-		if (api) {
-			return api;
-		}
-
 		return {
-			open: (title, bodyNode) => {
+			open: (options) => {
 				document.dispatchEvent(
 					new CustomEvent(PANEL_OPEN_EVENT, {
-						detail: { title, bodyNode },
+						detail: options,
 					}),
 				);
 			},
 			close: () => {
 				document.dispatchEvent(new CustomEvent(PANEL_CLOSE_EVENT));
+			},
+			dismiss: () => {
+				document.dispatchEvent(new CustomEvent(PANEL_DISMISS_EVENT));
 			},
 			setTitle: (title) => {
 				document.dispatchEvent(
@@ -101,13 +94,6 @@ function createChevronIcon() {
 			},
 			isOpen: () => {
 				return Boolean(document.querySelector(HOST_SIDEBAR_SELECTOR));
-			},
-			setPanelTriggerLabel: (label) => {
-				document.dispatchEvent(
-					new CustomEvent(PANEL_SET_TRIGGER_LABEL_EVENT, {
-						detail: { label },
-					}),
-				);
 			},
 		};
 	}
@@ -236,8 +222,7 @@ function createChevronIcon() {
 	// ── Drawer UI ────────────────────────────────────────────────────────
 	let activeTab = "priority"; // 'breakdown' | 'priority'
 	let drawerOpen = false;
-	let pendingHostOpenRequest = false;
-	let lastHostDrawerOpen = isHostDrawerOpen();
+	let panelPersisted = false;
 	let showAllRows = false;
 	const prioCollapseOverrides = new Map();
 
@@ -245,6 +230,12 @@ function createChevronIcon() {
 	let breakdownState = null; // { diff, ctx } | null
 	let breakdownLoading = false;
 	let priorityLoading = false;
+
+	// Persistent panel node — built once, passed to sidepanel API as bodyNode
+	let panelBody: HTMLElement | null = null;
+	let panelFooter: HTMLElement | null = null;
+	let panelToggle: HTMLElement | null = null;
+	let panelNode: HTMLElement | null = null;
 
 	function actionLabel(kind) {
 		switch (kind) {
@@ -259,17 +250,80 @@ function createChevronIcon() {
 		}
 	}
 
-	function removePanel() {
-		const existing = document.getElementById(PANEL_ID);
-		if (existing && existing.isConnected) {
-			existing.remove();
-		}
+	function buildPanelNode() {
+		panelBody = el("div", { class: "abt-tab-body" });
+		panelFooter = el("div", { class: "abt-tab-footer" });
+		panelToggle = el("div", { class: "abt-tab-toggle" });
+
+		const tabBreakdown = el("button", {
+			class: "abt-tab-tab",
+			dataset: { active: String(activeTab === "breakdown") },
+			text: "Breakdown",
+			on: { click: () => switchTab("breakdown") },
+		});
+		const tabPriority = el("button", {
+			class: "abt-tab-tab",
+			dataset: { active: String(activeTab === "priority") },
+			text: "Priority plan",
+			on: { click: () => switchTab("priority") },
+		});
+
+		panelToggle.addEventListener("click", () => {
+			if (activeTab === "breakdown") {
+				showAllRows = !showAllRows;
+				redrawActiveBody();
+			}
+		});
+
+		panelNode = el("div", { id: PANEL_ID, class: "abt-template-drawer-content", "aria-label": "Template plan" }, [
+			el("div", { class: "abt-tab-tabs" }, [tabBreakdown, tabPriority]),
+			panelBody,
+			panelFooter,
+			panelToggle,
+		]);
+	}
+
+	function createPanelIcon() {
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("aria-hidden", "true");
+		svg.style.cssText = "width:16px;height:16px;display:block;flex-shrink:0;";
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("fill", "currentColor");
+		path.setAttribute("d", "M15.41 7.41 10.83 12l4.58 4.59L14 18l-6-6 6-6z");
+		svg.appendChild(path);
+		return svg;
+	}
+
+	function ensureTriggerButton(api) {
+		if (document.getElementById(TRIGGER_ID)) return;
+		const btn = document.createElement("button");
+		btn.id = TRIGGER_ID;
+		btn.className = "abt-template-drawer-trigger";
+		btn.type = "button";
+		btn.title = "Open template plan";
+		btn.setAttribute("aria-label", "Open template plan");
+		btn.appendChild(createPanelIcon());
+		btn.appendChild(document.createTextNode("Plan"));
+		btn.addEventListener("click", () => {
+			openPanel();
+		});
+		document.body.appendChild(btn);
+	}
+
+	function removeTriggerButton() {
+		document.getElementById(TRIGGER_ID)?.remove();
 	}
 
 	function setDrawerOpen(open) {
-		pendingHostOpenRequest = Boolean(open);
-		drawerOpen = !!open;
-		renderPanel();
+		if (open) {
+			openPanel();
+		} else {
+			drawerOpen = false;
+			panelPersisted = false;
+			getSidePanelApi().close();
+			ensureTriggerButton(getSidePanelApi());
+		}
 	}
 
 	// ── Priority body rendering ──────────────────────────────────────────
@@ -623,8 +677,8 @@ function createChevronIcon() {
 		body.appendChild(wrap);
 	}
 
-	function renderFooter(footer) {
-		// Clear
+	function renderFooter(footer = panelFooter) {
+		if (!footer) return;
 		footer.textContent = "";
 		if (activeTab === "breakdown" && breakdownState) {
 			footer.appendChild(el("span", { class: "abt-tab-footer-label", text: "Total allocated" }));
@@ -640,7 +694,8 @@ function createChevronIcon() {
 		}
 	}
 
-	function renderToggle(toggle) {
+	function renderToggle(toggle = panelToggle) {
+		if (!toggle) return;
 		toggle.textContent = "";
 		if (activeTab === "breakdown" && breakdownState) {
 			toggle.textContent = showAllRows ? "Show only changed" : "Show unchanged categories";
@@ -650,148 +705,78 @@ function createChevronIcon() {
 		}
 	}
 
-	// ── Drawer mount ─────────────────────────────────────────────────────
-	function renderPanel() {
-		const hostDrawerOpen = isHostDrawerOpen();
-		const shouldRender = drawerOpen || hostDrawerOpen;
+	function injectPanelNode() {
+		const hostBody = document.querySelector(`${HOST_SIDEBAR_SELECTOR} .abt-side-drawer-body`);
+		if (!hostBody || !panelNode) return;
+		if (panelNode.parentElement !== hostBody) {
+			hostBody.replaceChildren(panelNode);
+		}
+	}
 
+	// ── Drawer mount ─────────────────────────────────────────────────────
+	function openPanel() {
+		const api = getSidePanelApi();
+		if (!panelNode) buildPanelNode();
+		drawerOpen = true;
+		panelPersisted = true;
+		removeTriggerButton();
+		redrawActiveBody();
+		updateSidePanelTitle();
+		api.open({ persist: true });
+		if (activeTab === "priority" && !priorityLoading && !getPriorityCache()) {
+			refreshPriorityIfNeeded();
+		}
+	}
+
+	function renderPanel() {
 		const api = getSidePanelApi();
 
 		if (!isEnabled() || !isBudgetPage()) {
-			removePanel();
+			drawerOpen = false;
+			removeTriggerButton();
 			api.close();
 			return;
 		}
 
-		if (!shouldRender) {
-			removePanel();
+		if (!drawerOpen) {
+			ensureTriggerButton(api);
 			return;
 		}
 
-		if (hostDrawerOpen && !drawerOpen) {
-			drawerOpen = true;
-		}
-
-		updateSidePanelTitle();
-		if (!hostDrawerOpen) {
-			if (!pendingHostOpenRequest) {
-				if (drawerOpen) {
-					drawerOpen = false;
-				}
-				removePanel();
-				return;
-			}
-
-			api.open();
-			return;
-		}
-
-		pendingHostOpenRequest = false;
-
-		const hostBody = getHostDrawerBody();
-		if (!hostBody) {
-			api.open();
-			return;
-		}
-
-		const existingPanel = document.getElementById(PANEL_ID);
-		if (existingPanel && existingPanel.isConnected) {
-			const body = existingPanel.querySelector(".abt-tab-body");
-			const footer = existingPanel.querySelector(".abt-tab-footer");
-			const toggle = existingPanel.querySelector(".abt-tab-toggle");
-			if (body && footer && toggle) {
-				if (existingPanel.parentElement !== hostBody) {
-					hostBody.replaceChildren(existingPanel);
-				}
-				redrawActiveBody(body, footer, toggle);
-				if (activeTab === "priority" && !priorityLoading && !getPriorityCache()) {
-					refreshPriorityIfNeeded(body, footer, toggle);
-				}
-				return;
-			}
-			existingPanel.remove();
-		}
-
-		const body = el("div", { class: "abt-tab-body" });
-		const footer = el("div", { class: "abt-tab-footer" });
-		const toggle = el("div", { class: "abt-tab-toggle" });
-
-		// Tab switcher
-		const tabBreakdown = el("button", {
-			class: "abt-tab-tab",
-			dataset: { active: String(activeTab === "breakdown") },
-			text: "Breakdown",
-			on: { click: () => switchTab("breakdown") },
-		});
-		const tabPriority = el("button", {
-			class: "abt-tab-tab",
-			dataset: { active: String(activeTab === "priority") },
-			text: "Priority plan",
-			on: { click: () => switchTab("priority") },
-		});
-		const tabs = el("div", { class: "abt-tab-tabs" }, [tabBreakdown, tabPriority]);
-
-		toggle.addEventListener("click", () => {
-			if (activeTab === "breakdown") {
-				showAllRows = !showAllRows;
-				redrawActiveBody(body, footer, toggle);
-			}
-		});
-
-		const panel = el(
-			"div",
-			{
-				id: PANEL_ID,
-				class: "abt-template-drawer-content",
-				"aria-label": "Template plan",
-			},
-			[tabs, body, footer, toggle],
-		);
-		hostBody.replaceChildren(panel);
-
-		redrawActiveBody(body, footer, toggle);
-
-		// If we're on priority tab and haven't computed yet, kick it off.
-		if (activeTab === "priority") {
-			refreshPriorityIfNeeded(body, footer, toggle);
-		}
+		openPanel();
 	}
 
 	function switchTab(tab) {
 		if (tab === activeTab) return;
 		activeTab = tab;
 		saveActiveTab();
-		const panel = document.getElementById(PANEL_ID);
-		if (!panel) return;
-		// Update tab active states
-		const buttons = panel.querySelectorAll(".abt-tab-tab");
+		if (!panelNode) return;
+		const buttons = panelNode.querySelectorAll(".abt-tab-tab");
 		buttons.forEach((b) => {
 			b.setAttribute("data-active", String(b.textContent.toLowerCase().startsWith(tab)));
 		});
-		const body = panel.querySelector(".abt-tab-body");
-		const footer = panel.querySelector(".abt-tab-footer");
-		const toggle = panel.querySelector(".abt-tab-toggle");
 		updateSidePanelTitle();
-		refreshPrivacyMode(); // Ensure privacy is always applied after redraw
-		redrawActiveBody(body, footer, toggle);
+		refreshPrivacyMode();
+		redrawActiveBody();
 		if (activeTab === "priority") {
-			refreshPriorityIfNeeded(body, footer, toggle);
+			refreshPriorityIfNeeded();
 		}
 	}
 
-	function redrawActiveBody(body, footer, toggle) {
-		body.textContent = "";
+	function redrawActiveBody() {
+		if (!panelBody || !panelFooter || !panelToggle) return;
+		panelBody.textContent = "";
 		if (activeTab === "breakdown") {
-			renderBreakdownBody(body);
+			renderBreakdownBody(panelBody);
 		} else {
-			renderPriorityBody(body, getPriorityCache());
+			renderPriorityBody(panelBody, getPriorityCache());
 		}
 		refreshPrivacyMode();
-		renderFooter(footer);
-		renderToggle(toggle);
+		renderFooter(panelFooter);
+		renderToggle(panelToggle);
 	}
 
-	async function refreshPriorityIfNeeded(body, footer, toggle) {
+	async function refreshPriorityIfNeeded() {
 		if (!isBudgetPage()) return;
 		priorityLoading = true;
 		try {
@@ -801,14 +786,12 @@ function createChevronIcon() {
 		} finally {
 			priorityLoading = false;
 		}
-		if (!document.getElementById(PANEL_ID)) return;
-		if (activeTab !== "priority") return;
-		// Only redraw the priority body; don't disturb other state.
+		if (!drawerOpen || activeTab !== "priority" || !panelBody) return;
 		const priorityCache = getPriorityCache();
-		body.textContent = "";
-		renderPriorityBody(body, priorityCache);
-		renderFooter(footer);
-		renderToggle(toggle);
+		panelBody.textContent = "";
+		renderPriorityBody(panelBody, priorityCache);
+		renderFooter(panelFooter);
+		renderToggle(panelToggle);
 		updateSidePanelTitle();
 	}
 
@@ -959,9 +942,9 @@ function createChevronIcon() {
 				if (m.type === "attributes" && m.attributeName === TOGGLE_ATTR) {
 					if (isEnabled()) renderPanel();
 					else {
-						removePanel();
-						const api = getSidePanelApi();
-						api.close();
+						drawerOpen = false;
+						removeTriggerButton();
+						getSidePanelApi().close();
 					}
 				}
 			}
@@ -975,19 +958,26 @@ function createChevronIcon() {
 	function watchHostDrawer() {
 		const obs = new MutationObserver(() => {
 			const hostOpen = isHostDrawerOpen();
-			if (hostOpen === lastHostDrawerOpen) {
-				return;
-			}
-
-			lastHostDrawerOpen = hostOpen;
-			if (!hostOpen && drawerOpen && !pendingHostOpenRequest) {
+			if (hostOpen && drawerOpen) {
+				injectPanelNode();
+			} else if (hostOpen && !drawerOpen && isEnabled() && isBudgetPage()) {
+				// Drawer was restored by persistence — rehydrate content
+				const urlAtFire = location.href;
+				drawerOpen = true;
+				removeTriggerButton();
+				if (!panelNode) buildPanelNode();
+				redrawActiveBody();
+				updateSidePanelTitle();
+				injectPanelNode();
+				if (location.href !== urlAtFire) return;
+				if (activeTab === "priority" && !priorityLoading && !getPriorityCache()) {
+					refreshPriorityIfNeeded();
+				}
+			} else if (!hostOpen && drawerOpen) {
+				// User hit X on the drawer
 				drawerOpen = false;
-				removePanel();
-				return;
-			}
-
-			if (hostOpen) {
-				renderPanel();
+				panelPersisted = false;
+				if (isEnabled() && isBudgetPage()) ensureTriggerButton(getSidePanelApi());
 			}
 		});
 
@@ -1001,7 +991,8 @@ function createChevronIcon() {
 	let lastUrl = location.href;
 	let lastSheet = isBudgetPage() ? getCurrentSheet() : null;
 	let lastSheetKey = isBudgetPage() ? getSheetKey(getCurrentSheet()) : null;
-	setInterval(() => {
+
+	function onNavigation() {
 		const urlChanged = location.href !== lastUrl;
 		if (urlChanged) {
 			lastUrl = location.href;
@@ -1009,53 +1000,64 @@ function createChevronIcon() {
 		}
 
 		if (!isEnabled()) {
-			removePanel();
+			drawerOpen = false;
+			removeTriggerButton();
 			return;
 		}
 
 		const nowBudget = isBudgetPage();
 		if (!nowBudget) {
-			if (drawerOpen) {
-				drawerOpen = false;
-			}
-			// Page navigation replaces the entire DOM—don't interfere with cleanup
+			drawerOpen = false;
+			removeTriggerButton();
 			return;
 		}
 
 		const sheetChanged = setActiveSheet(getCurrentSheet());
-		if (sheetChanged) {
-			renderPanel();
+		if (sheetChanged && drawerOpen) {
+			redrawActiveBody();
+			updateSidePanelTitle();
+		}
+
+		if (!drawerOpen) {
+			if (!panelPersisted) ensureTriggerButton(getSidePanelApi());
 			return;
 		}
 
-		let panel = document.getElementById(PANEL_ID);
-		const shouldRender = drawerOpen || isHostDrawerOpen();
-		if (shouldRender && (!panel || !panel.isConnected)) {
-			renderPanel();
-			panel = document.getElementById(PANEL_ID);
-			if (!panel) return;
-		}
-		if (!shouldRender) return;
-
 		if (!urlChanged) return;
 
-		if (activeTab === "priority") {
-			const body = panel.querySelector(".abt-tab-body");
-			const footer = panel.querySelector(".abt-tab-footer");
-			const toggle = panel.querySelector(".abt-tab-toggle");
-			// If the cache is fresh (within TTL), redraw synchronously from it.
-			// Otherwise show loading and recompute.
+		if (activeTab === "priority" && panelBody) {
 			const fresh = priorityCacheIsFreshForSheet(lastSheet);
 			if (fresh) {
-				const priorityCache = getPriorityCache();
-				body.textContent = "";
-				renderPriorityBody(body, priorityCache);
+				panelBody.textContent = "";
+				renderPriorityBody(panelBody, getPriorityCache());
 				updateSidePanelTitle();
 			} else {
-				body.textContent = "";
-				renderPriorityBody(body, null); // loading
-				refreshPriorityIfNeeded(body, footer, toggle);
+				panelBody.textContent = "";
+				renderPriorityBody(panelBody, null); // loading
+				refreshPriorityIfNeeded();
 			}
+		}
+	}
+
+	// Patch history API for instant SPA navigation detection
+	(["pushState", "replaceState"] as const).forEach((method) => {
+		const original = history[method].bind(history);
+		history[method] = function (...args) {
+			original(...args);
+			document.dispatchEvent(new Event("abt:navigate"));
+		};
+	});
+	window.addEventListener("popstate", onNavigation);
+	document.addEventListener("abt:navigate", onNavigation);
+
+	// Fallback poll for sheet changes within a page (no URL change)
+	setInterval(() => {
+		if (!isEnabled() || !isBudgetPage()) return;
+		const sheetChanged = setActiveSheet(getCurrentSheet());
+		if (!sheetChanged) return;
+		if (drawerOpen) {
+			redrawActiveBody();
+			updateSidePanelTitle();
 		}
 	}, 1500);
 
@@ -1084,11 +1086,19 @@ function createChevronIcon() {
 		const saved = loadBreakdown();
 		if (saved) breakdownState = saved;
 		if (isEnabled()) {
-			const api = getSidePanelApi();
-			// Set the trigger/host drawer title to a static label when opening
-			api.setPanelTriggerLabel("Plan");
-
-			renderPanel();
+			if (isBudgetPage() && getSidePanelApi().isOpen()) {
+				// Panel was persisted — drawer is already mounted, restore content without remounting
+				drawerOpen = true;
+				if (!panelNode) buildPanelNode();
+				redrawActiveBody();
+				updateSidePanelTitle();
+				injectPanelNode();
+				if (activeTab === "priority" && !priorityLoading && !getPriorityCache()) {
+					refreshPriorityIfNeeded();
+				}
+			} else {
+				renderPanel();
+			}
 		}
 	})();
 })();

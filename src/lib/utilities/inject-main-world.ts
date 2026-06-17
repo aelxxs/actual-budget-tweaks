@@ -1,7 +1,9 @@
 import type { PublicPath } from "wxt/browser";
 import { createElement } from "./dom";
 
-export async function injectMainWorldScript(path: string, id: string): Promise<void> {
+export async function injectMainWorldScript(path: string): Promise<void> {
+	const id = path.replace(/^\/|\.js$/g, "");
+
 	if (document.getElementById(id)) return;
 
 	const scriptUrl = browser.runtime.getURL(path as unknown as PublicPath);

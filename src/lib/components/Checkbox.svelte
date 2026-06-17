@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { SettingContext } from "../scripts/types";
+	import type { SettingContext } from "../../features/types";
 	import { getValue } from "../utilities/store";
 
 	const { labelText, ctx, onChange } = $props<{
@@ -22,7 +22,7 @@
 	}
 </script>
 
-<div class="cluster" style="--gutter: 0.25rem;">
+<div class="cluster" style="--gutter: 0.25rem;" data-testid={ctx.key}>
 	<input type="checkbox" class="checkbox" bind:checked={value} onchange={handleChange} />
 	<span>{labelText}</span>
 </div>

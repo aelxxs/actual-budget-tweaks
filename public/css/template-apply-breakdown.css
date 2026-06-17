@@ -37,7 +37,7 @@
 	gap: 2px;
 	padding: 0 8px;
 	border-bottom: 1px solid var(--color-tableBorder, var(--color-menuBorder, rgba(255, 255, 255, 0.08)));
-	background: rgba(255, 255, 255, 0.015);
+	background: var(--color-pageBackground);
 }
 
 .abt-tab-tab {
@@ -300,7 +300,7 @@
 	padding: 8px 0;
 	border: 1px solid var(--color-tableBorder, var(--color-menuBorder, rgba(255, 255, 255, 0.08)));
 	border-radius: 6px;
-	background: rgba(255, 255, 255, 0.025);
+	background: var(--color-pageBackground);
 }
 
 .abt-tab-breakdown-priority-title {
@@ -328,7 +328,7 @@
 }
 
 .abt-tab-breakdown-priority-tier + .abt-tab-breakdown-priority-tier {
-	border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.06));
+	border-top: 1px solid var(--color-tableBorder, rgba(255, 255, 255, 0.06));
 }
 
 .abt-tab-breakdown-priority-tier-header,
@@ -392,6 +392,10 @@
 
 .abt-tab-group {
 	padding: 4px 0;
+	background: var(--color-pageBackground);
+	border: var(--border);
+	border-radius: var(--border-radius);
+	margin: 8px 12px 10px;
 }
 
 .abt-tab-group-name {
@@ -499,18 +503,39 @@
 	}
 }
 
-@media (max-width: 720px) {
-	.abt-template-drawer {
-		top: auto;
-		left: 8px;
-		right: 46px;
-		bottom: 88px;
-		width: auto;
-		max-height: 62vh;
-		border-radius: 8px;
-		box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.28);
-	}
+@keyframes abt-template-trigger-enter {
+	from { opacity: 0; transform: translateX(12px); }
+	to { opacity: 1; transform: translateX(0); }
+}
 
+.abt-template-drawer-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	position: fixed;
+	top: 55px;
+	right: 0;
+	padding: 0 8px 0 6px;
+	height: 32px;
+	border: var(--border);
+	border-right: 0;
+	border-top-left-radius: 999px;
+	border-bottom-left-radius: 999px;
+	background: var(--color-buttonNormalBackground);
+	color: var(--color-pageText);
+	font: inherit;
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+	z-index: 50;
+	animation: abt-template-trigger-enter 110ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.abt-template-drawer-trigger:hover {
+	background: var(--color-buttonNormalBackgroundHover, var(--color-buttonNormalBackground));
+}
+
+@media (max-width: 720px) {
 	.abt-template-drawer-trigger {
 		top: auto;
 		bottom: 96px;

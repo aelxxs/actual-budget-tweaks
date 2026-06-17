@@ -16,6 +16,14 @@ const geckoSettings: GeckoSettings = {
 
 export default defineConfig({
 	srcDir: "src",
+	vite: () => ({
+		resolve: {
+			alias: {
+				"@lib": resolve(__dirname, "src/lib"),
+				"@features": resolve(__dirname, "src/features"),
+			},
+		},
+	}),
 	outDir: resolve(__dirname, ".output"),
 	modules: ["@wxt-dev/module-svelte"],
 	manifest: {
@@ -29,8 +37,8 @@ export default defineConfig({
 			{
 				resources: [
 					"income-breakdown-main.js",
-					"category-template-insights-main.js",
 					"schedule-highlight-main.js",
+					"template-insights-main.js",
 					"template-apply-breakdown-main.js",
 					"css/base.css",
 					"css/income-breakdown.css",
