@@ -1,288 +1,4 @@
 :root {
-	/* Budget */
-	--color-budgetCurrentMonth: var(--ctp-crust);
-	--color-budgetHeaderCurrentMonth: var(--ctp-base);
-	--color-budgetHeaderOtherMonth: var(--ctp-base);
-	--color-budgetOtherMonth: var(--ctp-mantle);
-	--color-budgetNumberNegative: var(--ctp-red);
-	--color-budgetNumberNeutral: var(--ctp-overlay1);
-	--color-budgetNumberPositive: var(--ctp-green);
-	--color-budgetNumberZero: var(--ctp-subtext0);
-
-	/* Button – bare */
-	--color-buttonBareBackground: transparent;
-	--color-buttonBareBackgroundActive: rgba(205, 214, 244, 0.1);
-	--color-buttonBareBackgroundHover: var(--ctp-surface0);
-	--color-buttonBareDisabledBackground: transparent;
-	--color-buttonBareDisabledText: var(--ctp-overlay1);
-	--color-buttonBareText: var(--ctp-subtext1);
-	--color-buttonBareTextHover: var(--ctp-text);
-
-	/* Button – menu */
-	--color-buttonMenuBackground: transparent;
-	--color-buttonMenuBackgroundHover: rgba(205, 214, 244, 0.07);
-	--color-buttonMenuBorder: var(--ctp-surface0);
-	--color-buttonMenuSelectedBackground: var(--ctp-yellow);
-	--color-buttonMenuSelectedBackgroundHover: var(--ctp-peach);
-	--color-buttonMenuSelectedBorder: var(--ctp-yellow);
-	--color-buttonMenuSelectedText: var(--ctp-crust);
-	--color-buttonMenuSelectedTextHover: var(--ctp-base);
-	--color-buttonMenuText: var(--ctp-subtext0);
-	--color-buttonMenuTextHover: var(--ctp-text);
-
-	/* Button – normal */
-	--color-buttonNormalBackground: var(--ctp-mantle);
-	--color-buttonNormalBackgroundHover: var(--ctp-crust);
-	--color-buttonNormalBorder: var(--ctp-surface0);
-	--color-buttonNormalDisabledBackground: var(--ctp-surface0);
-	--color-buttonNormalDisabledBorder: var(--ctp-surface2);
-	--color-buttonNormalDisabledText: var(--ctp-overlay0);
-	--color-buttonNormalSelectedBackground: var(--ctp-mauve);
-	--color-buttonNormalSelectedText: var(--ctp-base);
-	--color-buttonNormalShadow: rgba(0, 0, 0, 0.4);
-	--color-buttonNormalText: var(--ctp-text);
-	--color-buttonNormalTextHover: var(--ctp-subtext1);
-
-	/* Button – primary */
-	--color-buttonPrimaryBackground: var(--ctp-lavender);
-	--color-buttonPrimaryBackgroundHover: var(--ctp-mauve);
-	--color-buttonPrimaryBorder: var(--ctp-lavender);
-	--color-buttonPrimaryDisabledBackground: var(--ctp-surface1);
-	--color-buttonPrimaryDisabledBorder: var(--ctp-surface2);
-	--color-buttonPrimaryDisabledText: var(--ctp-overlay0);
-	--color-buttonPrimaryShadow: rgba(0, 0, 0, 0.6);
-	--color-buttonPrimaryText: var(--ctp-crust);
-	--color-buttonPrimaryTextHover: var(--ctp-base);
-
-	/* Calendar */
-	--color-calendarBackground: var(--ctp-base);
-	--color-calendarCellBackground: var(--ctp-mantle);
-	--color-calendarItemBackground: var(--ctp-surface0);
-	--color-calendarItemText: var(--ctp-text);
-	--color-calendarSelectedBackground: var(--ctp-blue);
-	--color-calendarText: var(--ctp-text);
-
-	/* Card */
-	--color-cardBackground: var(--ctp-crust);
-	--color-cardBorder: var(--ctp-lavender);
-	--color-cardShadow: var(--ctp-crust);
-
-	/* Checkbox */
-	--color-checkboxBackgroundSelected: var(--ctp-green);
-	--color-checkboxBorderSelected: var(--ctp-green);
-	--color-checkboxShadowSelected: transparent;
-	--color-checkboxText: var(--ctp-crust);
-	--color-checkboxToggleBackground: var(--ctp-surface0);
-	--color-checkboxToggleBackgroundSelected: var(--ctp-green);
-	--color-checkboxToggleDisabled: var(--ctp-overlay0);
-
-	/* Error */
-	--color-errorBackground: var(--ctp-base);
-	--color-errorBorder: var(--ctp-maroon);
-	--color-errorText: var(--ctp-red);
-	--color-errorTextDark: var(--ctp-flamingo);
-	--color-errorTextDarker: var(--ctp-red);
-	--color-errorTextMenu: var(--ctp-rosewater);
-
-	/* Floating action bar */
-	--color-floatingActionBarBackground: var(--ctp-mauve);
-	--color-floatingActionBarBorder: var(--ctp-mauve);
-	--color-floatingActionBarText: var(--ctp-base);
-
-	/* Form input */
-	--color-formInputBackground: var(--ctp-surface0);
-	--color-formInputBackgroundSelected: var(--ctp-surface1);
-	--color-formInputBackgroundSelection: var(--ctp-blue);
-	--color-formInputBorder: var(--ctp-surface0);
-	--color-formInputBorderSelected: var(--ctp-blue);
-	--color-formInputShadowSelected: transparent;
-	--color-formInputText: var(--ctp-text);
-	--color-formInputTextHighlight: var(--ctp-mauve);
-	--color-formInputTextPlaceholder: var(--ctp-overlay0);
-	--color-formInputTextPlaceholderSelected: var(--ctp-subtext1);
-	--color-formInputTextReadOnlySelection: var(--ctp-surface1);
-	--color-formInputTextSelected: var(--ctp-crust);
-	--color-formInputTextSelection: var(--ctp-surface0);
-
-	/* Form label */
-	--color-formLabelBackground: var(--ctp-surface2);
-	--color-formLabelText: var(--ctp-lavender);
-
-	/* Markdown */
-	--color-markdownDark: var(--ctp-mauve);
-	--color-markdownLight: var(--ctp-lavender);
-	--color-markdownNormal: var(--ctp-text);
-
-	/* Menus & autocomplete */
-	--color-menuAutoCompleteBackground: var(--ctp-base);
-	--color-menuAutoCompleteBackgroundHover: var(--ctp-surface1);
-	--color-menuAutoCompleteItemText: var(--ctp-text);
-	--color-menuAutoCompleteItemTextHover: var(--ctp-text);
-	--color-menuAutoCompleteText: var(--ctp-subtext0);
-	--color-menuAutoCompleteTextHeader: var(--ctp-blue);
-	--color-menuAutoCompleteTextHover: var(--ctp-blue);
-
-	--color-menuBackground: var(--ctp-mantle);
-	--color-menuBorder: var(--ctp-surface0);
-	--color-menuBorderHover: var(--ctp-blue);
-	--color-menuItemBackground: var(--ctp-surface0);
-	--color-menuItemBackgroundHover: var(--ctp-base);
-	--color-menuItemText: var(--ctp-subtext1);
-	--color-menuItemTextHeader: var(--ctp-blue);
-	--color-menuItemTextHover: var(--ctp-text);
-	--color-menuItemTextSelected: var(--ctp-blue);
-	--color-menuKeybindingText: var(--ctp-lavender);
-
-	/* Mobile */
-	--color-mobileAccountShadow: var(--ctp-crust);
-	--color-mobileAccountText: var(--ctp-blue);
-	--color-mobileConfigServerViewTheme: var(--ctp-mauve);
-	--color-mobileHeaderBackground: var(--ctp-base);
-	--color-mobileHeaderText: var(--ctp-lavender);
-	--color-mobileHeaderTextHover: rgba(205, 214, 244, 0.07);
-	--color-mobileHeaderTextSubdued: var(--ctp-subtext0);
-	--color-mobileNavBackground: var(--ctp-mantle);
-	--color-mobileNavItem: var(--ctp-text);
-	--color-mobileNavItemSelected: var(--ctp-lavender);
-	--color-mobilePageBackground: var(--ctp-base);
-	--color-mobileTransactionSelected: var(--ctp-lavender);
-	--color-mobileViewTheme: var(--ctp-base);
-
-	--color-modalBackground: var(--ctp-crust);
-	--color-modalBorder: var(--ctp-surface0);
-
-	/* Notes */
-	--color-noteTagBackground: var(--ctp-mauve);
-	--color-noteTagBackgroundHover: var(--ctp-pink);
-	--color-noteTagDefault: var(--ctp-mauve);
-	--color-noteTagText: var(--ctp-crust);
-
-	/* Notices */
-	--color-noticeBackground: var(--ctp-teal);
-	--color-noticeBackgroundDark: var(--ctp-teal);
-	--color-noticeBackgroundLight: var(--ctp-teal);
-	--color-noticeBorder: var(--ctp-green);
-	--color-noticeText: var(--ctp-text);
-	--color-noticeTextDark: var(--ctp-base);
-	--color-noticeTextLight: var(--ctp-green);
-	--color-noticeTextMenu: var(--ctp-teal);
-	--color-noticeTextMenuHover: var(--ctp-green);
-
-	/* Numbers */
-	--color-numberNegative: var(--ctp-red);
-	--color-numberNeutral: var(--ctp-overlay1);
-	--color-numberPositive: var(--ctp-green);
-
-	/* Overlay */
-	--color-overlayBackground: rgba(0, 0, 0, 0.3);
-
-	/* Page */
-	--color-pageBackground: var(--ctp-crust);
-	--color-pageBackgroundBottomRight: var(--ctp-surface0);
-	--color-pageBackgroundLineBottom: var(--ctp-text);
-	--color-pageBackgroundLineMid: var(--ctp-crust);
-	--color-pageBackgroundLineTop: var(--ctp-lavender);
-	--color-pageBackgroundModalActive: var(--ctp-mantle);
-	--color-pageBackgroundTopLeft: var(--ctp-mantle);
-	--color-pageText: var(--ctp-text);
-	--color-pageTextDark: var(--ctp-subtext1);
-	--color-pageTextLight: var(--ctp-subtext0);
-	--color-pageTextLink: var(--ctp-blue);
-	--color-pageTextLinkLight: var(--ctp-sky);
-	--color-pageTextPositive: var(--ctp-green);
-	--color-pageTextSubdued: var(--ctp-overlay0);
-
-	/* Pills */
-	--color-pillBackground: var(--ctp-mantle);
-	--color-pillBackgroundLight: var(--ctp-surface0);
-	--color-pillBackgroundSelected: var(--ctp-mauve);
-	--color-pillBorder: var(--ctp-surface0);
-	--color-pillBorderDark: var(--ctp-surface0);
-	--color-pillBorderSelected: var(--ctp-lavender);
-	--color-pillText: var(--ctp-subtext1);
-	--color-pillTextHighlighted: var(--ctp-text);
-	--color-pillTextSelected: var(--ctp-base);
-	--color-pillTextSubdued: var(--ctp-overlay0);
-
-	/* Reports */
-	--color-reportsBlue: var(--ctp-blue);
-	--color-reportsChartFill: var(--ctp-green);
-	--color-reportsGray: var(--ctp-overlay1);
-	--color-reportsGreen: var(--ctp-green);
-	--color-reportsInnerLabel: var(--ctp-surface2);
-	--color-reportsLabel: var(--ctp-text);
-	--color-reportsNumberNegative: var(--ctp-red);
-	--color-reportsNumberNeutral: var(--ctp-overlay1);
-	--color-reportsNumberPositive: var(--ctp-green);
-	--color-reportsRed: var(--ctp-red);
-
-	/* Sidebar */
-	--color-sidebarBackground: var(--ctp-mantle);
-	--color-sidebarBudgetName: var(--ctp-subtext0);
-	--color-sidebarItemAccentSelected: var(--ctp-mauve);
-	--color-sidebarItemBackgroundFailed: var(--ctp-red);
-	--color-sidebarItemBackgroundHover: var(--ctp-surface0);
-	--color-sidebarItemBackgroundPending: var(--ctp-yellow);
-	--color-sidebarItemBackgroundPositive: var(--ctp-green);
-	--color-sidebarItemText: var(--ctp-text);
-	--color-sidebarItemTextSelected: var(--ctp-mauve);
-
-	/* Table */
-	--color-tableBackground: var(--ctp-mantle);
-	--color-tableBorder: var(--ctp-surface0);
-	--color-tableBorderHover: var(--ctp-mauve);
-	--color-tableBorderSelected: var(--ctp-blue);
-	--color-tableBorderSeparator: var(--ctp-overlay0);
-	--color-tableHeaderBackground: var(--ctp-crust);
-	--color-tableHeaderText: var(--ctp-subtext0);
-	--color-tableHeaderSubText: var(--ctp-text);
-	--color-tableRowBackgroundHighlight: var(--ctp-base);
-	--color-tableRowBackgroundHighlightText: var(--ctp-text);
-	--color-tableRowBackgroundHover: var(--ctp-base);
-	--color-tableRowHeaderBackground: var(--ctp-base);
-	--color-tableRowHeaderText: var(--ctp-text);
-	--color-tableText: var(--ctp-text);
-	--color-tableTextHover: var(--ctp-overlay1);
-	--color-tableTextInactive: var(--ctp-overlay1);
-	--color-tableTextLight: var(--ctp-text);
-	--color-tableTextSelected: var(--ctp-overlay2);
-	--color-tableTextSubdued: var(--ctp-subtext0);
-
-	/* Template/To Budget */
-	--color-templateNumberFunded: var(--ctp-green);
-	--color-templateNumberUnderFunded: var(--ctp-yellow);
-	--color-toBudgetNegative: var(--ctp-red);
-	--color-toBudgetPositive: var(--ctp-green);
-	--color-toBudgetZero: var(--ctp-green);
-
-	/* Tooltip */
-	--color-tooltipBackground: var(--ctp-mantle);
-	--color-tooltipBorder: var(--ctp-surface0);
-	--color-tooltipText: var(--ctp-text);
-
-	/* Upcoming */
-	--color-upcomingBackground: var(--ctp-mauve);
-	--color-upcomingBorder: var(--ctp-surface0);
-	--color-upcomingText: var(--ctp-mantle);
-
-	/* Warning */
-	--color-warningBackground: var(--ctp-base);
-	--color-warningBorder: var(--ctp-peach);
-	--color-warningText: var(--ctp-yellow);
-	--color-warningTextDark: var(--ctp-text);
-	--color-warningTextLight: var(--ctp-peach);
-
-	/* Charts */
-	--color-chartQual1: var(--ctp-teal);
-	--color-chartQual2: var(--ctp-yellow);
-	--color-chartQual3: var(--ctp-peach);
-	--color-chartQual4: var(--ctp-red);
-	--color-chartQual5: var(--ctp-blue);
-	--color-chartQual6: var(--ctp-pink);
-	--color-chartQual7: var(--ctp-green);
-	--color-chartQual8: var(--ctp-gold);
-	--color-chartQual9: var(--ctp-rosewater);
-
 	--border: 1px solid var(--color-tableBorder);
 }
 
@@ -292,7 +8,7 @@ body {
 }
 
 /* select budget */
-.css-19un6lv {
+.css-1neanul {
 	box-shadow: none;
 	border-radius: var(--border-radius);
 	border: var(--border);
@@ -300,16 +16,16 @@ body {
 }
 
 /* sidebar */
-.css-1jm6zlx {
+.css-10l5dm1 {
 	border-right: var(--border);
 }
 
 /* sidebar -- floating */
-.css-1jm6zlx {
+.css-10l5dm1 {
 	background-color: var(--color-sidebarBackground);
 }
 
-.css-udnprb {
+.css-t86gtt {
 	border-top-right-radius: var(--border-radius);
 	border-bottom-right-radius: var(--border-radius);
 	border: var(--border);
@@ -321,7 +37,7 @@ body {
 }
 
 /* sidebar -- section title */
-.css-hfi7l9 {
+.css-1wbfbxg {
 	border-bottom: 2.5px solid var(--ctp-blue);
 	padding-bottom: 0.5rem;
 }
@@ -332,198 +48,62 @@ body {
 	padding-left: 2rem;
 }
 
-.css-ifjmjt {
+/* sidebar -- account dot */
+.css-1dtbr3w {
 	left: 10px;
 }
 
-/* sidebar -- budget name dropdown arrow */
-.css-1am57kc {
-	margin-right: 0.2rem;
-}
-
-/* budget -- month highlighting */
-/* current month */
-.css-2o5ejk {
-	align-items: center;
-	padding: 3px;
-	width: 35px;
-	border-radius: min(var(--border-radius), 0.35rem);
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-	font-weight: bold;
-}
-
-/* highlighted month -- left */
-.css-cti7tr,
-.css-8rskyq,
-.css-kqrp3f,
-.css-17to6kw,
-.css-1mi3lsa {
-	padding: 3px;
-	width: 35px;
-	border-radius: min(var(--border-radius), 0.35rem) 0px 0px min(var(--border-radius), 0.35rem);
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-tableBorderHover);
-	color: var(--color-buttonPrimaryText);
-}
-
-/* highlighted month -- middle */
-.css-4qeb42,
-.css-lj3nyx,
-.css-1eb02hy,
-.css-evoqxd {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-tableBorderHover);
-	color: var(--color-buttonPrimaryText);
-}
-
-/* highlighted month -- right */
-.css-i0tmtm,
-.css-jnxqh2,
-.css-1ezcl0o,
-.css-1skvape,
-.css-q5nm5x {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px min(var(--border-radius), 0.35rem) min(var(--border-radius), 0.5rem) 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-tableBorderHover);
-	color: var(--color-buttonPrimaryText);
-}
-
-/* hover over month -- left */
-.css-1ugnqh7,
-.css-1ihd5su,
-.css-10x6adq {
-	padding: 3px;
-	width: 35px;
-	border-radius: min(var(--border-radius), 0.35rem) 0px 0px min(var(--border-radius), 0.5rem);
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-}
-
-/* hover over month -- middle */
-.css-1pd5dj,
-.css-1xcgr8,
-.css-1j355lw {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-}
-
-/* hover over month -- right */
-.css-1pd5dj,
-.css-1jx7wnq,
-.css-11ig21n {
-	padding: 3px;
-	width: 35px;
-	border-radius: 0px min(var(--border-radius), 0.35rem) min(var(--border-radius), 0.35rem) 0px;
-	border: medium;
-	font-size: 13px;
-	background-color: var(--color-buttonBareBackgroundHover);
-}
-
-.css-rg8rv9 {
-	top: -18px;
-}
-
 /* /budget -- budget cards */
-.css-1szeyz4,
-.css-1asnaqj {
+[data-testid="budget-summary"] {
 	box-shadow: none;
 	border-radius: var(--border-radius);
 }
 
-/* /budget -- budget cards margin */
-.css-1gcc5nw {
-	margin-bottom: 0rem;
-}
-
 /* /budget -- table header */
-.css-d5wgg9 {
+[data-testid="budget-totals"] {
 	border-radius: var(--border-radius) var(--border-radius) 0px 0px;
 	border-bottom-width: 0px;
 	box-shadow: none;
-	/* background-color: var(--ctp-crust); */
+	overflow: hidden;
 }
 
 /* /budget -- table body. */
-.css-1kx6xgs {
+.css-5co8lf {
 	box-shadow: none;
 	border-radius: 0rem 0rem var(--border-radius) var(--border-radius);
 	margin-bottom: 1rem;
 }
 
-/* /budget -- table hover */
-.css-9r3avc:hover,
-.css-1lv865u:hover {
-	box-shadow: none;
-	/* background-color: var(--ctp-surface0); */
-}
-
-.css-9r3avc,
-.css-1lv865u {
-	border-radius: 0.25rem;
-	padding-inline: 0.25rem;
-	flex: 0.865 1 0%;
-}
-
 /* /budget -- card padding */
-.css-1gbzxai > div > div {
-	padding-inline: 0.42rem;
+:has([data-testid="budget-summary"]) {
+	padding: 0px;
+	margin: 0px;
 }
 
-.css-1gbzxai {
+[data-testid="budget-summary"] {
 	flex: 1 1 0%;
 	overflow: hidden;
-	margin-bottom: 0.45rem;
-}
-
-/* /budget -- date selection */
-.css-1usd1tv {
-	padding-bottom: 0.45rem;
-}
-
-/* /reports -- card */
-.css-105xu6l {
-	display: block;
-	height: 100%;
-	overflow: visible;
+	margin: 0.8rem;
+	margin-inline: 0.4rem;
 }
 
 /* reports -- sidebar & header */
-.css-ylkow6 {
+.css-1nasyg7 {
 	padding-left: 12px;
 }
 
-.css-1m2essh {
-	margin-left: 20px;
+[data-testid="reports-page"] .css-agc3hr {
+	margin-left: 12px;
+	margin-bottom: 0.75rem;
 }
 
-.css-bqm9fa {
+.css-132j4dj {
 	padding-right: 12px;
 }
 
 /* reports borders */
-.css-17nqm2r,
-.css-1mkkiaa,
-.css-s6nmt0,
-.css-o1urms {
-	height: 100%;
-	width: 100%;
+.react-grid-item {
 	border-radius: var(--border-radius);
-	box-shadow: none;
 }
 
 .recharts-surface {
@@ -531,35 +111,28 @@ body {
 	border-bottom-right-radius: var(--border-radius);
 }
 
-/* /reports -- top border */
-.css-tf9rsr {
-	border-top: var(--border);
+/* /reports -- bottom border */
+.css-142b4ef {
+	border-bottom: var(--border);
 }
 
 /* /settings -- card */
-.css-htvse6 {
+.css-1lr7sla {
 	border-radius: var(--border-radius);
 	border: var(--border);
 }
 
 /* /settings -- card gap */
-.css-1inkr25 {
+[data-testid="settings"] {
 	gap: 1.25rem;
 }
 
-/* table checkmark border */
-.css-1n00cfy {
-	border-bottom: var(--border);
+/* select checkbox padding */
+[data-testid="select"] {
+	padding-inline: 1rem;
 }
 
-/* top navigation */
-.css-lcyxda {
-	padding: 1rem;
-	padding-block: 1.5rem;
-	height: 3.25rem;
-}
-
-/* /schedules -- pills */
+/* /schedules -- pills TODO: these are broken; need to update */
 .css-1whggh0,
 .css-f0xl0f,
 .css-6k1ng3,
@@ -573,32 +146,32 @@ body {
 }
 
 /* content top padding */
-.css-1qse97y,
-.css-1g810ry,
-.css-x9hok8,
-.css-wmwuaj {
-	padding-top: 1.5rem;
+.css-3oa7u7,
+.css-jdrt9o,
+.css-ect7vi,
+.css-k9t6j1,
+.css-xggax0 {
+	padding-top: 3rem;
 }
 
-.css-w4guu2 {
+.css-3oa7u7 {
+	padding-inline: 0.5rem;
 	padding-top: 4rem;
 }
 
 /* search inputs */
 textarea,
-.css-1rcej9u,
-.css-ic9hwk,
-.css-xup3jb,
-.css-g8rqad {
+.css-onc7iq,
+.css-1pc0tw7 {
 	color: var(--color-formInputText);
-	border-radius: var(--border-radius);
+	border-radius: calc(var(--border-radius) / 1.5);
 	border: var(--border);
 	/* background-color: var(--ctp-mantle); */
-	padding: 0.35rem;
+	padding: 0.25rem;
+	height: 2.35rem;
 }
 
-.css-xup3jb,
-.css-1rcej9u {
+.css-onc7iq {
 	border-color: var(--ctp-blue);
 }
 
@@ -621,6 +194,7 @@ textarea,
 	border: 0px;
 }
 
+/* here down to text color: broken and needs updating */
 .css-1jb61p2 {
 	margin-top: 0.35rem;
 }
@@ -641,9 +215,9 @@ textarea,
 }
 
 /* text color */
-.css-70zz4x {
+/* .css-70zz4x {
 	color: var(--ctp-text) !important;
-}
+} */
 
 .css-ecyk1h {
 	color: var(--ctp-crust);
@@ -661,53 +235,9 @@ textarea,
 	border-radius: min(var(--border-radius), 0.5rem);
 }
 
-/* /payees -- dropdown */
-.css-kmyxpd {
-	padding: 0px;
-}
-
-/* bank syncing */
-.css-13486lo,
-.css-6idhvp,
-.css-dzxlm1 {
-	z-index: 100;
-	position: relative;
-}
-
 /* bank sync banner */
-.css-1vdv159,
-.css-8cf5j3 {
+.css-u6wtsi {
 	z-index: 1000 !important;
-	position: absolute !important;
-}
-
-/* sidebar */
-.css-3b1tne {
-	border: var(--border);
-	border-radius: var(--border-radius);
-}
-
-.css-10iiizv {
-	border: var(--border);
-	box-shadow: none;
-}
-
-.css-15zy6me {
-	border-bottom: none;
-}
-
-.css-1dvwaht,
-.css-nd83lm {
-	margin: 0.75rem;
-	border-radius: var(--border-radius);
-	background-color: var(--color-cardBackground);
-	box-shadow: none;
-	border: var(--border);
-}
-
-.css-1b0h10j {
-	margin-top: 1rem;
-	margin-bottom: 0rem;
 }
 
 /* keyboard shortcuts */
@@ -718,29 +248,24 @@ textarea,
 }
 
 /* reports */
-.css-1bfuvke {
+[id="custom-report-content"] {
 	border-top-left-radius: var(--border-radius);
 	border-left: var(--border);
 	border-top: var(--border);
 }
 
-.css-v9r713 {
+.css-4hlm7y {
 	border: var(--border);
 }
 
-.css-zhaihp,
-.css-g775qt,
-.css-tt47xn {
+.css-w4wco7,
+.css-eiyo5a {
 	border-radius: var(--border-radius);
-	border: var(--border);
 }
 
-.css-s6nmt0,
-.css-o1urms {
-	width: 100%;
-	height: 100%;
-	transition: box-shadow 0.25s;
-	background-color: report-card-color;
+.css-1eyeead,
+.css-eadiqq {
+	padding-bottom: 0.75rem;
 }
 
 /* charts */
@@ -750,53 +275,18 @@ textarea,
 	stroke: #a3aac5;
 }
 
-.css-16q21s1,
-.css-1uqbql0 {
-	border-bottom-width: 0px;
-	border-top-width: 0px;
-	border-inline: var(--border);
-}
-
 .recharts-tooltip-wrapper {
 	border-radius: var(--border-radius);
 	border: var(--border);
 	overflow: hidden;
 }
 
-.css-e9kbw1 {
-	border-inline: var(--border);
-}
-
-.css-7hr554 code {
-	background-color: var(--color-markdownLight);
-	padding: 0.1rem 0.5rem;
-	border-radius: 0.25rem;
-	/* color: var(--ctp-mantle); */
-}
-
-.css-1oedne5 {
-	border: var(--border);
-}
-
 /* /tags */
-.css-1m2essh {
-	margin-left: 20px;
-	margin-bottom: 0.25rem;
+.css-agc3hr {
+	margin-bottom: 0.5rem;
 }
-.css-tlyf2w,
-.css-16jbywf {
-	padding-bottom: 0.75rem;
-}
-.css-9ekrea {
+.css-g06fz9 {
 	margin-top: 0.75rem;
-}
-.css-1xszviz {
-	margin-top: 0px;
-}
-
-/* account chart */
-.css-17rentn {
-	margin-bottom: 0.75rem;
 }
 
 /* green balance */
@@ -810,16 +300,11 @@ textarea,
 	font-weight: bold;
 }
 
-.css-1wlgp5o button {
-	margin-bottom: 0px !important;
-	padding-block: 0.75rem !important;
-}
-
 /* tables border radius */
-.css-1mq6j8f,
-.css-1x480h3,
-.css-1mivfii,
-.css-hk3yfc {
+.css-g3p8fk,
+.css-1jho2h9,
+.css-4oi62a,
+.css-g06fz9 {
 	border-top-left-radius: var(--border-radius);
 	border-top-right-radius: var(--border-radius);
 }
@@ -827,4 +312,67 @@ textarea,
 /* svg icon in button */
 [data-testid="category-month-spent"] * {
 	flex-shrink: 0;
+}
+
+/* ── Privacy mode font ─────────────────────────────────────────────── */
+.abt-privacy-enabled .abt-privacy-number {
+	font-family: "Redacted Script", cursive !important;
+	filter: none;
+	transition: font-family 0.15s;
+}
+
+.abt-privacy-enabled .abt-privacy-number:hover {
+	font-family: inherit !important;
+	filter: none;
+}
+
+/* header */
+
+.css-pq65pe {
+	position: sticky;
+	background-color: var(--color-pageBackground);
+	padding: 1rem;
+	padding-block: 1.5rem;
+	height: 3.25rem;
+	flex-shrink: 0;
+}
+.css-3oa7u7,
+.css-jdrt9o,
+.css-ect7vi,
+.css-k9t6j1,
+.css-xggax0 {
+	padding-top: 1.5rem;
+}
+
+.abt-side-drawer-sidebar {
+	border-top: var(--border);
+	border-top-left-radius: var(--border-radius);
+}
+
+.css-125dinm button {
+	margin: 0px;
+	display: flex;
+	align-items: center;
+	border-radius: calc(var(--border-radius) / 1.5);
+	padding: 0.7rem !important;
+	height: 2.35rem;
+}
+
+.css-1ynskv0 {
+	padding-inline: 10px;
+}
+
+.css-125dinm {
+	gap: 7.5;
+}
+
+[data-testid="spent"] svg {
+	color: var(--color-pageTextLight) !important;
+}
+
+.css-15svmuk:hover,
+.css-15svmuk *,
+.css-276q18:hover,
+.css-276q18 * {
+	border-radius: 0px !important;
 }

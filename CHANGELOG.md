@@ -1,6 +1,102 @@
 # Changelog
 
 
+## v0.1.31
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.30...v0.1.31)
+
+### 🚀 Enhancements
+
+- Move content scripts out of public and into src; begin typescript migration ([177b5b3](https://github.com/aelxxs/actual-budget-tweaks/commit/177b5b3))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
+## v0.1.30
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.29...v0.1.30)
+
+### 🚀 Enhancements
+
+- Add side panel functionality with resizing and dynamic content ([dd2f0c3](https://github.com/aelxxs/actual-budget-tweaks/commit/dd2f0c3))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
+## v0.1.29
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.28...v0.1.29)
+
+### 🩹 Fixes
+
+- Harden custom dashboard widget injection ([3f8a9c5](https://github.com/aelxxs/actual-budget-tweaks/commit/3f8a9c5))
+
+### ❤️ Contributors
+
+- Andy Su <andysu1551@gmail.com>
+
+## v0.1.28
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.27...v0.1.28)
+
+## v0.1.27
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.26...v0.1.27)
+
+### 🩹 Fixes
+
+- Improve template apply breakdown ([c7378b6](https://github.com/aelxxs/actual-budget-tweaks/commit/c7378b6))
+- Align template priority breakdown ([8d5c771](https://github.com/aelxxs/actual-budget-tweaks/commit/8d5c771))
+- Remove svelte prop warnings ([a07930a](https://github.com/aelxxs/actual-budget-tweaks/commit/a07930a))
+- Normalize select stored value type ([a0d52d2](https://github.com/aelxxs/actual-budget-tweaks/commit/a0d52d2))
+- Resolve type check errors ([cbe6b3b](https://github.com/aelxxs/actual-budget-tweaks/commit/cbe6b3b))
+
+### 🏡 Chore
+
+- Decompose template breakdown scripts ([27ec774](https://github.com/aelxxs/actual-budget-tweaks/commit/27ec774))
+
+### ❤️ Contributors
+
+- Andy Su <andysu1551@gmail.com>
+
+## v0.1.26
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.25...v0.1.26)
+
+## v0.1.25
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.24...v0.1.25)
+
+## v0.1.24
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.23...v0.1.24)
+
+### 🚀 Enhancements
+
+- Implement search functionality and enhance settings organization ([f49100e](https://github.com/aelxxs/actual-budget-tweaks/commit/f49100e))
+
+### 💅 Refactors
+
+- Update CSS class names and improve styling for budget and report components ([86300a1](https://github.com/aelxxs/actual-budget-tweaks/commit/86300a1))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
+## v0.1.23
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.22...v0.1.23)
+
+### 🚀 Enhancements
+
+- Enhance balance handling and column resizing ([ff1fb27](https://github.com/aelxxs/actual-budget-tweaks/commit/ff1fb27))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.22
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.21...v0.1.22)

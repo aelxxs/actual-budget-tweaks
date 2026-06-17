@@ -1,8 +1,29 @@
 import { resolve } from "path";
+import type { UserManifest } from "wxt";
 import { defineConfig } from "wxt";
+
+type GeckoSettings = NonNullable<NonNullable<UserManifest["browser_specific_settings"]>["gecko"]> & {
+	data_collection_permissions?: {
+		required: string[];
+	};
+};
+
+const geckoSettings: GeckoSettings = {
+	data_collection_permissions: {
+		required: ["none"],
+	},
+};
 
 export default defineConfig({
 	srcDir: "src",
+	vite: () => ({
+		resolve: {
+			alias: {
+				"@lib": resolve(__dirname, "src/lib"),
+				"@features": resolve(__dirname, "src/features"),
+			},
+		},
+	}),
 	outDir: resolve(__dirname, ".output"),
 	modules: ["@wxt-dev/module-svelte"],
 	manifest: {
@@ -10,43 +31,19 @@ export default defineConfig({
 		description: "",
 		permissions: ["storage", "tabs"],
 		browser_specific_settings: {
-			gecko: {
-				data_collection_permissions: {
-					required: ["none"],
-				},
-			},
+			gecko: geckoSettings,
 		},
-		content_scripts: [
-			{
-				matches: ["<all_urls>"],
-				js: ["content-scripts/income-breakdown-loader.js"],
-			},
-			{
-				matches: ["<all_urls>"],
-				js: ["content-scripts/category-template-insights-loader.js"],
-			},
-			{
-				matches: ["<all_urls>"],
-				js: ["content-scripts/schedule-highlight-loader.js"],
-			},
-			{
-				matches: ["<all_urls>"],
-				js: ["content-scripts/template-apply-breakdown-loader.js"],
-			},
-		],
 		web_accessible_resources: [
 			{
 				resources: [
+					"income-breakdown-main.js",
+					"schedule-highlight-main.js",
+					"template-insights-main.js",
+					"template-apply-breakdown-main.js",
 					"css/base.css",
+					"css/income-breakdown.css",
+					"css/template-apply-breakdown.css",
 					"content-scripts/content.css",
-					"content-scripts/income-breakdown.css",
-					"content-scripts/template-apply-breakdown.css",
-					"lib/d3.min.js",
-					"lib/d3-sankey.min.js",
-					"content-scripts/income-breakdown.js",
-					"content-scripts/category-template-insights.js",
-					"content-scripts/schedule-highlight.js",
-					"content-scripts/template-apply-breakdown.js",
 				],
 				matches: ["<all_urls>"],
 			},

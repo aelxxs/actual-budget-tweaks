@@ -1,4 +1,7 @@
-import { getBaseUrl } from "@/lib/utilities/store";
+import { getBaseUrl } from "@lib/utilities/store";
+import type { PublicPath } from "wxt/browser";
+
+const contentCssPath = "/content-scripts/content.css" as unknown as PublicPath;
 
 export default defineContentScript({
 	matches: ["<all_urls>"],
@@ -17,21 +20,23 @@ export default defineContentScript({
 		// content script loads — on every <all_urls> page. Sites with strict
 		// trusted-types CSP (e.g. Outlook Web) reject this. Lazy-load
 		// everything Svelte-adjacent only after the URL check passes.
+		let mounted = false;
+
 		async function checkAndMount() {
 			if (isContextInvalidated()) return;
 
 			const baseUrl = await getBaseUrl();
 			if (!baseUrl || !window.location.href.startsWith(baseUrl)) return;
 
-			const [
-				{ default: Settings },
-				{ scripts },
-				{ createElement },
-				{ mount, unmount },
-			] = await Promise.all([
-				import("@/lib/ActualSettings.svelte"),
-				import("@/lib/scripts"),
-				import("@/lib/utilities/dom"),
+			// Already mounted — subsequent locationchange events are handled
+			// by the route listeners inside each script (pushState patching).
+			if (mounted) return;
+			mounted = true;
+
+			const [{ default: Settings }, { scripts, coreScripts }, { createElement }, { mount, unmount }] = await Promise.all([
+				import("@lib/ActualSettings.svelte"),
+				import("@features"),
+				import("@lib/utilities/dom"),
 				import("svelte"),
 			]);
 
@@ -39,9 +44,7 @@ export default defineContentScript({
 			let componentCss: string;
 			try {
 				baseCss = browser.runtime.getURL("/css/base.css");
-				componentCss = browser.runtime.getURL(
-					"/content-scripts/content.css"
-				);
+				componentCss = browser.runtime.getURL(contentCssPath);
 			} catch {
 				return; // Extension context invalidated
 			}
@@ -50,22 +53,24 @@ export default defineContentScript({
 				createElement("link", {
 					rel: "stylesheet",
 					href: baseCss,
-				})
+				}),
 			);
 			document.body.appendChild(
 				createElement("link", {
 					rel: "stylesheet",
 					href: componentCss,
-				})
+				}),
 			);
 
-			for (const setting of scripts.flat()) {
-				if (setting.init) {
-					// @ts-ignore -- TODO: fix this type error
-					setting.init(setting.context);
-				}
+			for (const core of coreScripts) {
+				core.init();
 			}
 
+			for (const setting of scripts.flat()) {
+				if (!setting.init) continue;
+				// @ts-ignore -- TODO: fix this type error
+				setting.init(setting.context);
+			}
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
 				anchor: "[data-testid='settings'] > :nth-child(2)",

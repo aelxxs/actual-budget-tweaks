@@ -1,3 +1,37 @@
+const TOOLBAR_GROUP_SELECTOR = ".css-125dinm";
+const TOOLBAR_BTN_CLASS = "css-70zz4x";
+
+export function createToolbarButton(options: {
+	id: string;
+	title: string;
+	icon: SVGSVGElement;
+	onClick: (e: MouseEvent) => void;
+}): HTMLButtonElement | null {
+	if (document.getElementById(options.id)) return null;
+
+	const group = document.querySelector(TOOLBAR_GROUP_SELECTOR);
+	if (!group) return null;
+
+	const btn = document.createElement("button");
+	btn.id = options.id;
+	btn.className = TOOLBAR_BTN_CLASS;
+	btn.type = "button";
+	btn.title = options.title;
+	btn.setAttribute("aria-label", options.title);
+	btn.appendChild(options.icon);
+
+	btn.addEventListener("click", (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		options.onClick(e);
+	});
+	btn.addEventListener("mouseover", () => btn.setAttribute("data-hovered", ""));
+	btn.addEventListener("mouseleave", () => btn.removeAttribute("data-hovered"));
+
+	group.appendChild(btn);
+	return btn;
+}
+
 export function createElement<K extends keyof HTMLElementTagNameMap>(
 	tag: K,
 	options?: Omit<Partial<HTMLElementTagNameMap[K]>, "style"> & { style?: Partial<CSSStyleDeclaration> },
@@ -31,4 +65,91 @@ export function applyGlobalCSS(cssText: string, styleId = "global-css"): void {
 	if (styleTag && !cssText.length) {
 		styleTag.remove();
 	}
+}
+
+/**
+ * Returns a CSS attribute selector string for a `data-testid` attribute.
+ *
+ * @example
+ * dataTestId("my-key") // => '[data-testid="my-key"]'
+ */
+export function dataTestId(id: string): string {
+	return `[data-testid="${id}"]`;
+}
+
+export interface WaitForElementOptions {
+	/** How many times to retry before giving up. Default: 10 */
+	maxRetries?: number;
+	/** Milliseconds between retries. Default: 300 */
+	interval?: number;
+	/** Root element to query within. Default: document */
+	root?: ParentNode;
+}
+
+/**
+ * Polls the DOM until a matching element appears, then resolves with it.
+ * Rejects after `maxRetries` attempts.
+ */
+export function waitForElement(selector: string, options: WaitForElementOptions = {}): Promise<HTMLElement> {
+	const { maxRetries = 10, interval = 300, root = document } = options;
+
+	return new Promise((resolve, reject) => {
+		let attempts = 0;
+
+		const check = () => {
+			const el = root.querySelector<HTMLElement>(selector);
+			if (el) {
+				resolve(el);
+				return;
+			}
+			attempts++;
+			if (attempts >= maxRetries) {
+				reject(new Error(`waitForElement: "${selector}" not found after ${maxRetries} attempts`));
+				return;
+			}
+			setTimeout(check, interval);
+		};
+
+		check();
+	});
+}
+
+/**
+ * Registers a callback to run whenever the page matches `pageName`.
+ * Matches against `window.location.pathname` (contains check).
+ * Re-evaluates on every `popstate` / `hashchange` navigation event.
+ *
+ * @example
+ * onPage("settings", () => { ... })
+ */
+export function onPage(pageName: string, callback: () => void): () => void {
+	const matches = () => window.location.pathname.includes(pageName);
+
+	const handler = () => {
+		if (matches()) callback();
+	};
+
+	// Patch pushState/replaceState once, globally
+	if (!(history as any).__abt_patched) {
+		for (const method of ["pushState", "replaceState"] as const) {
+			const original = history[method].bind(history);
+			(history as any)[method] = function (...args: Parameters<typeof history.pushState>) {
+				original(...args);
+				window.dispatchEvent(new Event("abt:locationchange"));
+			};
+		}
+		(history as any).__abt_patched = true;
+	}
+
+	if (matches()) callback();
+
+	window.addEventListener("popstate", handler);
+	window.addEventListener("hashchange", handler);
+	window.addEventListener("abt:locationchange", handler);
+
+	return () => {
+		window.removeEventListener("popstate", handler);
+		window.removeEventListener("hashchange", handler);
+		window.removeEventListener("abt:locationchange", handler);
+	};
 }
