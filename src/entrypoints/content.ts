@@ -33,12 +33,13 @@ export default defineContentScript({
 			if (mounted) return;
 			mounted = true;
 
-			const [{ default: Settings }, { scripts, coreScripts }, { createElement }, { mount, unmount }] = await Promise.all([
-				import("@lib/ActualSettings.svelte"),
-				import("@features"),
-				import("@lib/utilities/dom"),
-				import("svelte"),
-			]);
+			const [{ default: Settings }, { scripts, coreScripts }, { createElement }, { mount, unmount }] =
+				await Promise.all([
+					import("@lib/ActualSettings.svelte"),
+					import("@features/index"),
+					import("@lib/utilities/dom"),
+					import("svelte"),
+				]);
 
 			let baseCss: string;
 			let componentCss: string;
