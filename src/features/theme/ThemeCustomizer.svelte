@@ -131,15 +131,18 @@
 
 		loadingRemote = true;
 		try {
-			const res = await fetch(
-				"https://raw.githubusercontent.com/actualbudget/actual/master/packages/desktop-client/src/data/customThemeCatalog.json",
-			);
-			if (res.ok) {
-				remoteThemes = await res.json();
+			const res = await browser.runtime.sendMessage({
+				type: "fetch",
+				responseType: "json",
+				url: "https://raw.githubusercontent.com/actualbudget/actual/master/packages/desktop-client/src/data/customThemeCatalog.json",
+			});
+			if (res?.ok) {
+				remoteThemes = res.data;
 			} else {
 				remoteError = true;
 			}
-		} catch {
+		} catch (r) {
+			console.log({ r });
 			remoteError = true;
 		}
 		loadingRemote = false;
@@ -304,11 +307,11 @@
 		{/if}
 	</div>
 
-	<div class="customizer__footer">
+	<!-- <div class="customizer__footer">
 		<button class="customizer__edit-btn" onclick={openColorEditor}>
 			<span aria-hidden="true">◈</span> Customize Colors
 		</button>
-	</div>
+	</div> -->
 </div>
 
 <style>

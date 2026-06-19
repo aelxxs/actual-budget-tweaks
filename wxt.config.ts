@@ -33,6 +33,7 @@ export default defineConfig({
 		browser_specific_settings: {
 			gecko: geckoSettings,
 		},
+		host_permissions: ["https://raw.githubusercontent.com*"],
 		web_accessible_resources: [
 			{
 				resources: [

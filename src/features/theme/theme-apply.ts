@@ -323,8 +323,8 @@ export async function fetchCommunityCSS(repo: string): Promise<string> {
 	const branches = ["main", "master"];
 	for (const branch of branches) {
 		const url = `https://raw.githubusercontent.com/${repo}/${branch}/actual.css`;
-		const res = await fetch(url);
-		if (res.ok) return res.text();
+		const res = await browser.runtime.sendMessage({ type: "fetch", url });
+		if (res?.ok) return res.data;
 	}
 	throw new Error(`Could not fetch actual.css from ${repo}`);
 }
