@@ -6,8 +6,8 @@ import SidePanelContent from "./Content.svelte";
 
 const SIDEBAR_ATTR = "data-abt-side-drawer-sidebar";
 const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
-const DEFAULT_SIDEBAR_WIDTH = 320;
-const MIN_SIDEBAR_WIDTH = 240;
+const DEFAULT_SIDEBAR_WIDTH = 350;
+const MIN_SIDEBAR_WIDTH = 350;
 const MAX_SIDEBAR_WIDTH = 640;
 const PANEL_OPEN_EVENT = "abt:sidepanel:open";
 const PANEL_CLOSE_EVENT = "abt:sidepanel:close";
@@ -218,9 +218,15 @@ export const sidePanel = {
 		document.addEventListener("abt:navigate", async () => {
 			const persisted = await getValue<{ route: string } | null>(PERSIST_KEY, null);
 			if (persisted?.route === location.pathname) {
-				if (!isOpen) { isOpen = true; sync(); }
+				if (!isOpen) {
+					isOpen = true;
+					sync();
+				}
 			} else {
-				if (isOpen) { isOpen = false; sync(); }
+				if (isOpen) {
+					isOpen = false;
+					sync();
+				}
 			}
 		});
 

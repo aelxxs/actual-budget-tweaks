@@ -7,7 +7,19 @@
 	import ThemeColorEditor from "./ThemeColorEditor.svelte";
 	import ThemeEditorHeader from "./ThemeEditorHeader.svelte";
 	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
-	import { applyCommunityTheme, applyPalette, isCommunityTheme } from "./theme-apply";
+	import { applyCommunityTheme, applyPalette, applyUserPaletteTheme, applyUserCSSTheme, isCommunityTheme } from "./theme-apply";
+	import ThemeCreator from "./ThemeCreator.svelte";
+	import ThemeCreatorHeader from "./ThemeCreatorHeader.svelte";
+	import {
+		userThemeState,
+		loadUserThemes,
+		saveUserTheme,
+		deleteUserTheme,
+		generateThemeId,
+		isUserTheme,
+		getPreviewColorsFromTheme,
+		type UserTheme,
+	} from "./user-themes.svelte";
 
 	type RemoteTheme = {
 		name: string;
@@ -30,12 +42,20 @@
 	let editorNode: Node | null = null;
 	let headerNode: Node | null = null;
 
+	let exportFn: (() => string) | null = null;
+
 	const openColorEditor = () => {
 		if (!editorNode) {
 			editorNode = mountToNode(ThemeColorEditor, {
-				onReady: ({ reset }: { reset: () => void }) => setResetFn(reset),
+				onReady: ({ reset, getExportCSS }: { reset: () => void; getExportCSS: () => string }) => {
+					setResetFn(reset);
+					exportFn = getExportCSS;
+				},
 			});
-			headerNode = mountToNode(ThemeEditorHeader, { onReset: () => resetFn() });
+			headerNode = mountToNode(ThemeEditorHeader, {
+				onReset: () => resetFn(),
+				onExport: () => exportFn?.() ?? "",
+			});
 		}
 		sidepanel.open({
 			title: "Color Editor",
@@ -43,6 +63,18 @@
 			headerNode: headerNode,
 		});
 	};
+
+	async function editTheme(key: string, e: Event) {
+		e.stopPropagation();
+		if (activeThemeKey !== key) {
+			if (isUserTheme(key)) {
+				await selectUserTheme(key);
+			} else {
+				await selectTheme(key);
+			}
+		}
+		openColorEditor();
+	}
 
 	function getPreviewColors(themeKey: string): string[] {
 		const theme = themes[themeKey];
@@ -126,7 +158,112 @@
 
 	const isEmpty = $derived(filteredBuiltin.length === 0 && filteredCommunity.length === 0 && !loadingRemote);
 
+	let creatorNode: Node | null = null;
+	let creatorHeaderNode: Node | null = null;
+	let creatorThemeId = "";
+	let creatorThemeName = "My Theme";
+	let creatorThemeMode: "dark" | "light" = "dark";
+	let creatorPaletteKeys: Record<string, string> = {};
+	let creatorCss = "";
+	let creatorType: "palette" | "css" = "palette";
+
+	function openCreator(existingId?: string) {
+		const existing = existingId ? userThemeState.themes[existingId] : null;
+		creatorThemeId = existing?.id ?? generateThemeId();
+		creatorThemeName = existing?.name ?? "My Theme";
+		creatorThemeMode = existing?.mode ?? "dark";
+		creatorType = existing?.type ?? "palette";
+		creatorPaletteKeys = existing?.keys ? { ...existing.keys } : {};
+		creatorCss = existing?.css ?? "";
+
+		if (existing && existing.type === "palette" && existing.keys) {
+			applyUserPaletteTheme(existing.id, existing.keys);
+		}
+
+		creatorNode = mountToNode(ThemeCreator, {
+			initialKeys: creatorPaletteKeys,
+			initialCss: creatorCss,
+			initialTab: creatorType,
+			onPaletteChange: (keys: Record<string, string>) => {
+				creatorPaletteKeys = keys;
+				creatorType = "palette";
+			},
+			onCssApply: (css: string) => {
+				creatorCss = css;
+				creatorType = "css";
+				applyUserCSSTheme(creatorThemeId, css);
+			},
+		});
+		creatorHeaderNode = mountToNode(ThemeCreatorHeader, {
+			themeName: creatorThemeName,
+			mode: creatorThemeMode,
+			isEditing: !!existing,
+			onSave: handleCreatorSave,
+			onDelete: () => handleCreatorDelete(creatorThemeId),
+			onNameChange: (name: string) => { creatorThemeName = name; },
+			onModeChange: (mode: "dark" | "light") => { creatorThemeMode = mode; },
+		});
+		sidepanel.open({
+			title: "Create Theme",
+			bodyNode: creatorNode,
+			headerNode: creatorHeaderNode,
+		});
+	}
+
+	async function handleCreatorSave() {
+		const theme: UserTheme = {
+			id: creatorThemeId,
+			name: creatorThemeName,
+			mode: creatorThemeMode,
+			type: creatorType,
+			...(creatorType === "palette" ? { keys: { ...creatorPaletteKeys } } : { css: creatorCss }),
+		};
+		await saveUserTheme(theme);
+		activeThemeKey = theme.id;
+		await setValue(ctx.key, theme.id);
+		sidepanel.close();
+	}
+
+	async function handleCreatorDelete(id: string) {
+		await deleteUserTheme(id);
+		sidepanel.close();
+		if (activeThemeKey === id) {
+			activeThemeKey = ctx.defaultValue;
+			await setValue(ctx.key, ctx.defaultValue);
+			applyPalette(ctx.defaultValue);
+		}
+	}
+
+	function editUserTheme(id: string, e: Event) {
+		e.stopPropagation();
+		openCreator(id);
+	}
+
+	async function selectUserTheme(id: string) {
+		if (applyingTheme) return;
+		const theme = userThemeState.themes[id];
+		if (!theme) return;
+		applyingTheme = id;
+		activeThemeKey = id;
+		try {
+			await setValue(ctx.key, id);
+			if (theme.type === "palette" && theme.keys) {
+				applyUserPaletteTheme(id, theme.keys);
+			} else if (theme.type === "css" && theme.css) {
+				applyUserCSSTheme(id, theme.css);
+			}
+		} finally {
+			applyingTheme = null;
+		}
+	}
+
+	async function handleDeleteFromCard(id: string, e: Event) {
+		e.stopPropagation();
+		await handleCreatorDelete(id);
+	}
+
 	onMount(async () => {
+		await loadUserThemes();
 		activeThemeKey = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
 
 		loadingRemote = true;
@@ -165,10 +302,90 @@
 		</select>
 	</div>
 
+	<button class="create-theme-btn" onclick={() => openCreator()}>
+		<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"/></svg>
+		Create Theme
+	</button>
+
 	<div class="gallery">
 		{#if isEmpty}
 			<p class="gallery__empty">No themes match your filters.</p>
 		{:else}
+			{#if Object.keys(userThemeState.themes).length > 0}
+				<div class="gallery__section">
+					<div class="gallery__section-label">My Themes</div>
+					<div class="gallery__grid">
+						{#each Object.values(userThemeState.themes) as uTheme (uTheme.id)}
+							{@const isActive = activeThemeKey === uTheme.id}
+							{@const previewColors = getPreviewColorsFromTheme(uTheme)}
+							<button
+								class="card"
+								class:card--active={isActive}
+								onclick={() => selectUserTheme(uTheme.id)}
+								title={uTheme.name}
+							>
+								{#if previewColors.length > 0}
+									<div class="card__swatches">
+										{#each previewColors as color}
+											<div class="swatch" style="background: {color};"></div>
+										{/each}
+									</div>
+								{:else}
+									<div class="card__swatches card__swatches--placeholder">
+										<div class="swatch" style="background: var(--color-pageBackground);"></div>
+									</div>
+								{/if}
+								<div class="card__body">
+									<div class="card__name">{uTheme.name}</div>
+									<div class="card__badges">
+										<span class="badge badge--mode badge--{uTheme.mode}">{uTheme.mode}</span>
+										<span class="badge badge--creator">Custom</span>
+									</div>
+									<div class="card__meta">
+										<span class="card__source">{uTheme.type === "palette" ? "Palette" : "CSS"}</span>
+										<div class="card__actions">
+											<div
+												class="card__edit-btn"
+												role="button"
+												tabindex="0"
+												title="Edit palette for {uTheme.name}"
+												onclick={(e) => editUserTheme(uTheme.id, e)}
+												onkeydown={(e) => (e.key === "Enter" || e.key === " ") && editUserTheme(uTheme.id, e)}
+											>
+												<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.25.25 0 0 0 .108-.064l6.286-6.286Z"/></svg>
+											</div>
+											<div
+												class="card__edit-btn"
+												role="button"
+												tabindex="0"
+												title="Edit color tokens for {uTheme.name}"
+												onclick={(e) => editTheme(uTheme.id, e)}
+												onkeydown={(e) => (e.key === "Enter" || e.key === " ") && editTheme(uTheme.id, e)}
+											>
+												<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>
+											</div>
+											<div
+												class="card__delete-btn"
+												role="button"
+												tabindex="0"
+												title="Delete {uTheme.name}"
+												onclick={(e) => handleDeleteFromCard(uTheme.id, e)}
+												onkeydown={(e) => (e.key === "Enter" || e.key === " ") && handleDeleteFromCard(uTheme.id, e)}
+											>
+												<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM6.5 1.75v1.25h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25ZM4.997 6.178a.75.75 0 1 0-1.493.144l.684 7.082A1.75 1.75 0 0 0 5.926 15h4.146a1.75 1.75 0 0 0 1.739-1.596l.684-7.082a.75.75 0 0 0-1.494-.144l-.684 7.082a.25.25 0 0 1-.249.228H5.927a.25.25 0 0 1-.25-.228l-.683-7.082Z"/></svg>
+											</div>
+										</div>
+									</div>
+								</div>
+								{#if isActive}
+									<div class="card__check" aria-label="Active theme">✓</div>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
 			{#if filteredBuiltin.length > 0}
 				<div class="gallery__section">
 					<div class="gallery__section-label">Built-in</div>
@@ -193,7 +410,23 @@
 										<span class="badge badge--mode badge--{theme.mode}">{theme.mode}</span>
 										<span class="badge badge--creator">ABT</span>
 									</div>
-									<div class="card__source">Built-in</div>
+									<div class="card__meta">
+										<span class="card__source">Built-in</span>
+										<div
+											class="card__edit-btn"
+											role="button"
+											tabindex="0"
+											title="Edit colors for {theme.name}"
+											onclick={(e) => editTheme(key, e)}
+											onkeydown={(e) => (e.key === "Enter" || e.key === " ") && editTheme(key, e)}
+										>
+											<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+												><path
+													d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.25.25 0 0 0 .108-.064l6.286-6.286Z"
+												/></svg
+											>
+										</div>
+									</div>
 								</div>
 								{#if Object.keys(editorState.overrides[key] ?? {}).length > 0}
 									{@const editedTokens = Object.keys(editorState.overrides[key] ?? {})}
@@ -259,15 +492,32 @@
 											<span class="badge badge--mode badge--{theme.mode}">{theme.mode}</span>
 											<span class="badge badge--creator">{getRepoOwner(theme.repo)}</span>
 										</div>
-										<a
-											class="card__source card__source--link"
-											href="https://github.com/{theme.repo}"
-											target="_blank"
-											rel="noopener noreferrer"
-											onclick={(e) => e.stopPropagation()}
-										>
-											github.com/{theme.repo} ↗
-										</a>
+										<div class="card__meta">
+											<a
+												class="card__source card__source--link"
+												href="https://github.com/{theme.repo}"
+												target="_blank"
+												rel="noopener noreferrer"
+												onclick={(e) => e.stopPropagation()}
+											>
+												github.com/{theme.repo} ↗
+											</a>
+											<div
+												class="card__edit-btn"
+												role="button"
+												tabindex="0"
+												title="Edit colors for {theme.name}"
+												onclick={(e) => editTheme(theme.repo, e)}
+												onkeydown={(e) =>
+													(e.key === "Enter" || e.key === " ") && editTheme(theme.repo, e)}
+											>
+												<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+													><path
+														d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.25.25 0 0 0 .108-.064l6.286-6.286Z"
+													/></svg
+												>
+											</div>
+										</div>
 									</div>
 									{#if Object.keys(editorState.overrides[theme.repo] ?? {}).length > 0}
 										{@const editedTokens = Object.keys(editorState.overrides[theme.repo] ?? {})}
@@ -306,12 +556,6 @@
 			{/if}
 		{/if}
 	</div>
-
-	<!-- <div class="customizer__footer">
-		<button class="customizer__edit-btn" onclick={openColorEditor}>
-			<span aria-hidden="true">◈</span> Customize Colors
-		</button>
-	</div> -->
 </div>
 
 <style>
@@ -321,6 +565,37 @@
 		width: 100%;
 		padding-top: 4px;
 		gap: 8px;
+	}
+
+	/* ── Create Theme Button ─────────────────────────────────────────── */
+
+	.create-theme-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		width: 100%;
+		font-family: inherit;
+		font-size: 11px;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		padding: 7px 12px;
+		border-radius: 8px;
+		border: 1px dashed color-mix(in srgb, var(--color-sidebarItemAccentSelected) 50%, transparent);
+		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
+		color: var(--color-sidebarItemAccentSelected);
+		cursor: pointer;
+		transition: background 0.15s, border-color 0.15s;
+	}
+
+	.create-theme-btn:hover {
+		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+		border-color: var(--color-sidebarItemAccentSelected);
+	}
+
+	.create-theme-btn svg {
+		width: 14px;
+		height: 14px;
 	}
 
 	/* ── Controls ─────────────────────────────────────────────────────── */
@@ -614,35 +889,65 @@
 		}
 	}
 
-	/* ── Footer ───────────────────────────────────────────────────────── */
+	/* ── Card meta row ────────────────────────────────────────────────── */
 
-	.customizer__footer {
+	.card__meta {
 		display: flex;
-	}
-
-	.customizer__edit-btn {
-		display: inline-flex;
 		align-items: center;
-		gap: 6px;
-		flex: 1;
-		justify-content: center;
-		font-family: inherit;
-		font-size: 11px;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		padding: 7px 12px;
-		border-radius: 8px;
-		border: 1px solid color-mix(in srgb, var(--color-sidebarItemAccentSelected) 35%, transparent);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 8%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
-		cursor: pointer;
-		transition:
-			background 0.15s,
-			border-color 0.15s;
+		justify-content: space-between;
+		gap: 4px;
 	}
 
-	.customizer__edit-btn:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 16%, transparent);
-		border-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 65%, transparent);
+	.card__edit-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 4px;
+		cursor: pointer;
+		color: var(--color-pageTextSubdued);
+		flex-shrink: 0;
+		transition:
+			color 0.15s,
+			background 0.15s;
+	}
+
+	.card__edit-btn:hover {
+		color: var(--color-sidebarItemAccentSelected);
+		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+	}
+
+	.card__edit-btn svg {
+		width: 12px;
+		height: 12px;
+	}
+
+	.card__actions {
+		display: flex;
+		gap: 2px;
+	}
+
+	.card__delete-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 4px;
+		cursor: pointer;
+		color: var(--color-pageTextSubdued);
+		flex-shrink: 0;
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.card__delete-btn:hover {
+		color: var(--color-errorText);
+		background: color-mix(in srgb, var(--color-errorText) 12%, transparent);
+	}
+
+	.card__delete-btn svg {
+		width: 12px;
+		height: 12px;
 	}
 </style>

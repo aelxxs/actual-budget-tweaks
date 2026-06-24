@@ -296,6 +296,29 @@ export function isCommunityTheme(value: string): boolean {
 	return value.includes("/");
 }
 
+export function applyUserPaletteTheme(id: string, keys: Record<string, string>) {
+	const root = document.querySelector<HTMLElement>(":root");
+	if (!root) return;
+	for (const [varName, val] of Object.entries(keys)) {
+		root.style.setProperty(varName, val);
+	}
+	applyGlobalCSS(BUILTIN_CSS, TOKENS_STYLE_ID);
+	editorState.activeTheme = id;
+	applyOverrides(id);
+}
+
+export function applyUserCSSTheme(id: string, css: string) {
+	const root = document.querySelector<HTMLElement>(":root");
+	if (root) {
+		for (const prop of Array.from(root.style)) {
+			if (prop.startsWith("--ctp-")) root.style.removeProperty(prop);
+		}
+	}
+	applyGlobalCSS(css, TOKENS_STYLE_ID);
+	editorState.activeTheme = id;
+	applyOverrides(id);
+}
+
 export function applyOverrides(key: string) {
 	const overrides = editorState.overrides[key];
 	if (!overrides || Object.keys(overrides).length === 0) return;

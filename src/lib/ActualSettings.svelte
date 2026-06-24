@@ -233,7 +233,6 @@
 		.settings-page {
 			width: 100%;
 			box-sizing: border-box;
-			padding: 0.75rem 0;
 			color: var(--color-pageText);
 		}
 
