@@ -1,4 +1,4 @@
-import { Theme } from "@features/types";
+import type { Theme } from "@lib/design/types";
 
 export const midnight = {
 	name: "Midnight",
