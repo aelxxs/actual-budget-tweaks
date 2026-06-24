@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.32
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.31...v0.1.32)
+
+### 🚀 Enhancements
+
+- Implement background script for message handling and fetch requests ([a4de93a](https://github.com/aelxxs/actual-budget-tweaks/commit/a4de93a))
+- **theme:** Enhance theme editor with export functionality and user theme management ([aad00a8](https://github.com/aelxxs/actual-budget-tweaks/commit/aad00a8))
+
+### 💅 Refactors
+
+- Remove deprecated settings and scripts ([acab628](https://github.com/aelxxs/actual-budget-tweaks/commit/acab628))
+- Remove modernSidebarStates from appearance and scripts ([7d01778](https://github.com/aelxxs/actual-budget-tweaks/commit/7d01778))
+- Update Theme import paths and remove unused palette files ([8cc94e9](https://github.com/aelxxs/actual-budget-tweaks/commit/8cc94e9))
+- Enhance bug reporting feature with modal and improved submission format ([640a8b0](https://github.com/aelxxs/actual-budget-tweaks/commit/640a8b0))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.31
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.30...v0.1.31)
