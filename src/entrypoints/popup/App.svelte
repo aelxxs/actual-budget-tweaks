@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getValue, normalizeBaseUrl, setValue } from "@/lib/utilities/store";
+	import { getValue, normalizeBaseUrl, setValue } from "@lib/utilities/store";
 	import { onMount } from "svelte";
 
 	let userLink = $state("");

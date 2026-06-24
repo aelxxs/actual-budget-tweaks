@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { SettingContext } from "../scripts/types";
+	import type { SettingContext } from "../../features/types";
 	import { getValue, setValue } from "../utilities/store";
 
 	const { labelText, options, ctx, onChange } = $props<{
@@ -27,7 +27,7 @@
 	}
 </script>
 
-<div class="stack">
+<div class="stack" data-testid={ctx.key}>
 	<span style="font-weight: 500;">{labelText}</span>
 	<select bind:value class="select" onchange={handleChange}>
 		{#each options as option}

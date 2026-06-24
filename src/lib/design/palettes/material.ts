@@ -1,4 +1,4 @@
-import { Theme } from "../types";
+import type { Theme } from "@lib/design/types";
 
 export const material = {
 	name: "Material",
