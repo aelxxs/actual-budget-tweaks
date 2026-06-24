@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getValue, setValue } from "@lib/utilities/store";
 	import { editorState, type ThemeOverrides } from "./editor-state.svelte";
+	import ColorRow from "./ColorRow.svelte";
 
 	type ColorKeys = Record<string, string>;
 
@@ -330,8 +331,15 @@
 	let {
 		onReady,
 	}: {
-		onReady?: (api: { reset: () => void }) => void;
+		onReady?: (api: { reset: () => void; getExportCSS: () => string }) => void;
 	} = $props();
+
+	function getExportCSS(): string {
+		const lines = allKeys
+			.map((key) => `  ${key}: ${colors[key] ?? ""};`)
+			.filter((line) => !line.endsWith(": ;"));
+		return `:root {\n${lines.join("\n")}\n}`;
+	}
 
 	$effect(() => {
 		editorState.isSaving = isSaving;
@@ -369,7 +377,7 @@
 		savedColors = { ...merged };
 		pickerValues = { ...merged };
 
-		onReady?.({ reset: resetAll });
+		onReady?.({ reset: resetAll, getExportCSS });
 	}
 
 	function extractThemeOverrides(stored: ThemeOverrides | ColorKeys | null, theme: string): ColorKeys {
@@ -484,27 +492,12 @@
 
 	<div class="editor__rows">
 		{#each filteredKeys as key}
-			{@const value = colors[key] ?? ""}
-			{@const picker = pickerValues[key] ?? "#000000"}
-			<div class="color-row">
-				<div class="color-row__swatch" style="background: {picker};"></div>
-				<span class="color-row__label" title={key}>{toLabel(key)}</span>
-				<div class="color-row__inputs">
-					<input
-						class="color-row__hex"
-						type="text"
-						{value}
-						spellcheck="false"
-						oninput={(e) => handleHexInput(key, (e.target as HTMLInputElement).value)}
-					/>
-					<input
-						class="color-row__picker"
-						type="color"
-						value={picker}
-						oninput={(e) => handlePickerChange(key, (e.target as HTMLInputElement).value)}
-					/>
-				</div>
-			</div>
+			<ColorRow
+				label={toLabel(key)}
+				value={colors[key] ?? ""}
+				onHexInput={(v) => handleHexInput(key, v)}
+				onPickerChange={(v) => handlePickerChange(key, v)}
+			/>
 		{/each}
 
 		{#if filteredKeys.length === 0}
@@ -596,82 +589,5 @@
 		margin: 0;
 	}
 
-	.color-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 5px 12px;
-		transition: background 0.1s;
-	}
 
-	.color-row:hover {
-		background: var(--color-tableRowBackgroundHover);
-	}
-
-	.color-row__swatch {
-		width: 12px;
-		height: 12px;
-		border-radius: 3px;
-		flex-shrink: 0;
-		border: var(--border);
-	}
-
-	.color-row__label {
-		flex: 1;
-		font-size: 11px;
-		color: var(--color-pageTextLight);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		min-width: 0;
-	}
-
-	.color-row__inputs {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		flex-shrink: 0;
-	}
-
-	.color-row__hex {
-		font-family: inherit;
-		font-size: 10px;
-		width: 68px;
-		padding: 3px 5px;
-		border-radius: 4px;
-		border: var(--border);
-		background: var(--color-formInputBackground);
-		color: var(--color-formInputText);
-		outline: none;
-		transition: border-color 0.15s;
-	}
-
-	.color-row__hex:focus {
-		border-color: var(--color-formInputBorderSelected);
-	}
-
-	.color-row__picker {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 22px;
-		height: 22px;
-		border-radius: 4px;
-		border: var(--border);
-		background: none;
-		cursor: pointer;
-		padding: 0;
-		overflow: hidden;
-	}
-
-	.color-row__picker::-webkit-color-swatch-wrapper {
-		padding: 0;
-	}
-	.color-row__picker::-webkit-color-swatch {
-		border: none;
-		border-radius: 3px;
-	}
-	.color-row__picker::-moz-color-swatch {
-		border: none;
-		border-radius: 3px;
-	}
 </style>

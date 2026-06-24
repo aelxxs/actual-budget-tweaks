@@ -2,8 +2,27 @@
 <script lang="ts">
 	import { editorState } from "./editor-state.svelte";
 
-	// No props needed for state — just onReset
-	let { onReset }: { onReset: () => void } = $props();
+	let { onReset, onExport }: { onReset: () => void; onExport: () => string } = $props();
+
+	let exportLabel = $state("Copy CSS");
+
+	async function handleExport() {
+		const css = onExport();
+		if (!css) return;
+		try {
+			await navigator.clipboard.writeText(css);
+			exportLabel = "Copied!";
+			setTimeout(() => (exportLabel = "Copy CSS"), 1500);
+		} catch {
+			const blob = new Blob([css], { type: "text/css" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = "actual.css";
+			a.click();
+			URL.revokeObjectURL(url);
+		}
+	}
 </script>
 
 <div class="editor__top">
@@ -14,7 +33,10 @@
 			<p class="editor__sub">{editorState.isSaving ? "saving…" : editorState.isDirty ? "unsaved" : "saved"}</p>
 		</div>
 	</div>
-	<button class="editor__reset" onclick={onReset}>↺ Reset</button>
+	<div class="editor__actions">
+		<button class="editor__export" onclick={handleExport}>{exportLabel}</button>
+		<button class="editor__reset" onclick={onReset}>↺ Reset</button>
+	</div>
 </div>
 
 <style>
@@ -52,6 +74,27 @@
 		font-size: 10px;
 		color: var(--color-pageTextSubdued);
 		letter-spacing: 0.04em;
+	}
+
+	.editor__actions {
+		display: flex;
+		gap: 6px;
+	}
+
+	.editor__export {
+		font-family: inherit;
+		font-size: 11px;
+		padding: 4px 10px;
+		border-radius: 6px;
+		border: var(--border);
+		background: var(--color-buttonNormalBackground);
+		color: var(--color-sidebarItemAccentSelected);
+		cursor: pointer;
+		transition: border-color 0.15s, color 0.15s;
+	}
+
+	.editor__export:hover {
+		border-color: var(--color-sidebarItemAccentSelected);
 	}
 
 	.editor__reset {
