@@ -1,4 +1,4 @@
-import { Theme } from "@features/types";
+import { Theme } from "@lib/design/types";
 
 export const cyberpunk = {
 	name: "Cyberpunk",

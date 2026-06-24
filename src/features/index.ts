@@ -48,7 +48,7 @@ const readability = [
 	budgetPageBorders,
 ];
 
-const appearance = [sidebarRedesign, modernSidebarStates, accountIconPicker, imageWidgets];
+const appearance = [sidebarRedesign, accountIconPicker, imageWidgets];
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown];
 
@@ -96,7 +96,6 @@ export const scripts: Setting<any>[][] = [
 		resizableTransactionColumns,
 		showDailyAvailable,
 		sidebarRedesign,
-		modernSidebarStates,
 		accountIconPicker,
 		imageWidgets,
 		categoryTemplateInsights,
