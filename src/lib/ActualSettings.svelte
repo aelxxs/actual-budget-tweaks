@@ -1,10 +1,45 @@
 <script lang="ts">
+	import { scriptSections } from "../features";
 	import CheckboxOption from "./components/Checkbox.svelte";
 	import SelectOption from "./components/Select.svelte";
-	import { scriptSections } from "../features";
+
+	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
 
 	let query = $state("");
 	let collapsed = $state<Record<string, boolean>>({});
+
+	let showBugModal = $state(false);
+	let bugFeature = $state("");
+	let bugDescription = $state("");
+
+	function openBugReport() {
+		bugFeature = "";
+		bugDescription = "";
+		showBugModal = true;
+	}
+
+	function closeBugReport() {
+		showBugModal = false;
+	}
+
+	function submitBugReport() {
+		const title = bugFeature ? `[Bug] ${bugFeature}` : "[Bug] General issue";
+		const body = [
+			bugFeature ? `**Feature:** ${bugFeature}` : "",
+			"",
+			"**Description:**",
+			bugDescription || "_No description provided._",
+			"",
+			"---",
+			"_Reported via Actual Budget Tweaks settings_",
+		]
+			.filter((line, i) => i > 0 || line)
+			.join("\n");
+
+		const url = `${REPO_URL}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=bug`;
+		window.open(url, "_blank", "noopener,noreferrer");
+		closeBugReport();
+	}
 
 	const normalizedQuery = $derived(query.trim().toLowerCase());
 	const filteredSections = $derived.by(() => {
@@ -28,11 +63,30 @@
 		// When searching, force all sections open
 		return !normalizedQuery && !!collapsed[title];
 	}
+
+	function portal(node: HTMLElement) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				node.remove();
+			},
+		};
+	}
 </script>
 
 <div class="settings-page stack" style="--space: 1rem;">
 	<div class="header stack" style="--space: 0.6rem;">
-		<span><strong>Interface Settings</strong> — Configure Actual</span>
+		<div class="title-row cluster" style="--gutter: 0.5rem; --align: center; --justify: space-between;">
+			<span><strong>Interface Settings</strong> — Configure Actual</span>
+			<button class="bug-report-btn" onclick={openBugReport} title="Report a bug">
+				<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+					<path
+						d="M4.72.22a.75.75 0 0 1 1.06 0l1.204 1.203A3.98 3.98 0 0 1 8 1.25c.357 0 .7.047 1.016.134L10.22.22a.75.75 0 1 1 1.06 1.06l-.96.96A3.99 3.99 0 0 1 11.95 4.5h.55a.75.75 0 0 1 0 1.5h-.337a5.03 5.03 0 0 1 .088.86v.39H13a.75.75 0 0 1 0 1.5h-.749v.39c0 .318-.03.63-.088.86H13a.75.75 0 0 1 0 1.5h-.55a3.99 3.99 0 0 1-1.63 1.96l.96.96a.75.75 0 1 1-1.06 1.06l-1.204-1.203A3.98 3.98 0 0 1 8 14.75a3.98 3.98 0 0 1-1.016-.134L5.78 15.78a.75.75 0 0 1-1.06-1.06l.96-.96A3.99 3.99 0 0 1 4.05 11.5H3.5a.75.75 0 0 1 0-1.5h.337a5.03 5.03 0 0 1-.088-.86v-.39H3a.75.75 0 0 1 0-1.5h.749v-.39c0-.318.03-.63.088-.86H3.5a.75.75 0 0 1 0-1.5h.55a3.99 3.99 0 0 1 1.63-1.96l-.96-.96A.75.75 0 0 1 4.72.22ZM6.173 5a2.5 2.5 0 0 0-.672 1.25h5a2.5 2.5 0 0 0-.673-1.25H6.173ZM5.5 7.75v.39a3.51 3.51 0 0 0 .586 1.935l.064.085A2.5 2.5 0 0 0 8 11.25a2.5 2.5 0 0 0 1.85-1.09l.064-.085A3.51 3.51 0 0 0 10.5 8.14v-.39h-5Z"
+					/>
+				</svg>
+				Report Bug
+			</button>
+		</div>
 		<div class="search-row cluster" style="--gutter: 0.5rem; --align: center;">
 			<input
 				type="search"
@@ -100,6 +154,57 @@
 		{/each}
 	{/if}
 </div>
+
+{#if showBugModal}
+	<div class="bug-modal" use:portal>
+		<div class="bug-backdrop" role="presentation" onclick={closeBugReport}></div>
+		<div class="bug-content">
+			<button class="bug-close" onclick={closeBugReport}>&times;</button>
+			<h3 class="bug-title">Report a Bug</h3>
+
+			<label class="bug-label" for="bug-feature">Affected Feature</label>
+			<select id="bug-feature" class="bug-select" bind:value={bugFeature}>
+				<option value="">General / Not sure</option>
+				{#each scriptSections as section}
+					<optgroup label={section.title}>
+						{#each section.items as item}
+							{#if item.label}
+								<option value={item.label}>{item.label}</option>
+							{:else}
+								<option value={section.title}>{section.title}</option>
+							{/if}
+						{/each}
+					</optgroup>
+				{/each}
+			</select>
+
+			<label class="bug-label" for="bug-description">What happened?</label>
+			<textarea
+				id="bug-description"
+				class="bug-textarea"
+				rows="4"
+				placeholder="Describe what you expected vs. what actually happened..."
+				bind:value={bugDescription}
+			></textarea>
+
+			<div class="bug-actions">
+				<button class="bug-cancel" onclick={closeBugReport}>Cancel</button>
+				<button class="bug-submit" onclick={submitBugReport}>
+					Open on GitHub
+					<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+						<path
+							d="M4.5 2.5h9m0 0v9m0-9L4 12"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	:global {
@@ -230,6 +335,172 @@
 
 		.setting-label {
 			font-weight: 500;
+		}
+
+		.bug-report-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			font-size: 0.8rem;
+			color: var(--color-pageTextSubdued);
+			padding: 0.3rem 0.6rem;
+			border-radius: 6px;
+			border: var(--border);
+			background: none;
+			cursor: pointer;
+			transition:
+				color 0.15s,
+				border-color 0.15s;
+		}
+
+		.bug-report-btn:hover {
+			color: var(--color-errorText);
+			border-color: var(--color-errorBorder);
+		}
+
+		.bug-report-btn svg {
+			width: 14px;
+			height: 14px;
+			flex-shrink: 0;
+		}
+
+		.bug-modal {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 10000;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.bug-backdrop {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.3);
+		}
+
+		.bug-content {
+			position: relative;
+			background: var(--color-modalBackground);
+			border: var(--border);
+			border-radius: var(--border-radius);
+			padding: 1.5rem;
+			width: 460px;
+			max-height: 80vh;
+			overflow-y: auto;
+			z-index: 10001;
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+
+		.bug-close {
+			position: absolute;
+			top: 0.75rem;
+			right: 0.75rem;
+			width: 24px;
+			height: 24px;
+			padding: 0;
+			border: 0;
+			background: transparent;
+			color: var(--color-pageTextSubdued);
+			font-size: 18px;
+			cursor: pointer;
+		}
+
+		.bug-close:hover {
+			color: var(--color-pageText);
+		}
+
+		.bug-title {
+			margin: 0;
+			font-size: 1.05rem;
+			font-weight: 600;
+			color: var(--color-pageText);
+		}
+
+		.bug-label {
+			font-size: 0.85rem;
+			font-weight: 500;
+			color: var(--color-pageText);
+		}
+
+		.bug-select,
+		.bug-textarea {
+			width: 100%;
+			padding: 0.45rem 0.7rem;
+			font-size: 0.9rem;
+			border-radius: 6px;
+			border: var(--border);
+			background: var(--color-formInputBackground);
+			color: var(--color-formInputText);
+			font-family: inherit;
+			box-sizing: border-box;
+		}
+
+		.bug-select:focus-visible,
+		.bug-textarea:focus-visible {
+			outline: none;
+			border-color: var(--color-formInputBorderSelected);
+			box-shadow: 0 0 0 1px var(--color-formInputBorderSelected);
+		}
+
+		.bug-textarea {
+			resize: vertical;
+			min-height: 80px;
+		}
+
+		.bug-textarea::placeholder {
+			color: var(--color-formInputTextPlaceholder);
+		}
+
+		.bug-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 0.5rem;
+			margin-top: 0.25rem;
+		}
+
+		.bug-cancel,
+		.bug-submit {
+			padding: 0.4rem 0.8rem;
+			font-size: 0.85rem;
+			border-radius: 6px;
+			cursor: pointer;
+			border: var(--border);
+		}
+
+		.bug-cancel {
+			background: none;
+			color: var(--color-pageText);
+		}
+
+		.bug-cancel:hover {
+			background: var(--color-tableRowBackgroundHover);
+		}
+
+		.bug-submit {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			background: var(--color-buttonPrimaryBackground);
+			color: var(--color-buttonPrimaryText);
+			border-color: var(--color-buttonPrimaryBackground);
+		}
+
+		.bug-submit:hover {
+			filter: brightness(1.1);
+		}
+
+		.bug-submit svg {
+			width: 13px;
+			height: 13px;
 		}
 
 		.empty {
