@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'website/**'
+      - '.github/**'
+      - '.gitignore'
+      - '*.md'
   workflow_dispatch:
 
 permissions:

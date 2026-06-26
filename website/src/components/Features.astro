@@ -1,0 +1,639 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="features" id="features" data-reveal>
+	<div class="center">
+		<div class="stack stack--lg">
+			<div class="stack stack--xs">
+				<h2 class="features__title">What changes</h2>
+				<p class="features__subtitle">Every setting is optional. Toggle what you want, ignore the rest.</p>
+			</div>
+
+			<div class="grid">
+				<!-- Themes (full width) -->
+				<article class="card card--light card--wide">
+					<div class="card__demo card__demo--video">
+						<video class="theme-video" autoplay loop muted playsinline>
+							<source src={`${base}images/theme-demo.mp4`} type="video/mp4" />
+						</video>
+					</div>
+					<div class="card__demo card__demo--carousel">
+						<div class="carousel" aria-hidden="true">
+							<div class="carousel__track" data-duplicate>
+								{[
+									{ name: "Mocha",     bg: "#1e1e2e", sb: "#181825", fg: "#cdd6f4", pos: "#a6e3a1", neg: "#f38ba8", dim: "#585b70", d1: "#a6e3a1", d2: "#f9e2af", d3: "#f38ba8" },
+									{ name: "Latte",     bg: "#eff1f5", sb: "#e6e9ef", fg: "#4c4f69", pos: "#40a02b", neg: "#d20f39", dim: "#8c8fa1", d1: "#40a02b", d2: "#df8e1d", d3: "#d20f39" },
+									{ name: "Cyberpunk", bg: "#0a0a12", sb: "#0e0e18", fg: "#e0e0ff", pos: "#00ffaa", neg: "#ff00ff", dim: "#444",    d1: "#00ffff", d2: "#ffff00", d3: "#ff00ff" },
+									{ name: "Sandstone", bg: "#f5f0e8", sb: "#ebe5d8", fg: "#5c5040", pos: "#608050", neg: "#a05040", dim: "#8c8070", d1: "#608050", d2: "#b08040", d3: "#a05040" },
+									{ name: "Velvet",    bg: "#1a0a1e", sb: "#140818", fg: "#e0c8e8", pos: "#7dc7a0", neg: "#c77dba", dim: "#604860", d1: "#7dc7a0", d2: "#c7a04d", d3: "#c77dba" },
+									{ name: "Midnight",  bg: "#0d1117", sb: "#090d12", fg: "#c9d1d9", pos: "#3fb950", neg: "#f85149", dim: "#484f58", d1: "#3fb950", d2: "#d29922", d3: "#f85149" },
+								].map(t => (
+									<div class="theme-preview" style={`--bg:${t.bg};--sb:${t.sb};--fg:${t.fg};--pos:${t.pos};--neg:${t.neg};--dim:${t.dim}`}>
+										<div class="theme-preview__body">
+											<div class="theme-preview__sidebar">
+												<span class="dot" style={`background:${t.d1}`} />
+												<span class="dot" style={`background:${t.d2}`} />
+												<span class="dot" style={`background:${t.d3}`} />
+											</div>
+											<div class="theme-preview__main">
+												<div class="theme-preview__row"><span style="color:var(--fg)">Groceries</span><span style="color:var(--pos)">$76</span></div>
+												<div class="theme-preview__row"><span style="color:var(--fg)">Rent</span><span style="color:var(--dim)">$0</span></div>
+												<div class="theme-preview__row"><span style="color:var(--fg)">Fun</span><span style="color:var(--neg)">-$47</span></div>
+											</div>
+										</div>
+										<span class="theme-preview__name">{t.name}</span>
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
+					<div class="card__label card__label--center">
+						<span class="tag">Theme</span>
+						<strong>15 palettes. Or build your own.</strong>
+						<p>Every color in the interface follows your chosen palette. Export and share themes with other users.</p>
+					</div>
+				</article>
+
+				<!-- Account icons -->
+				<article class="card card--light card--half">
+					<div class="card__demo">
+						<div class="surface" aria-hidden="true">
+							{[
+								{ color: "#50c878", emoji: "🏦", name: "Checking",   bal: "$4,210" },
+								{ color: "#e8a449", emoji: "🐷", name: "Savings",    bal: "$12,800" },
+								{ color: "#d45c72", emoji: "💳", name: "Credit Card", bal: "-$340", neg: true },
+								{ color: "#5ca0d4", emoji: "📈", name: "Investment",  bal: "$28,500" },
+								{ color: "#c77dba", emoji: "✈️", name: "Travel Fund", bal: "$1,650" },
+							].map(a => (
+								<div class="demo-row">
+									<span class="dot" style={`background:${a.color}`} />
+									<span class="demo-row__icon" data-animated-icon>{a.emoji}</span>
+									<span class="demo-row__fill">{a.name}</span>
+									<span class={`mono-sm ${a.neg ? "color-neg" : "demo-row__muted"}`}>{a.bal}</span>
+								</div>
+							))}
+						</div>
+					</div>
+					<div class="card__label">
+						<span class="tag">Appearance</span>
+						<strong>Account icons</strong>
+						<p>Assign emoji or images to each sidebar account.</p>
+					</div>
+				</article>
+
+				<!-- Readability -->
+				<article class="card card--light card--half">
+					<div class="card__demo">
+						<div class="surface" aria-hidden="true">
+							<div class="demo-row"><span class="demo-row__fill">Groceries</span><span class="mono-sm color-pos">$76.83</span></div>
+							<div class="demo-row demo-row--neg"><span class="demo-row__fill">Entertainment</span><span class="mono-sm color-neg">-$47.50</span></div>
+							<div class="demo-row demo-row--dim"><span class="demo-row__fill">Rent</span><span class="mono-sm">$0.00</span></div>
+							<div class="demo-row"><span class="demo-row__fill">Dining Out</span><span class="mono-sm color-pos">$30.75</span></div>
+							<div class="demo-row__badge">$18.42 <span>/ day remaining</span></div>
+						</div>
+					</div>
+					<div class="card__label">
+						<span class="tag">Readability</span>
+						<strong>See what matters</strong>
+						<p>Colored balances, dimmed rows, daily amounts inline.</p>
+					</div>
+				</article>
+
+				<!-- Border radius -->
+				<article class="card card--light card--half">
+					<div class="card__demo card__demo--centered">
+						<div class="radius-grid" aria-hidden="true">
+							<div class="radius-grid__box radius-grid__box--tall" />
+							<div class="radius-grid__box" />
+							<div class="radius-grid__box" />
+							<div class="radius-grid__box radius-grid__box--wide" />
+							<div class="radius-grid__box" />
+							<div class="radius-grid__box" />
+						</div>
+					</div>
+					<div class="card__label">
+						<span class="tag">Layout</span>
+						<strong>Border radius</strong>
+						<span class="radius-label mono-sm"></span>
+						<p>Six presets from sharp to pill, applied everywhere.</p>
+					</div>
+				</article>
+
+				<!-- Background patterns -->
+				<article class="card card--dark card--half">
+					<div class="card__demo card__demo--fill">
+						<div class="pattern-layer" aria-hidden="true" />
+						<div class="cluster cluster--center" aria-hidden="true">
+							{["Polka Dots", "Stripes", "Cross", "None"].map((name, i) => (
+								<span class={`pill ${i === 0 ? "pill--active" : ""}`}>{name}</span>
+							))}
+						</div>
+					</div>
+					<div class="card__label">
+						<span class="tag">Layout</span>
+						<strong>Background patterns</strong>
+						<p>Polka dots, diagonal stripes, or a cross grid layered behind your budget.</p>
+					</div>
+				</article>
+
+				<!-- Resizable columns -->
+				<article class="card card--dark card--wide">
+					<div class="card__demo card__demo--table">
+						<table class="data-table" aria-hidden="true">
+							<thead><tr><th>Date</th><th class="data-table__payee">Payee</th><th class="data-table__cat">Category</th><th class="data-table__notes">Notes</th><th class="data-table__right">Payment</th><th class="data-table__right">Deposit</th><th class="data-table__status"></th></tr></thead>
+							<tbody>
+								<tr><td>06/24/2026</td><td class="data-table__payee">Whole Foods Market</td><td class="data-table__cat">🛒 Groceries</td><td class="data-table__notes">Weekly groceries <span class="tx-tag" style="--tag-color:#5ca0d4">essentials</span></td><td class="data-table__right color-neg">$82.40</td><td class="data-table__right"></td><td class="data-table__status"><span class="status-dot status-dot--cleared">✓</span></td></tr>
+								<tr><td>06/23/2026</td><td class="data-table__payee">Electric Company</td><td class="data-table__cat">⚡ Utilities</td><td class="data-table__notes">June billing cycle <span class="tx-tag" style="--tag-color:#e8a449">recurring</span></td><td class="data-table__right color-neg">$145.00</td><td class="data-table__right"></td><td class="data-table__status"><span class="status-dot status-dot--cleared">✓</span></td></tr>
+								<tr><td>06/22/2026</td><td class="data-table__payee">Employer Inc.</td><td class="data-table__cat">💰 Income</td><td class="data-table__notes">Biweekly payroll</td><td class="data-table__right"></td><td class="data-table__right color-pos">$3,200.00</td><td class="data-table__status"><span class="status-dot status-dot--cleared">✓</span></td></tr>
+								<tr><td>06/20/2026</td><td class="data-table__payee">Netflix</td><td class="data-table__cat">📺 Subscriptions</td><td class="data-table__notes">Monthly plan <span class="tx-tag" style="--tag-color:#c77dba">streaming</span></td><td class="data-table__right color-neg">$15.99</td><td class="data-table__right"></td><td class="data-table__status"><span class="status-dot"></span></td></tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="card__label">
+						<span class="tag">Layout</span>
+						<strong>Resizable columns</strong>
+						<p>Drag any column border to resize. Double-click to reset. Widths persist across sessions.</p>
+					</div>
+				</article>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 12px;
+	}
+
+	.cluster--center {
+		justify-content: center;
+		position: absolute;
+		bottom: 14px;
+		left: 0;
+		right: 0;
+		z-index: 1;
+	}
+
+	/* ── Section ── */
+	.features {
+		padding-block: 2rem 5rem;
+		position: relative;
+	}
+
+	.features::before {
+		content: "";
+		position: absolute;
+		inset: 0 0 auto;
+		block-size: 1px;
+		background: var(--border);
+	}
+
+	.features__title {
+		font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+	}
+
+	.features__subtitle {
+		color: var(--text-secondary);
+		font-size: 1.05rem;
+	}
+
+	/* ── Card (base) ── */
+	.card {
+		border-radius: var(--radius);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		min-block-size: 240px;
+		transition: translate 0.25s, box-shadow 0.25s;
+	}
+
+	.card:hover {
+		translate: 0 -3px;
+		box-shadow: var(--shadow-md);
+	}
+
+	.card--wide  { grid-column: span 4; }
+	.card--half  { grid-column: span 2; }
+
+	.card--light {
+		background: var(--surface);
+		border: 1px solid var(--border);
+	}
+
+	.card--dark {
+		background: var(--dark-bg);
+	}
+
+	/* ── Card demo area ── */
+	.card__demo {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.card__demo--centered {
+		align-items: center;
+		padding: 1.25rem;
+	}
+
+	.card__demo--carousel {
+		overflow: hidden;
+		mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent);
+		-webkit-mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent);
+	}
+
+	.card__demo--fill {
+		position: relative;
+		min-block-size: 140px;
+	}
+
+	.card__demo--table {
+		padding: 0.875rem 0.875rem 0;
+		overflow-x: auto;
+	}
+
+	/* ── Card label ── */
+	.card__label {
+		padding: 0.75rem 1.125rem 1rem;
+		position: relative;
+		z-index: 2;
+	}
+
+	.card--light .card__label { border-top: 1px solid var(--border); }
+	.card--dark  .card__label { border-top: 1px solid var(--dark-border); }
+
+	.card__label--center { text-align: center; }
+
+	.card__label strong {
+		font-size: 0.95rem;
+		font-weight: 600;
+		display: block;
+		margin-block: 2px 3px;
+	}
+
+	.card--dark .card__label strong { color: var(--dark-text-light); }
+
+	.card__label p {
+		font-size: 0.82rem;
+		line-height: 1.45;
+		margin: 0;
+	}
+
+	.card--light .card__label p { color: var(--text-secondary); }
+	.card--dark  .card__label p { color: var(--dark-subtle); }
+
+	.card--dark .tag { color: var(--dark-accent); }
+
+	/* Surface inset override for bento cards */
+	.card .surface {
+		margin: 0.875rem;
+	}
+
+	/* ── Theme video ── */
+	.card__demo--video {
+		padding: 0.875rem 0.875rem 0;
+	}
+
+	.theme-video {
+		inline-size: 100%;
+		block-size: auto;
+		border-radius: 10px;
+		display: block;
+	}
+
+	/* ── Theme carousel ── */
+	.carousel__track {
+		display: flex;
+		gap: 14px;
+		animation: scroll 28s linear infinite;
+		inline-size: max-content;
+		padding-block: 1rem;
+	}
+
+	.carousel__track:hover { animation-play-state: paused; }
+
+	@keyframes scroll {
+		to { translate: -50% 0; }
+	}
+
+	.theme-preview {
+		flex-shrink: 0;
+		inline-size: 160px;
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		border: 1px solid var(--border);
+		transition: scale 0.2s;
+	}
+
+	.theme-preview:hover { scale: 1.04; }
+
+	.theme-preview__body {
+		display: flex;
+		background: var(--bg);
+	}
+
+	.theme-preview__sidebar {
+		background: var(--sb);
+		padding: 8px 6px;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		inline-size: 28px;
+		flex-shrink: 0;
+	}
+
+	.theme-preview__sidebar .dot { margin-inline: auto; }
+
+	.theme-preview__main {
+		flex: 1;
+		padding: 8px;
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+	}
+
+	.theme-preview__row {
+		display: flex;
+		justify-content: space-between;
+		font-size: 8px;
+	}
+
+	.theme-preview__row span:last-child {
+		font-family: var(--mono);
+	}
+
+	.theme-preview__name {
+		font-family: var(--mono);
+		font-size: 9px;
+		color: var(--text-secondary);
+		text-align: center;
+		padding-block: 5px;
+		background: var(--surface);
+		border-top: 1px solid var(--border);
+		display: block;
+	}
+
+	/* ── Demo rows (shared between icons + readability) ── */
+	.demo-row {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		padding: 4px 14px;
+		font-size: 12px;
+		color: var(--dark-text);
+		white-space: nowrap;
+	}
+
+	.demo-row__fill {
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.demo-row__muted { color: var(--dark-muted); }
+
+	.demo-row__icon {
+		font-size: 13px;
+		inline-size: 16px;
+		text-align: center;
+		scale: 0;
+		opacity: 0;
+		transition: scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+	}
+
+	.demo-row__icon.show { scale: 1; opacity: 1; }
+
+	.demo-row--neg { position: relative; }
+	.demo-row--neg::before {
+		content: "";
+		position: absolute;
+		inset: 0 6px;
+		background: rgba(212, 92, 114, 0.08);
+		border-radius: 4px;
+		pointer-events: none;
+	}
+
+	.demo-row--dim { opacity: 0.3; }
+
+	.demo-row__badge {
+		margin: 4px 14px 0;
+		padding: 4px 8px;
+		background: rgba(80, 200, 120, 0.08);
+		border: 1px solid rgba(80, 200, 120, 0.15);
+		border-radius: 5px;
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--color-pos);
+		text-align: center;
+	}
+
+	.demo-row__badge span { font-weight: 400; font-size: 10px; opacity: 0.7; }
+
+	/* ── Radius grid ── */
+	.radius-grid {
+		display: grid;
+		grid-template-columns: 1fr 0.6fr 0.6fr;
+		grid-template-rows: 1fr 1fr;
+		gap: 7px;
+		inline-size: 100%;
+		max-inline-size: 200px;
+		block-size: 100px;
+	}
+
+	.radius-grid__box {
+		background: var(--accent-wash-strong);
+		border: 1.5px solid var(--accent);
+		opacity: 0.5;
+		border-radius: var(--r, 8px);
+		transition: border-radius 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.radius-grid__box--tall { grid-row: span 2; }
+
+	.radius-label {
+		color: var(--accent);
+		margin-inline-start: auto;
+	}
+
+	/* ── Pattern layer ── */
+	.pattern-layer {
+		position: absolute;
+		inset: 0;
+		transition: opacity 0.5s;
+	}
+
+	.pattern-layer[data-pattern="polka"] {
+		background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+		background-size: 12px 12px;
+	}
+
+	.pattern-layer[data-pattern="stripes"] {
+		background-image: repeating-linear-gradient(
+			45deg, transparent, transparent 6px,
+			rgba(255, 255, 255, 0.04) 6px, rgba(255, 255, 255, 0.04) 7px
+		);
+	}
+
+	.pattern-layer[data-pattern="cross"] {
+		background-image:
+			linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+			linear-gradient(180deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+		background-size: 16px 16px;
+	}
+
+	.pattern-layer[data-pattern="none"] { background: none; }
+
+	/* ── Data table ── */
+	.data-table {
+		inline-size: 100%;
+		min-inline-size: 600px;
+		font-size: 11px;
+		border-collapse: collapse;
+	}
+
+	.data-table th,
+	.data-table td {
+		padding: 6px 10px;
+		text-align: start;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--dark-text);
+		border-block-end: 1px solid #252638;
+	}
+
+	.data-table td.color-pos { color: var(--color-pos); }
+	.data-table td.color-neg { color: var(--color-neg); }
+
+	.data-table th {
+		color: var(--dark-muted);
+		font-family: var(--mono);
+		font-weight: 400;
+		border-block-end-color: var(--dark-border);
+	}
+
+	.data-table tbody tr:last-child td { border-block-end: none; }
+
+	.data-table__right { text-align: end; }
+
+	.data-table__status {
+		inline-size: 28px;
+		text-align: center;
+	}
+
+	.tx-tag {
+		font-size: 9px;
+		padding: 1px 6px;
+		border-radius: 3px;
+		background: color-mix(in srgb, var(--tag-color) 15%, transparent);
+		color: var(--tag-color);
+		margin-inline-start: 4px;
+		white-space: nowrap;
+	}
+
+	.status-dot {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		inline-size: 14px;
+		block-size: 14px;
+		border-radius: 50%;
+		background: var(--dark-border);
+		font-size: 8px;
+		color: transparent;
+	}
+
+	.status-dot--cleared {
+		background: var(--color-pos);
+		color: var(--dark-bg);
+		font-weight: 700;
+	}
+
+	/* Column resize animation via CSS custom properties */
+	.data-table__payee { width: var(--col-payee, 22%); }
+	.data-table__cat   { width: var(--col-cat, 15%); }
+	.data-table__notes { width: var(--col-notes, 20%); }
+
+	.data-table th, .data-table td {
+		transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	/* ── Responsive ── */
+	@media (max-width: 768px) {
+		.grid { grid-template-columns: 1fr; }
+		.card--wide, .card--half { grid-column: span 1; }
+	}
+
+	@media (min-width: 769px) and (max-width: 1024px) {
+		.grid { grid-template-columns: repeat(2, 1fr); }
+		.card--wide { grid-column: span 2; }
+		.card--half { grid-column: span 1; }
+	}
+</style>
+
+<script>
+	// Duplicate carousel track for seamless loop
+	const track = document.querySelector("[data-duplicate]");
+	if (track) track.innerHTML += track.innerHTML;
+
+	// Account icons — staggered reveal loop
+	const icons = document.querySelectorAll("[data-animated-icon]");
+	if (icons.length) {
+		(function loop() {
+			icons.forEach((el, i) => setTimeout(() => el.classList.add("show"), i * 120));
+			setTimeout(() => {
+				icons.forEach(el => el.classList.remove("show"));
+				setTimeout(loop, 800);
+			}, 3000);
+		})();
+	}
+
+	// Border radius — auto-cycle through presets
+	const radiusBoxes = document.querySelectorAll(".radius-grid__box");
+	const radiusLabel = document.querySelector(".radius-label");
+	if (radiusBoxes.length) {
+		const presets = [
+			{ r: "0px", name: "None" },    { r: "4px", name: "Small" },
+			{ r: "8px", name: "Medium" },   { r: "12px", name: "Rounder" },
+			{ r: "16px", name: "Large" },   { r: "24px", name: "Pill" },
+		];
+		let i = 0;
+		if (radiusLabel) radiusLabel.textContent = presets[0].name;
+		setInterval(() => {
+			i = (i + 1) % presets.length;
+			radiusBoxes.forEach(b => (b as HTMLElement).style.setProperty("--r", presets[i].r));
+			if (radiusLabel) radiusLabel.textContent = presets[i].name;
+		}, 1600);
+	}
+
+	// Columns — auto-play resize animation
+	const table = document.querySelector(".data-table") as HTMLElement | null;
+	if (table) {
+		let wide = false;
+		setInterval(() => {
+			wide = !wide;
+			table.style.setProperty("--col-payee", wide ? "32%" : "22%");
+			table.style.setProperty("--col-notes", wide ? "10%" : "20%");
+		}, 2800);
+	}
+
+	// Background patterns — auto-cycle
+	const patternLayer = document.querySelector(".pattern-layer") as HTMLElement | null;
+	const patternPills = document.querySelectorAll(".pill");
+	if (patternLayer && patternPills.length) {
+		const patterns = ["polka", "stripes", "cross", "none"];
+		let pi = 0;
+		patternLayer.dataset.pattern = patterns[0];
+		setInterval(() => {
+			pi = (pi + 1) % patterns.length;
+			patternLayer.dataset.pattern = patterns[pi];
+			patternPills.forEach((p, j) => p.classList.toggle("pill--active", j === pi));
+		}, 2200);
+	}
+</script>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#1a1b26" rx="12"/>
+  <!-- Sankey-like income breakdown visualization mockup -->
+  <text x="32" y="36" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e4e5eb">Income Breakdown</text>
+  <text x="32" y="54" font-family="sans-serif" font-size="11" fill="#8b8fa3">2026-01 – 2026-06</text>
+  <!-- Left nodes (Income) -->
+  <rect x="40" y="80" width="100" height="120" rx="6" fill="#50c878" opacity="0.8"/>
+  <text x="90" y="145" font-family="sans-serif" font-size="11" fill="#fff" text-anchor="middle">Salary</text>
+  <rect x="40" y="220" width="100" height="40" rx="6" fill="#5ca0d4" opacity="0.8"/>
+  <text x="90" y="244" font-family="sans-serif" font-size="11" fill="#fff" text-anchor="middle">Freelance</text>
+  <rect x="40" y="280" width="100" height="20" rx="6" fill="#e8a449" opacity="0.8"/>
+  <text x="90" y="294" font-family="sans-serif" font-size="10" fill="#fff" text-anchor="middle">Interest</text>
+  <!-- Flow paths -->
+  <path d="M140,100 C260,100 260,90 380,90" stroke="#50c878" stroke-width="30" fill="none" opacity="0.2"/>
+  <path d="M140,150 C260,150 260,170 380,170" stroke="#50c878" stroke-width="25" fill="none" opacity="0.2"/>
+  <path d="M140,180 C260,180 260,250 380,250" stroke="#50c878" stroke-width="15" fill="none" opacity="0.2"/>
+  <path d="M140,230 C260,230 260,300 380,300" stroke="#5ca0d4" stroke-width="12" fill="none" opacity="0.2"/>
+  <path d="M140,285 C260,285 260,340 380,340" stroke="#e8a449" stroke-width="6" fill="none" opacity="0.2"/>
+  <!-- Right nodes (Categories) -->
+  <rect x="380" y="75" width="110" height="40" rx="6" fill="#d45c72" opacity="0.8"/>
+  <text x="435" y="100" font-family="sans-serif" font-size="10" fill="#fff" text-anchor="middle">Rent</text>
+  <rect x="380" y="130" width="110" height="65" rx="6" fill="#d45c72" opacity="0.6"/>
+  <text x="435" y="167" font-family="sans-serif" font-size="10" fill="#fff" text-anchor="middle">Groceries</text>
+  <rect x="380" y="210" width="110" height="50" rx="6" fill="#d45c72" opacity="0.5"/>
+  <text x="435" y="239" font-family="sans-serif" font-size="10" fill="#fff" text-anchor="middle">Transport</text>
+  <rect x="380" y="275" width="110" height="35" rx="6" fill="#d45c72" opacity="0.4"/>
+  <text x="435" y="297" font-family="sans-serif" font-size="10" fill="#fff" text-anchor="middle">Utilities</text>
+  <rect x="380" y="325" width="110" height="25" rx="6" fill="#d45c72" opacity="0.3"/>
+  <text x="435" y="342" font-family="sans-serif" font-size="10" fill="#fff" text-anchor="middle">Entertainment</text>
+  <!-- Controls -->
+  <rect x="40" y="390" width="60" height="24" rx="4" fill="#7c5cbf"/>
+  <text x="70" y="406" font-family="sans-serif" font-size="10" fill="#fff" text-anchor="middle">6M</text>
+  <rect x="108" y="390" width="40" height="24" rx="4" fill="#2a2b3d"/>
+  <text x="128" y="406" font-family="sans-serif" font-size="10" fill="#8b8fa3" text-anchor="middle">1Y</text>
+  <rect x="156" y="390" width="50" height="24" rx="4" fill="#2a2b3d"/>
+  <text x="181" y="406" font-family="sans-serif" font-size="10" fill="#8b8fa3" text-anchor="middle">YTD</text>
+  <text x="320" y="455" font-family="sans-serif" font-size="11" fill="#3a3b4d" text-anchor="middle">Screenshot placeholder</text>
+</svg>
