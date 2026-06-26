@@ -2,21 +2,19 @@
 const base = import.meta.env.BASE_URL;
 ---
 
-<section class="features" id="features" data-reveal>
+<section class="features" id="features">
 	<div class="center">
 		<div class="stack stack--lg">
-			<div class="stack stack--xs">
+			<div class="stack stack--xs" data-reveal>
 				<h2 class="features__title">What changes</h2>
 				<p class="features__subtitle">Every setting is optional. Toggle what you want, ignore the rest.</p>
 			</div>
 
-			<div class="grid">
+			<div class="grid" data-stagger>
 				<!-- Themes (full width) -->
 				<article class="card card--light card--wide">
 					<div class="card__demo card__demo--video">
-						<video class="theme-video" autoplay loop muted playsinline>
-							<source src={`${base}images/theme-demo.mp4`} type="video/mp4" />
-						</video>
+						<video class="theme-video" loop muted playsinline preload="none" data-lazy-video={`${base}images/theme-demo.mp4`}></video>
 					</div>
 					<div class="card__demo card__demo--carousel">
 						<div class="carousel" aria-hidden="true">
@@ -51,7 +49,7 @@ const base = import.meta.env.BASE_URL;
 					<div class="card__label card__label--center">
 						<span class="tag">Theme</span>
 						<strong>15 palettes. Or build your own.</strong>
-						<p>Every color in the interface follows your chosen palette. Export and share themes with other users.</p>
+						<p>Every color in the interface follows your chosen palette. Build your own or export for backup.</p>
 					</div>
 				</article>
 
@@ -153,7 +151,7 @@ const base = import.meta.env.BASE_URL;
 					<div class="card__label">
 						<span class="tag">Layout</span>
 						<strong>Resizable columns</strong>
-						<p>Drag any column border to resize. Double-click to reset. Widths persist across sessions.</p>
+						<p>Drag any column border to resize. Your widths persist across sessions.</p>
 					</div>
 				</article>
 			</div>
@@ -578,6 +576,19 @@ const base = import.meta.env.BASE_URL;
 </style>
 
 <script>
+	// Lazy-load theme video on scroll
+	const lazyVideo = document.querySelector("[data-lazy-video]") as HTMLVideoElement | null;
+	if (lazyVideo) {
+		const vio = new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting) {
+				lazyVideo.src = lazyVideo.dataset.lazyVideo!;
+				lazyVideo.play();
+				vio.disconnect();
+			}
+		}, { threshold: 0.2 });
+		vio.observe(lazyVideo);
+	}
+
 	// Duplicate carousel track for seamless loop
 	const track = document.querySelector("[data-duplicate]");
 	if (track) track.innerHTML += track.innerHTML;

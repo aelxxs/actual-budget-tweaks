@@ -17,16 +17,16 @@ const base = import.meta.env.BASE_URL;
 		</nav>
 
 		<div class="hero__content stack stack--md">
-			<div class="stack stack--xs" style="text-align:center">
+			<div class="stack stack--xs" style="text-align:center" data-hero-enter="1">
 				<p class="hero__eyebrow">Browser extension for Chrome & Firefox</p>
 				<h1 class="hero__heading">Make Actual Budget<br /><em>yours</em>.</h1>
 			</div>
-			<p class="hero__sub">
+			<p class="hero__sub" data-hero-enter="2">
 				Themes, layout controls, and readability tweaks that feel native —
 				layered on top of <a href="https://actualbudget.org" target="_blank" rel="noopener">Actual Budget</a>
 				without touching its core.
 			</p>
-			<div class="cluster" style="justify-content:center">
+			<div class="cluster" style="justify-content:center" data-hero-enter="3">
 				<a
 					href="https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm"
 					class="btn btn--primary"
@@ -42,7 +42,7 @@ const base = import.meta.env.BASE_URL;
 			</div>
 		</div>
 
-		<div class="hero__screenshot">
+		<div class="hero__screenshot" data-hero-enter="4">
 			<div class="browser-frame">
 				<div class="browser-frame__bar">
 					<span class="browser-frame__dot"></span>
@@ -203,3 +203,9 @@ const base = import.meta.env.BASE_URL;
 		}
 	}
 </style>
+
+<script>
+	requestAnimationFrame(() => {
+		document.querySelector(".hero")?.classList.add("hero--entered");
+	});
+</script>

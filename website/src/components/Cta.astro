@@ -1,0 +1,81 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="cta">
+	<div class="center">
+		<div class="cta__inner">
+			<h2>Make your budget yours</h2>
+			<p>Free, open source, and available now.</p>
+			<div class="cluster" style="justify-content:center">
+				<a
+					href="https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm"
+					class="btn btn--cta"
+					target="_blank"
+					rel="noopener"
+				><img src={`${base}icon/chrome.svg`} alt="" class="btn__icon" /> Add to Chrome</a>
+				<a
+					href="https://addons.mozilla.org/en/firefox/addon/actual-budget-tweaks/"
+					class="btn btn--cta-alt"
+					target="_blank"
+					rel="noopener"
+				><img src={`${base}icon/firefox.svg`} alt="" class="btn__icon" /> Add to Firefox</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.cta {
+		padding-block: 4rem;
+		background:
+			radial-gradient(ellipse 70% 100% at 50% 50%, transparent 50%, var(--accent) 100%),
+			radial-gradient(circle at 20% 50%, rgba(255,255,255,0.06) 0%, transparent 50%),
+			radial-gradient(circle at 80% 50%, rgba(255,255,255,0.04) 0%, transparent 40%),
+			repeating-conic-gradient(rgba(255,255,255,0.03) 0% 25%, transparent 0% 50%) 0 0 / 30px 30px,
+			var(--accent);
+		color: #fff;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.cta__inner {
+		text-align: center;
+	}
+
+	.cta h2 {
+		font-size: clamp(1.4rem, 3vw, 1.8rem);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin-block-end: 0.4rem;
+	}
+
+	.cta p {
+		font-size: 1rem;
+		opacity: 0.8;
+		margin-block-end: 1.5rem;
+	}
+
+	.btn--cta {
+		background: #fff;
+		color: var(--accent);
+		font-weight: 600;
+	}
+
+	.btn--cta:hover {
+		background: rgba(255, 255, 255, 0.9);
+		color: var(--accent);
+	}
+
+	.btn--cta-alt {
+		background: transparent;
+		color: #fff;
+		border: 1px solid rgba(255, 255, 255, 0.4);
+	}
+
+	.btn--cta-alt:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: rgba(255, 255, 255, 0.7);
+		color: #fff;
+	}
+</style>

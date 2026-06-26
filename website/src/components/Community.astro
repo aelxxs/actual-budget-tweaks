@@ -1,0 +1,316 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+
+const res = await fetch("https://api.github.com/repos/aelxxs/actual-budget-tweaks/contributors");
+const contributors: { login: string; avatar_url: string; html_url: string }[] = res.ok ? await res.json() : [];
+
+const raw = fs.readFileSync(path.resolve("../CHANGELOG.md"), "utf-8");
+
+interface Change {
+	text: string;
+	type: "enhancement" | "fix";
+}
+
+interface Release {
+	version: string;
+	compareUrl: string;
+	changes: Change[];
+}
+
+function parseChangelog(md: string, count: number): Release[] {
+	const releases: Release[] = [];
+	const blocks = md.split(/^## /m).slice(1);
+
+	for (const block of blocks) {
+		if (releases.length >= count) break;
+
+		const lines = block.trim().split("\n");
+		const version = lines[0].trim();
+		const compareMatch = block.match(/\[compare changes\]\((.*?)\)/);
+		const compareUrl = compareMatch?.[1] ?? "";
+
+		const changes: Change[] = [];
+		let currentType: string | null = null;
+
+		for (const line of lines) {
+			if (line.includes("🚀 Enhancements")) currentType = "enhancement";
+			else if (line.includes("🩹 Fixes")) currentType = "fix";
+			else if (line.includes("💅 Refactors") || line.includes("🏡 Chore") || line.includes("❤️ Contributors")) currentType = null;
+			else if (line.startsWith("- ") && currentType) {
+				const text = line
+					.replace(/^- /, "")
+					.replace(/\s*\(\[[\da-f]+\]\(.*?\)\)/, "")
+					.replace(/\*\*(.*?):\*\*\s*/, "")
+					.trim();
+				if (text) changes.push({ text, type: currentType as Change["type"] });
+			}
+		}
+
+		if (changes.length > 0) {
+			releases.push({ version, compareUrl, changes });
+		}
+	}
+
+	return releases;
+}
+
+const releases = parseChangelog(raw, 3);
+---
+
+<section class="community" data-reveal>
+	<div class="center">
+		<!-- Open source heading -->
+		<div class="oss" data-reveal>
+			<div class="oss__icon">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="32" height="32"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+			</div>
+			<h2 class="oss__heading">Open source, always</h2>
+			<p class="oss__body">
+				Free and open source. Read the code, fork it, contribute — no black boxes, no telemetry, no data collection.
+			</p>
+			<a href="https://github.com/aelxxs/actual-budget-tweaks" target="_blank" rel="noopener" class="btn btn--secondary">
+				View on GitHub
+			</a>
+		</div>
+
+		<!-- Two-column: contributors + what's new -->
+		<div class="community__grid" data-reveal>
+			<div class="community__col">
+				<span class="tag">Contributors</span>
+				<div class="contributors__list">
+					{contributors.map(c => (
+						<a href={c.html_url} target="_blank" rel="noopener" class="contributor" title={c.login}>
+							<img src={c.avatar_url} alt={c.login} width="44" height="44" loading="lazy" />
+							<span>{c.login}</span>
+						</a>
+					))}
+					<a href="https://github.com/aelxxs/actual-budget-tweaks" target="_blank" rel="noopener" class="contributor contributor--you" title="Contribute">
+						<span class="contributor__plus">+</span>
+						<span>You?</span>
+					</a>
+				</div>
+			</div>
+
+			<div class="community__col">
+				<span class="tag">What's new</span>
+				<div class="wn__timeline">
+					{releases.map(r => (
+						<div class="wn-release">
+							<div class="wn-release__marker"></div>
+							<div class="wn-release__content">
+								<a href={r.compareUrl} target="_blank" rel="noopener" class="wn-release__version">{r.version}</a>
+								<ul class="wn-release__list">
+									{r.changes.map(c => (
+										<li>
+											<span class={`wn-dot wn-dot--${c.type}`}></span>
+											{c.text}
+										</li>
+									))}
+								</ul>
+							</div>
+						</div>
+					))}
+				</div>
+				<a href="https://github.com/aelxxs/actual-budget-tweaks/releases" target="_blank" rel="noopener" class="wn__all">
+					View all releases →
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.community {
+		padding-block: 4rem 5rem;
+		border-block-start: 1px solid var(--border);
+	}
+
+	/* ── Open Source ── */
+	.oss {
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-block-end: 3.5rem;
+	}
+
+	.oss__icon {
+		color: var(--accent);
+		margin-block-end: 0.75rem;
+	}
+
+	.oss__heading {
+		font-size: clamp(1.4rem, 3vw, 1.8rem);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin-block-end: 0.5rem;
+	}
+
+	.oss__body {
+		color: var(--text-secondary);
+		font-size: 1rem;
+		line-height: 1.6;
+		max-inline-size: 460px;
+		margin-block-end: 1.25rem;
+	}
+
+	/* ── Two-column grid ── */
+	.community__grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 3rem;
+		border-block-start: 1px solid var(--border);
+		padding-block-start: 2.5rem;
+	}
+
+	.community__col .tag {
+		margin-block-end: 1rem;
+	}
+
+	/* ── Contributors ── */
+	.contributors__list {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.contributor {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+		text-decoration: none;
+		transition: translate 0.2s;
+	}
+
+	.contributor:hover {
+		translate: 0 -3px;
+	}
+
+	.contributor img {
+		border-radius: 50%;
+		border: 2px solid var(--border);
+		transition: border-color 0.2s;
+	}
+
+	.contributor:hover img {
+		border-color: var(--accent);
+	}
+
+	.contributor span {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+		font-family: var(--mono);
+	}
+
+	.contributor:hover span {
+		color: var(--accent);
+	}
+
+	.contributor--you {
+		opacity: 0.5;
+		transition: opacity 0.2s, translate 0.2s;
+	}
+
+	.contributor--you:hover {
+		opacity: 1;
+	}
+
+	.contributor__plus {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		inline-size: 44px;
+		block-size: 44px;
+		border-radius: 50%;
+		border: 2px dashed var(--border-strong);
+		font-size: 1.2rem;
+		color: var(--text-tertiary);
+	}
+
+	/* ── What's new timeline ── */
+	.wn__timeline {
+		position: relative;
+		padding-inline-start: 20px;
+	}
+
+	.wn__timeline::before {
+		content: "";
+		position: absolute;
+		inset-inline-start: 5px;
+		inset-block: 0;
+		inline-size: 1px;
+		background: var(--border);
+	}
+
+	.wn-release {
+		position: relative;
+		padding-block-end: 1.25rem;
+	}
+
+	.wn-release:last-child {
+		padding-block-end: 0;
+	}
+
+	.wn-release__marker {
+		position: absolute;
+		inset-inline-start: -20px;
+		inset-block-start: 2px;
+		inline-size: 11px;
+		block-size: 11px;
+		border-radius: 50%;
+		background: var(--surface);
+		border: 2px solid var(--accent);
+	}
+
+	.wn-release__version {
+		font-family: var(--mono);
+		font-size: 0.85rem;
+		font-weight: 600;
+		margin-block-end: 0.3rem;
+		display: inline-block;
+	}
+
+	.wn-release__list {
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.wn-release__list li {
+		font-size: 0.82rem;
+		color: var(--text-secondary);
+		line-height: 1.45;
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+
+	.wn-dot {
+		inline-size: 6px;
+		block-size: 6px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		translate: 0 1px;
+	}
+
+	.wn-dot--enhancement { background: var(--color-pos); }
+	.wn-dot--fix { background: var(--accent); }
+
+	.wn__all {
+		display: inline-block;
+		margin-block-start: 1rem;
+		font-size: 0.82rem;
+		font-weight: 500;
+		padding-inline-start: 20px;
+	}
+
+	@media (max-width: 768px) {
+		.community__grid {
+			grid-template-columns: 1fr;
+			gap: 2.5rem;
+		}
+	}
+</style>
