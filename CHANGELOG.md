@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.35
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.34...v0.1.35)
+
+### 🩹 Fixes
+
+- Remove unnecessary id from gecko settings in wxt.config.ts ([6cca12c](https://github.com/aelxxs/actual-budget-tweaks/commit/6cca12c))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.34
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.33...v0.1.34)
