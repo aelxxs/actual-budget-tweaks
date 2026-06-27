@@ -1,6 +1,38 @@
 # Changelog
 
 
+## v0.1.33
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.32...v0.1.33)
+
+### 🚀 Enhancements
+
+- Add main layout and components for the Actual Budget Tweaks website ([01cb37f](https://github.com/aelxxs/actual-budget-tweaks/commit/01cb37f))
+- Enhance website components with new community section and call-to-action ([8eebb91](https://github.com/aelxxs/actual-budget-tweaks/commit/8eebb91))
+- Implement collapsible sidebar groups and modernize sidebar icons ([db54929](https://github.com/aelxxs/actual-budget-tweaks/commit/db54929))
+- Add actual API bridge scripts and enhance background fetch handling ([b1fb908](https://github.com/aelxxs/actual-budget-tweaks/commit/b1fb908))
+- Implement API request handling with query, send, and navigate functions ([2ce1909](https://github.com/aelxxs/actual-budget-tweaks/commit/2ce1909))
+- Add favicon utility function to generate favicon URLs ([6cdf412](https://github.com/aelxxs/actual-budget-tweaks/commit/6cdf412))
+- Implement sidebar search bar with customizable settings ([f1d5c03](https://github.com/aelxxs/actual-budget-tweaks/commit/f1d5c03))
+- Add spending calendar feature with sidebar integration and transaction types ([3d30c12](https://github.com/aelxxs/actual-budget-tweaks/commit/3d30c12))
+- Add sidebar shortcuts feature with drag-and-drop functionality ([ee4610f](https://github.com/aelxxs/actual-budget-tweaks/commit/ee4610f))
+- Modern sidebar redesign ([08a93f9](https://github.com/aelxxs/actual-budget-tweaks/commit/08a93f9))
+- Add sidebar search, shortcuts, and spending calendar features to settings ui ([c4b581c](https://github.com/aelxxs/actual-budget-tweaks/commit/c4b581c))
+
+### 🩹 Fixes
+
+- Update currencyCode initialization and formatting logic in fmtMoney function ([a8dd70f](https://github.com/aelxxs/actual-budget-tweaks/commit/a8dd70f))
+- Update minimum sidebar width to allow for zero width ([8bd8d30](https://github.com/aelxxs/actual-budget-tweaks/commit/8bd8d30))
+- Adjust padding and border-radius for sidebar search bar styling ([3060982](https://github.com/aelxxs/actual-budget-tweaks/commit/3060982))
+
+### 🏡 Chore
+
+- Update Node.js version to 24 in deployment workflow ([67d49f8](https://github.com/aelxxs/actual-budget-tweaks/commit/67d49f8))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.32
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.31...v0.1.32)
