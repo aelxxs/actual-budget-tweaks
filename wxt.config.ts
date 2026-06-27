@@ -33,7 +33,11 @@ export default defineConfig({
 		browser_specific_settings: {
 			gecko: geckoSettings,
 		},
-		host_permissions: ["https://raw.githubusercontent.com*"],
+		host_permissions: [
+			"https://raw.githubusercontent.com*",
+			"https://query2.finance.yahoo.com/*",
+			"https://api.exchangerate-api.com/*",
+		],
 		web_accessible_resources: [
 			{
 				resources: [
@@ -41,6 +45,7 @@ export default defineConfig({
 					"schedule-highlight-main.js",
 					"template-insights-main.js",
 					"template-apply-breakdown-main.js",
+					"actual-api-bridge-main.js",
 					"css/base.css",
 					"css/income-breakdown.css",
 					"css/template-apply-breakdown.css",
