@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.34
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.33...v0.1.34)
+
+### 🚀 Enhancements
+
+- Implement auto theme switching based on system preference in theme customizer ([9e8ec4b](https://github.com/aelxxs/actual-budget-tweaks/commit/9e8ec4b))
+
+### 🩹 Fixes
+
+- Improve error handling for fetch requests in background and theme customizer ([5f089f7](https://github.com/aelxxs/actual-budget-tweaks/commit/5f089f7))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.33
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.32...v0.1.33)
