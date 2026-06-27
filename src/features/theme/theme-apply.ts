@@ -1,6 +1,7 @@
 import { getTheme } from "@lib/design";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { editorState } from "./editor-state.svelte";
+import { isUserTheme, userThemeState } from "./user-themes.svelte";
 
 export const TOKENS_STYLE_ID = "color-tokens";
 
@@ -363,4 +364,27 @@ export async function applyCommunityTheme(repo: string) {
 	applyGlobalCSS(css, TOKENS_STYLE_ID);
 	editorState.activeTheme = repo;
 	applyOverrides(repo);
+}
+
+export async function applyThemeByKey(key: string, fallback: string) {
+	if (isUserTheme(key)) {
+		const userTheme = userThemeState.themes[key];
+		if (userTheme) {
+			if (userTheme.type === "palette" && userTheme.keys) {
+				applyUserPaletteTheme(key, userTheme.keys);
+			} else if (userTheme.type === "css" && userTheme.css) {
+				applyUserCSSTheme(key, userTheme.css);
+			}
+		} else {
+			applyPalette(fallback);
+		}
+	} else if (isCommunityTheme(key)) {
+		try {
+			await applyCommunityTheme(key);
+		} catch {
+			applyPalette(fallback);
+		}
+	} else {
+		applyPalette(key);
+	}
 }

@@ -12,7 +12,10 @@ export default defineBackground(() => {
 					const data = message.responseType === "json" ? JSON.parse(text) : text;
 					return { ok: true, data };
 				})
-				.catch(() => ({ ok: false, status: 0 }));
+				.catch((err) => {
+					console.warn("[ABT Background] fetch error", message.url, err);
+					return { ok: false, status: 0 };
+				});
 		}
 	});
 });
