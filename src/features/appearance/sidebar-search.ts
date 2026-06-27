@@ -11,8 +11,8 @@ const CSS = /* css */ `
 		align-items: center;
 		gap: 6px;
 		margin: 0 10px 4px;
-		padding: 6px 10px;
-		border-radius: 8px;
+		padding: 8px 10px;
+		border-radius: var(--border-radius);
 		background: color-mix(in srgb, var(--color-sidebarItemText) 8%, transparent);
 		cursor: pointer;
 		transition: background 0.1s;
