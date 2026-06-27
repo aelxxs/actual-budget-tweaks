@@ -397,6 +397,45 @@ function applyAccountIcon(accountId: string, iconData: AccountIconData): void {
 	}
 }
 
+const DOT_PICKER_ATTR = "data-abt-dot-picker";
+
+function openIconPickerForAccount(accountId: string, accountName: string): void {
+	if (document.querySelector('[data-abt-modal="icon-picker"]')) return;
+
+	const container = document.createElement("div");
+	container.dataset.abtModal = "icon-picker";
+
+	let done = false;
+	const cleanup = (): void => {
+		if (done) return;
+		done = true;
+		unmount(instance);
+		container.remove();
+	};
+
+	const instance = mount(IconPickerModal, {
+		target: container,
+		props: {
+			accountId,
+			accountName,
+			hasIcon: Boolean(iconCache?.[accountId]),
+			onSave: async (iconData: AccountIconData) => {
+				await setAccountIcon(accountId, iconData);
+				applyAccountIcon(accountId, iconData);
+				cleanup();
+			},
+			onRemove: async () => {
+				await removeAccountIcon(accountId);
+				clearAccountIcon(accountId);
+				cleanup();
+			},
+			onClose: cleanup,
+		},
+	});
+
+	document.body.appendChild(container);
+}
+
 function attachIconPickers(): void {
 	const links = document.querySelectorAll<HTMLAnchorElement>("a[href^='/accounts/']");
 	suppressObserver = true;
@@ -430,7 +469,11 @@ function attachIconPickers(): void {
 				applyAccountIcon(accountId, cachedIcon);
 			}
 
-			// Mount picker button once as a stable child to avoid reordering account-name DOM.
+			// Find the dot container (first child div containing .dot)
+			const dotContainer = link.querySelector("div:has(> .dot)") as HTMLElement | null;
+			if (!dotContainer || dotContainer.hasAttribute(DOT_PICKER_ATTR)) continue;
+
+			// Mount picker button once
 			let pickerBtn = link.querySelector(`button[${PICKER_BUTTON_ATTR}="1"]`) as HTMLButtonElement | null;
 			if (!pickerBtn) {
 				pickerBtn = createElement("button", {
@@ -444,7 +487,7 @@ function attachIconPickers(): void {
 						height: "20px",
 						padding: "0",
 						border: "0",
-						background: "var(--color-sidebarItemBackgroundHover)",
+						background: "var(--color-sidebarBackground, transparent)",
 						color: "var(--color-sidebarItemText)",
 						display: "flex",
 						alignItems: "center",
@@ -454,6 +497,7 @@ function attachIconPickers(): void {
 						opacity: "0",
 						transition: "none",
 						zIndex: "30",
+						borderRadius: "4px",
 					},
 				}) as HTMLButtonElement;
 				const iconSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -499,41 +543,8 @@ function attachIconPickers(): void {
 				pickerBtn.addEventListener("click", (e) => {
 					e.preventDefault();
 					e.stopPropagation();
-					if (document.querySelector('[data-abt-modal="icon-picker"]')) return;
-
 					const accountName = (nameEl.textContent || nameEl.dataset.abtBaseText || "").trim();
-					const container = document.createElement("div");
-					container.dataset.abtModal = "icon-picker";
-
-					let done = false;
-					const cleanup = (): void => {
-						if (done) return;
-						done = true;
-						unmount(instance);
-						container.remove();
-					};
-
-					const instance = mount(IconPickerModal, {
-						target: container,
-						props: {
-							accountId,
-							accountName,
-							hasIcon: Boolean(iconCache?.[accountId]),
-							onSave: async (iconData: AccountIconData) => {
-								await setAccountIcon(accountId, iconData);
-								applyAccountIcon(accountId, iconData);
-								cleanup();
-							},
-							onRemove: async () => {
-								await removeAccountIcon(accountId);
-								clearAccountIcon(accountId);
-								cleanup();
-							},
-							onClose: cleanup,
-						},
-					});
-
-					document.body.appendChild(container);
+					openIconPickerForAccount(accountId, accountName);
 				});
 
 				link.appendChild(pickerBtn);

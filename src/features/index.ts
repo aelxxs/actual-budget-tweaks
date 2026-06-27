@@ -1,6 +1,6 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { imageWidgets } from "./appearance/image-widgets";
-import { modernSidebarStates } from "./appearance/modern-sidebar-states";
+import { sidebarIcons } from "./appearance/sidebar-icons";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { scheduleHighlight } from "./core/schedule-highlight";
 import { sidePanel } from "./core/side-panel";
@@ -48,7 +48,7 @@ const readability = [
 	budgetPageBorders,
 ];
 
-const appearance = [sidebarRedesign, accountIconPicker, imageWidgets];
+const appearance = [sidebarRedesign, sidebarIcons, accountIconPicker, imageWidgets];
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown];
 
@@ -96,6 +96,7 @@ export const scripts: Setting<any>[][] = [
 		resizableTransactionColumns,
 		showDailyAvailable,
 		sidebarRedesign,
+		sidebarIcons,
 		accountIconPicker,
 		imageWidgets,
 		categoryTemplateInsights,
