@@ -9,6 +9,7 @@ type GeckoSettings = NonNullable<NonNullable<UserManifest["browser_specific_sett
 };
 
 const geckoSettings: GeckoSettings = {
+	id: "actual-budget-tweaks@aelxxs",
 	data_collection_permissions: {
 		required: ["none"],
 	},
@@ -34,7 +35,7 @@ export default defineConfig({
 			gecko: geckoSettings,
 		},
 		host_permissions: [
-			"https://raw.githubusercontent.com*",
+			"https://raw.githubusercontent.com/*",
 			"https://query2.finance.yahoo.com/*",
 			"https://api.exchangerate-api.com/*",
 		],

@@ -276,10 +276,11 @@
 			if (res?.ok) {
 				remoteThemes = res.data;
 			} else {
+				console.warn("[ABT Themes] fetch failed", { status: res?.status, ok: res?.ok, data: res?.data });
 				remoteError = true;
 			}
 		} catch (r) {
-			console.log({ r });
+			console.warn("[ABT Themes] fetch error", r);
 			remoteError = true;
 		}
 		loadingRemote = false;
