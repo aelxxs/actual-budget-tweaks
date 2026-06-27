@@ -7,7 +7,7 @@ import SidePanelContent from "./Content.svelte";
 const SIDEBAR_ATTR = "data-abt-side-drawer-sidebar";
 const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
 const DEFAULT_SIDEBAR_WIDTH = 350;
-const MIN_SIDEBAR_WIDTH = 350;
+const MIN_SIDEBAR_WIDTH = 0;
 const MAX_SIDEBAR_WIDTH = 640;
 const PANEL_OPEN_EVENT = "abt:sidepanel:open";
 const PANEL_CLOSE_EVENT = "abt:sidepanel:close";

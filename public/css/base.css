@@ -39,7 +39,8 @@ body {
 /* sidebar -- section title */
 .css-1wbfbxg {
 	border-bottom: 2.5px solid var(--ctp-blue);
-	padding-bottom: 0.5rem;
+	padding-bottom: 0rem !important;
+	margin: 0px !important;
 }
 
 /* sidebar -- account links */
@@ -375,4 +376,9 @@ textarea,
 .css-276q18:hover,
 .css-276q18 * {
 	border-radius: 0px !important;
+}
+
+/* "You're up to date" text */
+.css-taa7id {
+	color: color-contrast(var(--color-pillBackground));
 }

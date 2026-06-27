@@ -1,4 +1,4 @@
-let currencyCode: string = "USD";
+let currencyCode: string | undefined = undefined;
 let currencyScale: number = 100;
 
 // ── Currency formatting ───────────────────────────────────────────────
@@ -38,7 +38,7 @@ export function fmtMoney(cents: number, opts?: FmtMoneyOptions): string {
 	const abs = Math.abs(n);
 	const noDecimals = Math.round(currencyScale) === 1;
 	const str = new Intl.NumberFormat(undefined, {
-		style: "currency",
+		style: currencyCode ? "currency" : "decimal",
 		currency: currencyCode,
 		minimumFractionDigits: noDecimals ? 0 : undefined,
 		maximumFractionDigits: noDecimals ? 0 : undefined,
@@ -50,5 +50,5 @@ export function fmtMoney(cents: number, opts?: FmtMoneyOptions): string {
 
 export function amountToCents(amount: number): number {
 	if (!Number.isFinite(amount)) return 0;
-	return Math.max(0, Math.round(amount * currencyScale));
+	return Math.round(amount * currencyScale);
 }

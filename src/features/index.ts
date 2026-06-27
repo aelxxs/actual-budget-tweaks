@@ -1,7 +1,10 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { imageWidgets } from "./appearance/image-widgets";
-import { modernSidebarStates } from "./appearance/modern-sidebar-states";
+import { sidebarIcons } from "./appearance/sidebar-icons";
+import { spendingCalendar } from "./appearance/spending-calendar";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
+import { sidebarSearch } from "./appearance/sidebar-search";
+import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
 import { scheduleHighlight } from "./core/schedule-highlight";
 import { sidePanel } from "./core/side-panel";
 import { backgroundPattern } from "./layout/background-pattern";
@@ -48,7 +51,7 @@ const readability = [
 	budgetPageBorders,
 ];
 
-const appearance = [sidebarRedesign, accountIconPicker, imageWidgets];
+const appearance = [sidebarRedesign, sidebarIcons, sidebarSearch, sidebarShortcuts, spendingCalendar, accountIconPicker, imageWidgets];
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown];
 
@@ -96,6 +99,10 @@ export const scripts: Setting<any>[][] = [
 		resizableTransactionColumns,
 		showDailyAvailable,
 		sidebarRedesign,
+		sidebarIcons,
+		sidebarSearch,
+		sidebarShortcuts,
+		spendingCalendar,
 		accountIconPicker,
 		imageWidgets,
 		categoryTemplateInsights,

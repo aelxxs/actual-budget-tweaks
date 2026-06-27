@@ -1,7 +1,11 @@
 export default defineBackground(() => {
 	browser.runtime.onMessage.addListener((message) => {
 		if (message.type === "fetch") {
-			return fetch(message.url)
+			const headers: Record<string, string> = {
+				"User-Agent": "Mozilla/5.0",
+				...(message.headers || {}),
+			};
+			return fetch(message.url, { headers })
 				.then(async (res) => {
 					if (!res.ok) return { ok: false, status: res.status };
 					const text = await res.text();
