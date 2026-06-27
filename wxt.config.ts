@@ -9,7 +9,6 @@ type GeckoSettings = NonNullable<NonNullable<UserManifest["browser_specific_sett
 };
 
 const geckoSettings: GeckoSettings = {
-	id: "actual-budget-tweaks@aelxxs",
 	data_collection_permissions: {
 		required: ["none"],
 	},
