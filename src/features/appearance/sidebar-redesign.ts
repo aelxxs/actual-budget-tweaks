@@ -195,6 +195,7 @@ export const sidebarRedesign = defineSetting({
 			a[href="/budget"],
 			a[href="/reports"],
 			a[href="/schedules"],
+			a[href="/calendar"],
 			button[data-react-aria-pressable][style*="sidebarItemText"] {
 				opacity: 0.85;
 			}
@@ -202,21 +203,46 @@ export const sidebarRedesign = defineSetting({
 			a[href="/budget"]:hover,
 			a[href="/reports"]:hover,
 			a[href="/schedules"]:hover,
+			a[href="/calendar"]:hover,
 			button[data-react-aria-pressable][style*="sidebarItemText"]:hover {
 				opacity: 1;
 			}
 
 			a[href="/budget"].active,
 			a[href="/reports"].active,
-			a[href="/schedules"].active {
+			a[href="/schedules"].active,
+			a[href="/calendar"][data-active="true"] {
 				opacity: 1;
+			}
+
+			/* Calendar link: remove inherited active styles when inactive */
+			a[href="/calendar"][data-active="false"] {
+				background: transparent !important;
+				border-left: 0 !important;
+			}
+
+			/* When calendar is open, suppress active state on native nav links */
+			.abt-calendar-open a[href="/budget"].active,
+			.abt-calendar-open a[href="/reports"].active,
+			.abt-calendar-open a[href="/schedules"].active {
+				background: transparent !important;
+				border-left: 0 !important;
+				color: var(--color-sidebarItemText) !important;
+			}
+
+			/* Calendar active state */
+			a[href="/calendar"][data-active="true"],
+			a[href="/calendar"][data-active="true"]:hover {
+				background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 15%, transparent) !important;
+				color: var(--color-sidebarItemAccentSelected) !important;
 			}
 
 
 			/* ── Primary nav (Budget, Reports, Schedules) ── */
 			a[href="/budget"],
 			a[href="/reports"],
-			a[href="/schedules"] {
+			a[href="/schedules"],
+			a[href="/calendar"] {
 				border-radius: var(--border-radius, 6px) !important;
 				margin-inline: 0.35rem !important;
 				padding-inline: 0.7rem !important;
@@ -264,6 +290,7 @@ export const sidebarRedesign = defineSetting({
 			a[href="/bank-sync"]:hover,
 			a[href="/tags"]:hover,
 			a[href="/settings"]:hover,
+			a[href="/calendar"]:hover,
 			button[data-react-aria-pressable][style*="sidebarItemText"]:hover {
 				background: color-mix(in srgb, var(--color-sidebarItemText) 8%, transparent) !important;
 			}
