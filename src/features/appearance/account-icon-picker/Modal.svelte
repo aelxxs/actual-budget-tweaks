@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { getFaviconUrl } from "@lib/utilities/favicon";
 	import type { AccountIconData } from "./index";
 	import {
 		EMOJI_CATEGORIES,
@@ -31,9 +32,7 @@
 	const guessedDomain = guessBank(accountName);
 	let autoDomain = $state(guessedDomain ?? "");
 	let autoLogoUrl = $state<string | null>(
-		guessedDomain
-			? `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${guessedDomain}&size=128`
-			: null,
+		guessedDomain ? getFaviconUrl(guessedDomain) : null,
 	);
 	let autoLogoLoaded = $state(false);
 	let autoLogoError = $state(false);
@@ -51,7 +50,7 @@
 			autoLogoError = false;
 			return;
 		}
-		autoLogoUrl = `https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`;
+		autoLogoUrl = getFaviconUrl(domain);
 		autoLogoLoaded = false;
 		autoLogoError = false;
 	}
