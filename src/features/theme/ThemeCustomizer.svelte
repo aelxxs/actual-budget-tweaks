@@ -2,12 +2,12 @@
 	import { themes } from "@lib/design";
 	import { getValue, setValue } from "@lib/utilities/store";
 	import { mountToNode } from "@lib/utilities/svelte";
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 	import { sidepanel } from "../core/side-panel";
 	import ThemeColorEditor from "./ThemeColorEditor.svelte";
 	import ThemeEditorHeader from "./ThemeEditorHeader.svelte";
 	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
-	import { applyCommunityTheme, applyPalette, applyUserPaletteTheme, applyUserCSSTheme, isCommunityTheme } from "./theme-apply";
+	import { applyThemeByKey, applyPalette, applyUserPaletteTheme, applyUserCSSTheme, isCommunityTheme } from "./theme-apply";
 	import ThemeCreator from "./ThemeCreator.svelte";
 	import ThemeCreatorHeader from "./ThemeCreatorHeader.svelte";
 	import {
@@ -38,6 +38,57 @@
 	let searchQuery = $state("");
 	let creatorFilter = $state("all");
 	let themeFilter = $state("all");
+
+	let autoSwitch = $state(false);
+	let autoDarkKey = $state("mocha");
+	let autoLightKey = $state("latte");
+	let systemIsDark = $state(window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+	const mql = window.matchMedia("(prefers-color-scheme: dark)");
+	function onSchemeChange(e: MediaQueryListEvent) {
+		systemIsDark = e.matches;
+		if (autoSwitch) {
+			const key = systemIsDark ? autoDarkKey : autoLightKey;
+			activeThemeKey = key;
+			applyThemeByKey(key, ctx.defaultValue);
+		}
+	}
+	mql.addEventListener("change", onSchemeChange);
+	onDestroy(() => mql.removeEventListener("change", onSchemeChange));
+
+	function getThemeName(key: string): string {
+		if (themes[key]) return themes[key].name;
+		if (isUserTheme(key)) return userThemeState.themes[key]?.name ?? key;
+		if (isCommunityTheme(key)) {
+			const remote = remoteThemes.find((t) => t.repo === key);
+			return remote?.name ?? key.split("/").pop() ?? key;
+		}
+		return key;
+	}
+
+	async function toggleAutoSwitch() {
+		autoSwitch = !autoSwitch;
+		await setValue("theme-auto-switch", autoSwitch);
+		if (autoSwitch) {
+			const key = systemIsDark ? autoDarkKey : autoLightKey;
+			activeThemeKey = key;
+			await applyThemeByKey(key, ctx.defaultValue);
+		}
+	}
+
+	async function setAutoTheme(mode: "dark" | "light", key: string) {
+		if (mode === "dark") {
+			autoDarkKey = key;
+			await setValue("theme-auto-dark", key);
+		} else {
+			autoLightKey = key;
+			await setValue("theme-auto-light", key);
+		}
+		if ((mode === "dark" && systemIsDark) || (mode === "light" && !systemIsDark)) {
+			activeThemeKey = key;
+			await applyThemeByKey(key, ctx.defaultValue);
+		}
+	}
 
 	let editorNode: Node | null = null;
 	let headerNode: Node | null = null;
@@ -95,12 +146,12 @@
 		applyingTheme = key;
 		activeThemeKey = key;
 		try {
-			await setValue(ctx.key, key);
-			if (isCommunityTheme(key)) {
-				await applyCommunityTheme(key);
+			if (autoSwitch) {
+				await setAutoTheme(systemIsDark ? "dark" : "light", key);
 			} else {
-				applyPalette(key);
+				await setValue(ctx.key, key);
 			}
+			await applyThemeByKey(key, ctx.defaultValue);
 		} finally {
 			applyingTheme = null;
 		}
@@ -220,7 +271,11 @@
 		};
 		await saveUserTheme(theme);
 		activeThemeKey = theme.id;
-		await setValue(ctx.key, theme.id);
+		if (autoSwitch) {
+			await setAutoTheme(systemIsDark ? "dark" : "light", theme.id);
+		} else {
+			await setValue(ctx.key, theme.id);
+		}
 		sidepanel.close();
 	}
 
@@ -246,7 +301,11 @@
 		applyingTheme = id;
 		activeThemeKey = id;
 		try {
-			await setValue(ctx.key, id);
+			if (autoSwitch) {
+				await setAutoTheme(systemIsDark ? "dark" : "light", id);
+			} else {
+				await setValue(ctx.key, id);
+			}
 			if (theme.type === "palette" && theme.keys) {
 				applyUserPaletteTheme(id, theme.keys);
 			} else if (theme.type === "css" && theme.css) {
@@ -264,7 +323,16 @@
 
 	onMount(async () => {
 		await loadUserThemes();
-		activeThemeKey = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
+
+		autoSwitch = await getValue<boolean>("theme-auto-switch", false);
+		autoDarkKey = (await getValue<string>("theme-auto-dark", "mocha")) as string;
+		autoLightKey = (await getValue<string>("theme-auto-light", "latte")) as string;
+
+		if (autoSwitch) {
+			activeThemeKey = systemIsDark ? autoDarkKey : autoLightKey;
+		} else {
+			activeThemeKey = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
+		}
 
 		loadingRemote = true;
 		try {
@@ -288,6 +356,39 @@
 </script>
 
 <div class="customizer">
+	<div class="auto-switch">
+		<button class="auto-switch__toggle" onclick={toggleAutoSwitch}>
+			<div class="auto-switch__label">
+				<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1.5a5.5 5.5 0 0 1 0 11V2.5Z"/></svg>
+				Match system theme
+			</div>
+			<div class="auto-switch__pill" class:is-on={autoSwitch}>
+				<div class="auto-switch__knob"></div>
+			</div>
+		</button>
+		{#if autoSwitch}
+			<div class="auto-switch__assignments">
+				<div class="auto-switch__row">
+					<span class="auto-switch__mode" class:is-active={systemIsDark}>
+						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.2 1.7a.75.75 0 0 0-1.1-.5A7 7 0 1 0 14.8 10.9a.75.75 0 0 0-.5-1.1 5.5 5.5 0 0 1-8.1-8.1Z"/></svg>
+						Dark
+					</span>
+					<span class="auto-switch__theme-name">{getThemeName(autoDarkKey)}</span>
+				</div>
+				<div class="auto-switch__row">
+					<span class="auto-switch__mode" class:is-active={!systemIsDark}>
+						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1Zm0 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5.66-5.66a.75.75 0 0 1 0 1.06l-1.06 1.06a.75.75 0 0 1-1.06-1.06l1.06-1.06a.75.75 0 0 1 1.06 0ZM15 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 15 8Zm-1.34 5.66a.75.75 0 0 1-1.06 0l-1.06-1.06a.75.75 0 0 1 1.06-1.06l1.06 1.06a.75.75 0 0 1 0 1.06ZM8 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13Zm-5.66-1.34a.75.75 0 0 1 0-1.06l1.06-1.06a.75.75 0 0 1 1.06 1.06L3.4 11.66a.75.75 0 0 1-1.06 0ZM1 8a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 1 8Zm1.34-5.66a.75.75 0 0 1 1.06 0l1.06 1.06a.75.75 0 0 1-1.06 1.06L2.34 3.4a.75.75 0 0 1 0-1.06Z"/></svg>
+						Light
+					</span>
+					<span class="auto-switch__theme-name">{getThemeName(autoLightKey)}</span>
+				</div>
+				<div class="auto-switch__hint">
+					Select a theme below to assign it to {systemIsDark ? "dark" : "light"} mode
+				</div>
+			</div>
+		{/if}
+	</div>
+
 	<div class="controls">
 		<input class="controls__search" type="search" placeholder="Search themes…" bind:value={searchQuery} />
 		<select class="controls__creator" bind:value={creatorFilter}>
@@ -566,6 +667,122 @@
 		width: 100%;
 		padding-top: 4px;
 		gap: 8px;
+	}
+
+	/* ── Auto Switch ─────────────────────────────────────────────────── */
+
+	.auto-switch {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 10px 12px;
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--color-pageText) 3%, transparent);
+		border: var(--border);
+	}
+
+	.auto-switch__toggle {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		font-family: inherit;
+		color: var(--color-pageText);
+	}
+
+	.auto-switch__label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	.auto-switch__label svg {
+		width: 14px;
+		height: 14px;
+		color: var(--color-pageTextSubdued);
+	}
+
+	.auto-switch__pill {
+		width: 32px;
+		height: 18px;
+		border-radius: 9px;
+		background: var(--color-pageTextSubdued);
+		position: relative;
+		transition: background 0.15s;
+		flex-shrink: 0;
+	}
+
+	.auto-switch__pill.is-on {
+		background: var(--color-sidebarItemAccentSelected);
+	}
+
+	.auto-switch__knob {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--color-pageBackground);
+		transition: transform 0.15s;
+	}
+
+	.auto-switch__pill.is-on .auto-switch__knob {
+		transform: translateX(14px);
+	}
+
+	.auto-switch__assignments {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding-top: 8px;
+		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+	}
+
+	.auto-switch__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	.auto-switch__mode {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 11px;
+		font-weight: 500;
+		color: var(--color-pageTextSubdued);
+		min-width: 52px;
+	}
+
+	.auto-switch__mode.is-active {
+		color: var(--color-sidebarItemAccentSelected);
+	}
+
+	.auto-switch__mode svg {
+		width: 12px;
+		height: 12px;
+	}
+
+	.auto-switch__theme-name {
+		font-size: 11px;
+		color: var(--color-pageText);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.auto-switch__hint {
+		font-size: 10px;
+		color: var(--color-pageTextSubdued);
+		font-style: italic;
 	}
 
 	/* ── Create Theme Button ─────────────────────────────────────────── */
