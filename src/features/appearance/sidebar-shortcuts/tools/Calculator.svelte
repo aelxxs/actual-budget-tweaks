@@ -15,8 +15,10 @@
 		hasResult = false;
 
 		if (["+", "-", "×", "÷", "%"].includes(val)) {
+			if (expression) calculate();
 			expression = display + " " + val + " ";
 			display = "0";
+			hasResult = false;
 			return;
 		}
 
