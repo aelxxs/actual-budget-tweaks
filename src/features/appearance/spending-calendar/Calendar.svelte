@@ -607,7 +607,7 @@
 		grid-template-rows: min-content;
 		grid-auto-rows: 1fr;
 		overflow-y: auto;
-		padding: 0 8px 8px;
+		padding: 0 12px 12px;
 	}
 
 	.cal-cell[data-corner="tl"] {
@@ -721,14 +721,14 @@
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		font-size: 10px;
+		font-size: 11px;
 		line-height: 1.5;
 		min-width: 0;
 	}
 
 	.cal-tx__dot {
-		width: 5px;
-		height: 5px;
+		width: 7px;
+		height: 7px;
 		border-radius: 50%;
 		flex-shrink: 0;
 	}
