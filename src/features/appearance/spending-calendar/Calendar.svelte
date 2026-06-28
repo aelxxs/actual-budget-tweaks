@@ -166,6 +166,21 @@
 		return 0;
 	}
 
+	function dedupeTransactions(txs: DayTx[]): (DayTx & { count: number })[] {
+		const map = new Map<string, DayTx & { count: number }>();
+		for (const tx of txs) {
+			const key = `${tx.payee}|${tx.upcoming ? "u" : "r"}`;
+			const existing = map.get(key);
+			if (existing) {
+				existing.count++;
+				existing.amount += tx.amount;
+			} else {
+				map.set(key, { ...tx, count: 1 });
+			}
+		}
+		return Array.from(map.values());
+	}
+
 	function getCategoryColor(categoryId: string): string {
 		if (!categoryId) return "#666";
 		if (categoryColorMap.has(categoryId)) return categoryColorMap.get(categoryId)!;
@@ -470,8 +485,9 @@
 					</div>
 
 					{#if day.isCurrentMonth && day.transactions.length > 0}
+						{@const deduped = dedupeTransactions(day.transactions)}
 						<div class="cal-cell__txs">
-							{#each day.transactions.slice(0, 4) as tx}
+							{#each deduped.slice(0, 4) as tx}
 								<div class="cal-tx" class:is-upcoming={tx.upcoming}>
 									<span
 										class="cal-tx__dot"
@@ -480,10 +496,13 @@
 											: getCategoryColor(tx.categoryId)}"
 									></span>
 									<span class="cal-tx__payee abt-privacy-number">{tx.payee}</span>
+									{#if tx.count > 1}
+										<span class="cal-tx__count">×{tx.count}</span>
+									{/if}
 								</div>
 							{/each}
-							{#if day.transactions.length > 4}
-								<div class="cal-tx cal-tx--more">+{day.transactions.length - 4} more</div>
+							{#if deduped.length > 4}
+								<div class="cal-tx cal-tx--more">+{deduped.length - 4} more</div>
 							{/if}
 						</div>
 
@@ -738,6 +757,17 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		opacity: 0.8;
+	}
+
+	.cal-tx__count {
+		font-size: 9px;
+		font-weight: 600;
+		color: var(--color-pageTextSubdued);
+		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		padding: 0 4px;
+		border-radius: 4px;
+		flex-shrink: 0;
+		line-height: 1.5;
 	}
 
 	.cal-tx--more {
