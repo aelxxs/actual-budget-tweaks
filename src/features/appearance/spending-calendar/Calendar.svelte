@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { query } from "@lib/utilities/actual-api";
+	import { loadCurrency, fmtMoney } from "@lib/utilities/currency";
 	import { mount, onMount, unmount } from "svelte";
 	import DayDetail from "./DayDetail.svelte";
 	import DayHeader from "./DayHeader.svelte";
@@ -137,15 +138,11 @@
 	}
 
 	function formatAmount(cents: number): string {
-		const abs = Math.abs(cents) / 100;
-		const prefix = cents < 0 ? "-" : "";
-		return prefix + "$" + abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		return fmtMoney(cents);
 	}
 
 	function formatAmountShort(cents: number): string {
-		const abs = Math.abs(cents) / 100;
-		if (abs >= 1000) return "-$" + (abs / 1000).toFixed(1) + "k";
-		return "-$" + abs.toFixed(0);
+		return fmtMoney(cents, { short: true });
 	}
 
 	function parseScheduleAmount(raw: unknown): number {
@@ -390,7 +387,7 @@
 	}
 
 	onMount(() => {
-		loadMonth();
+		loadCurrency().then(() => loadMonth());
 
 		function onKey(e: KeyboardEvent) {
 			if (e.key === "Escape") {

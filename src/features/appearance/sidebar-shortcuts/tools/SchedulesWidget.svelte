@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { query, navigate } from "@lib/utilities/actual-api";
+	import { fmtMoney } from "@lib/utilities/currency";
 
 	interface Schedule {
 		id: string;
@@ -62,8 +63,7 @@
 	}
 
 	function formatAmount(cents: number): string {
-		const abs = Math.abs(cents) / 100;
-		return "$" + abs.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+		return fmtMoney(cents);
 	}
 
 	async function load() {

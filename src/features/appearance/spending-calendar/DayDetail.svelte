@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fmtMoney } from "@lib/utilities/currency";
 	import type { DayTransaction } from "./types";
 
 	const { transactions, categoryColors } = $props<{
@@ -8,9 +9,7 @@
 	}>();
 
 	function fmt(cents: number): string {
-		const abs = Math.abs(cents) / 100;
-		const prefix = cents < 0 ? "-" : "";
-		return prefix + "$" + abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		return fmtMoney(cents);
 	}
 
 	const categoryBreakdown = $derived.by(() => {

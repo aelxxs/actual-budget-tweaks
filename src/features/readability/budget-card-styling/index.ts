@@ -1,5 +1,6 @@
 import { defineSetting } from "@features/types";
 import { applyGlobalCSS } from "@lib/utilities/dom";
+import { loadCurrency } from "@lib/utilities/currency";
 import { getValue, setValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
 import FlowBar from "./FlowBar.svelte";
@@ -48,6 +49,7 @@ export const budgetCardStyling = defineSetting({
 	init: async (ctx) => {
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
 		if (enabled) {
+			await loadCurrency();
 			applyGlobalCSS(CSS, ctx.key);
 			processCards();
 			startObserver(ctx);

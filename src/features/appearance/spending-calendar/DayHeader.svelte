@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { fmtMoney } from "@lib/utilities/currency";
+
 	const { dateStr, relativeDate, itemCount, total } = $props<{
 		dateStr: string;
 		relativeDate: string;
@@ -7,9 +9,7 @@
 	}>();
 
 	function fmt(cents: number): string {
-		const abs = Math.abs(cents) / 100;
-		const prefix = cents < 0 ? "-" : "";
-		return prefix + abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		return fmtMoney(cents);
 	}
 </script>
 
