@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v0.1.36
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.35...v0.1.36)
+
+### 🚀 Enhancements
+
+- Add budget card styling component with FlowBar visualization ([e9263e8](https://github.com/aelxxs/actual-budget-tweaks/commit/e9263e8))
+- Add transaction deduplication and count display in calendar component ([32360d0](https://github.com/aelxxs/actual-budget-tweaks/commit/32360d0))
+
+### 🩹 Fixes
+
+- Resolve calculator chaining bug where consecutive operators reset display to 0 ([0a970fe](https://github.com/aelxxs/actual-budget-tweaks/commit/0a970fe))
+
+### 🎨 Styles
+
+- Update padding and font size in calendar component for improved layout ([3acc7d4](https://github.com/aelxxs/actual-budget-tweaks/commit/3acc7d4))
+- Increase dot size for upcoming transactions in calendar component ([43e6cc2](https://github.com/aelxxs/actual-budget-tweaks/commit/43e6cc2))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.35
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.34...v0.1.35)
