@@ -784,8 +784,8 @@
 	.cal-tx.is-upcoming .cal-tx__dot {
 		border: 1px dashed var(--color-pageTextSubdued);
 		background: transparent !important;
-		width: 3px;
-		height: 3px;
+		width: 7px;
+		height: 7px;
 	}
 
 	.cal-cell__bars {
