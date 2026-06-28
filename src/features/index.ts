@@ -15,6 +15,7 @@ import { reportWidgetBackgroundColor } from "./layout/report-widget-background-c
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
 import { sidebarAccountSpacing } from "./layout/sidebar-account-spacing";
 import { toggleColumns } from "./layout/toggle-columns";
+import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetPageBorders } from "./readability/budget-page-borders";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
@@ -41,6 +42,7 @@ const layoutAndDensity = [
 ];
 
 const readability = [
+	budgetCardStyling,
 	colorNegativeBalances,
 	colorTransactions,
 	dimReconciled,
@@ -91,6 +93,7 @@ export const scripts: Setting<any>[][] = [
 	[backgroundPattern, borderRadius, budgetTableRowHeight],
 	[reportWidgetBackgroundColor, toggleColumns, sidebarAccountSpacing],
 	[
+		budgetCardStyling,
 		colorNegativeBalances,
 		colorTransactions,
 		dimReconciled,
