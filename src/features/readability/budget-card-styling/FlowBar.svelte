@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { fmtMoney } from "@lib/utilities/currency";
-
 	const { available, budgeted, overspent, forNext } = $props<{
 		available: number;
 		budgeted: number;
@@ -12,7 +10,7 @@
 	const total = $derived(Math.max(available, budgeted + overspent + forNext) || 1);
 
 	function fmt(n: number): string {
-		return fmtMoney(n);
+		return Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 	}
 
 	function pct(value: number): string {
