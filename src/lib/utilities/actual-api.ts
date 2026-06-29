@@ -1,22 +1,48 @@
 let reqId = 0;
 
+const RETRY_INTERVAL = 1000;
+const MAX_RETRIES = 15;
+
 function request<T>(event: string, detail: Record<string, unknown>): Promise<T> {
 	const id = `abt-api-${++reqId}-${Date.now()}`;
 	return new Promise((resolve, reject) => {
+		let resolved = false;
+		let retries = 0;
+		let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
 		function onResponse(e: Event) {
 			const raw = (e as CustomEvent).detail;
 			const d = typeof raw === "string" ? JSON.parse(raw) : raw;
 			if (d.id !== id) return;
-			document.removeEventListener("abt:api:response", onResponse);
+			resolved = true;
+			cleanup();
 			if (d.error) reject(new Error(d.error));
 			else resolve(d.data as T);
 		}
-		document.addEventListener("abt:api:response", onResponse);
-		document.dispatchEvent(new CustomEvent(event, { detail: JSON.stringify({ id, ...detail }) }));
-		setTimeout(() => {
+
+		function dispatch() {
+			document.dispatchEvent(new CustomEvent(event, { detail: JSON.stringify({ id, ...detail }) }));
+		}
+
+		function retry() {
+			if (resolved) return;
+			if (++retries >= MAX_RETRIES) {
+				cleanup();
+				reject(new Error("API bridge timeout"));
+				return;
+			}
+			dispatch();
+			retryTimer = setTimeout(retry, RETRY_INTERVAL);
+		}
+
+		function cleanup() {
 			document.removeEventListener("abt:api:response", onResponse);
-			reject(new Error("API bridge timeout"));
-		}, 10000);
+			if (retryTimer) clearTimeout(retryTimer);
+		}
+
+		document.addEventListener("abt:api:response", onResponse);
+		dispatch();
+		retryTimer = setTimeout(retry, RETRY_INTERVAL);
 	});
 }
 
