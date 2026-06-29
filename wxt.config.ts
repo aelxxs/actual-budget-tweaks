@@ -43,7 +43,6 @@ export default defineConfig({
 				resources: [
 					"income-breakdown-main.js",
 					"schedule-highlight-main.js",
-					"template-insights-main.js",
 					"template-apply-breakdown-main.js",
 					"actual-api-bridge-main.js",
 					"css/base.css",
