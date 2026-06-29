@@ -1,6 +1,38 @@
 # Changelog
 
 
+## v0.1.37
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.36...v0.1.37)
+
+### 🚀 Enhancements
+
+- Implement currency formatting utility and integrate across components ([4d18c11](https://github.com/aelxxs/actual-budget-tweaks/commit/4d18c11))
+- Add retry mechanism to API bridge for race condition handling ([f104876](https://github.com/aelxxs/actual-budget-tweaks/commit/f104876))
+- Add uncategorized transaction badges to sidebar accounts ([8894bd3](https://github.com/aelxxs/actual-budget-tweaks/commit/8894bd3))
+- Add RSU tracker widget and fix shortcuts modal overflow ([c2c769a](https://github.com/aelxxs/actual-budget-tweaks/commit/c2c769a))
+- Highlight uncategorized transaction rows with yellow tint ([e3ef1e2](https://github.com/aelxxs/actual-budget-tweaks/commit/e3ef1e2))
+- Add shared category color persistence utility ([3b1bfd6](https://github.com/aelxxs/actual-budget-tweaks/commit/3b1bfd6))
+- Add category color dots to budget page and transaction tables ([1040a06](https://github.com/aelxxs/actual-budget-tweaks/commit/1040a06))
+- Add category emoji picker for budget page categories ([df58f68](https://github.com/aelxxs/actual-budget-tweaks/commit/df58f68))
+- Add import/export settings functionality and update UI components ([fa6134d](https://github.com/aelxxs/actual-budget-tweaks/commit/fa6134d))
+- Add interactive compatibility checklist for verifying extension features ([06a065a](https://github.com/aelxxs/actual-budget-tweaks/commit/06a065a))
+- Add tag styling feature for enhanced UI customization ([8243e49](https://github.com/aelxxs/actual-budget-tweaks/commit/8243e49))
+- Add Firefox XPI signing step and update artifact upload process ([955c968](https://github.com/aelxxs/actual-budget-tweaks/commit/955c968))
+
+### 🩹 Fixes
+
+- Use toLocaleString in FlowBar instead of fmtMoney ([dcee265](https://github.com/aelxxs/actual-budget-tweaks/commit/dcee265))
+
+### 💅 Refactors
+
+- Migrate spending calendar from appearance to workflows ([dc366b7](https://github.com/aelxxs/actual-budget-tweaks/commit/dc366b7))
+- Migrate category template insights from main-world to API bridge ([e992559](https://github.com/aelxxs/actual-budget-tweaks/commit/e992559))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.36
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.35...v0.1.36)
