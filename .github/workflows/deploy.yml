@@ -58,9 +58,23 @@ jobs:
         run: |
           npx changelogen@latest gh release ${{ steps.version.outputs.new_version }} --token ${{ github.token }}
 
+      - name: Sign Firefox XPI for sideloading
+        run: |
+          npx web-ext sign \
+            --source-dir .output/firefox-mv2 \
+            --artifacts-dir .output \
+            --channel unlisted \
+            --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} \
+            --api-secret ${{ secrets.FIREFOX_JWT_SECRET }}
+          # Rename to predictable filename
+          mv .output/*.xpi .output/actual-budget-tweaks-${{ steps.version.outputs.new_version }}.xpi || true
+
       - name: Upload artifacts to GitHub Release
         run: |
-          gh release upload v${{ steps.version.outputs.new_version }} .output/*-chrome.zip .output/*-firefox.zip
+          gh release upload v${{ steps.version.outputs.new_version }} \
+            .output/*-chrome.zip \
+            .output/*-firefox.zip \
+            .output/*.xpi || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
