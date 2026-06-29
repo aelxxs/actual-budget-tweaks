@@ -14,6 +14,9 @@ importers:
       d3-sankey:
         specifier: ^0.12.3
         version: 0.12.3
+      unicode-emoji-json:
+        specifier: ^0.9.0
+        version: 0.9.0
     devDependencies:
       '@tsconfig/svelte':
         specifier: ^5.0.5
@@ -1725,6 +1728,9 @@ packages:
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+
+  unicode-emoji-json@0.9.0:
+    resolution: {integrity: sha512-HdrQW/7SdbXUsTd8uTATv7LvQJkCSgbAgRCDCtOhQ6xn3EAx+xZHQtRniOXWJK3ywIqPegkNhP4U4EbuFsiQng==}
 
   unimport@5.5.0:
     resolution: {integrity: sha512-/JpWMG9s1nBSlXJAQ8EREFTFy3oy6USFd8T6AoBaw1q2GGcF4R9yp3ofg32UODZlYEO5VD0EWE1RpI9XDWyPYg==}
@@ -3463,6 +3469,8 @@ snapshots:
   uhyphen@0.2.0: {}
 
   undici-types@7.16.0: {}
+
+  unicode-emoji-json@0.9.0: {}
 
   unimport@5.5.0:
     dependencies:
