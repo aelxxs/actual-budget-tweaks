@@ -1,6 +1,116 @@
 import { defineSetting } from "@features/types";
+import { query } from "@lib/utilities/actual-api";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
+
+let uncatInterval: ReturnType<typeof setInterval> | null = null;
+let uncatObserver: MutationObserver | null = null;
+let lastUncatText = "";
+
+async function updateUncategorizedBadges() {
+	try {
+		const [txs, accounts] = await Promise.all([
+			query<
+				{
+					account: string;
+					category: string | null;
+					is_parent: boolean;
+					transfer_id: string | null;
+					is_child: boolean;
+				}[]
+			>("transactions", {
+				filter: { tombstone: false },
+			}),
+			query<{ id: string; offbudget: boolean }[]>("accounts", {
+				filter: { tombstone: false },
+			}),
+		]);
+		const offBudgetIds = new Set(accounts.filter((a) => a.offbudget).map((a) => a.id));
+		const counts = new Map<string, number>();
+		for (const tx of txs) {
+			if (tx.category || !tx.account) continue;
+			if (tx.is_parent || tx.is_child || tx.transfer_id) continue;
+			if (offBudgetIds.has(tx.account)) continue;
+			counts.set(tx.account, (counts.get(tx.account) || 0) + 1);
+		}
+
+		for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href^="/accounts/"][href*="-"]')) {
+			const id = link.getAttribute("href")?.split("/accounts/")[1];
+			if (!id) continue;
+			const count = counts.get(id) || 0;
+			let badge = link.querySelector<HTMLElement>(".abt-uncat-badge");
+			if (count > 0) {
+				if (!badge) {
+					badge = document.createElement("span");
+					badge.className = "abt-uncat-badge";
+					const balanceWrap = link.querySelector('[data-cellname^="__global!balance-"]')?.parentElement;
+					if (balanceWrap) balanceWrap.after(badge);
+					else link.appendChild(badge);
+				}
+				badge.textContent = String(count);
+				badge.title = `${count} uncategorized`;
+			} else {
+				badge?.remove();
+			}
+		}
+	} catch {
+		// Bridge not ready yet
+	}
+}
+
+let uncatButtonRef: WeakRef<HTMLButtonElement> | null = null;
+
+function findUncatButton(): HTMLButtonElement | null {
+	const cached = uncatButtonRef?.deref();
+	if (cached?.isConnected) return cached;
+	for (const btn of document.querySelectorAll<HTMLButtonElement>("button")) {
+		if (btn.textContent?.includes("uncategorized")) {
+			uncatButtonRef = new WeakRef(btn);
+			return btn;
+		}
+	}
+	uncatButtonRef = null;
+	return null;
+}
+
+function watchUncatButton() {
+	if (uncatObserver) return;
+	let scheduled = false;
+	uncatObserver = new MutationObserver(() => {
+		if (scheduled) return;
+		const btn = findUncatButton();
+		const text = btn?.textContent?.trim() ?? "";
+		if (text !== lastUncatText) {
+			lastUncatText = text;
+			scheduled = true;
+			requestAnimationFrame(() => {
+				updateUncategorizedBadges();
+				scheduled = false;
+			});
+		}
+	});
+	uncatObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+}
+
+function startUncatPolling() {
+	if (uncatInterval) return;
+	updateUncategorizedBadges();
+	uncatInterval = setInterval(updateUncategorizedBadges, 60000);
+	watchUncatButton();
+}
+
+function stopUncatPolling() {
+	if (uncatInterval) {
+		clearInterval(uncatInterval);
+		uncatInterval = null;
+	}
+	if (uncatObserver) {
+		uncatObserver.disconnect();
+		uncatObserver = null;
+	}
+	lastUncatText = "";
+	for (const badge of document.querySelectorAll(".abt-uncat-badge")) badge.remove();
+}
 
 const COLLAPSE_STORAGE_KEY = "abt-sidebar-groups-collapsed";
 const COLLAPSE_ATTR = "data-abt-collapse-setup";
@@ -393,7 +503,7 @@ export const sidebarRedesign = defineSetting({
 				opacity: 0.4;
 				transition: transform 0.15s ease, opacity 0.1s;
 				cursor: pointer;
-				transform: translateX(-2.25px);
+				transform: translateX(-1.25px);
 			}
 
 			a[href="/accounts/onbudget"]:hover .abt-collapse-chev,
@@ -471,6 +581,8 @@ export const sidebarRedesign = defineSetting({
 				margin-inline: 0.35rem !important;
 				border-left: 0 !important;
 				transition: background 0.08s !important;
+				font-weight: normal !important;
+				padding-inline-start: 2rem !important;
 			}
 
 			a[href^="/accounts/"][href*="-"]:hover {
@@ -540,6 +652,25 @@ export const sidebarRedesign = defineSetting({
 			}
 
 
+			/* ── Uncategorized badge ── */
+			.abt-uncat-badge {
+				font-size: 10px;
+				font-weight: 600;
+				font-variant-numeric: tabular-nums;
+				min-width: 18px;
+				height: 18px;
+				padding: 0 2px;
+				border-radius: 9px;
+				background: color-mix(in srgb, var(--color-warningText) 20%, transparent);
+				color: var(--color-warningText);
+				flex-shrink: 0;
+				margin-left: 4px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				box-sizing: border-box;
+			}
+
 			/* ── Scrollbar ── */
 			div:has(> div > a[href="/accounts"]) {
 				scrollbar-width: thin;
@@ -559,14 +690,17 @@ export const sidebarRedesign = defineSetting({
 		if (enabled && ctx.css) {
 			applyGlobalCSS(ctx.css(), ctx.key);
 			setupCollapsibleGroups();
+			startUncatPolling();
 		}
 	},
 	onChange: async (value, ctx) => {
 		await setValue(ctx.key, value);
 		if (value) {
 			applyGlobalCSS(ctx.css(), ctx.key);
+			startUncatPolling();
 		} else {
 			applyGlobalCSS("", ctx.key);
+			stopUncatPolling();
 		}
 	},
 });
