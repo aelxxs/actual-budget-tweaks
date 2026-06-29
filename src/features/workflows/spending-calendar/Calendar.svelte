@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { query } from "@lib/utilities/actual-api";
+	import { getCategoryColor, loadCategoryColors } from "@lib/utilities/category-colors";
 	import { loadCurrency, fmtMoney } from "@lib/utilities/currency";
 	import { mount, onMount, unmount } from "svelte";
 	import DayDetail from "./DayDetail.svelte";
@@ -62,23 +63,6 @@
 		isCurrentMonth: boolean;
 	}
 
-	const CATEGORY_COLORS = [
-		"#7c5cbf",
-		"#3b82f6",
-		"#10b981",
-		"#f59e0b",
-		"#ef4444",
-		"#ec4899",
-		"#0ea5e9",
-		"#a855f7",
-		"#14b8a6",
-		"#f97316",
-		"#8b5cf6",
-		"#06b6d4",
-		"#84cc16",
-		"#e11d48",
-		"#6366f1",
-	];
 
 	let year = $state(new Date().getFullYear());
 	let month = $state(new Date().getMonth());
@@ -87,7 +71,6 @@
 	let payeeMap = new Map<string, string>();
 	let categoryMap = $state(new Map<string, string>());
 	let accountMap = new Map<string, string>();
-	let categoryColorMap = new Map<string, string>();
 	let detailInstance: ReturnType<typeof mount> | null = null;
 	let detailContainer: HTMLElement | null = null;
 	let headerInstance: ReturnType<typeof mount> | null = null;
@@ -178,14 +161,6 @@
 		return Array.from(map.values());
 	}
 
-	function getCategoryColor(categoryId: string): string {
-		if (!categoryId) return "#666";
-		if (categoryColorMap.has(categoryId)) return categoryColorMap.get(categoryId)!;
-		const idx = categoryColorMap.size % CATEGORY_COLORS.length;
-		const color = CATEGORY_COLORS[idx];
-		categoryColorMap.set(categoryId, color);
-		return color;
-	}
 
 	async function loadMonth() {
 		loading = true;
@@ -366,7 +341,6 @@
 			props: {
 				date,
 				transactions: day.transactions as DayTransaction[],
-				categoryColors: categoryColorMap,
 			},
 		});
 
@@ -387,7 +361,7 @@
 	}
 
 	onMount(() => {
-		loadCurrency().then(() => loadMonth());
+		Promise.all([loadCurrency(), loadCategoryColors()]).then(() => loadMonth());
 
 		function onKey(e: KeyboardEvent) {
 			if (e.key === "Escape") {

@@ -1,7 +1,7 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { imageWidgets } from "./appearance/image-widgets";
 import { sidebarIcons } from "./appearance/sidebar-icons";
-import { spendingCalendar } from "./appearance/spending-calendar";
+import { spendingCalendar } from "./workflows/spending-calendar";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
@@ -53,9 +53,9 @@ const readability = [
 	budgetPageBorders,
 ];
 
-const appearance = [sidebarRedesign, sidebarIcons, sidebarSearch, sidebarShortcuts, spendingCalendar, accountIconPicker, imageWidgets];
+const appearance = [sidebarRedesign, sidebarIcons, sidebarSearch, sidebarShortcuts, accountIconPicker, imageWidgets];
 
-const workflows = [categoryTemplateInsights, templateApplyBreakdown];
+const workflows = [categoryTemplateInsights, templateApplyBreakdown, spendingCalendar];
 
 export const coreScripts = [sidePanel, scheduleHighlight];
 

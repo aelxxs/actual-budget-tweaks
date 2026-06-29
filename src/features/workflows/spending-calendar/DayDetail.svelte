@@ -1,15 +1,19 @@
 <script lang="ts">
+	import { getCategoryColor } from "@lib/utilities/category-colors";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import type { DayTransaction } from "./types";
 
-	const { transactions, categoryColors } = $props<{
+	const { transactions } = $props<{
 		date: Date;
 		transactions: DayTransaction[];
-		categoryColors: Map<string, string>;
 	}>();
 
 	function fmt(cents: number): string {
 		return fmtMoney(cents);
+	}
+
+	function catColor(id: string): string {
+		return getCategoryColor(id);
 	}
 
 	const categoryBreakdown = $derived.by(() => {
@@ -38,7 +42,7 @@
 			{#each categoryBreakdown as cat}
 				{@const pct = totalSpent > 0 ? Math.round((cat.amount / totalSpent) * 100) : 0}
 				<div class="dd__cat">
-					<span class="dd__cat-dot" style="background: {categoryColors.get(cat.id) || '#666'}"></span>
+					<span class="dd__cat-dot" style="background: {catColor(cat.id)}"></span>
 					<span class="dd__cat-name">{cat.name}</span>
 					<span class="dd__cat-amount abt-privacy-number">{fmt(-cat.amount)}</span>
 					<span class="dd__cat-pct">{pct}%</span>
@@ -55,7 +59,7 @@
 					<div class="dd__tx">
 						<div class="dd__tx-row">
 							{#if tx.categoryId}
-								<span class="dd__tx-dot" style="background: {categoryColors.get(tx.categoryId) || '#666'}"></span>
+								<span class="dd__tx-dot" style="background: {catColor(tx.categoryId)}"></span>
 							{/if}
 							<span class="dd__tx-payee abt-privacy-number">{tx.payee}</span>
 							<span
@@ -68,7 +72,7 @@
 						</div>
 						<div class="dd__tx-meta">
 							{#if tx.categoryName}
-								<span style="color: {categoryColors.get(tx.categoryId) || 'var(--color-pageTextSubdued)'}">{tx.categoryName}</span>
+								<span style="color: {catColor(tx.categoryId)}">{tx.categoryName}</span>
 							{/if}
 							{#if tx.accountName}
 								<span>{tx.accountName}</span>
