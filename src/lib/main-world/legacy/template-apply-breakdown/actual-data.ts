@@ -51,6 +51,7 @@ let categoriesPromise: Promise<Category[]> | null = null;
 export function isBackendReady(): boolean {
 	if (typeof window.$send !== "function") return false;
 	if (typeof window.$query !== "function" || typeof window.$q !== "function") return false;
+	if (!document.querySelector('a[href="/budget"]')) return false;
 	return !!document.querySelector('[data-testid^="budget2"][data-testid*="!sum-amount-"]');
 }
 
@@ -72,6 +73,9 @@ export function waitForBackendReady(): Promise<void> {
 }
 
 export async function loadCategories(force: boolean): Promise<Category[]> {
+	if (!isBackendReady()) {
+		await waitForBackendReady();
+	}
 	if (!force && categoriesCache) return categoriesCache;
 	if (!force && categoriesPromise) return categoriesPromise;
 	categoriesPromise = (async () => {

@@ -46,17 +46,37 @@ function request<T>(event: string, detail: Record<string, unknown>): Promise<T> 
 	});
 }
 
-export function query<T = unknown[]>(
+export async function query<T = unknown[]>(
 	table: string,
 	options?: { filter?: Record<string, unknown>; select?: string },
 ): Promise<T> {
+	await waitForBudget();
 	return request<T>("abt:api:query", { table, filter: options?.filter, select: options?.select });
 }
 
-export function send<T = unknown>(method: string, args?: unknown): Promise<T> {
+export async function send<T = unknown>(method: string, args?: unknown): Promise<T> {
+	await waitForBudget();
 	return request<T>("abt:api:send", { method, args });
 }
 
 export function navigate(path: string, options?: Record<string, unknown>): void {
 	document.dispatchEvent(new CustomEvent("abt:api:navigate", { detail: JSON.stringify({ path, options }) }));
+}
+
+let budgetReadyPromise: Promise<void> | null = null;
+
+export function waitForBudget(): Promise<void> {
+	if (document.querySelector('a[href="/budget"]')) return Promise.resolve();
+	if (budgetReadyPromise) return budgetReadyPromise;
+	budgetReadyPromise = new Promise((resolve) => {
+		const obs = new MutationObserver(() => {
+			if (document.querySelector('a[href="/budget"]')) {
+				obs.disconnect();
+				budgetReadyPromise = null;
+				resolve();
+			}
+		});
+		obs.observe(document.body, { childList: true, subtree: true });
+	});
+	return budgetReadyPromise;
 }

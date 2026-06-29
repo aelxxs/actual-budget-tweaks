@@ -24,7 +24,7 @@ const CSS = `
 		transition: width 140ms ease, opacity 0.15s;
 		pointer-events: none;
 		z-index: 1;
-		opacity: 0.45;
+		opacity: 0.65;
 	}
 
 	[draggable="true"]:hover > .${BAR_CLASS} {
@@ -33,8 +33,8 @@ const CSS = `
 
 	.${BAR_CLASS}[data-state="under"] { background: var(--color-formInputBorderSelected); }
 	.${BAR_CLASS}[data-state="near"] { background: var(--color-warningText); }
-	.${BAR_CLASS}[data-state="full"] { opacity: 0; }
-	.${BAR_CLASS}[data-state="paid"] { opacity: 0; }
+	.${BAR_CLASS}[data-state="full"] { opacity: 0.65; }
+	.${BAR_CLASS}[data-state="paid"] { opacity: 0.65; }
 
 	.abt-cti-popover-wrap {
 		position: fixed;

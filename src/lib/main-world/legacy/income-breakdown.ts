@@ -1495,7 +1495,7 @@ import { dashboardWidgetUtils } from "./dashboard-widget-utils";
 	function waitForBackendReady() {
 		return new Promise((resolve) => {
 			function check() {
-				if (window.$q && window.$query && document.querySelector('[data-testid="__global!accounts-balance"]')) {
+				if (window.$q && window.$query && document.querySelector('a[href="/budget"]') && document.querySelector('[data-testid="__global!accounts-balance"]')) {
 					resolve();
 				} else {
 					setTimeout(check, 50);
