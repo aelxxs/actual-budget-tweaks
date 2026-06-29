@@ -26,6 +26,7 @@ import { notificationContrast } from "./readability/notification-contrast";
 import { reportCardBorders } from "./readability/report-card-borders";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
+import { tagStyling } from "./readability/tag-styling";
 import { headerBorder } from "./readability/top-nav-border";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/themeLoader";
@@ -52,6 +53,7 @@ const readability = [
 	notificationContrast,
 	showDailyAvailable,
 	highlightUncategorized,
+	tagStyling,
 	headerBorder,
 	reportCardBorders,
 	budgetPageBorders,
@@ -117,6 +119,7 @@ export const scripts: Setting<any>[][] = [
 		categoryTemplateInsights,
 		templateApplyBreakdown,
 		highlightUncategorized,
+		tagStyling,
 		headerBorder,
 		reportCardBorders,
 		budgetPageBorders,
