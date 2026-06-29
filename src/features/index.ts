@@ -23,6 +23,7 @@ import { dimReconciled } from "./readability/dim-reconciled";
 import { notificationContrast } from "./readability/notification-contrast";
 import { reportCardBorders } from "./readability/report-card-borders";
 import { showDailyAvailable } from "./readability/show-daily-available";
+import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { headerBorder } from "./readability/top-nav-border";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/themeLoader";
@@ -48,6 +49,7 @@ const readability = [
 	dimReconciled,
 	notificationContrast,
 	showDailyAvailable,
+	highlightUncategorized,
 	headerBorder,
 	reportCardBorders,
 	budgetPageBorders,
@@ -110,6 +112,7 @@ export const scripts: Setting<any>[][] = [
 		imageWidgets,
 		categoryTemplateInsights,
 		templateApplyBreakdown,
+		highlightUncategorized,
 		headerBorder,
 		reportCardBorders,
 		budgetPageBorders,
