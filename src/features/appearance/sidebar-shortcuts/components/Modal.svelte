@@ -17,6 +17,9 @@
 	let addUrl = $state("");
 	let addLabel = $state("");
 	let stockSymbol = $state("");
+	let rsuSymbol = $state("");
+	let rsuDate = $state("");
+	let rsuCount = $state("");
 
 	const SVG_ICONS: Record<string, string> = {
 		"svg:calc": `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>`,
@@ -25,6 +28,7 @@
 		"svg:networth": `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
 		"svg:interest": `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>`,
 		"svg:calendar": `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+		"svg:rsu": `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="14" r="2"/><path d="M12 16v2"/></svg>`,
 	};
 
 	function genId(): string {
@@ -86,6 +90,27 @@
 					size: "wide",
 				},
 			];
+		} else if (widget.id === "rsu-tracker") {
+			if (!rsuSymbol.trim() || !rsuCount.trim()) return;
+			items = [
+				...items,
+				{
+					id: genId(),
+					label: `${rsuSymbol.toUpperCase()} RSU`,
+					icon: widget.icon,
+					url: widget.id,
+					type: "widget",
+					size: "half",
+					config: {
+						symbol: rsuSymbol.toUpperCase().trim(),
+						startDate: rsuDate,
+						count: rsuCount.trim(),
+					},
+				},
+			];
+			rsuSymbol = "";
+			rsuDate = "";
+			rsuCount = "";
 		}
 	}
 
@@ -107,8 +132,11 @@
 	function onDragOver(idx: number, e: DragEvent) {
 		e.preventDefault();
 		if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-		if (dragIdx === idx) { dropTarget = null; return; }
-		const el = (e.currentTarget as HTMLElement);
+		if (dragIdx === idx) {
+			dropTarget = null;
+			return;
+		}
+		const el = e.currentTarget as HTMLElement;
 		const rect = el.getBoundingClientRect();
 		const midY = rect.top + rect.height / 2;
 		const side = e.clientY < midY ? "before" : "after";
@@ -239,23 +267,53 @@
 			<div class="section-label">Widgets</div>
 			<div class="tools">
 				<!-- Stock tracker -->
-				<div class="widget-add">
-					<span class="tool-btn__icon">{@html SVG_ICONS["svg:stock"]}</span>
-					<input
-						class="input input--sym"
-						type="text"
-						placeholder="e.g. AAPL"
-						bind:value={stockSymbol}
-						onkeydown={(e) => {
-							if (e.key === "Enter") addWidget(builtinWidgets[0]);
-						}}
-					/>
-					<button
-						class="btn btn--primary btn--sm"
-						onclick={() => addWidget(builtinWidgets[0])}
-						disabled={!stockSymbol.trim()}
-					>Add</button>
+				<div class="widget-add-labeled">
+					<div class="widget-add-labeled__header">
+						<span class="tool-btn__icon">{@html SVG_ICONS["svg:stock"]}</span>
+						<span class="widget-add-labeled__title">Stock Tracker</span>
+					</div>
+					<div class="widget-add-labeled__fields">
+						<input
+							class="input input--sym"
+							type="text"
+							placeholder="e.g. AAPL"
+							bind:value={stockSymbol}
+							onkeydown={(e) => {
+								if (e.key === "Enter") addWidget(builtinWidgets[0]);
+							}}
+						/>
+						<button
+							class="btn btn--primary btn--sm"
+							onclick={() => addWidget(builtinWidgets[0])}
+							disabled={!stockSymbol.trim()}>Add</button
+						>
+					</div>
 				</div>
+
+				<!-- RSU Tracker -->
+				{#if builtinWidgets.find((w) => w.id === "rsu-tracker")}
+					<div class="widget-add-labeled">
+						<div class="widget-add-labeled__header">
+							<span class="tool-btn__icon">{@html SVG_ICONS["svg:rsu"]}</span>
+							<span class="widget-add-labeled__title">RSU Tracker</span>
+						</div>
+						<div class="widget-add-labeled__fields">
+							<input class="input input--sym" type="text" placeholder="Symbol" bind:value={rsuSymbol} />
+							<input
+								class="input input--date"
+								type="date"
+								placeholder="Grant date"
+								bind:value={rsuDate}
+							/>
+							<input class="input input--sym" type="text" placeholder="Count" bind:value={rsuCount} />
+							<button
+								class="btn btn--primary btn--sm"
+								onclick={() => addWidget(builtinWidgets.find((w) => w.id === "rsu-tracker")!)}
+								disabled={!rsuSymbol.trim() || !rsuCount.trim()}>Add</button
+							>
+						</div>
+					</div>
+				{/if}
 
 				<!-- Upcoming schedules -->
 				{#if !items.some((s) => s.type === "widget" && s.url === "upcoming-schedules")}
@@ -303,6 +361,7 @@
 		justify-content: space-between;
 		padding: 14px 18px;
 		border-bottom: 1px solid var(--color-tableBorder);
+		flex-shrink: 0;
 	}
 	.hd h3 {
 		font-size: 14px;
@@ -328,6 +387,8 @@
 		padding: 14px 18px;
 		overflow-y: auto;
 		flex: 1;
+		min-height: 0;
+		scrollbar-width: thin;
 	}
 
 	.ft {
@@ -336,6 +397,7 @@
 		gap: 8px;
 		padding: 12px 18px;
 		border-top: 1px solid var(--color-tableBorder);
+		flex-shrink: 0;
 	}
 
 	/* ── List ── */
@@ -352,7 +414,9 @@
 		gap: 8px;
 		padding: 6px 8px;
 		border-radius: 6px;
-		transition: background 0.08s, opacity 0.08s;
+		transition:
+			background 0.08s,
+			opacity 0.08s;
 		cursor: grab;
 	}
 	.row:hover {
@@ -389,7 +453,7 @@
 		font-size: 14px;
 		letter-spacing: -3px;
 		color: var(--color-pageTextSubdued);
-		opacity: 0.3;
+		opacity: 0.9;
 		cursor: grab;
 		flex-shrink: 0;
 		line-height: 1;
@@ -397,7 +461,7 @@
 		user-select: none;
 	}
 	.row:hover .row__grip {
-		opacity: 0.6;
+		opacity: 0.9;
 	}
 	.row__grip:active {
 		cursor: grabbing;
@@ -571,6 +635,49 @@
 		gap: 6px;
 		align-items: center;
 		width: 100%;
+	}
+
+	.widget-add-labeled {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 8px 10px;
+		border-radius: 6px;
+		background: color-mix(in srgb, var(--color-pageText) 3%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-pageText) 6%, transparent);
+	}
+
+	.widget-add-labeled__header {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.widget-add-labeled__title {
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--color-pageTextSubdued);
+	}
+
+	.widget-add-labeled__fields {
+		display: flex;
+		gap: 6px;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.input--date {
+		font-family: inherit;
+		font-size: 12px;
+		color-scheme: dark;
+		flex: 1;
+		min-width: 120px;
+	}
+
+	.widget-add-labeled__fields .input--sym {
+		flex: 1;
+		min-width: 60px;
 	}
 	/* ── Buttons ── */
 	.btn {

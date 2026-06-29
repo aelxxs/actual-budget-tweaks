@@ -11,7 +11,7 @@ export interface Shortcut {
 }
 
 export type ToolId = "calculator" | "currency-converter" | "interest-calculator";
-export type WidgetId = "stock-tracker" | "upcoming-schedules";
+export type WidgetId = "stock-tracker" | "upcoming-schedules" | "rsu-tracker";
 
 export interface BuiltinTool {
 	id: ToolId;

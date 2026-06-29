@@ -28,6 +28,7 @@
 	const BUILTIN_WIDGETS: BuiltinWidget[] = [
 		{ id: "stock-tracker", label: "Stock Tracker", icon: "svg:stock" },
 		{ id: "upcoming-schedules", label: "Upcoming Bills", icon: "svg:calendar" },
+		{ id: "rsu-tracker", label: "RSU Tracker", icon: "svg:rsu" },
 	];
 
 	const SVG_ICONS: Record<string, string> = {
@@ -36,6 +37,7 @@
 		"svg:stock": `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
 		"svg:interest": `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>`,
 		"svg:calendar": `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+		"svg:rsu": `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="14" r="2"/><path d="M12 16v2"/></svg>`,
 	};
 
 	let shortcuts = $state<Shortcut[]>([]);
