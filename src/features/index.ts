@@ -1,4 +1,5 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
+import { categoryColorDots } from "./appearance/category-color-dots";
 import { imageWidgets } from "./appearance/image-widgets";
 import { sidebarIcons } from "./appearance/sidebar-icons";
 import { spendingCalendar } from "./workflows/spending-calendar";
@@ -55,7 +56,7 @@ const readability = [
 	budgetPageBorders,
 ];
 
-const appearance = [sidebarRedesign, sidebarIcons, sidebarSearch, sidebarShortcuts, accountIconPicker, imageWidgets];
+const appearance = [sidebarRedesign, sidebarIcons, sidebarSearch, sidebarShortcuts, accountIconPicker, categoryColorDots, imageWidgets];
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown, spendingCalendar];
 
@@ -109,6 +110,7 @@ export const scripts: Setting<any>[][] = [
 		sidebarShortcuts,
 		spendingCalendar,
 		accountIconPicker,
+		categoryColorDots,
 		imageWidgets,
 		categoryTemplateInsights,
 		templateApplyBreakdown,
