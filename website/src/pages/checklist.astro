@@ -1,0 +1,553 @@
+---
+import Base from "../layouts/Base.astro";
+
+const sections = [
+  {
+    title: "Critical — Hashed CSS Selectors",
+    description: "Target CSS-in-JS class names that change whenever Actual rebuilds styles. Most likely to break.",
+    risk: "critical",
+    items: [
+      { feature: "Sidebar Account Spacing", file: "src/features/layout/sidebar-account-spacing.ts", selectors: ["css-hfi7l9", "css-15e1mkk", "css-13d5vlg", "css-e5dykp"], checks: ["Account list spacing looks correct", "Account name text renders properly"] },
+      { feature: "Report Widget Background", file: "src/features/layout/report-widget-background-color.ts", selectors: ["css-w4wco7", "css-eiyo5a"], checks: ["Report widget backgrounds apply correctly"] },
+      { feature: "Budget Page Borders", file: "src/features/readability/budget-page-borders.ts", selectors: ["css-5co8lf"], checks: ["Budget page border styling applies"] },
+      { feature: "Header Border", file: "src/features/readability/top-nav-border.ts", selectors: ["css-pq65pe"], checks: ["Top nav border renders"] },
+      { feature: "Sidebar Redesign", file: "src/features/appearance/sidebar-redesign.ts", selectors: ["css-37q6ds", "css-1q5hn2l"], checks: ["Sidebar redesign renders properly", "Collapsible account groups work", "Uncategorized badges show correct counts"] },
+      { feature: "Sidebar Icons / States", file: "src/features/appearance/sidebar-icons.ts", selectors: ["css-169sxsz", "css-1y6zg9g", "css-3klntp"], checks: ["Sidebar icons render", "Active/hover states look correct"] },
+      { feature: "Toolbar Buttons", file: "src/lib/utilities/dom.ts", selectors: ["css-125dinm", "css-70zz4x"], checks: ["Features using createToolbarButton() render their button"] },
+      { feature: "Account Icon Picker", file: "src/features/appearance/account-icon-picker/index.ts", selectors: ["css-15e1mkk", "css-1kp6ojj"], checks: ["Account icons render in sidebar", "Icon picker opens and saves"] },
+    ],
+  },
+  {
+    title: "High — Complex DOM Structure",
+    description: "Rely on specific DOM hierarchy, nth-child positioning, or parent/sibling traversal.",
+    risk: "high",
+    items: [
+      { feature: "Side Panel", file: "src/features/core/side-panel/index.ts", selectors: ["div:has(> div:nth-child(4))", "nth-child(1..5)"], checks: ["Side panel renders alongside main content", "Panel doesn't overlap or break layout"] },
+      { feature: "Spending Calendar", file: "src/features/workflows/spending-calendar/index.ts", selectors: ["a[href=\"/schedules\"]"], checks: ["Calendar renders in side panel", "Month and week views work", "Transaction data loads"] },
+      { feature: "Dim Reconciled", file: "src/features/readability/dim-reconciled.ts", selectors: ["svg[viewBox=\"0 0 20 20\"]"], checks: ["Reconciled rows are dimmed", "Un-reconciled rows are normal"] },
+      { feature: "Budget Card / FlowBar", file: "src/features/readability/budget-card-styling/index.ts", selectors: ["data-cellname*=\"object Object\"", "data-cellname*=\"!available-funds\""], checks: ["FlowBar renders on budget summary", "Amounts are correct"] },
+      { feature: "Budget Row Height", file: "src/features/layout/budget-table-row-height/index.ts", selectors: ["budget-totals + div"], checks: ["Category rows resize correctly", "Group headers unaffected"] },
+      { feature: "Income Breakdown", file: "src/lib/main-world/legacy/income-breakdown.ts", selectors: [".react-grid-item", ".hover-visible"], checks: ["Sankey diagram renders on reports", "Popover date picker works"] },
+    ],
+  },
+  {
+    title: "Medium — Data-testid Patterns",
+    description: "Use Actual's data-testid attributes — generally stable but can change in refactors.",
+    risk: "medium",
+    items: [
+      { feature: "Category Template Insights", file: "src/features/workflows/category-template-insights/", selectors: ["data-testid^=\"budget2\"", "[draggable=\"true\"]"], checks: ["Progress bars render on budget categories", "Hover popover shows template details"] },
+      { feature: "Category Color Dots", file: "src/features/appearance/category-color-dots/index.ts", selectors: ["data-testid=\"category-name\"", "data-testid*=\"sum-amount-\""], checks: ["Dots on budget page categories", "Color picker opens", "Dots on transaction rows"] },
+      { feature: "Category Emoji Picker", file: "src/features/appearance/category-emoji-picker/index.ts", selectors: ["data-testid=\"category-name\""], checks: ["Emoji button on budget rows", "Picker opens and applies emoji"] },
+      { feature: "Highlight Uncategorized", file: "src/features/readability/highlight-uncategorized.ts", selectors: ["data-testid=\"row\""], checks: ["Uncategorized rows have yellow tint", "Categorized rows unaffected"] },
+      { feature: "Resizable Columns", file: "src/features/layout/resizable-transaction-columns.ts", selectors: ["data-testid=\"transaction-table\"", "data-testid=\"row\""], checks: ["Column drag handles appear", "Columns resize and persist"] },
+      { feature: "Toggle Columns", file: "src/features/layout/toggle-columns/index.ts", selectors: ["data-testid=\"${testId}\""], checks: ["Column visibility toggles work", "Hidden columns persist"] },
+      { feature: "Color Transactions", file: "src/features/readability/color-transactions.ts", selectors: ["data-testid=\"category\"", "data-testid=\"date\""], checks: ["Transaction rows colored by category"] },
+      { feature: "Color Negative Balances", file: "src/features/readability/color-negative-balances.ts", selectors: ["data-testid^=\"__global!balance-\""], checks: ["Negative balances show in red"] },
+      { feature: "Show Daily Available", file: "src/features/readability/show-daily-available.ts", selectors: ["data-testid=\"account-balance\""], checks: ["Daily available amount shows on account pages"] },
+    ],
+  },
+  {
+    title: "Low — Href / Navigation Selectors",
+    description: "Target URL-based navigation links — rarely change.",
+    risk: "low",
+    items: [
+      { feature: "Sidebar Search", file: "src/features/appearance/sidebar-search.ts", selectors: ["a[href=\"/budget\"]", "a[href=\"/reports\"]"], checks: ["Search bar renders", "Filters accounts"] },
+      { feature: "Sidebar Shortcuts", file: "src/features/appearance/sidebar-shortcuts/", selectors: ["a[href^=\"/\"]"], checks: ["Shortcuts bar renders", "All widgets functional"] },
+      { feature: "Hide Upcoming Transactions", file: "src/features/layout/hide-upcoming-transactions.ts", selectors: ["data-focus-key^=\"preview/\""], checks: ["Toggle button in toolbar", "Upcoming rows fade when toggled"] },
+    ],
+  },
+  {
+    title: "Stable — Theme / CSS Variables",
+    description: "Only use :root and CSS custom properties. Unlikely to break.",
+    risk: "stable",
+    items: [
+      { feature: "Theme Selector", file: "src/features/theme/theme.ts", selectors: [":root"], checks: ["Custom themes apply correctly"] },
+      { feature: "Theme Auto-switch", file: "src/features/theme/ThemeCustomizer.svelte", selectors: [":root"], checks: ["Dark/light follows system preference"] },
+      { feature: "Notification Contrast", file: "src/features/readability/notification-contrast.ts", selectors: [":root"], checks: ["Improved notification readability"] },
+    ],
+  },
+];
+---
+
+<Base
+  title="Update Checklist — Actual Budget Tweaks"
+  description="Interactive compatibility checklist for verifying extension features after Actual Budget updates."
+>
+  <main class="checklist center">
+    <header class="checklist__header stack stack--sm">
+      <a href="/" class="checklist__back">&larr; Back to home</a>
+      <h1>Monthly Update Checklist</h1>
+      <p class="checklist__subtitle">
+        Verify extension features after an Actual Budget release. Ordered by fragility — check critical items first.
+      </p>
+      <div class="checklist__meta cluster">
+        <label class="checklist__field">
+          <span>Actual Version</span>
+          <input type="text" id="actual-version" placeholder="e.g. 25.6.1" />
+        </label>
+        <label class="checklist__field">
+          <span>Date</span>
+          <input type="date" id="check-date" />
+        </label>
+        <div class="checklist__progress">
+          <span id="progress-text">0 / 0</span>
+          <div class="checklist__progress-bar">
+            <div class="checklist__progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+        <button class="btn btn--secondary checklist__reset" id="reset-btn">Reset All</button>
+      </div>
+    </header>
+
+    {sections.map((section) => (
+      <section class="check-section" data-risk={section.risk}>
+        <div class="check-section__header">
+          <div class="check-section__title-row">
+            <span class={`check-section__badge check-section__badge--${section.risk}`}>{section.risk}</span>
+            <h2>{section.title}</h2>
+          </div>
+          <p>{section.description}</p>
+        </div>
+
+        <div class="check-section__items">
+          {section.items.map((item) => (
+            <div class="check-item" data-feature={item.feature}>
+              <div class="check-item__header">
+                <h3>{item.feature}</h3>
+                <code class="check-item__file">{item.file}</code>
+              </div>
+              <div class="check-item__selectors">
+                {item.selectors.map((s) => (
+                  <span class="check-item__selector">{s}</span>
+                ))}
+              </div>
+              <ul class="check-item__checks">
+                {item.checks.map((check) => (
+                  <li>
+                    <label class="check-item__label">
+                      <input type="checkbox" class="check-item__input" data-check={`${item.feature}::${check}`} />
+                      <span class="check-item__checkmark"></span>
+                      <span>{check}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <section class="check-section smoke-test" data-risk="smoke">
+      <div class="check-section__header">
+        <div class="check-section__title-row">
+          <span class="check-section__badge check-section__badge--smoke">5 min</span>
+          <h2>Quick Smoke Test</h2>
+        </div>
+        <p>Short on time? Check these — they cover the highest-risk selectors.</p>
+      </div>
+      <div class="check-section__items">
+        <div class="check-item">
+          <ul class="check-item__checks">
+            {[
+              "Sidebar renders correctly (icons, spacing, redesign, badges)",
+              "Budget page: FlowBar, color dots, emoji, template insights",
+              "Transaction table: column resize, color dots, highlight uncategorized",
+              "Side panel opens with calendar",
+              "Reports page: widget backgrounds, income breakdown",
+            ].map((check) => (
+              <li>
+                <label class="check-item__label">
+                  <input type="checkbox" class="check-item__input" data-check={`smoke::${check}`} />
+                  <span class="check-item__checkmark"></span>
+                  <span>{check}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="check-section" data-risk="info">
+      <div class="check-section__header">
+        <h2>If Something Breaks</h2>
+      </div>
+      <div class="check-section__items">
+        <div class="check-item">
+          <ol class="fix-steps">
+            <li>Open Actual in browser, inspect the broken element</li>
+            <li>Compare current class names / DOM structure against the selectors listed above</li>
+            <li>Update the hardcoded selector in the feature file</li>
+            <li>Test and commit: <code>fix: update selectors for Actual vX.Y.Z</code></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<script>
+  const STORAGE_KEY = "abt-checklist";
+
+  function load(): Record<string, boolean> {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  function save(state: Record<string, boolean>) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function updateProgress() {
+    const all = document.querySelectorAll<HTMLInputElement>(".check-item__input");
+    const checked = document.querySelectorAll<HTMLInputElement>(".check-item__input:checked");
+    const text = document.getElementById("progress-text");
+    const fill = document.getElementById("progress-fill");
+    if (text) text.textContent = `${checked.length} / ${all.length}`;
+    if (fill) (fill as HTMLElement).style.width = `${all.length ? (checked.length / all.length) * 100 : 0}%`;
+  }
+
+  const state = load();
+  const checks = document.querySelectorAll<HTMLInputElement>(".check-item__input");
+
+  checks.forEach((input) => {
+    const key = input.dataset.check || "";
+    if (state[key]) input.checked = true;
+    input.addEventListener("change", () => {
+      const s = load();
+      s[key] = input.checked;
+      if (!input.checked) delete s[key];
+      save(s);
+      updateProgress();
+    });
+  });
+
+  const versionInput = document.getElementById("actual-version") as HTMLInputElement;
+  const dateInput = document.getElementById("check-date") as HTMLInputElement;
+
+  if (versionInput) {
+    versionInput.value = localStorage.getItem("abt-checklist-version") || "";
+    versionInput.addEventListener("input", () => localStorage.setItem("abt-checklist-version", versionInput.value));
+  }
+
+  if (dateInput) {
+    dateInput.value = localStorage.getItem("abt-checklist-date") || new Date().toISOString().slice(0, 10);
+    dateInput.addEventListener("input", () => localStorage.setItem("abt-checklist-date", dateInput.value));
+  }
+
+  document.getElementById("reset-btn")?.addEventListener("click", () => {
+    if (!confirm("Reset all checkboxes?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    checks.forEach((input) => (input.checked = false));
+    updateProgress();
+  });
+
+  updateProgress();
+</script>
+
+<style>
+  .checklist {
+    padding-block: 3rem 5rem;
+  }
+
+  .checklist__header {
+    margin-block-end: 2.5rem;
+  }
+
+  .checklist__back {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .checklist__back:hover {
+    color: var(--accent);
+  }
+
+  .checklist h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .checklist__subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    max-inline-size: 600px;
+  }
+
+  .checklist__meta {
+    --cluster-gap: 1rem;
+    margin-block-start: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+
+  .checklist__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .checklist__field input {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    background: var(--bg);
+    color: var(--text);
+    width: 140px;
+  }
+
+  .checklist__field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-wash);
+  }
+
+  .checklist__progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 120px;
+  }
+
+  #progress-text {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .checklist__progress-bar {
+    height: 6px;
+    background: var(--bg-alt);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .checklist__progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .checklist__reset {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    margin-inline-start: auto;
+  }
+
+  /* ── Sections ── */
+  .check-section {
+    margin-block-start: 2rem;
+  }
+
+  .check-section__header {
+    margin-block-end: 1rem;
+  }
+
+  .check-section__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-block-end: 0.25rem;
+  }
+
+  .check-section__header h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .check-section__header p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .check-section__badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .check-section__badge--critical { background: #fde8e8; color: #c0392b; }
+  .check-section__badge--high { background: #fef3e2; color: #d68910; }
+  .check-section__badge--medium { background: #fef9e7; color: #b7950b; }
+  .check-section__badge--low { background: #e8f8f5; color: #1e8449; }
+  .check-section__badge--stable { background: #eaf2f8; color: #2471a3; }
+  .check-section__badge--smoke { background: var(--accent-wash); color: var(--accent); }
+
+  .check-section__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* ── Items ── */
+  .check-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+  }
+
+  .check-item__header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-block-end: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .check-item__header h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .check-item__file {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    word-break: break-all;
+  }
+
+  .check-item__selectors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-block-end: 0.75rem;
+  }
+
+  .check-item__selector {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
+    background: var(--accent-wash);
+    color: var(--accent);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .check-item__checks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .check-item__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+    padding: 0.2rem 0;
+    color: var(--text);
+  }
+
+  .check-item__label:hover {
+    color: var(--accent);
+  }
+
+  .check-item__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .check-item__checkmark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-strong);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .check-item__input:checked + .check-item__checkmark {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .check-item__input:checked + .check-item__checkmark::after {
+    content: "";
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+
+  .check-item__input:checked ~ span:last-child {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+  }
+
+  .check-item__input:focus-visible + .check-item__checkmark {
+    box-shadow: 0 0 0 2px var(--accent-wash);
+  }
+
+  /* ── Fix steps ── */
+  .fix-steps {
+    padding-inline-start: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+
+  .fix-steps code {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--accent-wash);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .checklist h1 {
+      font-size: 1.4rem;
+    }
+
+    .checklist__meta {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .checklist__field input {
+      width: 100%;
+    }
+
+    .checklist__reset {
+      margin-inline-start: 0;
+    }
+
+    .check-item__header {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }
+</style>
