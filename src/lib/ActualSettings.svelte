@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { scriptSections } from "../features";
+	import { scriptSections, scripts } from "../features";
 	import CheckboxOption from "./components/Checkbox.svelte";
 	import SelectOption from "./components/Select.svelte";
 
@@ -11,6 +11,7 @@
 	let showBugModal = $state(false);
 	let bugFeature = $state("");
 	let bugDescription = $state("");
+	let importStatus = $state<"" | "success" | "error">("");
 
 	function openBugReport() {
 		bugFeature = "";
@@ -64,6 +65,66 @@
 		return !normalizedQuery && !!collapsed[title];
 	}
 
+	const AUX_DEFAULTS: Record<string, unknown> = {
+		"local:category-colors": {},
+		"local:abt-account-icons": {},
+		"local:abt-sidebar-shortcuts": [],
+		"local:abt-sidebar-groups-collapsed": {},
+		"local:user-themes": {},
+		"local:side-panel-width": 420,
+		"local:side-panel-persist": null,
+		"local:theme-auto-switch": false,
+		"local:theme-auto-dark": null,
+		"local:theme-auto-light": null,
+	};
+
+	async function exportSettings() {
+		const stored = await browser.storage.local.get(null);
+		const data: Record<string, unknown> = { ...AUX_DEFAULTS, ...stored };
+		for (const group of scripts) {
+			for (const item of group) {
+				if ("context" in item && item.context?.key) {
+					const storageKey = `local:${item.context.key}`;
+					if (!(storageKey in data)) {
+						data[storageKey] = item.context.defaultValue;
+					}
+				}
+			}
+		}
+		const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `abt-settings-${new Date().toISOString().slice(0, 10)}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	async function importSettings() {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".json";
+		input.onchange = async () => {
+			const file = input.files?.[0];
+			if (!file) return;
+			try {
+				const text = await file.text();
+				const data = JSON.parse(text);
+				if (typeof data !== "object" || data === null || Array.isArray(data)) {
+					throw new Error("Invalid format");
+				}
+				await browser.storage.local.clear();
+				await browser.storage.local.set(data);
+				importStatus = "success";
+				setTimeout(() => location.reload(), 1000);
+			} catch {
+				importStatus = "error";
+				setTimeout(() => (importStatus = ""), 3000);
+			}
+		};
+		input.click();
+	}
+
 	function portal(node: HTMLElement) {
 		document.body.appendChild(node);
 		return {
@@ -78,14 +139,33 @@
 	<div class="header stack" style="--space: 0.6rem;">
 		<div class="title-row cluster" style="--gutter: 0.5rem; --align: center; --justify: space-between;">
 			<span><strong>Interface Settings</strong> — Configure Actual</span>
-			<button class="bug-report-btn" onclick={openBugReport} title="Report a bug">
-				<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-					<path
-						d="M4.72.22a.75.75 0 0 1 1.06 0l1.204 1.203A3.98 3.98 0 0 1 8 1.25c.357 0 .7.047 1.016.134L10.22.22a.75.75 0 1 1 1.06 1.06l-.96.96A3.99 3.99 0 0 1 11.95 4.5h.55a.75.75 0 0 1 0 1.5h-.337a5.03 5.03 0 0 1 .088.86v.39H13a.75.75 0 0 1 0 1.5h-.749v.39c0 .318-.03.63-.088.86H13a.75.75 0 0 1 0 1.5h-.55a3.99 3.99 0 0 1-1.63 1.96l.96.96a.75.75 0 1 1-1.06 1.06l-1.204-1.203A3.98 3.98 0 0 1 8 14.75a3.98 3.98 0 0 1-1.016-.134L5.78 15.78a.75.75 0 0 1-1.06-1.06l.96-.96A3.99 3.99 0 0 1 4.05 11.5H3.5a.75.75 0 0 1 0-1.5h.337a5.03 5.03 0 0 1-.088-.86v-.39H3a.75.75 0 0 1 0-1.5h.749v-.39c0-.318.03-.63.088-.86H3.5a.75.75 0 0 1 0-1.5h.55a3.99 3.99 0 0 1 1.63-1.96l-.96-.96A.75.75 0 0 1 4.72.22ZM6.173 5a2.5 2.5 0 0 0-.672 1.25h5a2.5 2.5 0 0 0-.673-1.25H6.173ZM5.5 7.75v.39a3.51 3.51 0 0 0 .586 1.935l.064.085A2.5 2.5 0 0 0 8 11.25a2.5 2.5 0 0 0 1.85-1.09l.064-.085A3.51 3.51 0 0 0 10.5 8.14v-.39h-5Z"
-					/>
-				</svg>
-				Report Bug
-			</button>
+			<div class="header-actions cluster" style="--gutter: 0.4rem; --align: center;">
+				<button class="header-action-btn" onclick={exportSettings} title="Export settings">
+					<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M2 10v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3"/><path d="M8 2v8m0 0L5 7m3 3 3-3"/>
+					</svg>
+					Export
+				</button>
+				<button class="header-action-btn" onclick={importSettings} title="Import settings">
+					<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M2 10v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3"/><path d="M8 10V2m0 0L5 5m3-3 3 3"/>
+					</svg>
+					Import
+				</button>
+				{#if importStatus === "success"}
+					<span class="import-status import-status--ok">Imported — reloading...</span>
+				{:else if importStatus === "error"}
+					<span class="import-status import-status--err">Invalid settings file</span>
+				{/if}
+				<button class="bug-report-btn" onclick={openBugReport} title="Report a bug">
+					<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+						<path
+							d="M4.72.22a.75.75 0 0 1 1.06 0l1.204 1.203A3.98 3.98 0 0 1 8 1.25c.357 0 .7.047 1.016.134L10.22.22a.75.75 0 1 1 1.06 1.06l-.96.96A3.99 3.99 0 0 1 11.95 4.5h.55a.75.75 0 0 1 0 1.5h-.337a5.03 5.03 0 0 1 .088.86v.39H13a.75.75 0 0 1 0 1.5h-.749v.39c0 .318-.03.63-.088.86H13a.75.75 0 0 1 0 1.5h-.55a3.99 3.99 0 0 1-1.63 1.96l.96.96a.75.75 0 1 1-1.06 1.06l-1.204-1.203A3.98 3.98 0 0 1 8 14.75a3.98 3.98 0 0 1-1.016-.134L5.78 15.78a.75.75 0 0 1-1.06-1.06l.96-.96A3.99 3.99 0 0 1 4.05 11.5H3.5a.75.75 0 0 1 0-1.5h.337a5.03 5.03 0 0 1-.088-.86v-.39H3a.75.75 0 0 1 0-1.5h.749v-.39c0-.318.03-.63.088-.86H3.5a.75.75 0 0 1 0-1.5h.55a3.99 3.99 0 0 1 1.63-1.96l-.96-.96A.75.75 0 0 1 4.72.22ZM6.173 5a2.5 2.5 0 0 0-.672 1.25h5a2.5 2.5 0 0 0-.673-1.25H6.173ZM5.5 7.75v.39a3.51 3.51 0 0 0 .586 1.935l.064.085A2.5 2.5 0 0 0 8 11.25a2.5 2.5 0 0 0 1.85-1.09l.064-.085A3.51 3.51 0 0 0 10.5 8.14v-.39h-5Z"
+						/>
+					</svg>
+					Report Bug
+				</button>
+			</div>
 		</div>
 		<div class="search-row cluster" style="--gutter: 0.5rem; --align: center;">
 			<input
@@ -334,6 +414,48 @@
 
 		.setting-label {
 			font-weight: 500;
+		}
+
+		.header-actions {
+			margin-left: auto;
+		}
+
+		.header-action-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			font-size: 0.8rem;
+			color: var(--color-pageTextSubdued);
+			padding: 0.3rem 0.6rem;
+			border-radius: 6px;
+			border: var(--border);
+			background: none;
+			cursor: pointer;
+			transition: color 0.15s, border-color 0.15s;
+		}
+
+		.header-action-btn:hover {
+			color: var(--color-pageText);
+			border-color: var(--color-pageTextSubdued);
+		}
+
+		.header-action-btn svg {
+			width: 14px;
+			height: 14px;
+			flex-shrink: 0;
+		}
+
+		.import-status {
+			font-size: 0.8rem;
+			font-weight: 500;
+		}
+
+		.import-status--ok {
+			color: var(--color-noticeTextLight);
+		}
+
+		.import-status--err {
+			color: var(--color-errorText);
 		}
 
 		.bug-report-btn {
