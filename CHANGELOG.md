@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v0.1.38
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.37...v0.1.38)
+
+### 🚀 Enhancements
+
+- Update GeckoSettings with unique extension ID ([97aca98](https://github.com/aelxxs/actual-budget-tweaks/commit/97aca98))
+- Update deployment workflows and add Firefox auto-update manifest ([a5b87f7](https://github.com/aelxxs/actual-budget-tweaks/commit/a5b87f7))
+- Enhance budget readiness checks and improve opacity settings for UI elements ([fa3378c](https://github.com/aelxxs/actual-budget-tweaks/commit/fa3378c))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.37
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.36...v0.1.37)
