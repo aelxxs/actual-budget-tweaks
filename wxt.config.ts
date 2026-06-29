@@ -10,6 +10,7 @@ type GeckoSettings = NonNullable<NonNullable<UserManifest["browser_specific_sett
 
 const geckoSettings: GeckoSettings = {
 	id: "{423a1e86-3efa-4421-a7e8-65fb5786415e}",
+	update_url: "https://abt.alexis.lol/updates.json",
 	data_collection_permissions: {
 		required: ["none"],
 	},

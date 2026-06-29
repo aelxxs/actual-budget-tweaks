@@ -59,6 +59,8 @@ jobs:
           npx changelogen@latest gh release ${{ steps.version.outputs.new_version }} --token ${{ github.token }}
 
       - name: Sign Firefox XPI for sideloading
+        timeout-minutes: 10
+        continue-on-error: true
         run: |
           npx web-ext sign \
             --source-dir .output/firefox-mv2 \
@@ -78,7 +80,30 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Update Firefox auto-update manifest
+        run: |
+          VERSION=${{ steps.version.outputs.new_version }}
+          XPI_URL="https://github.com/aelxxs/actual-budget-tweaks/releases/download/v${VERSION}/actual-budget-tweaks-${VERSION}.xpi"
+          cat > website/public/updates.json << EOF
+          {
+            "addons": {
+              "{423a1e86-3efa-4421-a7e8-65fb5786415e}": {
+                "updates": [
+                  {
+                    "version": "${VERSION}",
+                    "update_link": "${XPI_URL}"
+                  }
+                ]
+              }
+            }
+          }
+          EOF
+          git add website/public/updates.json
+          git commit -m "chore: update Firefox auto-update manifest for v${VERSION}" || true
+          git push || true
+
       - name: Submit to Stores
+        continue-on-error: true
         run: |
           pnpm wxt submit \
             --chrome-zip .output/*-chrome.zip \
