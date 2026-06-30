@@ -1,6 +1,7 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
+import { applyGlobalCSS } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
 import FlowBar from "./FlowBar.svelte";
@@ -45,6 +46,7 @@ export const budgetCardStyling = defineSetting({
 		key: "budget-card-styling",
 		defaultValue: true,
 		_observer: null as MutationObserver | null,
+		_navListener: undefined as (() => void) | undefined,
 	},
 	init: async (ctx) => {
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
@@ -65,76 +67,95 @@ export const budgetCardStyling = defineSetting({
 			applyGlobalCSS("", ctx.key);
 			cleanup();
 			ctx._observer?.disconnect();
+			if (ctx._navListener) window.removeEventListener("wxt:locationchange", ctx._navListener);
 		}
 	},
 });
 
-function getCurrentYearMonth(): string {
-	const now = new Date();
-	return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+const SHEET_RE = /budget(\d{6})/;
+
+function getSheetName(card: HTMLElement): string | null {
+	for (const el of card.querySelectorAll("[data-cellname]")) {
+		const m = (el.getAttribute("data-cellname") || "").match(SHEET_RE);
+		if (m) return `budget${m[1]}`;
+	}
+	return null;
 }
 
-function parseNum(text: string | null | undefined): number {
-	if (!text) return 0;
-	return parseFloat(text.replace(/[^0-9.\-−]/g, "").replace("−", "-")) || 0;
-}
+async function processCard(card: HTMLElement) {
+	const sheetName = getSheetName(card);
 
-function processCards() {
-	const ym = getCurrentYearMonth();
+	if (!sheetName) {
+		card.querySelector(".abt-flow-mount")?.remove();
+		card.querySelector(".abt-flow-hidden")?.classList.remove("abt-flow-hidden");
+		return;
+	}
 
-	for (const card of document.querySelectorAll<HTMLElement>('[data-testid="budget-summary"]')) {
-		card.classList.toggle("abt-current-month", !!card.querySelector(`[data-cellname*="budget${ym}"]`));
-
-		// Style the "To Budget:" label
-		const toBudgetCell = card.querySelector<HTMLElement>('[data-cellname*="object Object"]');
-		if (toBudgetCell) {
-			const toBudgetSection = toBudgetCell.closest<HTMLElement>('[data-testid="budget-summary"] > div');
-			if (toBudgetSection) {
-				const label = toBudgetSection.querySelector<HTMLElement>("div:not([data-cellname])");
-				if (
-					label &&
-					label.textContent?.includes("To Budget") &&
-					!label.classList.contains("abt-to-budget-label")
-				) {
-					label.classList.add("abt-to-budget-label");
-				}
+	// Style the "To Budget:" label
+	const toBudgetCell = card.querySelector<HTMLElement>('[data-cellname*="object Object"]');
+	if (toBudgetCell) {
+		const toBudgetSection = toBudgetCell.closest<HTMLElement>('[data-testid="budget-summary"] > div');
+		if (toBudgetSection) {
+			const label = toBudgetSection.querySelector<HTMLElement>("div:not([data-cellname])");
+			if (label && label.textContent?.includes("To Budget") && !label.classList.contains("abt-to-budget-label")) {
+				label.classList.add("abt-to-budget-label");
 			}
 		}
+	}
 
-		const availableEl = card.querySelector<HTMLElement>('[data-cellname*="!available-funds"]');
-		if (!availableEl) {
-			card.querySelector(".abt-flow-mount")?.remove();
-			card.querySelector(".abt-flow-hidden")?.classList.remove("abt-flow-hidden");
-			continue;
-		}
+	const breakdown = card
+		.querySelector<HTMLElement>('[data-cellname*="!available-funds"]')
+		?.closest<HTMLElement>('[data-testid="budget-summary"] > div');
+	if (!breakdown) return;
 
-		const available = parseNum(availableEl.textContent);
-		const overspent = Math.abs(
-			parseNum(card.querySelector<HTMLElement>('[data-cellname*="!last-month-overspent"]')?.textContent),
-		);
-		const budgeted = Math.abs(
-			parseNum(card.querySelector<HTMLElement>('[data-cellname*="!total-budgeted"]')?.textContent),
-		);
-		const forNext = Math.abs(
-			parseNum(card.querySelector<HTMLElement>('[data-cellname*="!buffered-selected"]')?.textContent),
-		);
-
-		const fp = `${available}|${budgeted}|${overspent}|${forNext}`;
-		const existing = card.querySelector<HTMLElement>(".abt-flow-mount");
-		if (existing?.dataset.fp === fp) continue;
-
-		existing?.remove();
-
-		const breakdown = availableEl.closest<HTMLElement>('[data-testid="budget-summary"] > div');
-		if (!breakdown) continue;
-
+	// Mount immediately with zeros — no flash
+	const existing = card.querySelector<HTMLElement>(".abt-flow-mount");
+	if (!existing) {
 		breakdown.classList.add("abt-flow-hidden");
+		const wrapper = mountToNode(FlowBar, { available: 0, budgeted: 0, overspent: 0, forNext: 0 });
+		wrapper.className = "abt-flow-mount";
+		wrapper.style.display = "block";
+		breakdown.after(wrapper);
+	}
 
-		const wrapper = mountToNode(FlowBar, { available, budgeted, overspent, forNext });
+	try {
+		const [available, overspent, budgeted, forNext] = await Promise.all([
+			send<{ value: number }>("get-cell", { sheetName, name: "available-funds" }),
+			send<{ value: number }>("get-cell", { sheetName, name: "last-month-overspent" }),
+			send<{ value: number }>("get-cell", { sheetName, name: "total-budgeted" }),
+			send<{ value: number }>("get-cell", { sheetName, name: "buffered-selected" }),
+		]);
+
+		const absOverspent = Math.abs(overspent.value ?? 0);
+		const absBudgeted = Math.abs(budgeted.value ?? 0);
+		const absForNext = Math.abs(forNext.value ?? 0);
+		const avail = available.value ?? 0;
+
+		const fp = `${avail}|${absBudgeted}|${absOverspent}|${absForNext}`;
+		const mount = card.querySelector<HTMLElement>(".abt-flow-mount");
+		if (mount?.dataset.fp === fp) return;
+		if (mount) mount.dataset.fp = fp;
+
+		// Re-mount with real values — FlowBar is already visible so swap is seamless
+		mount?.remove();
+		const wrapper = mountToNode(FlowBar, {
+			available: avail,
+			budgeted: absBudgeted,
+			overspent: absOverspent,
+			forNext: absForNext,
+		});
 		wrapper.className = "abt-flow-mount";
 		wrapper.style.display = "block";
 		wrapper.dataset.fp = fp;
 		breakdown.after(wrapper);
+	} catch {
+		// Leave zeros visible if data fetch failed
+	}
+}
+
+function processCards() {
+	for (const card of document.querySelectorAll<HTMLElement>('[data-testid="budget-summary"]')) {
+		processCard(card);
 	}
 }
 
@@ -146,18 +167,28 @@ function cleanup() {
 	}
 }
 
-function startObserver(ctx: { _observer: MutationObserver | null }) {
+
+function startObserver(ctx: { _observer: MutationObserver | null; _navListener?: () => void }) {
 	ctx._observer?.disconnect();
+	if (ctx._navListener) window.removeEventListener("wxt:locationchange", ctx._navListener);
+
 	let scheduled = false;
-	const observer = new MutationObserver(() => {
-		if (!scheduled) {
-			scheduled = true;
-			requestAnimationFrame(() => {
-				processCards();
-				scheduled = false;
-			});
-		}
+
+	const observer = new MutationObserver((mutations) => {
+		const hasStructural = mutations.some((m) => m.type === "childList");
+		if (!hasStructural || scheduled) return;
+		scheduled = true;
+		requestAnimationFrame(() => {
+			processCards();
+			scheduled = false;
+		});
 	});
+
 	ctx._observer = observer;
-	observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+	observer.observe(document.body, { childList: true, subtree: true });
+
+	// Re-process when navigating back to the budget page
+	const onNav = () => processCards();
+	ctx._navListener = onNav;
+	window.addEventListener("wxt:locationchange", onNav);
 }
