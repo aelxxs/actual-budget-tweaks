@@ -81,10 +81,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Firefox auto-update manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${{ steps.version.outputs.new_version }}
           XPI_URL="https://github.com/aelxxs/actual-budget-tweaks/releases/download/v${VERSION}/actual-budget-tweaks-${VERSION}.xpi"
-          cat > website/public/updates.json << EOF
+          CONTENT=$(cat <<EOF
           {
             "addons": {
               "{423a1e86-3efa-4421-a7e8-65fb5786415e}": {
@@ -98,9 +100,21 @@ jobs:
             }
           }
           EOF
-          git add website/public/updates.json
-          git commit -m "chore: update Firefox auto-update manifest for v${VERSION}" || true
-          git push || true
+          )
+          SHA=$(gh api repos/${{ github.repository }}/contents/website/public/updates.json --jq '.sha' 2>/dev/null || echo "")
+          ENCODED=$(echo "$CONTENT" | base64 -w 0)
+          if [ -n "$SHA" ]; then
+            gh api repos/${{ github.repository }}/contents/website/public/updates.json \
+              -X PUT \
+              -f message="chore: update Firefox auto-update manifest for v${VERSION}" \
+              -f content="$ENCODED" \
+              -f sha="$SHA"
+          else
+            gh api repos/${{ github.repository }}/contents/website/public/updates.json \
+              -X PUT \
+              -f message="chore: update Firefox auto-update manifest for v${VERSION}" \
+              -f content="$ENCODED"
+          fi
 
       - name: Submit to Chrome Web Store
         continue-on-error: true
