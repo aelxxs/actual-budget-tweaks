@@ -101,20 +101,13 @@ jobs:
           }
           EOF
           )
-          SHA=$(gh api repos/${{ github.repository }}/contents/website/public/updates.json --jq '.sha' 2>/dev/null || echo "")
+          SHA=$(gh api repos/${{ github.repository }}/contents/website/public/updates.json --jq '.sha')
           ENCODED=$(echo "$CONTENT" | base64 -w 0)
-          if [ -n "$SHA" ]; then
-            gh api repos/${{ github.repository }}/contents/website/public/updates.json \
-              -X PUT \
-              -f message="chore: update Firefox auto-update manifest for v${VERSION}" \
-              -f content="$ENCODED" \
-              -f sha="$SHA"
-          else
-            gh api repos/${{ github.repository }}/contents/website/public/updates.json \
-              -X PUT \
-              -f message="chore: update Firefox auto-update manifest for v${VERSION}" \
-              -f content="$ENCODED"
-          fi
+          gh api repos/${{ github.repository }}/contents/website/public/updates.json \
+            -X PUT \
+            -f message="chore: update Firefox auto-update manifest for v${VERSION}" \
+            -f content="$ENCODED" \
+            -f sha="$SHA"
 
       - name: Submit to Chrome Web Store
         continue-on-error: true
