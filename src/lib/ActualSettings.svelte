@@ -68,6 +68,7 @@
 	const AUX_DEFAULTS: Record<string, unknown> = {
 		"local:category-colors": {},
 		"local:abt-account-icons": {},
+		"local:abt-category-icons": {},
 		"local:abt-sidebar-shortcuts": [],
 		"local:abt-sidebar-groups-collapsed": {},
 		"local:user-themes": {},
