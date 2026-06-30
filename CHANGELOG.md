@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v0.1.39
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.38...v0.1.39)
+
+### 🚀 Enhancements
+
+- Update deployment workflow to submit only to Chrome Web Store and refine auto-update manifest ([1a212e3](https://github.com/aelxxs/actual-budget-tweaks/commit/1a212e3))
+- Refactor budget card styling logic and integrate API for dynamic data fetching ([828eb32](https://github.com/aelxxs/actual-budget-tweaks/commit/828eb32))
+- Add IconPickerPopover component for emoji, logo, and image uploads ([71ed5ac](https://github.com/aelxxs/actual-budget-tweaks/commit/71ed5ac))
+- Integrate IconPickerPopover for category icon management and enhance emoji button functionality ([866a174](https://github.com/aelxxs/actual-budget-tweaks/commit/866a174))
+- Refactor account icon picker to use IconPickerPopover and remove EmojiPicker component ([dc4ff91](https://github.com/aelxxs/actual-budget-tweaks/commit/dc4ff91))
+- Adjust category dot size and hover effect for improved UI consistency ([a1c14f7](https://github.com/aelxxs/actual-budget-tweaks/commit/a1c14f7))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.38 ([bbfbe72](https://github.com/aelxxs/actual-budget-tweaks/commit/bbfbe72))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+- GitHub Actions ([@github-actions-up-and-running](https://github.com/github-actions-up-and-running))
+
 ## v0.1.38
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.37...v0.1.38)
