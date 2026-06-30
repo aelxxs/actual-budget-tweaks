@@ -28,8 +28,8 @@ async function loadCategoryMap() {
 
 const CSS = `
 	.abt-cat-dot {
-		width: 10px;
-		height: 10px;
+		width: 8.5px;
+		height: 8.5px;
 		border-radius: 50%;
 		border: none;
 		padding: 0;
@@ -40,7 +40,7 @@ const CSS = `
 	}
 
 	.abt-cat-dot:hover {
-		transform: scale(1.15);
+		transform: scale(.85);
 	}
 
 	.abt-tx-cat-dot {
@@ -162,7 +162,8 @@ function decorateTransactionRow(row: HTMLElement) {
 	if (!textEl) return;
 
 	const catName = textEl.textContent?.trim() || "";
-	if (!catName || catName === "Categorize" || catName === "Upcoming" || catName === "Missed" || catName === "Split") return;
+	if (!catName || catName === "Categorize" || catName === "Upcoming" || catName === "Missed" || catName === "Split")
+		return;
 
 	const fp = catName;
 	if (row.getAttribute(TX_ATTR) === fp) return;
@@ -180,7 +181,6 @@ function decorateTransactionRow(row: HTMLElement) {
 	const wrapper = textEl.parentElement;
 	if (wrapper) wrapper.insertBefore(dot, textEl);
 }
-
 
 function scanRows() {
 	for (const row of document.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
