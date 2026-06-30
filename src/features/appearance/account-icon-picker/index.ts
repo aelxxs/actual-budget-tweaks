@@ -6,8 +6,8 @@ import IconPickerModal from "./Modal.svelte";
 
 const ROOT_TOGGLE_ATTR = "data-abt-account-icons";
 const STORAGE_KEY_PREFIX = "abt-account-icons";
-const ACCOUNT_NAME_SELECTOR = '[data-testid="account-name"], .css-15e1mkk';
-const ACCOUNT_TITLE_SELECTOR = '[data-testid="account-name"].css-1kp6ojj';
+const ACCOUNT_NAME_SELECTOR = ':scope > div:last-of-type > div:first-of-type';
+const ACCOUNT_TITLE_SELECTOR = '[data-testid="account-name"]';
 const ACCOUNT_ICON_IMG_CLASS = "abt-account-icon-img";
 const PICKER_BUTTON_ATTR = "data-abt-picker-button";
 const SIDEBAR_ICON_ATTR = "data-abt-sidebar-icon";
@@ -399,7 +399,7 @@ function applyAccountIcon(accountId: string, iconData: AccountIconData): void {
 
 const DOT_PICKER_ATTR = "data-abt-dot-picker";
 
-function openIconPickerForAccount(accountId: string, accountName: string): void {
+function openIconPickerForAccount(accountId: string, accountName: string, anchor: HTMLElement): void {
 	if (document.querySelector('[data-abt-modal="icon-picker"]')) return;
 
 	const container = document.createElement("div");
@@ -419,6 +419,7 @@ function openIconPickerForAccount(accountId: string, accountName: string): void 
 			accountId,
 			accountName,
 			hasIcon: Boolean(iconCache?.[accountId]),
+			anchorRect: anchor.getBoundingClientRect(),
 			onSave: async (iconData: AccountIconData) => {
 				await setAccountIcon(accountId, iconData);
 				applyAccountIcon(accountId, iconData);
@@ -544,7 +545,7 @@ function attachIconPickers(): void {
 					e.preventDefault();
 					e.stopPropagation();
 					const accountName = (nameEl.textContent || nameEl.dataset.abtBaseText || "").trim();
-					openIconPickerForAccount(accountId, accountName);
+					openIconPickerForAccount(accountId, accountName, pickerBtn!);
 				});
 
 				link.appendChild(pickerBtn);
