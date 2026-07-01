@@ -1,7 +1,10 @@
 import { defineSetting } from "@features/types";
+import { icon } from "@lib/icons";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
+import { getValue, setValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
 import { getInsights, getProgressCents, invalidateCache, loadData, resetData } from "./data";
 import InsightsPopover from "./InsightsPopover.svelte";
@@ -9,6 +12,8 @@ import type { CategoryInsight } from "./types";
 
 const BAR_CLASS = "abt-cti-bar";
 const BAR_ATTR = "data-abt-cti-row";
+const TOGGLE_BTN_CLASS = "abt-cti-toggle-btn";
+const ENABLED_KEY = "abt-cti-bars-enabled";
 const UUID_RE = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/;
 const ROW_SELECTOR = '[data-testid="row"]:has([data-testid="category-name"])';
 const HOVER_DELAY_MS = 200;
@@ -36,6 +41,22 @@ const CSS = `
 	.${BAR_CLASS}[data-state="full"] { opacity: 0.65; }
 	.${BAR_CLASS}[data-state="paid"] { opacity: 0.65; }
 
+	.${TOGGLE_BTN_CLASS} {
+		all: unset;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		color: currentColor;
+		padding: 3px;
+		margin-right: 10px;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+
+	.${TOGGLE_BTN_CLASS}:hover {
+		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+
 	.abt-cti-popover-wrap {
 		position: fixed;
 		z-index: 10000;
@@ -57,20 +78,27 @@ export const categoryTemplateInsights = defineSetting({
 	},
 	css: () => CSS,
 	init: () => {
-		const unwatch = watchDom(scanAndDecorate);
-		startPolling();
 		loadCurrency();
+		loadEnabledState();
 		loadData().then(() => scanAndDecorate());
+
+		const unwatch = watchDom(scanAndDecorate);
 
 		return () => {
 			unwatch();
 			stopPolling();
 			undecorateAll();
 			closePopover();
+			removeToggleButton();
+			wasOnBudgetPage = false;
 			resetData();
 		};
 	},
 });
+
+// ── Page gating ─────────────────────────────────────────────────
+
+let wasOnBudgetPage = false;
 
 // ── Row scanning ────────────────────────────────────────────────
 
@@ -86,6 +114,22 @@ function getNameColumn(row: HTMLElement): HTMLElement | null {
 }
 
 function scanAndDecorate() {
+	if (!matchesPage(Page.Budget)) {
+		if (wasOnBudgetPage) {
+			wasOnBudgetPage = false;
+			stopPolling();
+			undecorateAll();
+			closePopover();
+			removeToggleButton();
+		}
+		return;
+	}
+	wasOnBudgetPage = true;
+	startPolling();
+
+	injectToggleButton();
+	if (!insightsEnabled) return;
+
 	const data = getInsights();
 	if (!data) return;
 	for (const row of document.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
@@ -94,6 +138,59 @@ function scanAndDecorate() {
 		const entry = data.get(id);
 		if (!entry) continue;
 		decorateRow(row, entry);
+	}
+}
+
+// ── Toggle button ───────────────────────────────────────────────
+
+let insightsEnabled = true;
+let toggleBtn: HTMLElement | null = null;
+let loadEnabledStatePromise: Promise<void> | null = null;
+
+function loadEnabledState(): Promise<void> {
+	if (!loadEnabledStatePromise) {
+		loadEnabledStatePromise = getValue(ENABLED_KEY, true).then((value) => {
+			insightsEnabled = value;
+		});
+	}
+	return loadEnabledStatePromise;
+}
+
+function injectToggleButton() {
+	const totals = document.querySelector<HTMLElement>('[data-testid="budget-totals"]');
+	if (!totals) return;
+	const bar = totals.firstElementChild as HTMLElement | null;
+	if (!bar) return;
+	const menuBtn = bar.lastElementChild as HTMLElement | null;
+	if (!menuBtn || bar.contains(toggleBtn)) return;
+
+	const btn = document.createElement("button");
+	btn.type = "button";
+	btn.className = TOGGLE_BTN_CLASS;
+	btn.title = insightsEnabled ? "Hide template insight bars" : "Show template insight bars";
+	btn.innerHTML = icon(insightsEnabled ? "eye" : "eyeOff", { size: 12 });
+	btn.addEventListener("click", toggleInsightsEnabled);
+	bar.insertBefore(btn, menuBtn);
+	toggleBtn = btn;
+}
+
+function removeToggleButton() {
+	toggleBtn?.remove();
+	toggleBtn = null;
+}
+
+function toggleInsightsEnabled() {
+	insightsEnabled = !insightsEnabled;
+	setValue(ENABLED_KEY, insightsEnabled);
+	if (toggleBtn) {
+		toggleBtn.title = insightsEnabled ? "Hide template insight bars" : "Show template insight bars";
+		toggleBtn.innerHTML = icon(insightsEnabled ? "eye" : "eyeOff", { size: 12 });
+	}
+	if (insightsEnabled) {
+		scanAndDecorate();
+	} else {
+		undecorateAll();
+		closePopover();
 	}
 }
 
