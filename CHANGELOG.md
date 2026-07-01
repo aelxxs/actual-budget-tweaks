@@ -1,6 +1,47 @@
 # Changelog
 
 
+## v0.1.40
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.39...v0.1.40)
+
+### 🚀 Enhancements
+
+- Update Firefox auto-update manifest handling to use GitHub API for content management ([fa7103f](https://github.com/aelxxs/actual-budget-tweaks/commit/fa7103f))
+- Add TypeScript types for Actual Budget internal API and enhance API bridge functions ([f646cca](https://github.com/aelxxs/actual-budget-tweaks/commit/f646cca))
+- Add createDebouncedObserver function for optimized MutationObserver callbacks ([f9dabf3](https://github.com/aelxxs/actual-budget-tweaks/commit/f9dabf3))
+- Implement alternating transaction row colors ([f760e83](https://github.com/aelxxs/actual-budget-tweaks/commit/f760e83))
+- Add logger utility with scoped logging functionality ([9890547](https://github.com/aelxxs/actual-budget-tweaks/commit/9890547))
+- Implement route-watcher utility for SPA navigation handling ([c380cff](https://github.com/aelxxs/actual-budget-tweaks/commit/c380cff))
+- Add watchDom utility for observing DOM changes with debounced callbacks ([0371547](https://github.com/aelxxs/actual-budget-tweaks/commit/0371547))
+- Add popover utility for positioning and outside click handling ([b09fd1f](https://github.com/aelxxs/actual-budget-tweaks/commit/b09fd1f))
+- Implement runtime settings management with activation and deactivation logic ([aa4b80e](https://github.com/aelxxs/actual-budget-tweaks/commit/aa4b80e))
+- Add functionality to use current page URL in popup and make enabling instant ([fb66067](https://github.com/aelxxs/actual-budget-tweaks/commit/fb66067))
+
+### 🩹 Fixes
+
+- Streamline Firefox auto-update manifest update process ([53dee6d](https://github.com/aelxxs/actual-budget-tweaks/commit/53dee6d))
+- Improve error handling in updateUncategorizedBadges function ([7854b8d](https://github.com/aelxxs/actual-budget-tweaks/commit/7854b8d))
+- Handle different initialization types for settings in content script ([ec55695](https://github.com/aelxxs/actual-budget-tweaks/commit/ec55695))
+- Reorder imports and include missing alternatingTransactionRows in readability and scripts ([2a15e17](https://github.com/aelxxs/actual-budget-tweaks/commit/2a15e17))
+- Rename group_id to group in Category interface ([ff85b4b](https://github.com/aelxxs/actual-budget-tweaks/commit/ff85b4b))
+
+### 💅 Refactors
+
+- Replace MutationObserver with createDebouncedObserver for improved performance in various settings ([87a5994](https://github.com/aelxxs/actual-budget-tweaks/commit/87a5994))
+- Remove imageWidgets and modernSidebarStates settings from the appearance module ([78c0eef](https://github.com/aelxxs/actual-budget-tweaks/commit/78c0eef))
+- Migrate all features to the shared runtime and utility layer ([6984f56](https://github.com/aelxxs/actual-budget-tweaks/commit/6984f56))
+- Speed up setting bootstap by running in parallel ([fdca5ce](https://github.com/aelxxs/actual-budget-tweaks/commit/fdca5ce))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.39 ([9c71883](https://github.com/aelxxs/actual-budget-tweaks/commit/9c71883))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+- GitHub Actions ([@github-actions-up-and-running](https://github.com/github-actions-up-and-running))
+
 ## v0.1.39
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.38...v0.1.39)
