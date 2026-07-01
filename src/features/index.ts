@@ -7,6 +7,7 @@ import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
 import { scheduleHighlight } from "./core/schedule-highlight";
 import { sidePanel } from "./core/side-panel";
+import { tooltipStyling } from "./core/tooltip";
 import { backgroundPattern } from "./layout/background-pattern";
 import { borderRadius } from "./layout/border-radius";
 import { budgetTableRowHeight } from "./layout/budget-table-row-height";
@@ -18,6 +19,7 @@ import { toggleColumns } from "./layout/toggle-columns";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetPageBorders } from "./readability/budget-page-borders";
+import { budgetTotalsLabelStyling } from "./readability/budget-totals-label-styling";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
 import { dimReconciled } from "./readability/dim-reconciled";
@@ -58,6 +60,7 @@ const readability = [
 	headerBorder,
 	reportCardBorders,
 	budgetPageBorders,
+	budgetTotalsLabelStyling,
 ];
 
 const appearance = [
@@ -72,7 +75,7 @@ const appearance = [
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown, spendingCalendar];
 
-export const coreScripts = [sidePanel, scheduleHighlight];
+export const coreScripts = [sidePanel, scheduleHighlight, tooltipStyling];
 
 export const scriptSections = [
 	{
@@ -132,6 +135,7 @@ export const scripts: Setting<any>[][] = [
 		headerBorder,
 		reportCardBorders,
 		budgetPageBorders,
+		budgetTotalsLabelStyling,
 		themeLoader,
 	],
 ];
