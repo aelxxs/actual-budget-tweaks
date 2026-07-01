@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_run:
+    # deploy.yml commits the version bump and updates.json using GITHUB_TOKEN,
+    # which GitHub doesn't treat as a push trigger for other workflows — so we
+    # redeploy off this workflow's completion instead of relying on that push.
+    workflows: ["Build, Release & Publish Extensions"]
+    types: [completed]
 
 permissions:
   contents: read
@@ -16,6 +22,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
