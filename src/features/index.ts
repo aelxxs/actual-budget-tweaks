@@ -1,7 +1,6 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
-import { imageWidgets } from "./appearance/image-widgets";
 import { sidebarIcons } from "./appearance/sidebar-icons";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
@@ -69,7 +68,6 @@ const appearance = [
 	accountIconPicker,
 	categoryColorDots,
 	categoryEmojiPicker,
-	imageWidgets,
 ];
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown, spendingCalendar];
@@ -127,7 +125,6 @@ export const scripts: Setting<any>[][] = [
 		accountIconPicker,
 		categoryColorDots,
 		categoryEmojiPicker,
-		imageWidgets,
 		categoryTemplateInsights,
 		templateApplyBreakdown,
 		highlightUncategorized,
