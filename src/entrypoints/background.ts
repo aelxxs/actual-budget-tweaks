@@ -2,7 +2,9 @@ import { setValue } from "@lib/utilities/store";
 
 export default defineBackground(() => {
 	browser.runtime.onInstalled.addListener((details) => {
-		setValue("release-notes-pending-version", browser.runtime.getManifest().version);
+		if (details.reason === "update") {
+			setValue("release-notes-pending-version", browser.runtime.getManifest().version);
+		}
 	});
 
 	browser.runtime.onMessage.addListener((message) => {
