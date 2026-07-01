@@ -33,13 +33,19 @@ export default defineContentScript({
 			if (mounted) return;
 			mounted = true;
 
-			const [{ default: Settings }, { scripts, coreScripts }, { createElement }, { mount, unmount }] =
-				await Promise.all([
-					import("@lib/ActualSettings.svelte"),
-					import("@features/index"),
-					import("@lib/utilities/dom"),
-					import("svelte"),
-				]);
+			const [
+				{ default: Settings },
+				{ scripts, coreScripts },
+				{ createElement },
+				{ mount, unmount },
+				{ bootstrapSettings },
+			] = await Promise.all([
+				import("@lib/ActualSettings.svelte"),
+				import("@features/index"),
+				import("@lib/utilities/dom"),
+				import("svelte"),
+				import("@features/runtime"),
+			]);
 
 			let baseCss: string;
 			let componentCss: string;
@@ -63,18 +69,7 @@ export default defineContentScript({
 				}),
 			);
 
-			for (const core of coreScripts) {
-				core.init();
-			}
-
-			for (const setting of scripts.flat()) {
-				if (!setting.init) continue;
-				if (setting.type === "core") {
-					setting.init();
-				} else {
-					setting.init(setting.context);
-				}
-			}
+			await bootstrapSettings([...coreScripts, ...scripts.flat()]);
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
 				anchor: "[data-testid='settings'] > :nth-child(2)",
