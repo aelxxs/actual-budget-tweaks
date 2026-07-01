@@ -47,7 +47,7 @@ export interface Category {
   id: UUID;
   name: string;
   /** ID of the parent CategoryGroup */
-  group_id: UUID;
+  group: UUID;
   is_income: boolean;
   hidden?: boolean;
   sort_order?: number;
