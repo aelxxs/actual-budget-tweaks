@@ -71,42 +71,46 @@ export async function applySettingChange(setting: Setting, newValue: unknown) {
 	if (willReactivate) await activate(setting, newValue);
 }
 
-/** Called once at content-script startup to bring every setting to its persisted state. */
-export async function bootstrapSettings(settings: Setting[]) {
-	log.info(`bootstrapping ${settings.length} settings`);
-
-	for (const setting of settings) {
-		if (setting.type === "core") {
-			try {
-				await setting.init();
-			} catch (err) {
-				log.error("core setting failed to init", err);
-			}
-			continue;
+async function bootstrapOne(setting: Setting): Promise<void> {
+	if (setting.type === "core") {
+		try {
+			await setting.init();
+		} catch (err) {
+			log.error("core setting failed to init", err);
 		}
-
-		if (setting.type === "custom") {
-			try {
-				await setting.init(setting.context);
-			} catch (err) {
-				log.error(`custom setting "${setting.context.key}" failed to init`, err);
-			}
-			continue;
-		}
-
-		if (usesLegacyLifecycle(setting)) {
-			// legacy init() reads storage and checks enabled state internally
-			try {
-				await setting.init?.({ ...setting.context, value: undefined });
-			} catch (err) {
-				log.error(`legacy init threw for "${setting.context.key}"`, err);
-			}
-			continue;
-		}
-
-		const value = await getValue(setting.context.key, setting.context.defaultValue);
-		if (shouldRun(setting, value)) await activate(setting, value);
+		return;
 	}
 
+	if (setting.type === "custom") {
+		try {
+			await setting.init(setting.context);
+		} catch (err) {
+			log.error(`custom setting "${setting.context.key}" failed to init`, err);
+		}
+		return;
+	}
+
+	if (usesLegacyLifecycle(setting)) {
+		// legacy init() reads storage and checks enabled state internally
+		try {
+			await setting.init?.({ ...setting.context, value: undefined });
+		} catch (err) {
+			log.error(`legacy init threw for "${setting.context.key}"`, err);
+		}
+		return;
+	}
+
+	const value = await getValue(setting.context.key, setting.context.defaultValue);
+	if (shouldRun(setting, value)) await activate(setting, value);
+}
+
+/**
+ * Called once at content-script startup to bring every setting to its persisted
+ * state. Each setting bootstraps independently and concurrently — one feature's
+ * slow storage read or init() must not delay another feature's CSS from applying.
+ */
+export async function bootstrapSettings(settings: Setting[]) {
+	log.info(`bootstrapping ${settings.length} settings`);
+	await Promise.all(settings.map(bootstrapOne));
 	log.info("bootstrap complete");
 }
