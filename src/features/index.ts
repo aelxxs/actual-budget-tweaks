@@ -3,7 +3,6 @@ import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { imageWidgets } from "./appearance/image-widgets";
 import { sidebarIcons } from "./appearance/sidebar-icons";
-import { spendingCalendar } from "./workflows/spending-calendar";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
@@ -17,21 +16,23 @@ import { reportWidgetBackgroundColor } from "./layout/report-widget-background-c
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
 import { sidebarAccountSpacing } from "./layout/sidebar-account-spacing";
 import { toggleColumns } from "./layout/toggle-columns";
+import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetPageBorders } from "./readability/budget-page-borders";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
 import { dimReconciled } from "./readability/dim-reconciled";
+import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { notificationContrast } from "./readability/notification-contrast";
 import { reportCardBorders } from "./readability/report-card-borders";
 import { showDailyAvailable } from "./readability/show-daily-available";
-import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { tagStyling } from "./readability/tag-styling";
 import { headerBorder } from "./readability/top-nav-border";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/themeLoader";
 import type { Setting } from "./types";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
+import { spendingCalendar } from "./workflows/spending-calendar";
 import { templateApplyBreakdown } from "./workflows/template-apply-breakdown";
 
 const layoutAndDensity = [
@@ -46,6 +47,7 @@ const layoutAndDensity = [
 ];
 
 const readability = [
+	alternatingTransactionRows,
 	budgetCardStyling,
 	colorNegativeBalances,
 	colorTransactions,
@@ -59,7 +61,16 @@ const readability = [
 	budgetPageBorders,
 ];
 
-const appearance = [sidebarRedesign, sidebarIcons, sidebarSearch, sidebarShortcuts, accountIconPicker, categoryColorDots, categoryEmojiPicker, imageWidgets];
+const appearance = [
+	sidebarRedesign,
+	sidebarIcons,
+	sidebarSearch,
+	sidebarShortcuts,
+	accountIconPicker,
+	categoryColorDots,
+	categoryEmojiPicker,
+	imageWidgets,
+];
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown, spendingCalendar];
 
@@ -99,6 +110,7 @@ export const scripts: Setting<any>[][] = [
 	[backgroundPattern, borderRadius, budgetTableRowHeight],
 	[reportWidgetBackgroundColor, toggleColumns, sidebarAccountSpacing],
 	[
+		alternatingTransactionRows,
 		budgetCardStyling,
 		colorNegativeBalances,
 		colorTransactions,
