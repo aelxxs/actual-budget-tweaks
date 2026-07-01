@@ -69,8 +69,11 @@ export default defineContentScript({
 
 			for (const setting of scripts.flat()) {
 				if (!setting.init) continue;
-				// @ts-ignore -- TODO: fix this type error
-				setting.init(setting.context);
+				if (setting.type === "core") {
+					setting.init();
+				} else {
+					setting.init(setting.context);
+				}
 			}
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
