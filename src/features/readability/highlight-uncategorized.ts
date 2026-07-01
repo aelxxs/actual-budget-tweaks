@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
 
 const CSS = `
@@ -33,43 +33,23 @@ export const highlightUncategorized = defineSetting({
 	context: {
 		key: "highlight-uncategorized",
 		defaultValue: true,
-		_observer: null as MutationObserver | null,
+		_observer: null as DebouncedObserver | null,
 	},
 	init: async (ctx) => {
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
 		if (!enabled) return;
 		applyGlobalCSS(CSS, ctx.key);
 		markRows();
-		let scheduled = false;
-		const observer = new MutationObserver(() => {
-			if (!scheduled) {
-				scheduled = true;
-				requestAnimationFrame(() => {
-					markRows();
-					scheduled = false;
-				});
-			}
-		});
-		observer.observe(document.body, { childList: true, subtree: true });
-		ctx._observer = observer;
+		ctx._observer = createDebouncedObserver(markRows);
+		ctx._observer.observe(document.body);
 	},
 	onChange: async (value, ctx) => {
 		await setValue(ctx.key, value);
 		if (value) {
 			applyGlobalCSS(CSS, ctx.key);
 			markRows();
-			let scheduled = false;
-			const observer = new MutationObserver(() => {
-				if (!scheduled) {
-					scheduled = true;
-					requestAnimationFrame(() => {
-						markRows();
-						scheduled = false;
-					});
-				}
-			});
-			observer.observe(document.body, { childList: true, subtree: true });
-			ctx._observer = observer;
+			ctx._observer = createDebouncedObserver(markRows);
+			ctx._observer.observe(document.body);
 		} else {
 			applyGlobalCSS("", ctx.key);
 			ctx._observer?.disconnect();

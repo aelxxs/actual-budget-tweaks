@@ -2,7 +2,7 @@ import { defineSetting } from "@features/types";
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 import { send } from "@lib/utilities/actual-api";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
 import { unmount } from "svelte";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
@@ -90,7 +90,7 @@ const CSS = `
 `;
 
 let enabled = false;
-let observer: MutationObserver | null = null;
+let observer: DebouncedObserver | null = null;
 let popoverEl: HTMLElement | null = null;
 let popoverInstance: any = null;
 
@@ -252,17 +252,8 @@ function cleanup() {
 
 function startObserver() {
 	if (observer) return;
-	let scheduled = false;
-	observer = new MutationObserver(() => {
-		if (!scheduled) {
-			scheduled = true;
-			requestAnimationFrame(() => {
-				scheduled = false;
-				scanRows();
-			});
-		}
-	});
-	observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+	observer = createDebouncedObserver(scanRows, { childList: true, subtree: true, characterData: true });
+	observer.observe(document.body);
 }
 
 function stopObserver() {

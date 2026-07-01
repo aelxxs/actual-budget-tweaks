@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
 
 const STORAGE_KEY = "tag-styling";
@@ -140,21 +140,12 @@ function scanTags() {
 	}
 }
 
-let observer: MutationObserver | null = null;
+let observer: DebouncedObserver | null = null;
 
 function startObserver() {
 	if (observer) return;
-	let scheduled = false;
-	observer = new MutationObserver(() => {
-		if (!scheduled) {
-			scheduled = true;
-			requestAnimationFrame(() => {
-				scheduled = false;
-				scanTags();
-			});
-		}
-	});
-	observer.observe(document.body, { childList: true, subtree: true });
+	observer = createDebouncedObserver(scanTags);
+	observer.observe(document.body);
 }
 
 function stopObserver() {

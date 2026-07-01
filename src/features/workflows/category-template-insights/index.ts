@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
 import { loadCurrency } from "@lib/utilities/currency";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
 import { getInsights, getProgressCents, invalidateCache, loadData, resetData } from "./data";
@@ -54,7 +54,7 @@ export const categoryTemplateInsights = defineSetting({
 	context: {
 		key: "actual-category-template-insights",
 		defaultValue: true,
-		_observer: null as MutationObserver | null,
+		_observer: null as DebouncedObserver | null,
 	},
 	init: async (ctx) => {
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
@@ -67,7 +67,7 @@ export const categoryTemplateInsights = defineSetting({
 	},
 });
 
-async function enable(ctx: { _observer: MutationObserver | null }) {
+async function enable(ctx: { _observer: DebouncedObserver | null }) {
 	applyGlobalCSS(CSS, "abt-cti-styles");
 	startObserver(ctx);
 	startPolling();
@@ -75,7 +75,7 @@ async function enable(ctx: { _observer: MutationObserver | null }) {
 	loadData().then(() => scanAndDecorate());
 }
 
-function disable(ctx: { _observer: MutationObserver | null }) {
+function disable(ctx: { _observer: DebouncedObserver | null }) {
 	ctx._observer?.disconnect();
 	ctx._observer = null;
 	stopPolling();
@@ -258,20 +258,10 @@ function closePopover() {
 
 // ── Observer & polling ──────────────────────────────────────────
 
-function startObserver(ctx: { _observer: MutationObserver | null }) {
+function startObserver(ctx: { _observer: DebouncedObserver | null }) {
 	ctx._observer?.disconnect();
-	let scheduled = false;
-	const observer = new MutationObserver(() => {
-		if (!scheduled) {
-			scheduled = true;
-			requestAnimationFrame(() => {
-				scanAndDecorate();
-				scheduled = false;
-			});
-		}
-	});
-	ctx._observer = observer;
-	observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+	ctx._observer = createDebouncedObserver(scanAndDecorate, { childList: true, subtree: true, characterData: true });
+	ctx._observer.observe(document.body);
 }
 
 let pollInterval: ReturnType<typeof setInterval> | null = null;

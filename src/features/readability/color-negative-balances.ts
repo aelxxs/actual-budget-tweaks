@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
 
 export const colorNegativeBalances = defineSetting({
@@ -13,7 +13,7 @@ export const colorNegativeBalances = defineSetting({
 				color: var(--color-errorText);
 			}
 		`,
-		_observer: null as MutationObserver | null,
+		_observer: null as DebouncedObserver | null,
 	},
 	init: async (ctx) => {
 		applyGlobalCSS(ctx.css, ctx.key);
@@ -32,25 +32,15 @@ export const colorNegativeBalances = defineSetting({
 
 		setAccountBalanceColors();
 
-		let scheduled = false;
-		const observer = new MutationObserver(() => {
-			if (!scheduled) {
-				scheduled = true;
-				requestAnimationFrame(() => {
-					setAccountBalanceColors();
-					scheduled = false;
-				});
-			}
+		ctx._observer = createDebouncedObserver(setAccountBalanceColors, {
+			childList: true,
+			subtree: true,
+			characterData: true,
 		});
-		ctx._observer = observer;
 
 		const enabled = await getValue(ctx.key, ctx.defaultValue);
 		if (enabled) {
-			observer.observe(document.body, {
-				childList: true,
-				subtree: true,
-				characterData: true,
-			});
+			ctx._observer.observe(document.body);
 		}
 	},
 	onChange: async (value, ctx) => {
@@ -58,11 +48,7 @@ export const colorNegativeBalances = defineSetting({
 
 		if (value) {
 			applyGlobalCSS(ctx.css, ctx.key);
-			ctx._observer?.observe(document.body, {
-				childList: true,
-				subtree: true,
-				characterData: true,
-			});
+			ctx._observer?.observe(document.body);
 		} else {
 			applyGlobalCSS("", ctx.key);
 			ctx._observer?.disconnect();

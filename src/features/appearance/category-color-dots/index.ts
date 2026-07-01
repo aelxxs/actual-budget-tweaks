@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
 import { query } from "@lib/utilities/actual-api";
 import { getCategoryColor, loadCategoryColors, setCategoryColor } from "@lib/utilities/category-colors";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
 import ColorPicker from "./ColorPicker.svelte";
@@ -65,7 +65,7 @@ const CSS = `
 `;
 
 let enabled = false;
-let observer: MutationObserver | null = null;
+let observer: DebouncedObserver | null = null;
 let popoverEl: HTMLElement | null = null;
 
 function getCategoryIdForRow(row: HTMLElement): string | null {
@@ -205,17 +205,8 @@ function cleanup() {
 
 function startObserver() {
 	if (observer) return;
-	let scheduled = false;
-	observer = new MutationObserver(() => {
-		if (!scheduled) {
-			scheduled = true;
-			requestAnimationFrame(() => {
-				scheduled = false;
-				scanRows();
-			});
-		}
-	});
-	observer.observe(document.body, { childList: true, subtree: true });
+	observer = createDebouncedObserver(scanRows);
+	observer.observe(document.body);
 }
 
 function stopObserver() {
