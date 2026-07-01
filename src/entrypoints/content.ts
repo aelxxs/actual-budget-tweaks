@@ -92,5 +92,15 @@ export default defineContentScript({
 		ctx.addEventListener(window, "wxt:locationchange", () => {
 			checkAndMount();
 		});
+
+		// Re-check immediately when the configured Actual URL changes (e.g. saved
+		// from the popup), instead of waiting for the next full page reload.
+		function handleStorageChange(changes: Record<string, unknown>, areaName: string) {
+			if (areaName === "local" && "local:user-link" in changes) {
+				checkAndMount();
+			}
+		}
+		browser.storage.onChanged.addListener(handleStorageChange);
+		ctx.onInvalidated(() => browser.storage.onChanged.removeListener(handleStorageChange));
 	},
 });

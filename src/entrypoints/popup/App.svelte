@@ -44,6 +44,12 @@
 		justSaved = false;
 	}
 
+	function useCurrentPage() {
+		if (!activeTabUrl) return;
+		userLink = normalizeBaseUrl(activeTabUrl) ?? activeTabUrl;
+		justSaved = false;
+	}
+
 	async function save() {
 		if (!canSave) return;
 		const toStore = userLink.trim() === "" ? "" : (pendingBaseUrl ?? userLink.trim());
@@ -76,7 +82,12 @@
 	</header>
 
 	<div class="field">
-		<label for="user-link-input">Actual URL</label>
+		<div class="label-row">
+			<label for="user-link-input">Actual URL</label>
+			<button type="button" class="link" onclick={useCurrentPage} disabled={!activeTabUrl}>
+				Use current page
+			</button>
+		</div>
 		<div class="input-row">
 			<input
 				id="user-link-input"
@@ -161,6 +172,34 @@
 		font-size: 13px;
 		font-weight: 600;
 		color: var(--fg);
+	}
+
+	.label-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	.link {
+		appearance: none;
+		border: none;
+		background: none;
+		padding: 0;
+		font: inherit;
+		font-size: 12px;
+		font-weight: 500;
+		color: var(--accent);
+		cursor: pointer;
+	}
+
+	.link:hover:not(:disabled) {
+		text-decoration: underline;
+	}
+
+	.link:disabled {
+		cursor: not-allowed;
+		opacity: 0.5;
 	}
 
 	.input-row {
