@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import { icon } from "@lib/icons";
 import { watchDom } from "@lib/utilities/dom-watcher";
 
 const ICON_ATTR = "data-abt-icon-replaced";
@@ -39,8 +40,13 @@ function replaceIcons() {
 		const svg = budgetBtn.querySelector("svg");
 		if (svg) {
 			const tmp = document.createElement("div");
-			tmp.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="color: inherit; flex-shrink: 0; margin-left: 5px; opacity: 0.5;"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-			svg.replaceWith(tmp.firstElementChild as SVGElement);
+			tmp.innerHTML = icon("chevronDown", { size: 14 });
+			const newSvg = tmp.firstElementChild as SVGElement;
+			newSvg.style.color = "inherit";
+			newSvg.style.flexShrink = "0";
+			newSvg.style.marginLeft = "5px";
+			newSvg.style.opacity = "0.5";
+			svg.replaceWith(newSvg);
 			budgetBtn.setAttribute(ICON_ATTR, "1");
 		}
 	}

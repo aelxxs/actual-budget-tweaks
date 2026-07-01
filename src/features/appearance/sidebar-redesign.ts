@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import { icon } from "@lib/icons";
 import { query } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
 
@@ -183,7 +184,7 @@ function setupGroupLink(groupLink: HTMLAnchorElement, groupKey: string): void {
 	chevron.style.display = "inline-flex";
 	chevron.style.alignItems = "center";
 	chevron.style.flexShrink = "0";
-	chevron.innerHTML = `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" style="display:block"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+	chevron.innerHTML = icon("chevronDown", { size: 12 });
 	nameEl.style.display = "flex";
 	nameEl.style.alignItems = "center";
 	nameEl.style.gap = "4px";

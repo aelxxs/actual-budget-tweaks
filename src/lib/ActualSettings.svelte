@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { scriptSections, scripts } from "../features";
 	import CheckboxOption from "./components/Checkbox.svelte";
+	import Icon from "./components/Icon.svelte";
 	import SelectOption from "./components/Select.svelte";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
@@ -195,15 +196,7 @@
 						<h3>{section.title}</h3>
 						<p>{section.description}</p>
 					</div>
-					<svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-						<path
-							d="M4 6l4 4 4-4"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
+					<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
 				</button>
 				{#if !isCollapsed}
 					<div class="settings-list stack" style="--space: 0.55rem;">

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import Icon from "@lib/components/Icon.svelte";
 	import { applyGlobalCSS } from "@lib/utilities/dom";
+	import { onMount } from "svelte";
 	import { BUILTIN_CSS, TOKENS_STYLE_ID } from "./theme-apply";
 	import ColorRow from "./ColorRow.svelte";
 
@@ -172,7 +173,7 @@
 	{#if activeTab === "palette"}
 		<div class="creator__toolbar">
 			<button class="creator__randomize" onclick={randomize}>
-				<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5.22 14.78a.75.75 0 0 0 1.06-1.06L4.56 12h8.69a.75.75 0 0 0 .53-.22l2-2a.75.75 0 0 0 0-1.06l-2-2a.75.75 0 0 0-.53-.22H4.56l1.72-1.72a.75.75 0 0 0-1.06-1.06l-3 3a.75.75 0 0 0 0 1.06l3 3Z"/></svg>
+				<Icon name="shuffle" size={14} />
 				Randomize
 			</button>
 		</div>
@@ -281,11 +282,6 @@
 	.creator__randomize:hover {
 		border-color: var(--color-sidebarItemAccentSelected);
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
-	}
-
-	.creator__randomize svg {
-		width: 14px;
-		height: 14px;
 	}
 
 	.creator__rows {
