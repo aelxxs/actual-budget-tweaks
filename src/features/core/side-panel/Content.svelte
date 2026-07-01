@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { clamp } from "@lib/utilities/math";
+	import { onMount } from "svelte";
 
 	const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
 	const SIDEBAR_ANIMATION_MS = 110;
@@ -132,6 +132,7 @@
 	}
 
 	.abt-side-drawer-content {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
@@ -140,6 +141,9 @@
 	}
 
 	.abt-side-drawer-header {
+		position: sticky;
+		top: 0;
+		flex-shrink: 0;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -158,8 +162,10 @@
 	}
 
 	.abt-side-drawer-body {
+		flex: 1 1 auto;
 		min-height: 0;
 		overflow-y: auto;
+		background-color: var(--color-sidebarBackground);
 	}
 
 	.abt-side-drawer-close-button {

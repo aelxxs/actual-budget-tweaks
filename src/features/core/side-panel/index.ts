@@ -73,7 +73,7 @@ const CSS = `
 	}
 	${GRID_CONTAINER}:has([${SIDEBAR_ATTR}]) {
 		display: grid;
-		min-height: 100vh;
+		height: 100vh;
 		grid-template-rows: auto 1fr;
 		grid-template-columns: 1fr ${DEFAULT_SIDEBAR_WIDTH}px;
 		grid-template-areas: "header header" "body sidebar";
@@ -108,6 +108,7 @@ const CSS = `
 		flex-direction: column;
 		min-width: ${MIN_SIDEBAR_WIDTH}px;
 		max-width: ${MAX_SIDEBAR_WIDTH}px;
+		min-height: 0;
 		overflow-y: auto;
 		background: var(--ctp-secondary-sidebar);
 		border-left: var(--border);
