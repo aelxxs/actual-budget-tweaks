@@ -1,8 +1,8 @@
 import { defineSetting } from "@features/types";
 import { send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchRoute } from "@lib/utilities/route-watcher";
 import { mountToNode } from "@lib/utilities/svelte";
 import FlowBar from "./FlowBar.svelte";
 
@@ -38,39 +38,6 @@ const CSS = `
 		text-align: center;
 	}
 `;
-
-export const budgetCardStyling = defineSetting({
-	type: "checkbox",
-	label: "Budget Card Styling",
-	context: {
-		key: "budget-card-styling",
-		defaultValue: true,
-		_observer: null as MutationObserver | null,
-		_navListener: undefined as (() => void) | undefined,
-	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (enabled) {
-			await loadCurrency();
-			applyGlobalCSS(CSS, ctx.key);
-			processCards();
-			startObserver(ctx);
-		}
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			applyGlobalCSS(CSS, ctx.key);
-			processCards();
-			startObserver(ctx);
-		} else {
-			applyGlobalCSS("", ctx.key);
-			cleanup();
-			ctx._observer?.disconnect();
-			if (ctx._navListener) window.removeEventListener("wxt:locationchange", ctx._navListener);
-		}
-	},
-});
 
 const SHEET_RE = /budget(\d{6})/;
 
@@ -159,7 +126,7 @@ function processCards() {
 	}
 }
 
-function cleanup() {
+function cleanupCards() {
 	for (const card of document.querySelectorAll<HTMLElement>('[data-testid="budget-summary"]')) {
 		card.classList.remove("abt-current-month");
 		card.querySelector(".abt-flow-mount")?.remove();
@@ -167,28 +134,26 @@ function cleanup() {
 	}
 }
 
+export const budgetCardStyling = defineSetting({
+	type: "checkbox",
+	label: "Budget Card Styling",
+	context: {
+		key: "budget-card-styling",
+		defaultValue: true,
+	},
+	css: () => CSS,
+	init: async () => {
+		await loadCurrency();
 
-function startObserver(ctx: { _observer: MutationObserver | null; _navListener?: () => void }) {
-	ctx._observer?.disconnect();
-	if (ctx._navListener) window.removeEventListener("wxt:locationchange", ctx._navListener);
+		const unwatch = watchDom(processCards);
 
-	let scheduled = false;
+		// Re-process when navigating back to the budget page
+		const stopWatchingRoute = watchRoute(processCards);
 
-	const observer = new MutationObserver((mutations) => {
-		const hasStructural = mutations.some((m) => m.type === "childList");
-		if (!hasStructural || scheduled) return;
-		scheduled = true;
-		requestAnimationFrame(() => {
-			processCards();
-			scheduled = false;
-		});
-	});
-
-	ctx._observer = observer;
-	observer.observe(document.body, { childList: true, subtree: true });
-
-	// Re-process when navigating back to the budget page
-	const onNav = () => processCards();
-	ctx._navListener = onNav;
-	window.addEventListener("wxt:locationchange", onNav);
-}
+		return () => {
+			unwatch();
+			stopWatchingRoute();
+			cleanupCards();
+		};
+	},
+});

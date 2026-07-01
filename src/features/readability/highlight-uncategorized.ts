@@ -1,6 +1,5 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 const CSS = `
 	[data-testid="row"].abt-uncategorized {
@@ -21,7 +20,7 @@ function markRows() {
 	}
 }
 
-function clearRows() {
+function cleanup() {
 	for (const el of document.querySelectorAll(".abt-uncategorized")) {
 		el.classList.remove("abt-uncategorized");
 	}
@@ -33,28 +32,14 @@ export const highlightUncategorized = defineSetting({
 	context: {
 		key: "highlight-uncategorized",
 		defaultValue: true,
-		_observer: null as DebouncedObserver | null,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (!enabled) return;
-		applyGlobalCSS(CSS, ctx.key);
-		markRows();
-		ctx._observer = createDebouncedObserver(markRows);
-		ctx._observer.observe(document.body);
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			applyGlobalCSS(CSS, ctx.key);
-			markRows();
-			ctx._observer = createDebouncedObserver(markRows);
-			ctx._observer.observe(document.body);
-		} else {
-			applyGlobalCSS("", ctx.key);
-			ctx._observer?.disconnect();
-			ctx._observer = null;
-			clearRows();
-		}
+	css: () => CSS,
+	init: () => {
+		const unwatch = watchDom(markRows);
+
+		return () => {
+			unwatch();
+			cleanup();
+		};
 	},
 });

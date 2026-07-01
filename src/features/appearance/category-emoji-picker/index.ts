@@ -2,10 +2,11 @@ import { defineSetting } from "@features/types";
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 import { send } from "@lib/utilities/actual-api";
-import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, setValue } from "@lib/utilities/store";
-import { unmount } from "svelte";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { unmount } from "svelte";
 
 const STORAGE_KEY = "category-emoji-picker";
 const ICONS_KEY = "abt-category-icons";
@@ -89,14 +90,9 @@ const CSS = `
 	}
 `;
 
-let enabled = false;
-let observer: DebouncedObserver | null = null;
+let stopWatching: (() => void) | null = null;
 let popoverEl: HTMLElement | null = null;
 let popoverInstance: any = null;
-
-function isBudgetRoute() {
-	return location.pathname === "/budget" || location.pathname.startsWith("/budget");
-}
 
 function extractEmoji(name: string): { emoji: string | null; rest: string } {
 	const m = name.match(EMOJI_RE);
@@ -234,7 +230,7 @@ function decorateRow(row: HTMLElement) {
 }
 
 function scanRows() {
-	if (!isBudgetRoute()) return;
+	if (!matchesPage(Page.Budget)) return;
 	for (const row of document.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
 		decorateRow(row);
 	}
@@ -250,17 +246,6 @@ function cleanup() {
 	}
 }
 
-function startObserver() {
-	if (observer) return;
-	observer = createDebouncedObserver(scanRows, { childList: true, subtree: true, characterData: true });
-	observer.observe(document.body);
-}
-
-function stopObserver() {
-	observer?.disconnect();
-	observer = null;
-}
-
 export const categoryEmojiPicker = defineSetting({
 	type: "checkbox",
 	label: "Category Emoji Picker",
@@ -268,26 +253,14 @@ export const categoryEmojiPicker = defineSetting({
 		key: STORAGE_KEY,
 		defaultValue: true,
 	},
-	init: async (ctx) => {
-		enabled = Boolean(await getValue(ctx.key, ctx.defaultValue));
-		if (!enabled) return;
+	css: () => CSS,
+	init: async () => {
 		await loadCategoryIcons();
-		applyGlobalCSS(CSS, STORAGE_KEY);
-		scanRows();
-		startObserver();
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		enabled = value;
-		if (value) {
-			await loadCategoryIcons();
-			applyGlobalCSS(CSS, STORAGE_KEY);
-			scanRows();
-			startObserver();
-		} else {
-			stopObserver();
+		const unwatch = watchDom(scanRows, document.body, { childList: true, subtree: true, characterData: true });
+
+		return () => {
+			unwatch();
 			cleanup();
-			applyGlobalCSS("", STORAGE_KEY);
-		}
+		};
 	},
 });

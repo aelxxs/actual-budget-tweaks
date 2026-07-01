@@ -1,5 +1,7 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS, createElement } from "@lib/utilities/dom";
+import { createElement } from "@lib/utilities/dom";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchRoute } from "@lib/utilities/route-watcher";
 import { getValue, setValue } from "@lib/utilities/store";
 import { mount, unmount } from "svelte";
 import IconPickerModal from "./Modal.svelte";
@@ -31,13 +33,12 @@ export interface AccountIconData {
 	value: string;
 }
 
-let observer: MutationObserver | null = null;
+let stopWatching: (() => void) | null = null;
 let scheduled = false;
 let suppressObserver = false;
 let iconCache: Record<string, AccountIconData> | null = null;
 let iconCachePromise: Promise<Record<string, AccountIconData>> | null = null;
 let routeEventsBound = false;
-let historyPatched = false;
 
 export async function loadIconCache(): Promise<Record<string, AccountIconData>> {
 	if (iconCache) return iconCache;
@@ -566,50 +567,25 @@ function scheduleAttachPickers(): void {
 }
 
 function startObserving(): void {
-	if (observer) observer.disconnect();
+	stopWatching?.();
 	void loadIconCache()
 		.then(() => scheduleAttachPickers())
 		.catch(() => undefined);
-	observer = new MutationObserver(() => {
+	stopWatching = watchDom(() => {
 		if (suppressObserver) return;
 		scheduleAttachPickers();
 	});
-	observer.observe(document.body, {
-		childList: true,
-		subtree: true,
-	});
-	scheduleAttachPickers();
 }
 
 function stopObserving(): void {
-	if (observer) {
-		observer.disconnect();
-		observer = null;
-	}
+	stopWatching?.();
+	stopWatching = null;
 }
 
 function bindRouteEvents(): void {
 	if (routeEventsBound) return;
 	routeEventsBound = true;
-	window.addEventListener("popstate", scheduleAttachPickers);
-	window.addEventListener("hashchange", scheduleAttachPickers);
-
-	if (historyPatched) return;
-	historyPatched = true;
-
-	const originalPushState = history.pushState.bind(history);
-	history.pushState = (...args) => {
-		const result = originalPushState(...args);
-		scheduleAttachPickers();
-		return result;
-	};
-
-	const originalReplaceState = history.replaceState.bind(history);
-	history.replaceState = (...args) => {
-		const result = originalReplaceState(...args);
-		scheduleAttachPickers();
-		return result;
-	};
+	watchRoute(scheduleAttachPickers);
 }
 
 export const accountIconPicker = defineSetting({
@@ -618,43 +594,29 @@ export const accountIconPicker = defineSetting({
 	context: {
 		key: "account-icon-picker",
 		defaultValue: true,
-		css: `
-			:root[${ROOT_TOGGLE_ATTR}="on"] [data-abt-icon-signature] {
-				display: flex;
-				align-items: center;
-				white-space: nowrap;
-				flex-direction: row;
-			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] [data-abt-icon-signature] > img {
-				display: block;
-			}
-		`,
 	},
-	init: async (ctx) => {
+	css: () => `
+		:root[${ROOT_TOGGLE_ATTR}="on"] [data-abt-icon-signature] {
+			display: flex;
+			align-items: center;
+			white-space: nowrap;
+			flex-direction: row;
+		}
+		:root[${ROOT_TOGGLE_ATTR}="on"] [data-abt-icon-signature] > img {
+			display: block;
+		}
+	`,
+	init: () => {
 		stopObserving();
-		applyGlobalCSS("", ctx.key);
 		document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
 
-		const enabled = Boolean(await getValue(ctx.key, ctx.defaultValue));
-		if (!enabled) return;
-
-		applyGlobalCSS(ctx.css, ctx.key);
 		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
 		bindRouteEvents();
 		startObserving();
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (!value) {
+
+		return () => {
 			stopObserving();
 			document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
-			applyGlobalCSS("", ctx.key);
-			return;
-		}
-
-		applyGlobalCSS(ctx.css, ctx.key);
-		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
-		bindRouteEvents();
-		startObserving();
+		};
 	},
 });

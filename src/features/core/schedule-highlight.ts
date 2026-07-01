@@ -1,3 +1,5 @@
+import { watchRoute } from "@lib/utilities/route-watcher";
+
 export const scheduleHighlight = {
 	type: "core" as const,
 	init: () => {
@@ -28,16 +30,6 @@ export const scheduleHighlight = {
 			openSchedule(id);
 		}
 
-		checkUrl();
-		window.addEventListener("popstate", checkUrl);
-
-		for (const method of ["pushState", "replaceState"] as const) {
-			const original = history[method].bind(history);
-			history[method] = function (...args) {
-				original(...args);
-				setTimeout(checkUrl, 0);
-				return undefined;
-			};
-		}
+		watchRoute(checkUrl);
 	},
 };

@@ -1,9 +1,9 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS, createDebouncedObserver, DebouncedObserver } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { createLogger } from "@lib/utilities/logger";
+import { Page, matchesPage } from "@lib/utilities/pages";
 
-let observer: DebouncedObserver | null = null;
-
+const log = createLogger("alternating-transaction-rows");
 const CSS = `
 	[data-testid="row"].abt-stripe {
 		background: color-mix(in srgb, var(--color-tableText) 6%, transparent) !important;
@@ -14,16 +14,18 @@ const CSS = `
 `;
 
 function markRows() {
+	if (!matchesPage(Page.Accounts)) return;
+
 	const table = document.querySelector('[data-testid="transaction-table"]');
 
 	if (!table) {
-		return console.debug("[ABT] alternating-transaction-rows: failed to find [data-testid='transaction-table']");
+		return log.debug("failed to find [data-testid='transaction-table']");
 	}
 
 	const rows = Array.from(table.querySelectorAll<HTMLElement>('[data-testid="row"]'));
 
 	// stable index that doesn't shift as the user scrolls
-	const positions = rows.map((row, i) => {
+	const positions = rows.map((row) => {
 		const parent = row.closest<HTMLElement>('[style*="--pos:"]');
 		return {
 			row,
@@ -47,6 +49,12 @@ function markRows() {
 	rows.forEach((row, i) => row.classList.toggle("abt-stripe", i % 2 === 1));
 }
 
+function cleanup() {
+	for (const el of document.querySelectorAll<HTMLElement>(".abt-stripe")) {
+		el.classList.remove("abt-stripe");
+	}
+}
+
 export const alternatingTransactionRows = defineSetting({
 	type: "checkbox",
 	label: "Alternating Transaction Row Colors",
@@ -54,28 +62,13 @@ export const alternatingTransactionRows = defineSetting({
 		key: "alternating-transaction-rows",
 		defaultValue: false,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (!enabled) return;
-		applyGlobalCSS(CSS, ctx.key);
-		markRows();
+	css: () => CSS,
+	init: () => {
+		const unwatch = watchDom(markRows);
 
-		observer = createDebouncedObserver(markRows);
-		observer.observe(document.body);
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		observer?.disconnect();
-		if (value) {
-			applyGlobalCSS(CSS, ctx.key);
-			markRows();
-			observer = createDebouncedObserver(markRows);
-			observer.observe(document.body);
-		} else {
-			applyGlobalCSS("", ctx.key);
-			for (const el of document.querySelectorAll<HTMLElement>(".abt-stripe")) {
-				el.classList.remove("abt-stripe");
-			}
-		}
+		return () => {
+			unwatch();
+			cleanup();
+		};
 	},
 });

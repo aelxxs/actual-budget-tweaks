@@ -1,9 +1,7 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 const BAR_ATTR = "data-abt-search-bar";
-const STYLE_ID = "abt-sidebar-search";
 
 const CSS = /* css */ `
 	[${BAR_ATTR}] {
@@ -47,9 +45,6 @@ const CSS = /* css */ `
 	}
 `;
 
-let observer: MutationObserver | null = null;
-let scheduled = false;
-
 function isMac(): boolean {
 	return navigator.platform?.includes("Mac") ?? navigator.userAgent.includes("Mac");
 }
@@ -92,24 +87,6 @@ function renderBar(): void {
 	navContainer.parentElement?.insertBefore(bar, navContainer);
 }
 
-function scheduleRender(): void {
-	if (scheduled) return;
-	scheduled = true;
-	requestAnimationFrame(() => {
-		scheduled = false;
-		renderBar();
-	});
-}
-
-function cleanup(): void {
-	document.getElementById(STYLE_ID)?.remove();
-	if (observer) {
-		observer.disconnect();
-		observer = null;
-	}
-	document.querySelectorAll(`[${BAR_ATTR}]`).forEach((el) => el.remove());
-}
-
 export const sidebarSearch = defineSetting({
 	type: "checkbox",
 	label: "Sidebar Search Bar",
@@ -117,43 +94,13 @@ export const sidebarSearch = defineSetting({
 		key: "sidebar-search-enabled",
 		defaultValue: false,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (!enabled) return;
+	css: () => CSS,
+	init: () => {
+		const unwatch = watchDom(renderBar);
 
-		applyGlobalCSS(CSS, STYLE_ID);
-
-		function tryRender() {
-			if (document.querySelector('a[href="/budget"]')) {
-				renderBar();
-			} else {
-				setTimeout(tryRender, 500);
-			}
-		}
-		tryRender();
-
-		observer = new MutationObserver(() => {
-			if (!document.querySelector(`[${BAR_ATTR}]`) && document.querySelector('a[href="/budget"]')) {
-				scheduleRender();
-			}
-		});
-		observer.observe(document.body, { childList: true, subtree: true });
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			applyGlobalCSS(CSS, STYLE_ID);
-			renderBar();
-			if (!observer) {
-				observer = new MutationObserver(() => {
-					if (!document.querySelector(`[${BAR_ATTR}]`) && document.querySelector('a[href="/budget"]')) {
-						scheduleRender();
-					}
-				});
-				observer.observe(document.body, { childList: true, subtree: true });
-			}
-		} else {
-			cleanup();
-		}
+		return () => {
+			unwatch();
+			document.querySelectorAll(`[${BAR_ATTR}]`).forEach((el) => el.remove());
+		};
 	},
 });

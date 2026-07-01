@@ -1,5 +1,7 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS, createElement, createToolbarButton } from "@lib/utilities/dom";
+import { createElement, createToolbarButton } from "@lib/utilities/dom";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchRoute } from "@lib/utilities/route-watcher";
 import { getValue, setValue } from "@lib/utilities/store";
 
 type HeaderColumn = "date" | "account" | "payee" | "notes" | "category" | "payment" | "deposit" | "balance";
@@ -75,11 +77,9 @@ let routeRefreshTimer: number | null = null;
 let observedRouteKey = "";
 let observedHeaderRow: HTMLElement | null = null;
 let observedHeaderCellCount = 0;
-let initialAttachObserver: MutationObserver | null = null;
+let stopInitialAttach: (() => void) | null = null;
 let routePollInterval: number | null = null;
-let routeListenersInstalled = false;
-let originalPushState: History["pushState"] | null = null;
-let originalReplaceState: History["replaceState"] | null = null;
+let stopWatchingRoute: (() => void) | null = null;
 
 function onRouteSignal(): void {
 	const currentRouteKey = getCurrentRouteKey();
@@ -267,9 +267,9 @@ function observeHeaderRow(headerRow: HTMLElement | null): void {
 		return;
 	}
 
-	if (initialAttachObserver) {
-		initialAttachObserver.disconnect();
-		initialAttachObserver = null;
+	if (stopInitialAttach) {
+		stopInitialAttach();
+		stopInitialAttach = null;
 	}
 
 	const headerCells = Array.from(headerRow.querySelectorAll<HTMLElement>(":scope > [data-testid]"));
@@ -316,47 +316,18 @@ function observeHeaderRow(headerRow: HTMLElement | null): void {
 }
 
 function installRouteListeners(): void {
-	if (routeListenersInstalled) return;
-	routeListenersInstalled = true;
+	if (stopWatchingRoute) return;
 
-	originalPushState = window.history.pushState.bind(window.history);
-	originalReplaceState = window.history.replaceState.bind(window.history);
-
-	window.history.pushState = function (...args: Parameters<History["pushState"]>) {
-		const result = originalPushState?.(...args);
-		onRouteSignal();
-		return result;
-	};
-
-	window.history.replaceState = function (...args: Parameters<History["replaceState"]>) {
-		const result = originalReplaceState?.(...args);
-		onRouteSignal();
-		return result;
-	};
-
-	window.addEventListener("popstate", onRouteSignal);
-	window.addEventListener("hashchange", onRouteSignal);
+	stopWatchingRoute = watchRoute(onRouteSignal);
 	if (routePollInterval === null) {
 		routePollInterval = window.setInterval(onRouteSignal, 250);
 	}
 }
 
 function uninstallRouteListeners(): void {
-	if (!routeListenersInstalled) return;
-	routeListenersInstalled = false;
+	stopWatchingRoute?.();
+	stopWatchingRoute = null;
 
-	if (originalPushState) {
-		window.history.pushState = originalPushState;
-		originalPushState = null;
-	}
-
-	if (originalReplaceState) {
-		window.history.replaceState = originalReplaceState;
-		originalReplaceState = null;
-	}
-
-	window.removeEventListener("popstate", onRouteSignal);
-	window.removeEventListener("hashchange", onRouteSignal);
 	if (routePollInterval !== null) {
 		window.clearInterval(routePollInterval);
 		routePollInterval = null;
@@ -658,11 +629,11 @@ function scheduleInitialAttachRetries(): void {
 }
 
 function ensureInitialAttachObserver(): void {
-	if (initialAttachObserver || !document.body) {
+	if (stopInitialAttach || !document.body) {
 		return;
 	}
 
-	initialAttachObserver = new MutationObserver(() => {
+	stopInitialAttach = watchDom(() => {
 		const headerRow = findHeaderRow();
 		if (!headerRow) {
 			return;
@@ -670,13 +641,8 @@ function ensureInitialAttachObserver(): void {
 
 		observeHeaderRow(headerRow);
 		scheduleAttachHandles();
-		initialAttachObserver?.disconnect();
-		initialAttachObserver = null;
-	});
-
-	initialAttachObserver.observe(document.body, {
-		childList: true,
-		subtree: true,
+		stopInitialAttach?.();
+		stopInitialAttach = null;
 	});
 }
 
@@ -698,9 +664,9 @@ function stopObserving(): void {
 		headerObserver.disconnect();
 		headerObserver = null;
 	}
-	if (initialAttachObserver) {
-		initialAttachObserver.disconnect();
-		initialAttachObserver = null;
+	if (stopInitialAttach) {
+		stopInitialAttach();
+		stopInitialAttach = null;
 	}
 	observedHeaderRow = null;
 	uninstallRouteListeners();
@@ -716,7 +682,8 @@ export const resizableTransactionColumns = defineSetting({
 	context: {
 		key: "resizable-transaction-columns",
 		defaultValue: true,
-		css: `
+	},
+	css: () => `
 			:root[${ROOT_TOGGLE_ATTR}="on"]:not(:has([data-testid="budget-table"])) [data-testid="row"] {
 				position: relative;
 			}
@@ -862,45 +829,26 @@ export const resizableTransactionColumns = defineSetting({
 				color: var(--color-buttonNormalTextHover);
 			}
 		`,
-	},
 	init: async (ctx) => {
 		stopObserving();
 		removeHandles();
-		applyGlobalCSS("", ctx.key);
 		document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
-
-		const enabled = Boolean(await getValue(ctx.key, ctx.defaultValue));
-		if (!enabled) return;
 
 		storagePrefixKey = ctx.key;
 		currentStorageKey = "";
 		cachedWidths = {};
 
-		applyGlobalCSS(ctx.css, ctx.key);
 		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
 		await syncPageWidths(true);
 		startObserving();
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (!value) {
+
+		return () => {
 			stopObserving();
 			removeHandles();
 			document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
 			document.documentElement.removeAttribute(ROOT_RESIZING_ATTR);
 			storagePrefixKey = "";
 			currentStorageKey = "";
-			applyGlobalCSS("", ctx.key);
-			return;
-		}
-
-		storagePrefixKey = ctx.key;
-		currentStorageKey = "";
-		cachedWidths = {};
-
-		applyGlobalCSS(ctx.css, ctx.key);
-		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
-		await syncPageWidths(true);
-		startObserving();
+		};
 	},
 });

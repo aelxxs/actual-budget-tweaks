@@ -1,10 +1,9 @@
 import { defineSetting } from "@features/types";
 import { query } from "@lib/utilities/actual-api";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 let uncatInterval: ReturnType<typeof setInterval> | null = null;
-let uncatObserver: MutationObserver | null = null;
+let stopWatchingUncatButton: (() => void) | null = null;
 let lastUncatText = "";
 
 async function updateUncategorizedBadges() {
@@ -74,22 +73,19 @@ function findUncatButton(): HTMLButtonElement | null {
 }
 
 function watchUncatButton() {
-	if (uncatObserver) return;
-	let scheduled = false;
-	uncatObserver = new MutationObserver(() => {
-		if (scheduled) return;
-		const btn = findUncatButton();
-		const text = btn?.textContent?.trim() ?? "";
-		if (text !== lastUncatText) {
-			lastUncatText = text;
-			scheduled = true;
-			requestAnimationFrame(() => {
+	if (stopWatchingUncatButton) return;
+	stopWatchingUncatButton = watchDom(
+		() => {
+			const btn = findUncatButton();
+			const text = btn?.textContent?.trim() ?? "";
+			if (text !== lastUncatText) {
+				lastUncatText = text;
 				updateUncategorizedBadges();
-				scheduled = false;
-			});
-		}
-	});
-	uncatObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+			}
+		},
+		document.body,
+		{ childList: true, subtree: true, characterData: true },
+	);
 }
 
 function startUncatPolling() {
@@ -104,10 +100,8 @@ function stopUncatPolling() {
 		clearInterval(uncatInterval);
 		uncatInterval = null;
 	}
-	if (uncatObserver) {
-		uncatObserver.disconnect();
-		uncatObserver = null;
-	}
+	stopWatchingUncatButton?.();
+	stopWatchingUncatButton = null;
 	lastUncatText = "";
 	for (const badge of document.querySelectorAll(".abt-uncat-badge")) badge.remove();
 }
@@ -217,7 +211,7 @@ function setupGroupLink(groupLink: HTMLAnchorElement, groupKey: string): void {
 	});
 }
 
-function setupCollapsibleGroups(): void {
+function setupCollapsibleGroups(): () => void {
 	function attach() {
 		const onBudget = document.querySelector<HTMLAnchorElement>('a[href="/accounts/onbudget"]');
 		const offBudget = document.querySelector<HTMLAnchorElement>('a[href="/accounts/offbudget"]');
@@ -226,10 +220,7 @@ function setupCollapsibleGroups(): void {
 		if (offBudget) setupGroupLink(offBudget, "offbudget");
 	}
 
-	attach();
-
-	const observer = new MutationObserver(() => attach());
-	observer.observe(document.body, { childList: true, subtree: true });
+	return watchDom(attach);
 }
 
 export const sidebarRedesign = defineSetting({
@@ -238,7 +229,8 @@ export const sidebarRedesign = defineSetting({
 	context: {
 		key: "improved-sidebar-design",
 		defaultValue: true,
-		css: () => `
+	},
+	css: () => `
 			/* ══════════════════════════════════════════
 			   ABT Sidebar Redesign
 			   Stable selectors: href, data-testid,
@@ -684,23 +676,13 @@ export const sidebarRedesign = defineSetting({
 			}
 
 		`,
-	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (enabled && ctx.css) {
-			applyGlobalCSS(ctx.css(), ctx.key);
-			setupCollapsibleGroups();
-			startUncatPolling();
-		}
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			applyGlobalCSS(ctx.css(), ctx.key);
-			startUncatPolling();
-		} else {
-			applyGlobalCSS("", ctx.key);
+	init: () => {
+		const unwatchGroups = setupCollapsibleGroups();
+		startUncatPolling();
+
+		return () => {
+			unwatchGroups();
 			stopUncatPolling();
-		}
+		};
 	},
 });

@@ -1,5 +1,4 @@
 import { defineSetting } from "@features/types";
-import { getValue, setValue } from "@lib/utilities/store";
 
 const TOGGLE_ATTR = "data-abt-tab";
 
@@ -14,12 +13,11 @@ export const templateApplyBreakdown = defineSetting({
 		key: "actual-template-apply-breakdown",
 		defaultValue: true,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		applyAttribute(Boolean(enabled));
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		applyAttribute(Boolean(value));
+	init: (ctx) => {
+		applyAttribute(Boolean(ctx.value));
+
+		return () => {
+			applyAttribute(false);
+		};
 	},
 });

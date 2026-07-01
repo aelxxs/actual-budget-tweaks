@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
 import { loadCurrency } from "@lib/utilities/currency";
-import { applyGlobalCSS, createDebouncedObserver, type DebouncedObserver } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { positionPopover } from "@lib/utilities/popover";
 import { mountToNode } from "@lib/utilities/svelte";
 import { getInsights, getProgressCents, invalidateCache, loadData, resetData } from "./data";
 import InsightsPopover from "./InsightsPopover.svelte";
@@ -54,36 +54,23 @@ export const categoryTemplateInsights = defineSetting({
 	context: {
 		key: "actual-category-template-insights",
 		defaultValue: true,
-		_observer: null as DebouncedObserver | null,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (enabled) await enable(ctx);
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) await enable(ctx);
-		else disable(ctx);
+	css: () => CSS,
+	init: () => {
+		const unwatch = watchDom(scanAndDecorate);
+		startPolling();
+		loadCurrency();
+		loadData().then(() => scanAndDecorate());
+
+		return () => {
+			unwatch();
+			stopPolling();
+			undecorateAll();
+			closePopover();
+			resetData();
+		};
 	},
 });
-
-async function enable(ctx: { _observer: DebouncedObserver | null }) {
-	applyGlobalCSS(CSS, "abt-cti-styles");
-	startObserver(ctx);
-	startPolling();
-	loadCurrency();
-	loadData().then(() => scanAndDecorate());
-}
-
-function disable(ctx: { _observer: DebouncedObserver | null }) {
-	ctx._observer?.disconnect();
-	ctx._observer = null;
-	stopPolling();
-	undecorateAll();
-	closePopover();
-	resetData();
-	applyGlobalCSS("", "abt-cti-styles");
-}
 
 // ── Row scanning ────────────────────────────────────────────────
 
@@ -231,22 +218,7 @@ async function openPopover(row: HTMLElement, anchor: HTMLElement) {
 	document.body.appendChild(wrap);
 	popoverWrap = wrap;
 
-	positionPopover(wrap, anchor);
-}
-
-function positionPopover(pop: HTMLElement, anchor: HTMLElement) {
-	const rowRect = anchor.getBoundingClientRect();
-	const popRect = pop.getBoundingClientRect();
-	let top = rowRect.bottom + 6;
-	let left = rowRect.left;
-	if (top + popRect.height > window.innerHeight - 8) {
-		top = Math.max(8, rowRect.top - popRect.height - 6);
-	}
-	if (left + popRect.width > window.innerWidth - 8) {
-		left = Math.max(8, window.innerWidth - popRect.width - 8);
-	}
-	pop.style.top = top + "px";
-	pop.style.left = left + "px";
+	positionPopover(wrap, anchor, { gap: 6 });
 }
 
 function closePopover() {
@@ -256,13 +228,7 @@ function closePopover() {
 	}
 }
 
-// ── Observer & polling ──────────────────────────────────────────
-
-function startObserver(ctx: { _observer: DebouncedObserver | null }) {
-	ctx._observer?.disconnect();
-	ctx._observer = createDebouncedObserver(scanAndDecorate, { childList: true, subtree: true, characterData: true });
-	ctx._observer.observe(document.body);
-}
+// ── Polling ───────────────────────────────────────────────────────
 
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 let lastUrl = location.href;

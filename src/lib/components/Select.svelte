@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { SettingContext } from "../../features/types";
-	import { getValue, setValue } from "../utilities/store";
+	import type { SelectSetting } from "../../features/types";
+	import { applySettingChange } from "../../features/runtime";
+	import { getValue } from "../utilities/store";
 
-	const { labelText, options, ctx, onChange } = $props<{
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const { labelText, options, setting } = $props<{
 		labelText: string;
 		options: { value: string; label: string }[];
-		ctx: SettingContext;
-		onChange: (value: string, ctx: any) => void;
+		setting: SelectSetting<any>;
 	}>();
+	const ctx = setting.context;
 
 	// local reactive state for select value
 	let value = $state("");
@@ -21,9 +23,8 @@
 
 	async function handleChange(event: Event) {
 		const newValue = (event.target as HTMLSelectElement).value;
-		await onChange(newValue, ctx);
+		await applySettingChange(setting, newValue);
 		value = newValue;
-		setValue(ctx.key, newValue); // persist if desired
 	}
 </script>
 
