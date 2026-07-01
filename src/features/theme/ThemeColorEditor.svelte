@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getValue, setValue } from "@lib/utilities/store";
-	import { editorState, type ThemeOverrides } from "./editor-state.svelte";
 	import ColorRow from "./ColorRow.svelte";
+	import { editorState, type ThemeOverrides } from "./editor-state.svelte";
 
 	type ColorKeys = Record<string, string>;
 
@@ -335,9 +335,7 @@
 	} = $props();
 
 	function getExportCSS(): string {
-		const lines = allKeys
-			.map((key) => `  ${key}: ${colors[key] ?? ""};`)
-			.filter((line) => !line.endsWith(": ;"));
+		const lines = allKeys.map((key) => `  ${key}: ${colors[key] ?? ""};`).filter((line) => !line.endsWith(": ;"));
 		return `:root {\n${lines.join("\n")}\n}`;
 	}
 
@@ -426,9 +424,10 @@
 			}
 		}
 
-		const updated: ThemeOverrides = Object.keys(diff).length > 0
-			? { ...base, [theme]: diff }
-			: (({ [theme]: _, ...rest }) => rest)(base as Record<string, ColorKeys>);
+		const updated: ThemeOverrides =
+			Object.keys(diff).length > 0
+				? { ...base, [theme]: diff }
+				: (({ [theme]: _, ...rest }) => rest)(base as Record<string, ColorKeys>);
 
 		await setValue(STORAGE_KEY, Object.keys(updated).length > 0 ? updated : null);
 		editorState.overrides = { ...updated };
@@ -512,7 +511,6 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		background: var(--color-pageBackground);
 		color: var(--color-pageText);
 	}
 
@@ -588,6 +586,4 @@
 		color: var(--color-pageTextSubdued);
 		margin: 0;
 	}
-
-
 </style>

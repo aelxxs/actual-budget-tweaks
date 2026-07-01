@@ -2,8 +2,8 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { applyGlobalCSS } from "@lib/utilities/dom";
 	import { onMount } from "svelte";
-	import { BUILTIN_CSS, TOKENS_STYLE_ID } from "./theme-apply";
 	import ColorRow from "./ColorRow.svelte";
+	import { BUILTIN_CSS, TOKENS_STYLE_ID } from "./theme-apply";
 
 	type Tab = "palette" | "css";
 
@@ -68,7 +68,7 @@
 			const computed = getComputedStyle(root);
 			for (const v of ALL_VARS) {
 				const raw = computed.getPropertyValue(v.key).trim();
-				colors[v.key] = raw.startsWith("#") ? raw : rgbToHex(raw) ?? raw;
+				colors[v.key] = raw.startsWith("#") ? raw : (rgbToHex(raw) ?? raw);
 			}
 		}
 	});
@@ -104,7 +104,9 @@
 		const f = (n: number) => {
 			const k = (n + h / 30) % 12;
 			const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-			return Math.round(255 * color).toString(16).padStart(2, "0");
+			return Math.round(255 * color)
+				.toString(16)
+				.padStart(2, "0");
 		};
 		return `#${f(0)}${f(8)}${f(4)}`;
 	}
@@ -217,7 +219,6 @@
 		flex-direction: column;
 		flex: 1;
 		min-height: 0;
-		background: var(--color-pageBackground);
 		color: var(--color-pageText);
 	}
 
@@ -226,6 +227,7 @@
 		gap: 2px;
 		padding: 10px 12px 0;
 		flex-shrink: 0;
+		background: var(--color-pageBackground);
 		border-bottom: var(--border);
 	}
 
@@ -241,7 +243,9 @@
 		background: transparent;
 		color: var(--color-pageTextSubdued);
 		cursor: pointer;
-		transition: color 0.15s, background 0.15s;
+		transition:
+			color 0.15s,
+			background 0.15s;
 	}
 
 	.creator__tab:hover {
@@ -276,7 +280,9 @@
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
 		color: var(--color-sidebarItemAccentSelected);
 		cursor: pointer;
-		transition: border-color 0.15s, background 0.15s;
+		transition:
+			border-color 0.15s,
+			background 0.15s;
 	}
 
 	.creator__randomize:hover {
