@@ -53,8 +53,8 @@ async function updateUncategorizedBadges() {
 				badge?.remove();
 			}
 		}
-	} catch {
-		// Bridge not ready yet
+	} catch (err) {
+		console.debug("[ABT Sidebar] updateUncategorizedBadges failed:", err);
 	}
 }
 
