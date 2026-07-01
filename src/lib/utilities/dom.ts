@@ -77,6 +77,32 @@ export function dataTestId(id: string): string {
 	return `[data-testid="${id}"]`;
 }
 
+/**
+ * Creates a MutationObserver that debounces its callback to one call per
+ * animation frame. Returns `{ observe, disconnect }` matching the native API.
+ */
+export function createDebouncedObserver(
+	callback: () => void,
+	options: MutationObserverInit = { childList: true, subtree: true },
+): { observe: (target: Node) => void; disconnect: () => void } {
+	let scheduled = false;
+	const observer = new MutationObserver(() => {
+		if (!scheduled) {
+			scheduled = true;
+			requestAnimationFrame(() => {
+				scheduled = false;
+				callback();
+			});
+		}
+	});
+	return {
+		observe: (target) => observer.observe(target, options),
+		disconnect: () => observer.disconnect(),
+	};
+}
+
+export type DebouncedObserver = ReturnType<typeof createDebouncedObserver>;
+
 export interface WaitForElementOptions {
 	/** How many times to retry before giving up. Default: 10 */
 	maxRetries?: number;
