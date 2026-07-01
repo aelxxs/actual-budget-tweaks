@@ -1,0 +1,82 @@
+export interface IconOptions {
+	size?: number;
+	strokeWidth?: number;
+	class?: string;
+}
+
+interface IconDef {
+	viewBox: string;
+	body: string;
+	/** "stroke" (fill=none, stroke=currentColor, default) or "fill" (fill=currentColor). */
+	variant?: "stroke" | "fill";
+	strokeWidth?: number;
+}
+
+const ICONS = {
+	chevronDown: {
+		viewBox: "0 0 16 16",
+		body: '<path d="M4 6l4 4 4-4"/>',
+		strokeWidth: 2,
+	},
+	pencil: {
+		variant: "fill",
+		viewBox: "0 0 16 16",
+		body: '<path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.25.25 0 0 0 .108-.064l6.286-6.286Z"/>',
+	},
+	shuffle: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/>',
+	},
+	calculator: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/>',
+	},
+	currencyConvert: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+	},
+	stock: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+	},
+	networth: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+	},
+	interest: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+	},
+	calendar: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+	},
+	rsu: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="14" r="2"/><path d="M12 16v2"/>',
+	},
+} as const satisfies Record<string, IconDef>;
+
+export type IconName = keyof typeof ICONS;
+
+/** Renders a shared icon to an SVG markup string, for both vanilla-DOM and Svelte call sites. */
+export function icon(name: IconName, opts: IconOptions = {}): string {
+	const def: IconDef = ICONS[name];
+	const size = opts.size ?? 16;
+	const classAttr = opts.class ? ` class="${opts.class}"` : "";
+
+	if (def.variant === "fill") {
+		return `<svg width="${size}" height="${size}" viewBox="${def.viewBox}" fill="currentColor" aria-hidden="true"${classAttr}>${def.body}</svg>`;
+	}
+
+	const strokeWidth = opts.strokeWidth ?? def.strokeWidth ?? 2;
+	return `<svg width="${size}" height="${size}" viewBox="${def.viewBox}" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${classAttr}>${def.body}</svg>`;
+}
