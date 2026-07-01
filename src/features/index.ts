@@ -5,6 +5,7 @@ import { sidebarIcons } from "./appearance/sidebar-icons";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
+import { releaseNotification } from "./core/release-notification";
 import { scheduleHighlight } from "./core/schedule-highlight";
 import { sidePanel } from "./core/side-panel";
 import { tooltipStyling } from "./core/tooltip";
@@ -75,7 +76,7 @@ const appearance = [
 
 const workflows = [categoryTemplateInsights, templateApplyBreakdown, spendingCalendar];
 
-export const coreScripts = [sidePanel, scheduleHighlight, tooltipStyling];
+export const coreScripts = [sidePanel, scheduleHighlight, tooltipStyling, releaseNotification];
 
 export const scriptSections = [
 	{

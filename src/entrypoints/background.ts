@@ -1,4 +1,10 @@
+import { setValue } from "@lib/utilities/store";
+
 export default defineBackground(() => {
+	browser.runtime.onInstalled.addListener((details) => {
+		setValue("release-notes-pending-version", browser.runtime.getManifest().version);
+	});
+
 	browser.runtime.onMessage.addListener((message) => {
 		if (message.type === "fetch") {
 			const headers: Record<string, string> = {

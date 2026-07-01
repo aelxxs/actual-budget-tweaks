@@ -5,6 +5,8 @@
 	import SelectOption from "./components/Select.svelte";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
+	const version = browser.runtime.getManifest().version;
+	const logoUrl = browser.runtime.getURL("/icon.svg");
 
 	let query = $state("");
 	let collapsed = $state<Record<string, boolean>>({});
@@ -140,32 +142,34 @@
 <div class="settings-page stack" style="--space: 1rem;">
 	<div class="header stack" style="--space: 0.6rem;">
 		<div class="title-row cluster" style="--gutter: 0.5rem; --align: center; --justify: space-between;">
-			<span><strong>Interface Settings</strong> — Configure Actual</span>
-			<div class="header-actions cluster" style="--gutter: 0.4rem; --align: center;">
-				<button class="header-action-btn" onclick={exportSettings} title="Export settings">
-					<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M2 10v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3"/><path d="M8 2v8m0 0L5 7m3 3 3-3"/>
-					</svg>
-					Export
-				</button>
-				<button class="header-action-btn" onclick={importSettings} title="Import settings">
-					<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M2 10v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3"/><path d="M8 10V2m0 0L5 5m3-3 3 3"/>
-					</svg>
-					Import
-				</button>
+			<span class="title-brand">
+				<img class="title-logo" src={logoUrl} alt="" />
+				<strong>Actual Budget Tweaks</strong> — Configure Actual <span class="version-tag">v{version}</span>
+			</span>
+			<div class="header-actions cluster" style="--gutter: 0.25rem; --align: center;">
 				{#if importStatus === "success"}
 					<span class="import-status import-status--ok">Imported — reloading...</span>
 				{:else if importStatus === "error"}
 					<span class="import-status import-status--err">Invalid settings file</span>
 				{/if}
-				<button class="bug-report-btn" onclick={openBugReport} title="Report a bug">
-					<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-						<path
-							d="M4.72.22a.75.75 0 0 1 1.06 0l1.204 1.203A3.98 3.98 0 0 1 8 1.25c.357 0 .7.047 1.016.134L10.22.22a.75.75 0 1 1 1.06 1.06l-.96.96A3.99 3.99 0 0 1 11.95 4.5h.55a.75.75 0 0 1 0 1.5h-.337a5.03 5.03 0 0 1 .088.86v.39H13a.75.75 0 0 1 0 1.5h-.749v.39c0 .318-.03.63-.088.86H13a.75.75 0 0 1 0 1.5h-.55a3.99 3.99 0 0 1-1.63 1.96l.96.96a.75.75 0 1 1-1.06 1.06l-1.204-1.203A3.98 3.98 0 0 1 8 14.75a3.98 3.98 0 0 1-1.016-.134L5.78 15.78a.75.75 0 0 1-1.06-1.06l.96-.96A3.99 3.99 0 0 1 4.05 11.5H3.5a.75.75 0 0 1 0-1.5h.337a5.03 5.03 0 0 1-.088-.86v-.39H3a.75.75 0 0 1 0-1.5h.749v-.39c0-.318.03-.63.088-.86H3.5a.75.75 0 0 1 0-1.5h.55a3.99 3.99 0 0 1 1.63-1.96l-.96-.96A.75.75 0 0 1 4.72.22ZM6.173 5a2.5 2.5 0 0 0-.672 1.25h5a2.5 2.5 0 0 0-.673-1.25H6.173ZM5.5 7.75v.39a3.51 3.51 0 0 0 .586 1.935l.064.085A2.5 2.5 0 0 0 8 11.25a2.5 2.5 0 0 0 1.85-1.09l.064-.085A3.51 3.51 0 0 0 10.5 8.14v-.39h-5Z"
-						/>
-					</svg>
-					Report Bug
+				<button
+					class="header-action-btn"
+					onclick={exportSettings}
+					title="Export settings"
+					aria-label="Export settings"
+				>
+					<Icon name="upload" size={14} strokeWidth={1.5} />
+				</button>
+				<button
+					class="header-action-btn"
+					onclick={importSettings}
+					title="Import settings"
+					aria-label="Import settings"
+				>
+					<Icon name="download" size={14} strokeWidth={1.5} />
+				</button>
+				<button class="bug-report-btn" onclick={openBugReport} title="Report a bug" aria-label="Report a bug">
+					<Icon name="bug" size={14} />
 				</button>
 			</div>
 		</div>
@@ -331,6 +335,37 @@
 			font-size: 0.85rem;
 		}
 
+		.title-brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+			flex-wrap: wrap;
+		}
+
+		.title-logo {
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+			border-radius: 4px;
+		}
+
+		.header-actions {
+			flex-shrink: 0;
+			margin-left: auto;
+		}
+
+		.version-tag {
+			font-size: 0.7rem;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			color: var(--color-sidebarItemAccentSelected);
+			background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+			border: 1px solid color-mix(in srgb, var(--color-sidebarItemAccentSelected) 30%, transparent);
+			border-radius: 4px;
+			padding: 1px 6px;
+			margin-left: 2px;
+		}
+
 		.settings-section {
 			padding: 0;
 			width: 100%;
@@ -412,26 +447,21 @@
 		.header-action-btn {
 			display: inline-flex;
 			align-items: center;
-			gap: 0.35rem;
-			font-size: 0.8rem;
+			justify-content: center;
 			color: var(--color-pageTextSubdued);
-			padding: 0.3rem 0.6rem;
+			padding: 0.4rem;
 			border-radius: 6px;
 			border: var(--border);
 			background: none;
 			cursor: pointer;
-			transition: color 0.15s, border-color 0.15s;
+			transition:
+				color 0.15s,
+				border-color 0.15s;
 		}
 
 		.header-action-btn:hover {
 			color: var(--color-pageText);
 			border-color: var(--color-pageTextSubdued);
-		}
-
-		.header-action-btn svg {
-			width: 14px;
-			height: 14px;
-			flex-shrink: 0;
 		}
 
 		.import-status {
@@ -450,10 +480,9 @@
 		.bug-report-btn {
 			display: inline-flex;
 			align-items: center;
-			gap: 0.35rem;
-			font-size: 0.8rem;
+			justify-content: center;
 			color: var(--color-pageTextSubdued);
-			padding: 0.3rem 0.6rem;
+			padding: 0.4rem;
 			border-radius: 6px;
 			border: var(--border);
 			background: none;
@@ -466,12 +495,6 @@
 		.bug-report-btn:hover {
 			color: var(--color-errorText);
 			border-color: var(--color-errorBorder);
-		}
-
-		.bug-report-btn svg {
-			width: 14px;
-			height: 14px;
-			flex-shrink: 0;
 		}
 
 		.bug-modal {
