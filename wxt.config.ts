@@ -51,6 +51,7 @@ export default defineConfig({
 					"css/income-breakdown.css",
 					"css/template-apply-breakdown.css",
 					"content-scripts/content.css",
+					"icon.svg",
 				],
 				matches: ["<all_urls>"],
 			},
