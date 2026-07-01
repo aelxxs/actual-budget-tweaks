@@ -1,3 +1,5 @@
+import type { ActualTable, SendMethodMap, TableName } from "@lib/types/actual-schema";
+
 let reqId = 0;
 
 const RETRY_INTERVAL = 1000;
@@ -46,17 +48,48 @@ function request<T>(event: string, detail: Record<string, unknown>): Promise<T> 
 	});
 }
 
-export async function query<T = unknown[]>(
+/**
+ * Query an Actual Budget table via the API bridge.
+ *
+ * @example
+ * // Typed via table name — returns Category[]
+ * const cats = await query("categories");
+ *
+ * // Narrowed to specific fields
+ * const accounts = await query("accounts", { filter: { tombstone: false } });
+ */
+export async function query<K extends TableName>(
+	table: K,
+	options?: { filter?: Record<string, unknown>; select?: string[] },
+): Promise<ActualTable[K][]>;
+export async function query<T>(
 	table: string,
-	options?: { filter?: Record<string, unknown>; select?: string },
-): Promise<T> {
+	options?: { filter?: Record<string, unknown>; select?: string[] },
+): Promise<T>;
+export async function query(
+	table: string,
+	options?: { filter?: Record<string, unknown>; select?: string[] },
+): Promise<unknown> {
 	await waitForBudget();
-	return request<T>("abt:api:query", { table, filter: options?.filter, select: options?.select });
+	return request("abt:api:query", { table, filter: options?.filter, select: options?.select });
 }
 
-export async function send<T = unknown>(method: string, args?: unknown): Promise<T> {
+/**
+ * Send a command to Actual Budget via the API bridge.
+ * Typed overloads for known internal methods.
+ *
+ * @example
+ * const cell = await send("get-cell", { sheetName: "budget202506", name: "available-funds" });
+ * cell.value; // AmountInCents
+ */
+export async function send<M extends keyof SendMethodMap>(
+	method: M,
+	args: SendMethodMap[M]["args"],
+): Promise<SendMethodMap[M]["result"]>;
+export async function send<T = unknown>(method: string, args?: unknown): Promise<T>;
+export async function send(method: string, args?: unknown): Promise<unknown> {
 	await waitForBudget();
-	return request<T>("abt:api:send", { method, args });
+	return request("abt:api:send", { method, args });
 }
 
 export function navigate(path: string, options?: Record<string, unknown>): void {
