@@ -1,5 +1,9 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS, createToolbarButton } from "@lib/utilities/dom";
+import { createToolbarButton } from "@lib/utilities/dom";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
+import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+import { watchRoute } from "@lib/utilities/route-watcher";
 import { getValue, setValue } from "@lib/utilities/store";
 
 type Column = "date" | "account" | "payee" | "notes" | "category" | "payment" | "deposit" | "balance";
@@ -116,13 +120,8 @@ const CSS = `
 `;
 
 let hiddenColumns: Set<Column> = new Set();
-let enabled = false;
 let dropdownOpen = false;
 let routeKey = "";
-
-function isAccountsRoute() {
-	return location.pathname.startsWith("/accounts");
-}
 
 function getRouteKey() {
 	return `${location.pathname}${location.search}`;
@@ -186,7 +185,11 @@ function createColumnsIcon(): SVGSVGElement {
 	return svg;
 }
 
+let stopOutsideClick: (() => void) | null = null;
+
 function closeDropdown() {
+	stopOutsideClick?.();
+	stopOutsideClick = null;
 	document.getElementById(DROPDOWN_ID)?.remove();
 	dropdownOpen = false;
 }
@@ -232,17 +235,8 @@ function openDropdown(anchor: HTMLElement) {
 
 	document.body.appendChild(dropdown);
 
-	const rect = anchor.getBoundingClientRect();
-	dropdown.style.top = `${rect.bottom + 4}px`;
-	dropdown.style.right = `${window.innerWidth - rect.right}px`;
-
-	const onOutside = (e: MouseEvent) => {
-		if (!dropdown.contains(e.target as Node) && e.target !== anchor) {
-			closeDropdown();
-			document.removeEventListener("mousedown", onOutside);
-		}
-	};
-	setTimeout(() => document.addEventListener("mousedown", onOutside), 0);
+	positionPopover(dropdown, anchor, { align: "right" });
+	stopOutsideClick = onOutsideClick([dropdown, anchor], closeDropdown);
 }
 
 function attachToolbarButton() {
@@ -268,44 +262,12 @@ function removeToolbarButton() {
 
 // ── Observer ──────────────────────────────────────────────────────────────
 
-let observer: MutationObserver | null = null;
-let scheduled = false;
-
 function scheduleSync() {
-	if (scheduled) return;
-	scheduled = true;
-	requestAnimationFrame(() => {
-		scheduled = false;
-		if (!enabled) return;
-		if (!isAccountsRoute()) {
-			removeToolbarButton();
-			return;
-		}
-		void loadHidden().then(attachToolbarButton);
-	});
-}
-
-function startObserving() {
-	if (observer) return;
-	observer = new MutationObserver(scheduleSync);
-	observer.observe(document.body, { childList: true, subtree: true });
-}
-
-function stopObserving() {
-	observer?.disconnect();
-	observer = null;
-}
-
-function installRouteListeners() {
-	for (const method of ["pushState", "replaceState"] as const) {
-		const original = history[method].bind(history);
-		history[method] = function (...args) {
-			original(...args);
-			scheduleSync();
-			return undefined;
-		};
+	if (!matchesPage(Page.Accounts)) {
+		removeToolbarButton();
+		return;
 	}
-	window.addEventListener("popstate", scheduleSync);
+	void loadHidden().then(attachToolbarButton);
 }
 
 export const toggleColumns = defineSetting({
@@ -314,46 +276,24 @@ export const toggleColumns = defineSetting({
 	context: {
 		key: STORAGE_KEY,
 		defaultValue: true,
-		css: CSS,
 	},
-	init: async (ctx) => {
-		applyGlobalCSS("", ctx.key);
+	css: () => CSS + "\n" + HIDDEN_COL_CSS,
+	init: async () => {
 		removeToolbarButton();
-		stopObserving();
 
-		enabled = Boolean(await getValue(ctx.key, ctx.defaultValue));
-		if (!enabled) return;
-
-		applyGlobalCSS(CSS + "\n" + HIDDEN_COL_CSS, ctx.key);
-		document.documentElement.setAttribute(ROOT_ATTR, "on");
-
-		if (isAccountsRoute()) {
-			await loadHidden();
-			attachToolbarButton();
-		}
-		startObserving();
-		installRouteListeners();
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		enabled = value;
-		if (!value) {
-			stopObserving();
-			removeToolbarButton();
-			document.documentElement.removeAttribute(ROOT_ATTR);
-			applyGlobalCSS("", ctx.key);
-			hiddenColumns = new Set();
-			applyVisibility();
-			return;
-		}
-
-		applyGlobalCSS(CSS + "\n" + HIDDEN_COL_CSS, ctx.key);
 		document.documentElement.setAttribute(ROOT_ATTR, "on");
 		routeKey = "";
-		if (isAccountsRoute()) {
-			await loadHidden();
-			attachToolbarButton();
-		}
-		startObserving();
+
+		const unwatchDom = watchDom(scheduleSync);
+		const unwatchRoute = watchRoute(scheduleSync);
+
+		return () => {
+			unwatchDom();
+			unwatchRoute();
+			removeToolbarButton();
+			document.documentElement.removeAttribute(ROOT_ATTR);
+			hiddenColumns = new Set();
+			applyVisibility();
+		};
 	},
 });

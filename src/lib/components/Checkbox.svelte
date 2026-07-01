@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { SettingContext } from "../../features/types";
+	import type { CheckboxSetting } from "../../features/types";
+	import { applySettingChange } from "../../features/runtime";
 	import { getValue } from "../utilities/store";
 
-	const { labelText, ctx, onChange } = $props<{
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const { labelText, setting } = $props<{
 		labelText: string;
-		ctx: SettingContext;
-		onChange: (value: boolean, ctx: any) => void;
+		setting: CheckboxSetting<any>;
 	}>();
+	const ctx = setting.context;
 	let value = $state(false);
 
 	onMount(async () => {
@@ -17,7 +19,7 @@
 
 	async function handleChange(event: Event) {
 		const newValue = (event.target as HTMLInputElement).checked;
-		await onChange(newValue, ctx);
+		await applySettingChange(setting, newValue);
 		value = newValue;
 	}
 </script>

@@ -1,8 +1,8 @@
 import { defineSetting } from "@features/types";
 import { query } from "@lib/utilities/actual-api";
 import { getCategoryColor, loadCategoryColors, setCategoryColor } from "@lib/utilities/category-colors";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 import { mountToNode } from "@lib/utilities/svelte";
 import ColorPicker from "./ColorPicker.svelte";
 
@@ -64,9 +64,8 @@ const CSS = `
 	}
 `;
 
-let enabled = false;
-let observer: MutationObserver | null = null;
 let popoverEl: HTMLElement | null = null;
+let stopOutsideClick: (() => void) | null = null;
 
 function getCategoryIdForRow(row: HTMLElement): string | null {
 	const idSrc = row.querySelector('[data-testid*="sum-amount-"], [data-testid*="leftover-"]');
@@ -76,6 +75,8 @@ function getCategoryIdForRow(row: HTMLElement): string | null {
 }
 
 function closePopover() {
+	stopOutsideClick?.();
+	stopOutsideClick = null;
 	if (popoverEl) {
 		popoverEl.remove();
 		popoverEl = null;
@@ -102,28 +103,8 @@ function openColorPicker(anchor: HTMLElement, catId: string) {
 	document.body.appendChild(wrap);
 	popoverEl = wrap;
 
-	const rect = anchor.getBoundingClientRect();
-	const popRect = wrap.getBoundingClientRect();
-	let top = rect.bottom + 4;
-	let left = rect.left;
-
-	if (top + popRect.height > window.innerHeight - 8) {
-		top = Math.max(8, rect.top - popRect.height - 4);
-	}
-	if (left + popRect.width > window.innerWidth - 8) {
-		left = Math.max(8, window.innerWidth - popRect.width - 8);
-	}
-
-	wrap.style.top = `${top}px`;
-	wrap.style.left = `${left}px`;
-
-	const onOutside = (e: MouseEvent) => {
-		if (!wrap.contains(e.target as Node) && e.target !== anchor) {
-			closePopover();
-			document.removeEventListener("mousedown", onOutside);
-		}
-	};
-	setTimeout(() => document.addEventListener("mousedown", onOutside), 0);
+	positionPopover(wrap, anchor);
+	stopOutsideClick = onOutsideClick([wrap, anchor], closePopover);
 }
 
 function decorateRow(row: HTMLElement) {
@@ -203,26 +184,6 @@ function cleanup() {
 	}
 }
 
-function startObserver() {
-	if (observer) return;
-	let scheduled = false;
-	observer = new MutationObserver(() => {
-		if (!scheduled) {
-			scheduled = true;
-			requestAnimationFrame(() => {
-				scheduled = false;
-				scanRows();
-			});
-		}
-	});
-	observer.observe(document.body, { childList: true, subtree: true });
-}
-
-function stopObserver() {
-	observer?.disconnect();
-	observer = null;
-}
-
 export const categoryColorDots = defineSetting({
 	type: "checkbox",
 	label: "Category Color Dots",
@@ -230,28 +191,14 @@ export const categoryColorDots = defineSetting({
 		key: STORAGE_KEY,
 		defaultValue: true,
 	},
-	init: async (ctx) => {
-		enabled = Boolean(await getValue(ctx.key, ctx.defaultValue));
-		if (!enabled) return;
-		await loadCategoryColors();
-		applyGlobalCSS(CSS, STORAGE_KEY);
-		scanRows();
-		startObserver();
-		loadCategoryMap().then(() => scanRows());
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		enabled = value;
-		if (value) {
-			await loadCategoryColors();
-			applyGlobalCSS(CSS, STORAGE_KEY);
-			scanRows();
-			startObserver();
-			loadCategoryMap().then(() => scanRows());
-		} else {
-			stopObserver();
+	css: () => CSS,
+	init: async () => {
+		await Promise.all([loadCategoryColors(), loadCategoryMap()]);
+		const unwatch = watchDom(scanRows);
+
+		return () => {
+			unwatch();
 			cleanup();
-			applyGlobalCSS("", STORAGE_KEY);
-		}
+		};
 	},
 });

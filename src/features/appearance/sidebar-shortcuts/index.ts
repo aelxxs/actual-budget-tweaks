@@ -1,12 +1,10 @@
 import { defineSetting } from "@features/types";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
 import { mount, unmount } from "svelte";
 import ShortcutsBar from "./ShortcutsBar.svelte";
 
 const BAR_ATTR = "data-abt-shortcuts-bar";
 
-let observer: MutationObserver | null = null;
-let scheduled = false;
 let barInstance: ReturnType<typeof mount> | null = null;
 let barContainer: HTMLElement | null = null;
 
@@ -51,15 +49,6 @@ function cleanup(): void {
 	}
 }
 
-function scheduleRender(): void {
-	if (scheduled) return;
-	scheduled = true;
-	requestAnimationFrame(() => {
-		scheduled = false;
-		renderBar();
-	});
-}
-
 export const sidebarShortcuts = defineSetting({
 	type: "checkbox",
 	label: "Sidebar Shortcuts",
@@ -67,44 +56,12 @@ export const sidebarShortcuts = defineSetting({
 		key: "sidebar-shortcuts-enabled",
 		defaultValue: false,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (!enabled) return;
+	init: () => {
+		const unwatch = watchDom(renderBar);
 
-		function tryRender() {
-			if (document.querySelector('a[href="/budget"]')) {
-				renderBar();
-			} else {
-				setTimeout(tryRender, 500);
-			}
-		}
-		tryRender();
-
-		observer = new MutationObserver(() => {
-			if (!document.querySelector(`[${BAR_ATTR}]`) && document.querySelector('a[href="/budget"]')) {
-				scheduleRender();
-			}
-		});
-		observer.observe(document.body, { childList: true, subtree: true });
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			renderBar();
-			if (!observer) {
-				observer = new MutationObserver(() => {
-					if (!document.querySelector(`[${BAR_ATTR}]`) && document.querySelector('a[href="/budget"]')) {
-						scheduleRender();
-					}
-				});
-				observer.observe(document.body, { childList: true, subtree: true });
-			}
-		} else {
-			if (observer) {
-				observer.disconnect();
-				observer = null;
-			}
+		return () => {
+			unwatch();
 			cleanup();
-		}
+		};
 	},
 });

@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 const ICON_ATTR = "data-abt-icon-replaced";
 
@@ -46,8 +46,6 @@ function replaceIcons() {
 	}
 }
 
-let observer: MutationObserver | null = null;
-
 export const sidebarIcons = defineSetting({
 	type: "checkbox",
 	label: "Modern Sidebar Icons",
@@ -55,35 +53,15 @@ export const sidebarIcons = defineSetting({
 		key: "modern-sidebar-icons",
 		defaultValue: true,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (!enabled) return;
+	init: () => {
+		const unwatch = watchDom(replaceIcons);
 
-		replaceIcons();
-
-		observer = new MutationObserver(() => {
-			replaceIcons();
-		});
-
-		observer.observe(document.body, { childList: true, subtree: true });
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			replaceIcons();
-			if (!observer) {
-				observer = new MutationObserver(() => replaceIcons());
-				observer.observe(document.body, { childList: true, subtree: true });
-			}
-		} else {
-			if (observer) {
-				observer.disconnect();
-				observer = null;
-			}
+		return () => {
+			unwatch();
 			document.querySelectorAll(`[${ICON_ATTR}]`).forEach((el) => {
 				el.removeAttribute(ICON_ATTR);
 			});
 			window.location.reload();
-		}
+		};
 	},
 });

@@ -1,6 +1,5 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 const STORAGE_KEY = "tag-styling";
 const ATTR = "data-abt-tag";
@@ -140,28 +139,6 @@ function scanTags() {
 	}
 }
 
-let observer: MutationObserver | null = null;
-
-function startObserver() {
-	if (observer) return;
-	let scheduled = false;
-	observer = new MutationObserver(() => {
-		if (!scheduled) {
-			scheduled = true;
-			requestAnimationFrame(() => {
-				scheduled = false;
-				scanTags();
-			});
-		}
-	});
-	observer.observe(document.body, { childList: true, subtree: true });
-}
-
-function stopObserver() {
-	observer?.disconnect();
-	observer = null;
-}
-
 function restoreHash(el: HTMLElement) {
 	const hash = el.querySelector(".abt-tag-hash");
 	if (hash) {
@@ -195,23 +172,13 @@ export const tagStyling = defineSetting({
 		key: STORAGE_KEY,
 		defaultValue: true,
 	},
-	init: async (ctx) => {
-		const enabled = Boolean(await getValue(ctx.key, ctx.defaultValue));
-		if (!enabled) return;
-		applyGlobalCSS(CSS, STORAGE_KEY);
-		scanTags();
-		startObserver();
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			applyGlobalCSS(CSS, STORAGE_KEY);
-			scanTags();
-			startObserver();
-		} else {
-			stopObserver();
+	css: () => CSS,
+	init: () => {
+		const unwatch = watchDom(scanTags);
+
+		return () => {
+			unwatch();
 			cleanup();
-			applyGlobalCSS("", STORAGE_KEY);
-		}
+		};
 	},
 });

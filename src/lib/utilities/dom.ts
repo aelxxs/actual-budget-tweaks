@@ -77,6 +77,32 @@ export function dataTestId(id: string): string {
 	return `[data-testid="${id}"]`;
 }
 
+/**
+ * Creates a MutationObserver that debounces its callback to one call per
+ * animation frame. Returns `{ observe, disconnect }` matching the native API.
+ */
+export function createDebouncedObserver(
+	callback: () => void,
+	options: MutationObserverInit = { childList: true, subtree: true },
+): { observe: (target: Node) => void; disconnect: () => void } {
+	let scheduled = false;
+	const observer = new MutationObserver(() => {
+		if (!scheduled) {
+			scheduled = true;
+			requestAnimationFrame(() => {
+				scheduled = false;
+				callback();
+			});
+		}
+	});
+	return {
+		observe: (target) => observer.observe(target, options),
+		disconnect: () => observer.disconnect(),
+	};
+}
+
+export type DebouncedObserver = ReturnType<typeof createDebouncedObserver>;
+
 export interface WaitForElementOptions {
 	/** How many times to retry before giving up. Default: 10 */
 	maxRetries?: number;
@@ -112,44 +138,4 @@ export function waitForElement(selector: string, options: WaitForElementOptions 
 
 		check();
 	});
-}
-
-/**
- * Registers a callback to run whenever the page matches `pageName`.
- * Matches against `window.location.pathname` (contains check).
- * Re-evaluates on every `popstate` / `hashchange` navigation event.
- *
- * @example
- * onPage("settings", () => { ... })
- */
-export function onPage(pageName: string, callback: () => void): () => void {
-	const matches = () => window.location.pathname.includes(pageName);
-
-	const handler = () => {
-		if (matches()) callback();
-	};
-
-	// Patch pushState/replaceState once, globally
-	if (!(history as any).__abt_patched) {
-		for (const method of ["pushState", "replaceState"] as const) {
-			const original = history[method].bind(history);
-			(history as any)[method] = function (...args: Parameters<typeof history.pushState>) {
-				original(...args);
-				window.dispatchEvent(new Event("abt:locationchange"));
-			};
-		}
-		(history as any).__abt_patched = true;
-	}
-
-	if (matches()) callback();
-
-	window.addEventListener("popstate", handler);
-	window.addEventListener("hashchange", handler);
-	window.addEventListener("abt:locationchange", handler);
-
-	return () => {
-		window.removeEventListener("popstate", handler);
-		window.removeEventListener("hashchange", handler);
-		window.removeEventListener("abt:locationchange", handler);
-	};
 }

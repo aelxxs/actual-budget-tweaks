@@ -33,13 +33,19 @@ export default defineContentScript({
 			if (mounted) return;
 			mounted = true;
 
-			const [{ default: Settings }, { scripts, coreScripts }, { createElement }, { mount, unmount }] =
-				await Promise.all([
-					import("@lib/ActualSettings.svelte"),
-					import("@features/index"),
-					import("@lib/utilities/dom"),
-					import("svelte"),
-				]);
+			const [
+				{ default: Settings },
+				{ scripts, coreScripts },
+				{ createElement },
+				{ mount, unmount },
+				{ bootstrapSettings },
+			] = await Promise.all([
+				import("@lib/ActualSettings.svelte"),
+				import("@features/index"),
+				import("@lib/utilities/dom"),
+				import("svelte"),
+				import("@features/runtime"),
+			]);
 
 			let baseCss: string;
 			let componentCss: string;
@@ -63,15 +69,7 @@ export default defineContentScript({
 				}),
 			);
 
-			for (const core of coreScripts) {
-				core.init();
-			}
-
-			for (const setting of scripts.flat()) {
-				if (!setting.init) continue;
-				// @ts-ignore -- TODO: fix this type error
-				setting.init(setting.context);
-			}
+			await bootstrapSettings([...coreScripts, ...scripts.flat()]);
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
 				anchor: "[data-testid='settings'] > :nth-child(2)",
@@ -94,5 +92,15 @@ export default defineContentScript({
 		ctx.addEventListener(window, "wxt:locationchange", () => {
 			checkAndMount();
 		});
+
+		// Re-check immediately when the configured Actual URL changes (e.g. saved
+		// from the popup), instead of waiting for the next full page reload.
+		function handleStorageChange(changes: Record<string, unknown>, areaName: string) {
+			if (areaName === "local" && "local:user-link" in changes) {
+				checkAndMount();
+			}
+		}
+		browser.storage.onChanged.addListener(handleStorageChange);
+		ctx.onInvalidated(() => browser.storage.onChanged.removeListener(handleStorageChange));
 	},
 });

@@ -1,4 +1,5 @@
 import { applyGlobalCSS, createElement } from "@lib/utilities/dom";
+import { watchDom } from "@lib/utilities/dom-watcher";
 import { clamp } from "@lib/utilities/math";
 import { getValue, setValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
@@ -236,16 +237,9 @@ export const sidePanel = {
 			sync();
 		});
 
-		const observer = new MutationObserver(() => {
-			observer.disconnect();
-			requestAnimationFrame(() => {
-				sync();
-				observer.observe(document.body, { childList: true, subtree: true });
-			});
-		});
+		const unwatch = watchDom(sync);
 
-		sync();
-		observer.observe(document.body, { childList: true, subtree: true });
+		return () => unwatch();
 	},
 };
 

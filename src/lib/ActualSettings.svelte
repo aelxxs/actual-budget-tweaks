@@ -209,12 +209,7 @@
 					<div class="settings-list stack" style="--space: 0.55rem;">
 						{#each section.items as item (item.context.key)}
 							{#if item.type === "select"}
-								<SelectOption
-									labelText={item.label}
-									options={item.options}
-									ctx={item.context}
-									onChange={item.onChange}
-								/>
+								<SelectOption labelText={item.label} options={item.options} setting={item} />
 							{:else if item.type === "custom"}
 								{#if item.component}
 									{@const C = item.component}
@@ -226,7 +221,7 @@
 									<div data-testid={item.context.key}></div>
 								{/if}
 							{:else if item.type === "checkbox"}
-								<CheckboxOption labelText={item.label} ctx={item.context} onChange={item.onChange} />
+								<CheckboxOption labelText={item.label} setting={item} />
 							{/if}
 						{/each}
 					</div>

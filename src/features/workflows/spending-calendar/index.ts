@@ -1,5 +1,7 @@
 import { defineSetting } from "@features/types";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
+import { watchRoute } from "@lib/utilities/route-watcher";
 import { mount, unmount } from "svelte";
 import Calendar from "./Calendar.svelte";
 
@@ -8,7 +10,6 @@ const CALENDAR_ATTR = "data-abt-calendar";
 
 const CALENDAR_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="7" y="13" width="3" height="3" rx="0.5"/><rect x="14" y="13" width="3" height="3" rx="0.5"/></svg>`;
 
-let observer: MutationObserver | null = null;
 let calendarInstance: ReturnType<typeof mount> | null = null;
 let calendarContainer: HTMLElement | null = null;
 let hiddenChildren: { el: HTMLElement; display: string }[] = [];
@@ -17,7 +18,7 @@ let previousPath: string | null = null;
 const CONTENT_CONTAINER = `div:has(> div:nth-child(4)):has([data-testid='budget-table'], [role='main'], [data-testid='account-name'])`;
 
 function isCalendarOpen(): boolean {
-	return window.location.pathname === "/calendar";
+	return matchesPage(Page.Calendar);
 }
 
 function updateActiveState(): void {
@@ -162,7 +163,7 @@ function attachCloseListeners(): void {
 	}
 }
 
-function cleanup(): void {
+function cleanup(unwatch: () => void, stopWatchingRoute: () => void): void {
 	closeCalendar();
 	document.body.classList.remove("abt-calendar-open");
 	document.querySelectorAll(`[${LINK_ATTR}]`).forEach((el) => {
@@ -173,10 +174,8 @@ function cleanup(): void {
 			el.remove();
 		}
 	});
-	if (observer) {
-		observer.disconnect();
-		observer = null;
-	}
+	unwatch();
+	stopWatchingRoute();
 }
 
 export const spendingCalendar = defineSetting({
@@ -186,60 +185,32 @@ export const spendingCalendar = defineSetting({
 		key: "spending-calendar-enabled",
 		defaultValue: false,
 	},
-	init: async (ctx) => {
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-		if (!enabled) return;
+	init: () => {
+		let injectedOnce = false;
 
-		function tryInject() {
-			if (document.querySelector('a[href="/schedules"]')) {
-				injectSidebarLink();
-				if (isCalendarOpen()) {
-					openCalendar();
-				}
-			} else {
-				setTimeout(tryInject, 500);
-			}
-		}
-		tryInject();
-
-		observer = new MutationObserver(() => {
+		const unwatch = watchDom(() => {
 			if (!document.querySelector(`[${LINK_ATTR}]`) && document.querySelector('a[href="/schedules"]')) {
-				requestAnimationFrame(() => injectSidebarLink());
+				if (!injectedOnce) {
+					injectedOnce = true;
+					injectSidebarLink();
+					if (isCalendarOpen()) {
+						openCalendar();
+					}
+				} else {
+					requestAnimationFrame(() => injectSidebarLink());
+				}
 			}
 			attachCloseListeners();
 			updateActiveState();
 		});
-		observer.observe(document.body, { childList: true, subtree: true });
 
-		window.addEventListener("popstate", () => {
+		const stopWatchingRoute = watchRoute(() => {
 			if (calendarContainer && !isCalendarOpen()) {
 				closeCalendar();
 			}
 			updateActiveState();
 		});
 
-		window.addEventListener("abt:locationchange", () => {
-			if (calendarContainer && !isCalendarOpen()) {
-				closeCalendar();
-			}
-			updateActiveState();
-		});
-	},
-	onChange: async (value, ctx) => {
-		await setValue(ctx.key, value);
-		if (value) {
-			injectSidebarLink();
-			if (!observer) {
-				observer = new MutationObserver(() => {
-					if (!document.querySelector(`[${LINK_ATTR}]`) && document.querySelector('a[href="/schedules"]')) {
-						requestAnimationFrame(() => injectSidebarLink());
-					}
-					updateActiveState();
-				});
-				observer.observe(document.body, { childList: true, subtree: true });
-			}
-		} else {
-			cleanup();
-		}
+		return () => cleanup(unwatch, stopWatchingRoute);
 	},
 });

@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
 
 export const hideMonthOnScroll = defineSetting({
 	type: "checkbox",
@@ -8,28 +8,23 @@ export const hideMonthOnScroll = defineSetting({
 	context: {
 		key: "hide-months-on-scroll",
 		defaultValue: false,
-		css: `
-			.month-selection {
-				transition: opacity 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease;
-				overflow: visible;
-			}
-			.tm-collapsed {
-				opacity: 0 !important;
-				height: 0 !important;
-				margin-top: -1.5rem !important; // sidebar adds 1.5rem top margin
-				margin-bottom: 0 !important;
-				padding-top: 0 !important;
-				padding-bottom: 0 !important;
-				pointer-events: none;
-			}
-		`,
-		_observer: null as MutationObserver | null,
 	},
-	init: async (ctx) => {
-		applyGlobalCSS(ctx.css, ctx.key);
-
-		const enabled = await getValue(ctx.key, ctx.defaultValue);
-
+	css: () => `
+		.month-selection {
+			transition: opacity 0.2s ease, height 0.2s ease, margin 0.2s ease, padding 0.2s ease;
+			overflow: visible;
+		}
+		.tm-collapsed {
+			opacity: 0 !important;
+			height: 0 !important;
+			margin-top: -1.5rem !important; // sidebar adds 1.5rem top margin
+			margin-bottom: 0 !important;
+			padding-top: 0 !important;
+			padding-bottom: 0 !important;
+			pointer-events: none;
+		}
+	`,
+	init: () => {
 		function setup(container: Element, target: HTMLElement) {
 			let isCollapsed = false;
 			let transitionDuration = 400;
@@ -55,58 +50,61 @@ export const hideMonthOnScroll = defineSetting({
 
 			setOriginalStyles();
 
-			container.addEventListener(
-				"scroll",
-				function () {
-					if (container.scrollTop > 0 && !isCollapsed) {
-						setOriginalStyles();
-						void target.offsetWidth;
-						target.classList.add("tm-collapsed");
-						target.style.height = "0px";
-						target.style.marginTop = "0px";
-						target.style.marginBottom = "0px";
-						target.style.paddingTop = "0px";
-						target.style.paddingBottom = "0px";
-						isCollapsed = true;
-					} else if (container.scrollTop === 0 && isCollapsed) {
-						target.classList.remove("tm-collapsed");
-						setOriginalStyles();
-						void target.offsetWidth;
-						setTimeout(() => {
-							target.removeAttribute("style");
-						}, transitionDuration);
-						isCollapsed = false;
-					}
-				},
-				{ passive: true },
-			);
+			function onScroll() {
+				if (container.scrollTop > 0 && !isCollapsed) {
+					setOriginalStyles();
+					void target.offsetWidth;
+					target.classList.add("tm-collapsed");
+					target.style.height = "0px";
+					target.style.marginTop = "0px";
+					target.style.marginBottom = "0px";
+					target.style.paddingTop = "0px";
+					target.style.paddingBottom = "0px";
+					isCollapsed = true;
+				} else if (container.scrollTop === 0 && isCollapsed) {
+					target.classList.remove("tm-collapsed");
+					setOriginalStyles();
+					void target.offsetWidth;
+					setTimeout(() => {
+						target.removeAttribute("style");
+					}, transitionDuration);
+					isCollapsed = false;
+				}
+			}
+
+			container.addEventListener("scroll", onScroll, { passive: true });
+
+			return () => {
+				container.removeEventListener("scroll", onScroll);
+				target.classList.remove("month-selection", "tm-collapsed");
+				target.removeAttribute("style");
+				delete target.dataset.tmInitialized;
+			};
 		}
 
-		const observer = new MutationObserver(() => {
+		let teardown: (() => void) | null = null;
+
+		const unwatch = watchDom(() => {
+			if (!matchesPage(Page.Budget)) {
+				teardown?.();
+				teardown = null;
+				return;
+			}
+
 			const budgetTable = document.querySelector('[data-testid="budget-totals"]')?.nextElementSibling;
 			const monthSelection = document.querySelector('[data-testid="budget-table"]')
 				?.previousElementSibling as HTMLElement | null;
 
 			if (budgetTable && monthSelection && !monthSelection.dataset.tmInitialized) {
-				setup(budgetTable, monthSelection);
+				teardown = setup(budgetTable, monthSelection);
 				monthSelection.dataset.tmInitialized = "true";
-				return true;
 			}
-
-			return false;
 		});
 
-		if (enabled) {
-			observer.observe(document.body, { childList: true, subtree: true });
-		}
-		ctx._observer = observer;
-	},
-	onChange: (value, ctx) => {
-		if (!value) {
-			ctx._observer?.disconnect();
-		} else {
-			ctx._observer?.observe(document.body, { childList: true, subtree: true });
-		}
-		setValue(ctx.key, value);
+		return () => {
+			unwatch();
+			teardown?.();
+			teardown = null;
+		};
 	},
 });
