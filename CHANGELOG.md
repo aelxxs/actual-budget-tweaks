@@ -1,6 +1,36 @@
 # Changelog
 
 
+## v0.1.41
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.40...v0.1.41)
+
+### 🚀 Enhancements
+
+- Add Icon component and icon rendering functionality ([9f143fc](https://github.com/aelxxs/actual-budget-tweaks/commit/9f143fc))
+- Replace inline SVGs with Icon component for improved consistency and maintainability ([eb4d94d](https://github.com/aelxxs/actual-budget-tweaks/commit/eb4d94d))
+- Implement tooltip functionality with dynamic positioning and styling ([f4192d6](https://github.com/aelxxs/actual-budget-tweaks/commit/f4192d6))
+- Add budget totals label styling with dynamic label management ([d418a36](https://github.com/aelxxs/actual-budget-tweaks/commit/d418a36))
+- Add tooltip styling and budget totals label to core scripts and readability ([de4941c](https://github.com/aelxxs/actual-budget-tweaks/commit/de4941c))
+- Add toggle button for insights visibility and update icon definitions ([fbb074f](https://github.com/aelxxs/actual-budget-tweaks/commit/fbb074f))
+- Update sidebar styles for improved layout and responsiveness ([f6bc205](https://github.com/aelxxs/actual-budget-tweaks/commit/f6bc205))
+- Enhance tab styles and improve layout consistency in theme editor ([c4304a7](https://github.com/aelxxs/actual-budget-tweaks/commit/c4304a7))
+- Add icon.svg to project configuration ([790a13b](https://github.com/aelxxs/actual-budget-tweaks/commit/790a13b))
+- Implement release notification feature with changelog parsing and UI integration ([be96bd6](https://github.com/aelxxs/actual-budget-tweaks/commit/be96bd6))
+
+### 🩹 Fixes
+
+- Redeploy website after release workflow completes, not on its trigger push ([ab2c7c8](https://github.com/aelxxs/actual-budget-tweaks/commit/ab2c7c8))
+- Ensure release notes are set only on update events ([6fafc39](https://github.com/aelxxs/actual-budget-tweaks/commit/6fafc39))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.40 ([603fdc7](https://github.com/aelxxs/actual-budget-tweaks/commit/603fdc7))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.40
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.39...v0.1.40)
