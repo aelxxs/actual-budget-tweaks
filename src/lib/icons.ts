@@ -18,6 +18,16 @@ const ICONS = {
 		body: '<path d="M4 6l4 4 4-4"/>',
 		strokeWidth: 2,
 	},
+	chevronRight: {
+		viewBox: "0 0 16 16",
+		body: '<path d="M6 4l4 4-4 4"/>',
+		strokeWidth: 2,
+	},
+	chevronLeft: {
+		viewBox: "0 0 16 16",
+		body: '<path d="M10 4l-4 4 4 4"/>',
+		strokeWidth: 2,
+	},
 	pencil: {
 		variant: "fill",
 		viewBox: "0 0 16 16",
