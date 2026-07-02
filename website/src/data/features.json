@@ -1,0 +1,212 @@
+[
+	{
+		"title": "Layout and Density",
+		"description": "Spacing, borders, columns, and overall compactness",
+		"items": [
+			{
+				"label": "Background Pattern",
+				"description": "A subtle pattern behind the app background.",
+				"icon": null,
+				"group": "General"
+			},
+			{
+				"label": "Border Radius",
+				"description": "Corner roundness for cards and buttons app-wide.",
+				"icon": null,
+				"group": "General"
+			},
+			{
+				"label": "Budget Table Row Height",
+				"description": "Adjust how tall each budget table row is.",
+				"icon": null,
+				"group": "Budget"
+			},
+			{
+				"label": "Dark Report Cards",
+				"description": "Use a darker background for widget cards on the Reports page.",
+				"icon": "palette",
+				"group": "Reports"
+			},
+			{
+				"label": "Hide Month Selection On Scroll",
+				"description": "Collapse the month navigation row while scrolling the budget table.",
+				"icon": "calendar",
+				"group": "Budget"
+			},
+			{
+				"label": "Toggle Column Visibility",
+				"description": "Show or hide individual transaction table columns.",
+				"icon": "rows",
+				"group": "Transactions"
+			},
+			{
+				"label": "Resizable Transaction Columns",
+				"description": "Drag column edges to resize the transaction table.",
+				"icon": "layout",
+				"group": "Transactions"
+			},
+			{
+				"label": "Sidebar Account Spacing",
+				"description": "Adjust the spacing between accounts in the sidebar.",
+				"icon": null,
+				"group": "Sidebar"
+			}
+		]
+	},
+	{
+		"title": "Readability",
+		"description": "Highlights, contrast, and visual clarity",
+		"items": [
+			{
+				"label": "Alternating Transaction Row Colors",
+				"description": "Zebra-stripe the transaction table for easier scanning.",
+				"icon": "rows",
+				"group": "Transactions"
+			},
+			{
+				"label": "Budget Card Styling",
+				"description": "Add a spending flow bar to the current month's budget card.",
+				"icon": "networth",
+				"group": "Budget"
+			},
+			{
+				"label": "Color Negative Account Balances",
+				"description": "Highlight negative account balances in red.",
+				"icon": "palette",
+				"group": "Accounts"
+			},
+			{
+				"label": "Color Transactions",
+				"description": "Color upcoming scheduled transaction rows.",
+				"icon": "palette",
+				"group": "Transactions"
+			},
+			{
+				"label": "Dim Reconciled Transactions",
+				"description": "Fade reconciled rows in the transaction table.",
+				"icon": "eyeOff",
+				"group": "Transactions"
+			},
+			{
+				"label": "Improve Notification Contrast",
+				"description": "Darker text on notification banners for readability.",
+				"icon": "eye",
+				"group": "General"
+			},
+			{
+				"label": "Show Daily Available",
+				"description": "Show a daily spending allowance under To Budget.",
+				"icon": "calculator",
+				"group": "Budget"
+			},
+			{
+				"label": "Highlight Uncategorized Transactions",
+				"description": "Flag transactions that are missing a category.",
+				"icon": "star",
+				"group": "Transactions"
+			},
+			{
+				"label": "Tag Styling",
+				"description": "Color #tags in notes and transaction fields.",
+				"icon": "palette",
+				"group": "Transactions"
+			},
+			{
+				"label": "Header Border",
+				"description": "Add a border under the top navigation bar.",
+				"icon": "square",
+				"group": "General"
+			},
+			{
+				"label": "Report Card Borders",
+				"description": "Add borders around widget cards on the Reports page.",
+				"icon": "square",
+				"group": "Reports"
+			},
+			{
+				"label": "Budget Page Borders",
+				"description": "Add borders around sections of the budget table.",
+				"icon": "square",
+				"group": "Budget"
+			},
+			{
+				"label": "Budget Totals Label Styling",
+				"description": "Mute and uppercase the Budgeted/Spent/Balance labels.",
+				"icon": "layout",
+				"group": "Budget"
+			}
+		]
+	},
+	{
+		"title": "Appearance",
+		"description": "UI chrome and personalization",
+		"items": [
+			{
+				"label": "Improved Sidebar Design",
+				"description": "A cleaner layout for the account sidebar.",
+				"icon": "layout",
+				"group": "Sidebar"
+			},
+			{
+				"label": "Modern Sidebar Icons",
+				"description": "Replaces the nav icons with a matching, modern set.",
+				"icon": "shuffle",
+				"group": "Sidebar"
+			},
+			{
+				"label": "Sidebar Search Bar",
+				"description": "Quickly filter accounts, categories, and pages.",
+				"icon": "search",
+				"group": "Sidebar"
+			},
+			{
+				"label": "Sidebar Shortcuts",
+				"description": "Pin quick links and tools to the sidebar.",
+				"icon": "star",
+				"group": "Sidebar"
+			},
+			{
+				"label": "Account Icon Picker",
+				"description": "Set a custom favicon or emoji icon per account.",
+				"icon": "image",
+				"group": "Sidebar"
+			},
+			{
+				"label": "Category Color Dots",
+				"description": "Show a colored dot for each transaction's category.",
+				"icon": "palette",
+				"group": "Categories"
+			},
+			{
+				"label": "Category Emoji Picker",
+				"description": "Set a custom emoji icon for each category.",
+				"icon": "image",
+				"group": "Categories"
+			}
+		]
+	},
+	{
+		"title": "Workflows",
+		"description": "Behavioral and workflow improvements",
+		"items": [
+			{
+				"label": "Category Template Insights",
+				"description": "Progress bars showing how funded each category's #template is.",
+				"icon": "interest",
+				"group": null
+			},
+			{
+				"label": "Template Plan",
+				"description": "Side panel breakdown after applying or overwriting budget templates.",
+				"icon": "layout",
+				"group": null
+			},
+			{
+				"label": "Spending Calendar",
+				"description": "A calendar view of daily spending, added to the sidebar.",
+				"icon": "calendar",
+				"group": null
+			}
+		]
+	}
+]

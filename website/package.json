@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "prebuild": "cp -f ../public/icon/128.png public/icon/ 2>/dev/null; true"
+    "prebuild": "node ../scripts/generate-features-manifest.mjs && cp -f ../public/icon/128.png public/icon/ 2>/dev/null; true"
   },
   "dependencies": {
     "astro": "^5.10.1"

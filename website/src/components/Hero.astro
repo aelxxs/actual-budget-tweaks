@@ -10,10 +10,13 @@ const base = import.meta.env.BASE_URL;
 				<img src={`${base}icon/icon.svg`} alt="" width="28" height="28" class="hero__logo" />
 				<span class="hero__wordmark">Actual Budget Tweaks</span>
 			</div>
-			<a href="https://github.com/aelxxs/actual-budget-tweaks" target="_blank" rel="noopener" class="hero__nav-link">
-				<img src={`${base}icon/github.svg`} alt="" width="16" height="16" class="hero__nav-icon" />
-				GitHub
-			</a>
+			<div class="cluster" style="--cluster-gap:1.1rem">
+				<a href="/features" class="hero__nav-link">All settings</a>
+				<a href="https://github.com/aelxxs/actual-budget-tweaks" target="_blank" rel="noopener" class="hero__nav-link">
+					<img src={`${base}icon/github.svg`} alt="" width="16" height="16" class="hero__nav-icon" />
+					GitHub
+				</a>
+			</div>
 		</nav>
 
 		<div class="hero__content stack stack--md">

@@ -12,6 +12,7 @@
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "generate:features-manifest": "node scripts/generate-features-manifest.mjs",
     "postinstall": "wxt prepare"
   },
   "devDependencies": {

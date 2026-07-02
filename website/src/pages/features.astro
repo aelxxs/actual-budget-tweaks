@@ -1,0 +1,178 @@
+---
+import Base from "../layouts/Base.astro";
+import sections from "../data/features.json";
+
+interface FeatureItem {
+	label: string;
+	description: string | null;
+	icon: string | null;
+	group: string | null;
+}
+
+interface FeatureSection {
+	title: string;
+	description: string | null;
+	items: FeatureItem[];
+}
+
+const typedSections = sections as FeatureSection[];
+const totalCount = typedSections.reduce((n, s) => n + s.items.length, 0);
+
+function groupItems(items: FeatureItem[]): { label: string | null; items: FeatureItem[] }[] {
+	const order: string[] = [];
+	const buckets = new Map<string, FeatureItem[]>();
+	const ungrouped: FeatureItem[] = [];
+	for (const item of items) {
+		if (!item.group) {
+			ungrouped.push(item);
+			continue;
+		}
+		if (!buckets.has(item.group)) {
+			buckets.set(item.group, []);
+			order.push(item.group);
+		}
+		buckets.get(item.group)!.push(item);
+	}
+	const result: { label: string | null; items: FeatureItem[] }[] = order.map((g) => ({
+		label: g,
+		items: buckets.get(g)!,
+	}));
+	if (ungrouped.length) result.push({ label: null, items: ungrouped });
+	return result;
+}
+---
+
+<Base
+	title="All Settings — Actual Budget Tweaks"
+	description="Every setting available in Actual Budget Tweaks, generated directly from the extension's source."
+>
+	<main class="features-page center">
+		<header class="features-page__header stack stack--sm">
+			<a href="/" class="features-page__back">&larr; Back to home</a>
+			<h1>All Settings</h1>
+			<p class="features-page__subtitle">
+				Every setting Actual Budget Tweaks offers — {totalCount} in total. Turn on what you want, ignore the rest.
+			</p>
+		</header>
+
+		{
+			typedSections.map((section) => (
+				<section class="settings-section">
+					<div class="settings-section__header">
+						<h2>{section.title}</h2>
+						{section.description && <p>{section.description}</p>}
+					</div>
+					<div class="settings-section__groups">
+						{groupItems(section.items).map((group) => (
+							<div class="settings-group">
+								{group.label && <div class="settings-group__label">{group.label}</div>}
+								<ul class="settings-list">
+									{group.items.map((item) => (
+										<li class="settings-list__item">
+											<span class="settings-list__label">{item.label}</span>
+											{item.description && (
+												<span class="settings-list__desc">{item.description}</span>
+											)}
+										</li>
+									))}
+								</ul>
+							</div>
+						))}
+					</div>
+				</section>
+			))
+		}
+	</main>
+</Base>
+
+<style>
+	.features-page {
+		padding-block: 3rem 5rem;
+		max-inline-size: 760px;
+	}
+
+	.features-page__header h1 {
+		font-size: clamp(1.8rem, 4vw, 2.4rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+	}
+
+	.features-page__subtitle {
+		color: var(--text-secondary);
+		font-size: 1rem;
+		max-inline-size: 60ch;
+	}
+
+	.features-page__back {
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+		text-decoration: none;
+	}
+
+	.features-page__back:hover {
+		color: inherit;
+	}
+
+	.settings-section {
+		margin-block-start: 3rem;
+	}
+
+	.settings-section__header h2 {
+		font-size: 1.3rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+	}
+
+	.settings-section__header p {
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		margin-block-start: 0.2rem;
+	}
+
+	.settings-section__groups {
+		margin-block-start: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.settings-group__label {
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-secondary);
+		margin-block-end: 0.4rem;
+	}
+
+	.settings-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		overflow: hidden;
+		background: var(--surface);
+	}
+
+	.settings-list__item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: 0.7rem 0.9rem;
+	}
+
+	.settings-list__item + .settings-list__item {
+		border-block-start: 1px solid var(--border);
+	}
+
+	.settings-list__label {
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+
+	.settings-list__desc {
+		font-size: 0.82rem;
+		color: var(--text-secondary);
+	}
+</style>
