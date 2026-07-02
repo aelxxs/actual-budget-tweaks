@@ -68,6 +68,34 @@
 		return !normalizedQuery && !!collapsed[title];
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	function groupSectionItems(items: any[]): { label: string | null; items: any[] }[] {
+		const hasAnyGroup = items.some((item) => item.group);
+		if (!hasAnyGroup) return [{ label: null, items }];
+
+		const order: string[] = [];
+		const buckets = new Map<string, any[]>();
+		const ungrouped: any[] = [];
+		for (const item of items) {
+			const g = item.group as string | undefined;
+			if (!g) {
+				ungrouped.push(item);
+				continue;
+			}
+			if (!buckets.has(g)) {
+				buckets.set(g, []);
+				order.push(g);
+			}
+			buckets.get(g)!.push(item);
+		}
+		const result: { label: string | null; items: any[] }[] = order.map((g) => ({
+			label: g,
+			items: buckets.get(g)!,
+		}));
+		if (ungrouped.length) result.push({ label: null, items: ungrouped });
+		return result;
+	}
+
 	const AUX_DEFAULTS: Record<string, unknown> = {
 		"local:category-colors": {},
 		"local:abt-account-icons": {},
@@ -203,23 +231,45 @@
 					<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
 				</button>
 				{#if !isCollapsed}
-					<div class="settings-list stack" style="--space: 0.55rem;">
-						{#each section.items as item (item.context.key)}
-							{#if item.type === "select"}
-								<SelectOption labelText={item.label} options={item.options} setting={item} />
-							{:else if item.type === "custom"}
-								{#if item.component}
-									{@const C = item.component}
-									<div class="custom-setting" data-testid={item.context.key}>
-										<span class="setting-label">{item.label}</span>
-										<C ctx={item.context} />
-									</div>
-								{:else}
-									<div data-testid={item.context.key}></div>
+					<div class="settings-list stack" style="--space: 0.9rem;">
+						{#each groupSectionItems(section.items) as group (group.label ?? "__ungrouped__")}
+							<div class="settings-subgroup">
+								{#if group.label}
+									<div class="subgroup-label">{group.label}</div>
 								{/if}
-							{:else if item.type === "checkbox"}
-								<CheckboxOption labelText={item.label} setting={item} />
-							{/if}
+								<div class="stack" style="--space: 0;">
+									{#each group.items as item (item.context.key)}
+										{#if item.type === "select"}
+											<SelectOption
+												labelText={item.label}
+												options={item.options}
+												setting={item}
+												icon={item.icon}
+											/>
+										{:else if item.type === "custom"}
+											{#if item.component}
+												{@const C = item.component}
+												{@const description = (item as { description?: string }).description}
+												<div class="custom-setting" data-testid={item.context.key}>
+													{#if item.label}
+														<span class="setting-label-group">
+															<span class="setting-label">{item.label}</span>
+															{#if description}
+																<span class="setting-desc">{description}</span>
+															{/if}
+														</span>
+													{/if}
+													<C ctx={item.context} />
+												</div>
+											{:else}
+												<div data-testid={item.context.key}></div>
+											{/if}
+										{:else if item.type === "checkbox"}
+											<CheckboxOption labelText={item.label} setting={item} icon={item.icon} />
+										{/if}
+									{/each}
+								</div>
+							</div>
 						{/each}
 					</div>
 				{/if}
@@ -430,14 +480,50 @@
 			padding: 0 1rem 0.85rem;
 		}
 
+		.settings-subgroup {
+			display: flex;
+			flex-direction: column;
+			gap: 0.3rem;
+		}
+
+		.subgroup-label {
+			font-size: 10px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			color: var(--color-pageTextSubdued);
+			margin-bottom: 0.1rem;
+		}
+
 		.custom-setting {
 			display: flex;
 			flex-direction: column;
 			gap: 0.4rem;
+			padding: 8px;
+			margin: 0 -8px;
+			border-radius: 6px;
+			border-top: 1px solid color-mix(in srgb, var(--color-pageText) 7%, transparent);
+		}
+
+		.custom-setting:first-child {
+			border-top: none;
+		}
+
+		.setting-label-group {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
 		}
 
 		.setting-label {
+			font-size: 13px;
 			font-weight: 500;
+		}
+
+		.setting-desc {
+			font-size: 11px;
+			font-weight: 400;
+			color: var(--color-pageTextSubdued);
 		}
 
 		.header-actions {
