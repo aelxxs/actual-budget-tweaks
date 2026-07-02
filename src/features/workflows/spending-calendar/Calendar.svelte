@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { sidepanel } from "@features/core/side-panel";
 	import { query } from "@lib/utilities/actual-api";
 	import { getCategoryColor, loadCategoryColors } from "@lib/utilities/category-colors";
 	import { loadCurrency, fmtMoney } from "@lib/utilities/currency";
@@ -344,19 +345,15 @@
 			},
 		});
 
-		document.dispatchEvent(
-			new CustomEvent("abt:sidepanel:open", {
-				detail: {
-					title: `${monthNames[month]} ${day.date}`,
-					bodyNode: detailContainer,
-					headerNode: headerContainer,
-				},
-			}),
-		);
+		sidepanel.open({
+			title: `${monthNames[month]} ${day.date}`,
+			bodyNode: detailContainer,
+			headerNode: headerContainer,
+		});
 	}
 
 	function closeDayPanel() {
-		document.dispatchEvent(new CustomEvent("abt:sidepanel:close"));
+		sidepanel.close();
 		cleanupPanel();
 	}
 

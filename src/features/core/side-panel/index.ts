@@ -1,36 +1,25 @@
 import { applyGlobalCSS, createElement } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { clamp } from "@lib/utilities/math";
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, hasValue, setValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
+import {
+	PANEL_CLOSE_EVENT,
+	PANEL_DISMISS_EVENT,
+	PANEL_OPEN_EVENT,
+	PANEL_SET_TITLE_EVENT,
+	SIDEBAR_ATTR,
+	type OpenOptions,
+} from "./api";
 import SidePanelContent from "./Content.svelte";
+import { panelState } from "./panel-state.svelte";
 
-const SIDEBAR_ATTR = "data-abt-side-drawer-sidebar";
 const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
 const DEFAULT_SIDEBAR_WIDTH = 350;
 const MIN_SIDEBAR_WIDTH = 0;
 const MAX_SIDEBAR_WIDTH = 640;
-const PANEL_OPEN_EVENT = "abt:sidepanel:open";
-const PANEL_CLOSE_EVENT = "abt:sidepanel:close";
-const PANEL_DISMISS_EVENT = "abt:sidepanel:dismiss";
-const PANEL_SET_TITLE_EVENT = "abt:sidepanel:set-title";
 
 const GRID_CONTAINER = `div:has(> div:nth-child(4)):has([data-testid='budget-table'], [role='main'], [data-testid='account-name'])`;
-
-type OpenOptions = {
-	title?: string;
-	bodyNode?: unknown;
-	headerNode?: Node | null;
-	persist?: boolean;
-};
-
-type SidePanelApi = {
-	open: (options?: OpenOptions) => void;
-	close: () => void;
-	dismiss: () => void;
-	setTitle: (title: string) => void;
-	isOpen: () => boolean;
-};
 
 function getSafeTitle(title: unknown, fallback: string = "") {
 	if (typeof title !== "string") {
@@ -120,24 +109,6 @@ const CSS = `
 	}
 `;
 
-export const sidepanel: SidePanelApi = {
-	open: (options) => {
-		document.dispatchEvent(new CustomEvent(PANEL_OPEN_EVENT, { detail: options }));
-	},
-	close: () => {
-		document.dispatchEvent(new CustomEvent(PANEL_CLOSE_EVENT));
-	},
-	dismiss: () => {
-		document.dispatchEvent(new CustomEvent(PANEL_DISMISS_EVENT));
-	},
-	setTitle: (title) => {
-		document.dispatchEvent(new CustomEvent(PANEL_SET_TITLE_EVENT, { detail: { title } }));
-	},
-	isOpen: () => {
-		return !!document.querySelector(`[${SIDEBAR_ATTR}]`);
-	},
-};
-
 export const sidePanel = {
 	type: "core" as const,
 	init: async () => {
@@ -148,9 +119,6 @@ export const sidePanel = {
 
 		let isOpen = storedPersist?.route === location.pathname;
 		let sidebarWidth = clamp(Math.round(storedWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-		let panelTitle = "Side Panel";
-		let externalPanelBody: Node | null = null;
-		let externalPanelHeader: Node | null = null;
 
 		const sync = () => {
 			if (!isOpen) {
@@ -170,14 +138,11 @@ export const sidePanel = {
 			sidebar.setAttribute(SIDEBAR_ATTR, "true");
 			sidebar.appendChild(
 				mountToNode(SidePanelContent, {
-					title: panelTitle,
 					onClose: () => {
 						isOpen = false;
 						setValue(PERSIST_KEY, null);
 						sync();
 					},
-					bodyNode: externalPanelBody,
-					headerNode: externalPanelHeader,
 					initialWidth: sidebarWidth,
 					onResize: (width: number) => {
 						body.style.gridTemplateColumns = `1fr ${width}px`;
@@ -191,17 +156,27 @@ export const sidePanel = {
 			body.appendChild(sidebar);
 		};
 
-		document.addEventListener(PANEL_OPEN_EVENT, (event) => {
+		document.addEventListener(PANEL_OPEN_EVENT, async (event) => {
 			const detail: OpenOptions = (event as CustomEvent).detail ?? {};
-			panelTitle = getSafeTitle(detail.title, panelTitle);
-			externalPanelBody = isDomNodeLike(detail.bodyNode) ? detail.bodyNode : null;
-			externalPanelHeader = isDomNodeLike(detail.headerNode) ? detail.headerNode : null;
+			panelState.title = getSafeTitle(detail.title, panelState.title);
+			panelState.bodyNode = isDomNodeLike(detail.bodyNode) ? detail.bodyNode : null;
+			panelState.headerNode = isDomNodeLike(detail.headerNode) ? detail.headerNode : null;
+
+			// Already mounted — panelState above already flowed into the live component, no teardown/remount needed.
+			const alreadyOpen = isOpen && !!document.querySelector(`[${SIDEBAR_ATTR}]`);
 			isOpen = true;
+
 			if (detail.persist) {
 				setValue(PERSIST_KEY, { route: location.pathname });
 			}
-			removeSideDrawerLayout();
-			sync();
+			if (typeof detail.width === "number" && !(await hasValue(WIDTH_KEY))) {
+				sidebarWidth = clamp(Math.round(detail.width), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
+			}
+
+			if (!alreadyOpen) {
+				removeSideDrawerLayout();
+				sync();
+			}
 		});
 
 		document.addEventListener(PANEL_CLOSE_EVENT, () => {
@@ -212,8 +187,8 @@ export const sidePanel = {
 
 		document.addEventListener(PANEL_DISMISS_EVENT, () => {
 			isOpen = false;
-			externalPanelBody = null;
-			externalPanelHeader = null;
+			panelState.bodyNode = null;
+			panelState.headerNode = null;
 			sync();
 		});
 
@@ -234,8 +209,7 @@ export const sidePanel = {
 
 		document.addEventListener(PANEL_SET_TITLE_EVENT, (event) => {
 			const { title } = (event as CustomEvent).detail ?? {};
-			panelTitle = getSafeTitle(title, panelTitle);
-			sync();
+			panelState.title = getSafeTitle(title, panelState.title);
 		});
 
 		const unwatch = watchDom(sync);
@@ -244,4 +218,5 @@ export const sidePanel = {
 	},
 };
 
-export type { SidePanelApi };
+export { sidepanel } from "./api";
+export type { OpenOptions, SidePanelApi } from "./api";

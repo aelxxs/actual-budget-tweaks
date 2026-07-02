@@ -16,6 +16,17 @@ export async function getValue<T>(key: string, defaultValue: T): Promise<T> {
 	}
 }
 
+/** Distinguishes "never stored" from "stored a falsy/default-looking value" — getValue's fallback can't tell these apart. */
+export async function hasValue(key: string): Promise<boolean> {
+	if (isContextInvalidated()) return false;
+	try {
+		const result = await browser.storage.local.get("local:" + key);
+		return result["local:" + key] !== undefined;
+	} catch {
+		return false;
+	}
+}
+
 export function setValue(key: string, value: unknown) {
 	if (isContextInvalidated()) return Promise.resolve();
 	try {

@@ -1,23 +1,17 @@
 <script lang="ts">
 	import { clamp } from "@lib/utilities/math";
-	import { onMount } from "svelte";
+	import { panelState } from "./panel-state.svelte";
 
 	const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
 	const SIDEBAR_ANIMATION_MS = 110;
 
 	let {
-		title,
 		onClose,
-		bodyNode = null,
-		headerNode = null,
 		initialWidth,
 		onResize,
 		onResizeEnd,
 	}: {
-		title: string;
 		onClose: () => void;
-		bodyNode?: Node | null;
-		headerNode?: Node | null;
 		initialWidth: number;
 		onResize: (width: number) => void;
 		onResizeEnd: (width: number) => void;
@@ -48,16 +42,21 @@
 		window.setTimeout(finish, SIDEBAR_ANIMATION_MS + 40);
 	}
 
-	let headerEl: HTMLDivElement | undefined;
+	let headerSlotEl: HTMLDivElement | undefined;
 	let bodyEl: HTMLDivElement | undefined;
 
-	onMount(() => {
-		if (headerEl && headerNode) {
-			headerEl.prepend(headerNode);
-		}
-		if (bodyEl && bodyNode) {
-			bodyEl.appendChild(bodyNode);
-		}
+	$effect(() => {
+		const node = panelState.headerNode;
+		if (!headerSlotEl) return;
+		headerSlotEl.replaceChildren();
+		if (node) headerSlotEl.appendChild(node);
+	});
+
+	$effect(() => {
+		const node = panelState.bodyNode;
+		if (!bodyEl) return;
+		bodyEl.replaceChildren();
+		if (node) bodyEl.appendChild(node);
 	});
 
 	function resizeHandle(el: HTMLElement) {
@@ -101,9 +100,10 @@
 
 <div class="abt-side-drawer-resize-handle" use:resizeHandle></div>
 <div class="abt-side-drawer-content">
-	<div class="abt-side-drawer-header" bind:this={headerEl}>
-		{#if !headerNode}
-			<h2 class="abt-side-drawer-title">{title}</h2>
+	<div class="abt-side-drawer-header">
+		<div class="abt-side-drawer-header-slot" bind:this={headerSlotEl}></div>
+		{#if !panelState.headerNode}
+			<h2 class="abt-side-drawer-title">{panelState.title}</h2>
 		{/if}
 		<button
 			class="abt-side-drawer-close-button"
@@ -151,6 +151,10 @@
 		padding: 12px 12px 10px;
 		border-bottom: var(--border);
 		background: var(--color-pageBackground);
+	}
+
+	.abt-side-drawer-header-slot {
+		display: contents;
 	}
 
 	.abt-side-drawer-title {

@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import { sidepanel } from "@features/core/side-panel";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { watchRoute } from "@lib/utilities/route-watcher";
@@ -74,7 +75,7 @@ function openCalendar(): void {
 function closeCalendar(): void {
 	if (!calendarContainer) return;
 
-	document.dispatchEvent(new CustomEvent("abt:sidepanel:close"));
+	sidepanel.close();
 
 	const parent = calendarContainer.parentElement as HTMLElement | null;
 
