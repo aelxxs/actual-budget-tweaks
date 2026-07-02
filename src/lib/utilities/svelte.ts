@@ -1,4 +1,5 @@
 import { mount, type Component } from "svelte";
+import { createElement } from "./dom";
 
 export function mountToNode<T extends Record<string, unknown>>(
 	component: Component<T>,
@@ -14,9 +15,17 @@ export function mountToNode(
 	const container =
 		target ??
 		(() => {
-			const div = document.createElement("div");
-			div.style.display = "flex";
-			div.style.flex = "1";
+			const div = createElement("div", {
+				style: {
+					display: "flex",
+					flex: "1",
+					flexDirection: "column",
+					height: "100%",
+					minHeight: "0px",
+					overflow: "hidden",
+				},
+			});
+
 			return div;
 		})();
 	mount(component, { target: container, props: props as never });

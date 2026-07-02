@@ -94,7 +94,6 @@ const CSS = `
 	.abt-side-drawer-sidebar {
 		position: relative;
 		display: flex;
-		flex-direction: column;
 		min-width: ${MIN_SIDEBAR_WIDTH}px;
 		max-width: ${MAX_SIDEBAR_WIDTH}px;
 		min-height: 0;
