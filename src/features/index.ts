@@ -5,6 +5,7 @@ import { sidebarIcons } from "./appearance/sidebar-icons";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
+import { privacyMode } from "./core/privacy-mode";
 import { releaseNotification } from "./core/release-notification";
 import { scheduleHighlight } from "./core/schedule-highlight";
 import { sidePanel } from "./core/side-panel";
@@ -35,7 +36,7 @@ import { themeLoader } from "./theme/themeLoader";
 import type { Setting } from "./types";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { spendingCalendar } from "./workflows/spending-calendar";
-import { templateApplyBreakdown } from "./workflows/template-apply-breakdown";
+import { templatePlan } from "./workflows/template-plan";
 
 const layoutAndDensity = [
 	backgroundPattern,
@@ -74,9 +75,9 @@ const appearance = [
 	categoryEmojiPicker,
 ];
 
-const workflows = [categoryTemplateInsights, templateApplyBreakdown, spendingCalendar];
+const workflows = [categoryTemplateInsights, templatePlan, spendingCalendar];
 
-export const coreScripts = [sidePanel, scheduleHighlight, tooltipStyling, releaseNotification];
+export const coreScripts = [sidePanel, scheduleHighlight, tooltipStyling, releaseNotification, privacyMode];
 
 export const scriptSections = [
 	{
@@ -130,7 +131,7 @@ export const scripts: Setting<any>[][] = [
 		categoryColorDots,
 		categoryEmojiPicker,
 		categoryTemplateInsights,
-		templateApplyBreakdown,
+		templatePlan,
 		highlightUncategorized,
 		tagStyling,
 		headerBorder,

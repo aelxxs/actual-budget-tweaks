@@ -44,12 +44,9 @@ export default defineConfig({
 			{
 				resources: [
 					"income-breakdown-main.js",
-					"schedule-highlight-main.js",
-					"template-apply-breakdown-main.js",
 					"actual-api-bridge-main.js",
 					"css/base.css",
 					"css/income-breakdown.css",
-					"css/template-apply-breakdown.css",
 					"content-scripts/content.css",
 					"icon.svg",
 				],
