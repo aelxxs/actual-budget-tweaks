@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.44
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.43...v0.1.44)
+
+### 🚀 Enhancements
+
+- Introduce mountToPanelBody utility for better side panel content handling ([7fc345d](https://github.com/aelxxs/actual-budget-tweaks/commit/7fc345d))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.43 ([49b3826](https://github.com/aelxxs/actual-budget-tweaks/commit/49b3826))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.43
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.42...v0.1.43)
