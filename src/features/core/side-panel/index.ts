@@ -2,7 +2,7 @@ import { applyGlobalCSS, createElement } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { clamp } from "@lib/utilities/math";
 import { getValue, hasValue, setValue } from "@lib/utilities/store";
-import { mountToNode } from "@lib/utilities/svelte";
+import { mountToPanelBody } from "@lib/utilities/svelte";
 import {
 	PANEL_CLOSE_EVENT,
 	PANEL_DISMISS_EVENT,
@@ -136,7 +136,7 @@ export const sidePanel = {
 			const sidebar = createElement("div", { className: "abt-side-drawer-sidebar" });
 			sidebar.setAttribute(SIDEBAR_ATTR, "true");
 			sidebar.appendChild(
-				mountToNode(SidePanelContent, {
+				mountToPanelBody(SidePanelContent, {
 					onClose: () => {
 						isOpen = false;
 						setValue(PERSIST_KEY, null);

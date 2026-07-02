@@ -17,7 +17,6 @@ import {
 	sheetToMonthKey,
 	sheetToMonthLabel,
 	startSnapshotAllVisible,
-	waitForBackendReady,
 	waitForQuiescence,
 	type SnapshotDescriptor,
 } from "@lib/utilities/template-plan/actual-data";
@@ -338,10 +337,14 @@ export const templatePlan = defineSetting({
 	},
 	css: () => CSS,
 	init: async () => {
-		await waitForBackendReady();
 		loadCurrency();
 		await loadPersistedState();
-		await loadCategories();
+		// Not awaited: loadCategories() internally waits for the budget page's
+		// DOM to be ready, which never resolves if the user lands directly on
+		// a different page (e.g. settings). bootstrapSettings() awaits every
+		// feature's init via Promise.all, so blocking here would hang the
+		// entire settings panel's mount, not just this feature.
+		loadCategories();
 
 		const stopClickListener = installClickListener();
 		const stopKeyboard = installKeyboard();

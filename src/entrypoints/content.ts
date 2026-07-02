@@ -69,7 +69,12 @@ export default defineContentScript({
 				}),
 			);
 
-			await bootstrapSettings([...coreScripts, ...scripts.flat()]);
+			// Not awaited: the settings panel only needs to read persisted values
+			// from storage to render, not wait for every feature to finish
+			// activating. bootstrapSettings uses Promise.all internally, so one
+			// feature's slow/hung init() would otherwise block the panel from
+			// ever mounting.
+			bootstrapSettings([...coreScripts, ...scripts.flat()]);
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
 				anchor: "[data-testid='settings'] > :nth-child(2)",

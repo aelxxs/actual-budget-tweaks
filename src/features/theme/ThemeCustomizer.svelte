@@ -2,7 +2,7 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { themes } from "@lib/design";
 	import { getValue, setValue } from "@lib/utilities/store";
-	import { mountToNode } from "@lib/utilities/svelte";
+	import { mountToNode, mountToPanelBody } from "@lib/utilities/svelte";
 	import { onMount, onDestroy } from "svelte";
 	import { sidepanel } from "../core/side-panel";
 	import ThemeColorEditor from "./ThemeColorEditor.svelte";
@@ -98,7 +98,7 @@
 
 	const openColorEditor = () => {
 		if (!editorNode) {
-			editorNode = mountToNode(ThemeColorEditor, {
+			editorNode = mountToPanelBody(ThemeColorEditor, {
 				onReady: ({ reset, getExportCSS }: { reset: () => void; getExportCSS: () => string }) => {
 					setResetFn(reset);
 					exportFn = getExportCSS;
@@ -232,7 +232,7 @@
 			applyUserPaletteTheme(existing.id, existing.keys);
 		}
 
-		creatorNode = mountToNode(ThemeCreator, {
+		creatorNode = mountToPanelBody(ThemeCreator, {
 			initialKeys: creatorPaletteKeys,
 			initialCss: creatorCss,
 			initialTab: creatorType,
