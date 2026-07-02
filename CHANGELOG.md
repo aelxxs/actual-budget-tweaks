@@ -1,6 +1,37 @@
 # Changelog
 
 
+## v0.1.43
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.42...v0.1.43)
+
+### 🚀 Enhancements
+
+- Implement side panel state management and API for dynamic content updates ([e219c44](https://github.com/aelxxs/actual-budget-tweaks/commit/e219c44))
+- Add privacy-mode core feature ported from legacy main-world script ([265a8df](https://github.com/aelxxs/actual-budget-tweaks/commit/265a8df))
+- Add chevronLeft/chevronRight icons ([8af960e](https://github.com/aelxxs/actual-budget-tweaks/commit/8af960e))
+- Extract shared Tabs component ([393fef8](https://github.com/aelxxs/actual-budget-tweaks/commit/393fef8))
+- Rewrite Template Apply Breakdown as an isolated-world Svelte feature ([2d5046e](https://github.com/aelxxs/actual-budget-tweaks/commit/2d5046e))
+
+### 🩹 Fixes
+
+- Keep side panel scroll contained to its own content, not the whole drawer ([7ff822f](https://github.com/aelxxs/actual-budget-tweaks/commit/7ff822f))
+
+### 💅 Refactors
+
+- Port template-plan business logic to isolated-world utilities ([0081cb7](https://github.com/aelxxs/actual-budget-tweaks/commit/0081cb7))
+- Port dashboard-widgets utility from legacy main-world script ([51f09c7](https://github.com/aelxxs/actual-budget-tweaks/commit/51f09c7))
+- Migrate ThemeCreator to shared Tabs component ([904652c](https://github.com/aelxxs/actual-budget-tweaks/commit/904652c))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.42 ([e3c7c59](https://github.com/aelxxs/actual-budget-tweaks/commit/e3c7c59))
+- Remove dead markup/CSS selectors ([c6a1f49](https://github.com/aelxxs/actual-budget-tweaks/commit/c6a1f49))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.42
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.41...v0.1.42)
