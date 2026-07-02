@@ -1,4 +1,5 @@
 <script lang="ts">
+	import OptionPicker from "@lib/components/OptionPicker.svelte";
 	import { onMount } from "svelte";
 	import { applyGlobalCSS } from "@lib/utilities/dom";
 	import { getValue, setValue } from "@lib/utilities/store";
@@ -25,76 +26,26 @@
 		await setValue(ctx.key, value);
 		applyGlobalCSS(ctx.css(value), ctx.key);
 	}
+
+	function rowPxFor(value: string): number {
+		return options.find((o) => o.value === value)?.rowPx ?? 14;
+	}
 </script>
 
-<div class="rhp-row">
-	{#each options as opt}
-		<button
-			class="rhp-option"
-			class:is-active={selected === opt.value}
-			onclick={() => pick(opt.value)}
-		>
-			<div class="rhp-preview">
-				<div class="rhp-header"></div>
-				{#each { length: PREVIEW_ROWS } as _}
-					<div class="rhp-tr" style="height: {opt.rowPx}px;">
-						<div class="rhp-dot"></div>
-						<div class="rhp-bar"></div>
-						<div class="rhp-num"></div>
-					</div>
-				{/each}
+<OptionPicker {options} {selected} onPick={pick}>
+	{#snippet preview({ value })}
+		<div class="rhp-header"></div>
+		{#each { length: PREVIEW_ROWS } as _}
+			<div class="rhp-tr" style="height: {rowPxFor(value)}px;">
+				<div class="rhp-dot"></div>
+				<div class="rhp-bar"></div>
+				<div class="rhp-num"></div>
 			</div>
-			<span class="rhp-label">{opt.label}</span>
-		</button>
-	{/each}
-</div>
+		{/each}
+	{/snippet}
+</OptionPicker>
 
 <style>
-	.rhp-row {
-		display: flex;
-		gap: 6px;
-	}
-
-	.rhp-option {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 7px;
-		padding: 8px 6px;
-		background: var(--color-cardBackground);
-		border: 1px solid var(--color-tableBorder);
-		border-radius: 8px;
-		cursor: pointer;
-		font-family: inherit;
-		transition:
-			border-color 0.15s,
-			box-shadow 0.15s;
-	}
-
-	.rhp-option:hover:not(.is-active) {
-		border-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 40%, transparent);
-	}
-
-	.rhp-option.is-active {
-		border-color: var(--color-sidebarItemAccentSelected);
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-sidebarItemAccentSelected) 20%, transparent);
-	}
-
-	.rhp-preview {
-		width: 80px;
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		border-radius: 4px;
-		border: 1px solid var(--color-tableBorder);
-		background: var(--color-tableBackground);
-	}
-
-	.rhp-option.is-active .rhp-preview {
-		border-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 40%, transparent);
-	}
-
 	.rhp-header {
 		height: 9px;
 		flex-shrink: 0;
@@ -136,17 +87,5 @@
 		border-radius: 2px;
 		flex-shrink: 0;
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 45%, transparent);
-	}
-
-	.rhp-label {
-		font-size: 9px;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--color-pageTextSubdued);
-		font-weight: 600;
-	}
-
-	.rhp-option.is-active .rhp-label {
-		color: var(--color-sidebarItemAccentSelected);
 	}
 </style>
