@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
+	import Tabs from "@lib/components/Tabs.svelte";
 	import { applyGlobalCSS } from "@lib/utilities/dom";
 	import { onMount } from "svelte";
 	import ColorRow from "./ColorRow.svelte";
@@ -155,22 +156,13 @@
 </script>
 
 <div class="creator">
-	<div class="creator__tabs">
-		<button
-			class="creator__tab"
-			class:creator__tab--active={activeTab === "palette"}
-			onclick={() => (activeTab = "palette")}
-		>
-			Palette
-		</button>
-		<button
-			class="creator__tab"
-			class:creator__tab--active={activeTab === "css"}
-			onclick={() => (activeTab = "css")}
-		>
-			Import CSS
-		</button>
-	</div>
+	<Tabs
+		tabs={[
+			{ value: "palette", label: "Palette" },
+			{ value: "css", label: "Import CSS" },
+		]}
+		bind:value={activeTab}
+	/>
 
 	{#if activeTab === "palette"}
 		<div class="creator__toolbar">
@@ -220,41 +212,6 @@
 		flex: 1;
 		min-height: 0;
 		color: var(--color-pageText);
-	}
-
-	.creator__tabs {
-		display: flex;
-		gap: 2px;
-		padding: 10px 12px 0;
-		flex-shrink: 0;
-		background: var(--color-pageBackground);
-		border-bottom: var(--border);
-	}
-
-	.creator__tab {
-		font-family: inherit;
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		padding: 4px 10px 5px;
-		border-radius: 6px 6px 0 0;
-		border: var(--border);
-		border-bottom: none;
-		background: transparent;
-		color: var(--color-pageTextSubdued);
-		cursor: pointer;
-		transition:
-			color 0.15s,
-			background 0.15s;
-	}
-
-	.creator__tab:hover {
-		color: var(--color-pageText);
-	}
-
-	.creator__tab--active {
-		background: var(--color-tableBackground);
-		color: var(--color-sidebarItemAccentSelected);
 	}
 
 	.creator__toolbar {
