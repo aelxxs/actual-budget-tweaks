@@ -57,3 +57,8 @@ export function fmtMoney(cents: number, opts?: { sign?: boolean; short?: boolean
 	if (n < 0) return "-" + str;
 	return str;
 }
+
+export function amountToCents(amount: number): number {
+	if (!Number.isFinite(amount)) return 0;
+	return Math.round(amount * currencyScale);
+}
