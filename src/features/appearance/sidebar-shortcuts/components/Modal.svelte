@@ -631,13 +631,6 @@
 		align-items: center;
 	}
 
-	.widget-add {
-		display: flex;
-		gap: 6px;
-		align-items: center;
-		width: 100%;
-	}
-
 	.widget-add-labeled {
 		width: 100%;
 		display: flex;

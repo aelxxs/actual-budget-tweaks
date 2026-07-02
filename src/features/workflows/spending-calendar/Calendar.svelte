@@ -280,24 +280,6 @@
 		}
 	}
 
-	function getRelativeDate(d: Date): string {
-		const now = new Date();
-		now.setHours(0, 0, 0, 0);
-		const diff = Math.round((now.getTime() - d.getTime()) / 86400000);
-		if (diff === 0) return "Today";
-		if (diff === 1) return "Yesterday";
-		if (diff === -1) return "Tomorrow";
-		if (diff > 0) {
-			if (diff < 7) return `${diff} days ago`;
-			const weeks = Math.floor(diff / 7);
-			const days = diff % 7;
-			let s = `${weeks} week${weeks > 1 ? "s" : ""}`;
-			if (days > 0) s += `, ${days} day${days > 1 ? "s" : ""}`;
-			return s + " ago";
-		}
-		return `in ${Math.abs(diff)} day${Math.abs(diff) > 1 ? "s" : ""}`;
-	}
-
 	function cleanupPanel() {
 		if (headerInstance) {
 			unmount(headerInstance);
@@ -330,8 +312,6 @@
 			target: headerContainer,
 			props: {
 				dateStr: date.toLocaleDateString(undefined, { month: "numeric", day: "numeric", year: "numeric" }),
-				relativeDate: getRelativeDate(date),
-				itemCount: day.transactions.length,
 				total,
 			},
 		});

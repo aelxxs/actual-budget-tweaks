@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { fmtMoney } from "@lib/utilities/currency";
 
-	const { dateStr, relativeDate, itemCount, total } = $props<{
+	const { dateStr, total } = $props<{
 		dateStr: string;
-		relativeDate: string;
-		itemCount: number;
 		total: number;
 	}>();
 
@@ -20,9 +18,6 @@
 			{fmt(total)}
 		</span>
 	</div>
-	<!-- <div class="dh__meta">
-		{relativeDate} · {itemCount} item{itemCount !== 1 ? "s" : ""}
-	</div> -->
 </div>
 
 <style>
@@ -44,11 +39,6 @@
 	.dh__date {
 		font-size: 15px;
 		font-weight: 700;
-	}
-
-	.dh__meta {
-		font-size: 11px;
-		color: var(--color-pageTextSubdued);
 	}
 
 	.dh__total {
