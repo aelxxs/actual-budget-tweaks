@@ -3,22 +3,28 @@
 	import { themes } from "@lib/design";
 	import { getValue, setValue } from "@lib/utilities/store";
 	import { mountToNode, mountToPanelBody } from "@lib/utilities/svelte";
-	import { onMount, onDestroy } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 	import { sidepanel } from "../core/side-panel";
-	import ThemeColorEditor from "./ThemeColorEditor.svelte";
-	import ThemeEditorHeader from "./ThemeEditorHeader.svelte";
 	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
-	import { applyThemeByKey, applyPalette, applyUserPaletteTheme, applyUserCSSTheme, isCommunityTheme } from "./theme-apply";
+	import {
+		applyPalette,
+		applyThemeByKey,
+		applyUserCSSTheme,
+		applyUserPaletteTheme,
+		isCommunityTheme,
+	} from "./theme-apply";
+	import ThemeColorEditor from "./ThemeColorEditor.svelte";
 	import ThemeCreator from "./ThemeCreator.svelte";
 	import ThemeCreatorHeader from "./ThemeCreatorHeader.svelte";
+	import ThemeEditorHeader from "./ThemeEditorHeader.svelte";
 	import {
-		userThemeState,
-		loadUserThemes,
-		saveUserTheme,
 		deleteUserTheme,
 		generateThemeId,
-		isUserTheme,
 		getPreviewColorsFromTheme,
+		isUserTheme,
+		loadUserThemes,
+		saveUserTheme,
+		userThemeState,
 		type UserTheme,
 	} from "./user-themes.svelte";
 
@@ -252,8 +258,12 @@
 			isEditing: !!existing,
 			onSave: handleCreatorSave,
 			onDelete: () => handleCreatorDelete(creatorThemeId),
-			onNameChange: (name: string) => { creatorThemeName = name; },
-			onModeChange: (mode: "dark" | "light") => { creatorThemeMode = mode; },
+			onNameChange: (name: string) => {
+				creatorThemeName = name;
+			},
+			onModeChange: (mode: "dark" | "light") => {
+				creatorThemeMode = mode;
+			},
 		});
 		sidepanel.open({
 			title: "Create Theme",
@@ -360,7 +370,9 @@
 	<div class="auto-switch">
 		<button class="auto-switch__toggle" onclick={toggleAutoSwitch}>
 			<div class="auto-switch__label">
-				<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1.5a5.5 5.5 0 0 1 0 11V2.5Z"/></svg>
+				<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+					><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1.5a5.5 5.5 0 0 1 0 11V2.5Z" /></svg
+				>
 				Match system theme
 			</div>
 			<div class="auto-switch__pill" class:is-on={autoSwitch}>
@@ -371,14 +383,22 @@
 			<div class="auto-switch__assignments">
 				<div class="auto-switch__row">
 					<span class="auto-switch__mode" class:is-active={systemIsDark}>
-						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.2 1.7a.75.75 0 0 0-1.1-.5A7 7 0 1 0 14.8 10.9a.75.75 0 0 0-.5-1.1 5.5 5.5 0 0 1-8.1-8.1Z"/></svg>
+						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+							><path
+								d="M6.2 1.7a.75.75 0 0 0-1.1-.5A7 7 0 1 0 14.8 10.9a.75.75 0 0 0-.5-1.1 5.5 5.5 0 0 1-8.1-8.1Z"
+							/></svg
+						>
 						Dark
 					</span>
 					<span class="auto-switch__theme-name">{getThemeName(autoDarkKey)}</span>
 				</div>
 				<div class="auto-switch__row">
 					<span class="auto-switch__mode" class:is-active={!systemIsDark}>
-						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1Zm0 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5.66-5.66a.75.75 0 0 1 0 1.06l-1.06 1.06a.75.75 0 0 1-1.06-1.06l1.06-1.06a.75.75 0 0 1 1.06 0ZM15 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 15 8Zm-1.34 5.66a.75.75 0 0 1-1.06 0l-1.06-1.06a.75.75 0 0 1 1.06-1.06l1.06 1.06a.75.75 0 0 1 0 1.06ZM8 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13Zm-5.66-1.34a.75.75 0 0 1 0-1.06l1.06-1.06a.75.75 0 0 1 1.06 1.06L3.4 11.66a.75.75 0 0 1-1.06 0ZM1 8a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 1 8Zm1.34-5.66a.75.75 0 0 1 1.06 0l1.06 1.06a.75.75 0 0 1-1.06 1.06L2.34 3.4a.75.75 0 0 1 0-1.06Z"/></svg>
+						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+							><path
+								d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1Zm0 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5.66-5.66a.75.75 0 0 1 0 1.06l-1.06 1.06a.75.75 0 0 1-1.06-1.06l1.06-1.06a.75.75 0 0 1 1.06 0ZM15 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 15 8Zm-1.34 5.66a.75.75 0 0 1-1.06 0l-1.06-1.06a.75.75 0 0 1 1.06-1.06l1.06 1.06a.75.75 0 0 1 0 1.06ZM8 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13Zm-5.66-1.34a.75.75 0 0 1 0-1.06l1.06-1.06a.75.75 0 0 1 1.06 1.06L3.4 11.66a.75.75 0 0 1-1.06 0ZM1 8a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 1 8Zm1.34-5.66a.75.75 0 0 1 1.06 0l1.06 1.06a.75.75 0 0 1-1.06 1.06L2.34 3.4a.75.75 0 0 1 0-1.06Z"
+							/></svg
+						>
 						Light
 					</span>
 					<span class="auto-switch__theme-name">{getThemeName(autoLightKey)}</span>
@@ -406,7 +426,11 @@
 	</div>
 
 	<button class="create-theme-btn" onclick={() => openCreator()}>
-		<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"/></svg>
+		<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+			><path
+				d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"
+			/></svg
+		>
 		Create Theme
 	</button>
 
@@ -445,7 +469,8 @@
 										<span class="badge badge--creator">Custom</span>
 									</div>
 									<div class="card__meta">
-										<span class="card__source">{uTheme.type === "palette" ? "Palette" : "CSS"}</span>
+										<span class="card__source">{uTheme.type === "palette" ? "Palette" : "CSS"}</span
+										>
 										<div class="card__actions">
 											<div
 												class="card__edit-btn"
@@ -453,7 +478,8 @@
 												tabindex="0"
 												title="Edit palette for {uTheme.name}"
 												onclick={(e) => editUserTheme(uTheme.id, e)}
-												onkeydown={(e) => (e.key === "Enter" || e.key === " ") && editUserTheme(uTheme.id, e)}
+												onkeydown={(e) =>
+													(e.key === "Enter" || e.key === " ") && editUserTheme(uTheme.id, e)}
 											>
 												<Icon name="pencil" size={12} />
 											</div>
@@ -463,9 +489,31 @@
 												tabindex="0"
 												title="Edit color tokens for {uTheme.name}"
 												onclick={(e) => editTheme(uTheme.id, e)}
-												onkeydown={(e) => (e.key === "Enter" || e.key === " ") && editTheme(uTheme.id, e)}
+												onkeydown={(e) =>
+													(e.key === "Enter" || e.key === " ") && editTheme(uTheme.id, e)}
 											>
-												<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>
+												<svg
+													viewBox="0 0 16 16"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="1.3"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													aria-hidden="true"
+													><rect x="1.5" y="1.5" width="5" height="5" rx="1" /><rect
+														x="9.5"
+														y="1.5"
+														width="5"
+														height="5"
+														rx="1"
+													/><rect x="1.5" y="9.5" width="5" height="5" rx="1" /><rect
+														x="9.5"
+														y="9.5"
+														width="5"
+														height="5"
+														rx="1"
+													/></svg
+												>
 											</div>
 											<div
 												class="card__delete-btn"
@@ -473,9 +521,15 @@
 												tabindex="0"
 												title="Delete {uTheme.name}"
 												onclick={(e) => handleDeleteFromCard(uTheme.id, e)}
-												onkeydown={(e) => (e.key === "Enter" || e.key === " ") && handleDeleteFromCard(uTheme.id, e)}
+												onkeydown={(e) =>
+													(e.key === "Enter" || e.key === " ") &&
+													handleDeleteFromCard(uTheme.id, e)}
 											>
-												<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM6.5 1.75v1.25h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25ZM4.997 6.178a.75.75 0 1 0-1.493.144l.684 7.082A1.75 1.75 0 0 0 5.926 15h4.146a1.75 1.75 0 0 0 1.739-1.596l.684-7.082a.75.75 0 0 0-1.494-.144l-.684 7.082a.25.25 0 0 1-.249.228H5.927a.25.25 0 0 1-.25-.228l-.683-7.082Z"/></svg>
+												<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+													><path
+														d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM6.5 1.75v1.25h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25ZM4.997 6.178a.75.75 0 1 0-1.493.144l.684 7.082A1.75 1.75 0 0 0 5.926 15h4.146a1.75 1.75 0 0 0 1.739-1.596l.684-7.082a.75.75 0 0 0-1.494-.144l-.684 7.082a.25.25 0 0 1-.249.228H5.927a.25.25 0 0 1-.25-.228l-.683-7.082Z"
+													/></svg
+												>
 											</div>
 										</div>
 									</div>
@@ -658,7 +712,6 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		padding-top: 4px;
 		gap: 8px;
 	}
 
@@ -796,7 +849,9 @@
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
 		color: var(--color-sidebarItemAccentSelected);
 		cursor: pointer;
-		transition: background 0.15s, border-color 0.15s;
+		transition:
+			background 0.15s,
+			border-color 0.15s;
 	}
 
 	.create-theme-btn:hover {
@@ -853,10 +908,7 @@
 	.gallery {
 		max-height: 440px;
 		overflow-y: auto;
-		border: var(--border);
-		border-radius: 8px;
 		background: var(--color-pageBackground);
-		padding: 12px;
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
@@ -870,6 +922,12 @@
 		color: var(--color-pageTextSubdued);
 		margin-bottom: 8px;
 		font-weight: 600;
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		background: var(--color-pageBackground);
+		padding: 4px 0;
+		margin: -4px 0 4px;
 	}
 
 	.gallery__grid {
@@ -1149,7 +1207,9 @@
 		cursor: pointer;
 		color: var(--color-pageTextSubdued);
 		flex-shrink: 0;
-		transition: color 0.15s, background 0.15s;
+		transition:
+			color 0.15s,
+			background 0.15s;
 	}
 
 	.card__delete-btn:hover {

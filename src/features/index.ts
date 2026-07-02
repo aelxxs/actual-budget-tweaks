@@ -44,10 +44,10 @@ const layoutAndDensity = [
 	borderRadius,
 	budgetTableRowHeight,
 	reportWidgetBackgroundColor,
-	sidebarAccountSpacing,
+	hideMonthOnScroll,
 	toggleColumns,
 	resizableTransactionColumns,
-	hideMonthOnScroll,
+	sidebarAccountSpacing,
 ];
 
 const readability = [
