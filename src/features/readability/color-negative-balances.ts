@@ -23,6 +23,9 @@ function cleanup() {
 export const colorNegativeBalances = defineSetting({
 	type: "checkbox",
 	label: "Color Negative Account Balances",
+	description: "Highlight negative account balances in red.",
+	group: "Accounts",
+	icon: "palette",
 	context: {
 		key: "actual-balancecolors",
 		defaultValue: true,

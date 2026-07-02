@@ -52,6 +52,9 @@ function cleanup(): void {
 export const sidebarShortcuts = defineSetting({
 	type: "checkbox",
 	label: "Sidebar Shortcuts",
+	description: "Pin quick links and tools to the sidebar.",
+	group: "Sidebar",
+	icon: "star",
 	context: {
 		key: "sidebar-shortcuts-enabled",
 		defaultValue: false,

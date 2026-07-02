@@ -55,6 +55,9 @@ function replaceIcons() {
 export const sidebarIcons = defineSetting({
 	type: "checkbox",
 	label: "Modern Sidebar Icons",
+	description: "Replaces the nav icons with a matching, modern set.",
+	group: "Sidebar",
+	icon: "shuffle",
 	context: {
 		key: "modern-sidebar-icons",
 		defaultValue: true,

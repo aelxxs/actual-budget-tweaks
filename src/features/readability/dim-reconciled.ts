@@ -21,6 +21,9 @@ const DIMMED_CELLS = [
 export const dimReconciled = defineSetting({
 	type: "checkbox",
 	label: "Dim Reconciled Transactions",
+	description: "Fade reconciled rows in the transaction table.",
+	group: "Transactions",
+	icon: "eyeOff",
 	context: {
 		key: "dim-reconciled",
 		defaultValue: true,

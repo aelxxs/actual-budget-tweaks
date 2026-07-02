@@ -227,6 +227,9 @@ function setupCollapsibleGroups(): () => void {
 export const sidebarRedesign = defineSetting({
 	type: "checkbox",
 	label: "Improved Sidebar Design",
+	description: "A cleaner layout for the account sidebar.",
+	group: "Sidebar",
+	icon: "layout",
 	context: {
 		key: "improved-sidebar-design",
 		defaultValue: true,

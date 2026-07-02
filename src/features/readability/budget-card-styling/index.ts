@@ -8,7 +8,7 @@ import FlowBar from "./FlowBar.svelte";
 
 const CSS = `
 	[data-testid="budget-summary"] {
-		border-radius: var(--border-radius-lg, 8px);
+		border-radius: var(--border-radius);
 		overflow: hidden;
 		transition: box-shadow 0.15s, border-color 0.15s;
 	}
@@ -137,6 +137,9 @@ function cleanupCards() {
 export const budgetCardStyling = defineSetting({
 	type: "checkbox",
 	label: "Budget Card Styling",
+	description: "Add a spending flow bar to the current month's budget card.",
+	group: "Budget",
+	icon: "networth",
 	context: {
 		key: "budget-card-styling",
 		defaultValue: true,

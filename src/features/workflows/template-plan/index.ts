@@ -331,6 +331,8 @@ function tick(): void {
 export const templatePlan = defineSetting({
 	type: "checkbox",
 	label: "Template Plan",
+	description: "Side panel breakdown after applying or overwriting budget templates.",
+	icon: "layout",
 	context: {
 		key: "actual-template-apply-breakdown",
 		defaultValue: true,

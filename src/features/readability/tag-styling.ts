@@ -168,6 +168,9 @@ function cleanup() {
 export const tagStyling = defineSetting({
 	type: "checkbox",
 	label: "Tag Styling",
+	description: "Color #tags in notes and transaction fields.",
+	group: "Transactions",
+	icon: "palette",
 	context: {
 		key: STORAGE_KEY,
 		defaultValue: true,

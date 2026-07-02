@@ -23,6 +23,47 @@ const ICONS = {
 		body: '<path d="M6 4l4 4-4 4"/>',
 		strokeWidth: 2,
 	},
+	palette: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<path d="M12 22a10 10 0 1 1 10-10c0 1.5-.5 3-2 3h-3a2 2 0 0 0-2 2v.5a2.5 2.5 0 0 1-2.5 2.5"/><circle cx="6.5" cy="11.5" r="1.2"/><circle cx="9.5" cy="7.5" r="1.2"/><circle cx="14.5" cy="7.5" r="1.2"/><circle cx="17.5" cy="11.5" r="1.2"/>',
+	},
+	rows: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="11" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/>',
+	},
+	square: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<rect x="3" y="3" width="18" height="18" rx="2"/>',
+	},
+	layout: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>',
+	},
+	search: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+	},
+	star: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+	},
+	image: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+	},
+	cog: {
+		// Matches Actual's own settings-nav glyph for visual consistency.
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+	},
 	chevronLeft: {
 		viewBox: "0 0 16 16",
 		body: '<path d="M10 4l-4 4 4 4"/>',

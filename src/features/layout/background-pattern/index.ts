@@ -7,6 +7,8 @@ import BackgroundPatternPicker from "./Picker.svelte";
 export const backgroundPattern = defineSetting({
 	type: "custom",
 	label: "Background Pattern",
+	description: "A subtle pattern behind the app background.",
+	group: "General",
 	context: {
 		key: "background-pattern",
 		defaultValue: "None",

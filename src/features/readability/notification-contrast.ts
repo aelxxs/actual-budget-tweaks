@@ -3,6 +3,9 @@ import { defineSetting } from "@features/types";
 export const notificationContrast = defineSetting({
 	type: "checkbox",
 	label: "Improve Notification Contrast",
+	description: "Darker text on notification banners for readability.",
+	group: "General",
+	icon: "eye",
 	context: {
 		key: "actual-notification-contrast",
 		defaultValue: true,

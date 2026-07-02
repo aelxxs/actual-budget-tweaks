@@ -35,6 +35,9 @@ function cleanup() {
 export const budgetTotalsLabelStyling = defineSetting({
 	type: "checkbox",
 	label: "Budget Totals Label Styling",
+	description: "Mute and uppercase the Budgeted/Spent/Balance labels.",
+	group: "Budget",
+	icon: "layout",
 	context: {
 		key: "budget-totals-label-styling",
 		defaultValue: true,

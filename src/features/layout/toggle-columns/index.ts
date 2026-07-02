@@ -273,6 +273,9 @@ function scheduleSync() {
 export const toggleColumns = defineSetting({
 	type: "checkbox",
 	label: "Toggle Column Visibility",
+	description: "Show or hide individual transaction table columns.",
+	group: "Transactions",
+	icon: "rows",
 	context: {
 		key: STORAGE_KEY,
 		defaultValue: true,

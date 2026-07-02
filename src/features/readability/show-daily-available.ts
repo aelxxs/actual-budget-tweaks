@@ -52,6 +52,9 @@ function cleanup() {
 export const showDailyAvailable = defineSetting({
 	type: "checkbox",
 	label: "Show Daily Available",
+	description: "Show a daily spending allowance under To Budget.",
+	group: "Budget",
+	icon: "calculator",
 	context: {
 		key: "actual-daily",
 		defaultValue: true,

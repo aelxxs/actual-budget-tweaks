@@ -3,6 +3,9 @@ import { defineSetting } from "@features/types";
 export const budgetPageBorders = defineSetting({
 	type: "checkbox",
 	label: "Budget Page Borders",
+	description: "Add borders around sections of the budget table.",
+	group: "Budget",
+	icon: "square",
 	context: {
 		key: "budget-page-borders",
 		defaultValue: true,

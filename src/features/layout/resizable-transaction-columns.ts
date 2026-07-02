@@ -679,6 +679,9 @@ function stopObserving(): void {
 export const resizableTransactionColumns = defineSetting({
 	type: "checkbox",
 	label: "Resizable Transaction Columns",
+	description: "Drag column edges to resize the transaction table.",
+	group: "Transactions",
+	icon: "layout",
 	context: {
 		key: "resizable-transaction-columns",
 		defaultValue: true,

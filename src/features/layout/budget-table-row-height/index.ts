@@ -6,6 +6,8 @@ import RowHeightPicker from "./Picker.svelte";
 export const budgetTableRowHeight = defineSetting({
 	type: "custom",
 	label: "Budget Table Row Height",
+	description: "Adjust how tall each budget table row is.",
+	group: "Budget",
 	context: {
 		key: "actual-slimmer-budgetrows",
 		defaultValue: "2.25rem",

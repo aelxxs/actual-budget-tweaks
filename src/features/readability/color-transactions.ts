@@ -35,6 +35,9 @@ function cleanup() {
 export const colorTransactions = defineSetting({
 	type: "checkbox",
 	label: "Color Transactions",
+	description: "Color upcoming scheduled transaction rows.",
+	group: "Transactions",
+	icon: "palette",
 	context: {
 		key: "actual-amountcolors",
 		defaultValue: true,

@@ -58,6 +58,9 @@ function cleanup() {
 export const alternatingTransactionRows = defineSetting({
 	type: "checkbox",
 	label: "Alternating Transaction Row Colors",
+	description: "Zebra-stripe the transaction table for easier scanning.",
+	group: "Transactions",
+	icon: "rows",
 	context: {
 		key: "alternating-transaction-rows",
 		defaultValue: false,

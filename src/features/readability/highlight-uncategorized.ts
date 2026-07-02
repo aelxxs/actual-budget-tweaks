@@ -29,6 +29,9 @@ function cleanup() {
 export const highlightUncategorized = defineSetting({
 	type: "checkbox",
 	label: "Highlight Uncategorized Transactions",
+	description: "Flag transactions that are missing a category.",
+	group: "Transactions",
+	icon: "star",
 	context: {
 		key: "highlight-uncategorized",
 		defaultValue: true,

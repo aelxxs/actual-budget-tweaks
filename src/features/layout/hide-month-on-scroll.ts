@@ -5,6 +5,9 @@ import { Page, matchesPage } from "@lib/utilities/pages";
 export const hideMonthOnScroll = defineSetting({
 	type: "checkbox",
 	label: "Hide Month Selection On Scroll",
+	description: "Collapse the month navigation row while scrolling the budget table.",
+	group: "Budget",
+	icon: "calendar",
 	context: {
 		key: "hide-months-on-scroll",
 		defaultValue: false,

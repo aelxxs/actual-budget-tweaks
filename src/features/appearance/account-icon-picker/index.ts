@@ -591,6 +591,9 @@ function bindRouteEvents(): void {
 export const accountIconPicker = defineSetting({
 	type: "checkbox",
 	label: "Account Icon Picker",
+	description: "Set a custom favicon or emoji icon per account.",
+	group: "Sidebar",
+	icon: "image",
 	context: {
 		key: "account-icon-picker",
 		defaultValue: true,
