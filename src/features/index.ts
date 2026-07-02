@@ -4,6 +4,7 @@ import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { sidebarIcons } from "./appearance/sidebar-icons";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
+import { sidebarSettingsMenu } from "./appearance/sidebar-settings-menu";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
 import { privacyMode } from "./core/privacy-mode";
 import { releaseNotification } from "./core/release-notification";
@@ -77,7 +78,14 @@ const appearance = [
 
 const workflows = [categoryTemplateInsights, templatePlan, spendingCalendar];
 
-export const coreScripts = [sidePanel, scheduleHighlight, tooltipStyling, releaseNotification, privacyMode];
+export const coreScripts = [
+	sidePanel,
+	scheduleHighlight,
+	tooltipStyling,
+	releaseNotification,
+	privacyMode,
+	sidebarSettingsMenu,
+];
 
 export const scriptSections = [
 	{
