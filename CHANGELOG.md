@@ -1,6 +1,30 @@
 # Changelog
 
 
+## v0.1.45
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.44...v0.1.45)
+
+### 🚀 Enhancements
+
+- Add description/icon/group metadata to all settings ([2012e12](https://github.com/aelxxs/actual-budget-tweaks/commit/2012e12))
+- Extract shared OptionPicker; redesign Checkbox and Select rows ([6b7f70c](https://github.com/aelxxs/actual-budget-tweaks/commit/6b7f70c))
+- Reorganize settings panel with subgroups and collapsed sections ([a28a5da](https://github.com/aelxxs/actual-budget-tweaks/commit/a28a5da))
+- Add contextual sidebar settings menu popover ([0cc35e5](https://github.com/aelxxs/actual-budget-tweaks/commit/0cc35e5))
+- Add /features page listing every setting ([3c16ef1](https://github.com/aelxxs/actual-budget-tweaks/commit/3c16ef1))
+
+### 💅 Refactors
+
+- Convert Report Card Color and Sidebar Spacing to fit their data ([0b78526](https://github.com/aelxxs/actual-budget-tweaks/commit/0b78526))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.44 ([5b1d9bb](https://github.com/aelxxs/actual-budget-tweaks/commit/5b1d9bb))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.44
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.43...v0.1.44)
