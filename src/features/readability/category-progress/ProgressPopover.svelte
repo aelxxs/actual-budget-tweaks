@@ -20,6 +20,12 @@
 	const overspent = $derived(balance < 0);
 	const overBudget = $derived(!overspent && ratio > 1);
 
+	const fullySpent = $derived(budgeted > 0 && spent === budgeted);
+	// "Running low" is only a live warning while the month is in progress
+	// (daysLeft is null for past/future months); exact full spend is
+	// completion (fixed bills), not a warning.
+	const isCurrentMonth = $derived(daysLeft != null);
+
 	const statusText = $derived.by(() => {
 		if (overspent) {
 			return `Overspent by ${fmtMoney(-balance)}`;
@@ -27,13 +33,24 @@
 		if (overBudget) {
 			return "Over budget — covered by carryover";
 		}
+		if (fullySpent) {
+			return "Budget fully spent";
+		}
 		if (budgeted <= 0 && spent <= 0) {
 			return "No activity this month";
 		}
 		return `${Math.round(fillPct)}% of budget spent`;
 	});
 
-	const barState = $derived(overspent ? "overspent" : overBudget ? "over" : fillPct >= 85 ? "near" : "under");
+	const barState = $derived(
+		overspent
+			? "overspent"
+			: overBudget
+				? "over"
+				: !fullySpent && isCurrentMonth && fillPct >= 85
+					? "near"
+					: "under",
+	);
 
 	const goalFundedPct = $derived(goal > 0 ? Math.min(100, Math.max(0, (budgeted / goal) * 100)) : 0);
 	const perDay = $derived(daysLeft && daysLeft > 0 && balance > 0 ? Math.floor(balance / daysLeft) : null);

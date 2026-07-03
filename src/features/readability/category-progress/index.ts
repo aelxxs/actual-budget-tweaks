@@ -183,13 +183,19 @@ function daysLeftInMonth(sheet: string): number | null {
 
 function paintRing(ring: HTMLElement, data: CatCells) {
 	const ratio = data.budgeted > 0 ? data.spent / data.budgeted : data.spent > 0 ? Infinity : 0;
+	const isCurrentMonth = daysLeftInMonth(ring.dataset.sheet || "") != null;
 
 	let state: string;
 	if (data.balance < 0) {
 		state = "overspent";
 	} else if (ratio > 1) {
 		state = "over";
-	} else if (ratio >= 0.85) {
+	} else if (data.budgeted > 0 && data.spent === data.budgeted) {
+		// Exactly fully spent is the envelope working as planned (fixed bills
+		// like rent land here every month) — completion, not a warning.
+		state = "full";
+	} else if (isCurrentMonth && ratio >= 0.85) {
+		// "Running low" is only actionable while the month is still going.
 		state = "near";
 	} else if (data.budgeted <= 0 && data.spent <= 0) {
 		state = "empty";
