@@ -1,7 +1,8 @@
 import { query, send } from "@lib/utilities/actual-api";
+import type { GoalDefEntry } from "@lib/types/actual-schema";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import type { Category } from "./priority-plan";
-import { parseNoteTemplates } from "./templates";
+import { templateEntriesFromGoalDef } from "./templates";
 import type { TemplateEntry } from "./templates";
 
 export interface SnapshotDescriptor {
@@ -319,20 +320,28 @@ export function diffSnapshots(
 	};
 }
 
+function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
+	if (!goalDef) return [];
+	try {
+		const parsed = JSON.parse(goalDef);
+		if (!Array.isArray(parsed)) return [];
+		return parsed.filter((d): d is GoalDefEntry => d && (d.directive === "template" || d.directive === "goal"));
+	} catch {
+		return [];
+	}
+}
+
 export async function loadTemplatesByCategoryId(): Promise<Map<string, TemplateEntry[]>> {
 	const byCat = new Map<string, TemplateEntry[]>();
 	try {
-		const notes = await query("notes");
-		const catIds = new Set((categoriesCache || []).map((c) => c.id));
-		for (const n of notes) {
-			if (!n.note) continue;
-			if (catIds.size && !catIds.has(n.id)) continue;
-			const tpls = parseNoteTemplates(n.note);
-			const budgetTpls = tpls.filter((t) => t.kind !== "goal");
-			if (budgetTpls.length) byCat.set(n.id, budgetTpls);
+		const cats = await query<{ id: string; tombstone: boolean; goal_def: string | null }[]>("categories");
+		for (const c of cats) {
+			if (c.tombstone || !c.goal_def) continue;
+			const budgetTpls = templateEntriesFromGoalDef(parseGoalDef(c.goal_def));
+			if (budgetTpls.length) byCat.set(c.id, budgetTpls);
 		}
 	} catch (e) {
-		console.warn("[ABT TAB] notes query failed", e);
+		console.warn("[ABT TAB] categories query failed", e);
 	}
 	return byCat;
 }

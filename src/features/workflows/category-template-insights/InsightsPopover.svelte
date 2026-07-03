@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { navigate } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import { parseScheduleAmount } from "./data";
-	import type { CategoryInsight, LinkedSchedule, ParsedTemplate, ProgressInfo } from "./types";
+	import { getCategoryName, parseScheduleAmount } from "./data";
+	import type { CategoryInsight, LinkedSchedule, ProgressInfo } from "./types";
 
 	const {
 		entry,
@@ -46,6 +46,21 @@
 		if (!iso) return "—";
 		const [y, m, d] = iso.split("-");
 		return `${m}/${d}/${y.slice(2)}`;
+	}
+
+	function pluralize(n: number, unit: string): string {
+		return n === 1 ? unit : `${unit}s`;
+	}
+
+	function fmtMonth(month: string): string {
+		const [y, m] = month.split("-").map(Number);
+		if (!y || !m) return month;
+		return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: "short", year: "numeric" });
+	}
+
+	function percentCategoryLabel(category: string): string {
+		if (category === "all income" || category === "available funds") return category;
+		return getCategoryName(category) ?? category;
 	}
 
 	function getScheduleStatus(link: LinkedSchedule): string {
@@ -111,19 +126,19 @@
 	</div>
 
 	<ul class="pop__templates">
-		{#each entry.templates as t}
-			{@const link = t.scheduleName ? entry.linkedSchedules.find((ls) => ls.template === t) : null}
-			<li class="pop__tpl" class:pop__tpl--missing={t.scheduleName && !link}>
-				<span class="pop__priority" class:pop__priority--none={t.priority == null}>
-					{t.priority != null ? `#${t.priority}` : "—"}
+		{#each entry.directives as d}
+			{@const link = d.type === "schedule" ? entry.linkedSchedules.find((ls) => ls.directive === d) : null}
+			<li class="pop__tpl" class:pop__tpl--missing={d.type === "schedule" && !link}>
+				<span class="pop__priority" class:pop__priority--none={d.priority == null}>
+					{d.priority != null ? `#${d.priority}` : "—"}
 				</span>
 				<div class="pop__tpl-body">
-					{#if t.scheduleName && link}
+					{#if d.type === "schedule" && link}
 						{@const amt = parseScheduleAmount(link.schedule)}
 						{@const status = getScheduleStatus(link)}
 						{@const displayDate = getDisplayDate(link)}
 						<div class="pop__sched-row1">
-							<span class="pop__sched-name">{link.schedule.name || t.scheduleName}</span>
+							<span class="pop__sched-name">{link.schedule.name || d.name}</span>
 							<span class="pop__sched-amt abt-privacy-number">{fmtMoney(amt ?? 0)}</span>
 							<span class="pop__status pop__status--{status}">{status}</span>
 						</div>
@@ -133,10 +148,74 @@
 								<span class="pop__sched-rel">{relativeDay(displayDate)}</span>
 							{/if}
 						</div>
-					{:else if t.scheduleName}
-						<div class="pop__missing">Schedule "{t.scheduleName}" not found</div>
+					{:else if d.type === "schedule"}
+						<div class="pop__missing">Schedule "{d.name}" not found</div>
+					{:else if d.type === "simple"}
+						<div class="pop__raw abt-privacy-number">
+							{#if d.limit}
+								Up to {fmtMoney(Math.round(d.limit.amount * 100))}
+							{:else if d.monthly != null}
+								{fmtMoney(Math.round(d.monthly * 100))}/mo
+							{:else}
+								Simple template
+							{/if}
+						</div>
+					{:else if d.type === "average"}
+						<div class="pop__raw">Average of last {d.numMonths} months</div>
+					{:else if d.type === "periodic"}
+						<div class="pop__raw abt-privacy-number">
+							{fmtMoney(Math.round(d.amount * 100))} every {d.period.amount}
+							{pluralize(d.period.amount, d.period.period)}
+							{#if d.limit}
+								(up to {fmtMoney(Math.round(d.limit * 100))})
+							{/if}
+						</div>
+					{:else if d.type === "by"}
+						<div class="pop__raw abt-privacy-number">
+							Save {fmtMoney(Math.round(d.amount * 100))} by {fmtMonth(d.month)}{#if d.annual}, repeating yearly{:else if d.repeat}, every {d.repeat} {pluralize(
+									d.repeat,
+									"month",
+								)}{/if}{#if d.from} &middot; spend from {fmtMonth(d.from)}{/if}
+						</div>
+					{:else if d.type === "spend"}
+						<div class="pop__raw abt-privacy-number">
+							Save {fmtMoney(Math.round(d.amount * 100))} by {fmtMonth(d.month)} &middot; spend from {fmtMonth(d.from)}
+						</div>
+					{:else if d.type === "percentage"}
+						<div class="pop__raw">
+							{d.percent}% of {percentCategoryLabel(d.category)}
+							{#if d.previous}
+								(last month)
+							{/if}
+						</div>
+					{:else if d.type === "copy"}
+						<div class="pop__raw">
+							Copy amount from {d.lookBack}
+							{pluralize(d.lookBack, "month")} ago
+							{#if d.limit}
+								(up to {fmtMoney(Math.round(d.limit * 100))})
+							{/if}
+						</div>
+					{:else if d.type === "remainder"}
+						<div class="pop__raw">
+							Remainder split (weight {d.weight})
+							{#if d.limit}
+								&middot; up to {fmtMoney(Math.round(d.limit * 100))}
+							{/if}
+						</div>
+					{:else if d.type === "limit"}
+						<div class="pop__raw abt-privacy-number">
+							Limit {fmtMoney(Math.round(d.amount * 100))} / {d.period}
+							{#if d.hold}
+								(hold over-limit funds)
+							{/if}
+						</div>
+					{:else if d.type === "refill"}
+						<div class="pop__raw">Refill to limit each period</div>
+					{:else if d.type === "goal"}
+						<div class="pop__raw abt-privacy-number">Goal balance of {fmtMoney(Math.round(d.amount * 100))}</div>
 					{:else}
-						<div class="pop__raw">{t.raw}</div>
+						<div class="pop__raw">{JSON.stringify(d as unknown)}</div>
 					{/if}
 				</div>
 			</li>

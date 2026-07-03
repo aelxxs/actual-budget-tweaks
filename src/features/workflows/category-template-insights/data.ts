@@ -1,11 +1,18 @@
 import { query, send } from "@lib/utilities/actual-api";
-import type { CategoryInsight, LinkedSchedule, ParsedTemplate, ProgressInfo, RawSchedule } from "./types";
+import type { GoalDefEntry } from "@lib/types/actual-schema";
+import type { CategoryInsight, LinkedSchedule, ProgressInfo, RawSchedule } from "./types";
 
 let insights: Map<string, CategoryInsight> | null = null;
 let loading: Promise<Map<string, CategoryInsight> | null> | null = null;
+const categoryNameById = new Map<string, string>();
 
 export function getInsights() {
 	return insights;
+}
+
+/** Resolves a category id referenced by a "percentage" directive's `category` field. */
+export function getCategoryName(id: string): string | null {
+	return categoryNameById.get(id) ?? null;
 }
 
 export function invalidateCache() {
@@ -18,25 +25,20 @@ export function resetData() {
 	goalCache.clear();
 }
 
-function parseTemplates(note: string): ParsedTemplate[] {
-	if (!note) return [];
-	const out: ParsedTemplate[] = [];
-	for (const raw of note.split(/\r?\n/)) {
-		const line = raw.trim();
-		const m = line.match(/^#template\b\s*(-\d+)?\s*(.*)$/i);
-		if (!m) continue;
-		const priority = m[1] ? parseInt(m[1].slice(1), 10) : null;
-		const rest = (m[2] || "").trim();
-
-		let scheduleName: string | null = null;
-		const schedMatch = rest.match(/^schedule\b\s+(?:full\s+)?(.*)$/i);
-		if (schedMatch) {
-			scheduleName = schedMatch[1].replace(/\s*\[.*$/, "").trim() || null;
-		}
-
-		out.push({ priority, raw: line, scheduleName });
+/**
+ * `goal_def` is the structured form of a category's template/goal directives —
+ * the same data Actual itself parses from notes today, and the only source
+ * once Actual's template UI migration drops note-based authoring entirely.
+ */
+function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
+	if (!goalDef) return [];
+	try {
+		const parsed = JSON.parse(goalDef);
+		if (!Array.isArray(parsed)) return [];
+		return parsed.filter((d): d is GoalDefEntry => d && (d.directive === "template" || d.directive === "goal"));
+	} catch {
+		return [];
 	}
-	return out;
 }
 
 function parseScheduleAmount(schedule: RawSchedule): number | null {
@@ -93,9 +95,8 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 	if (loading) return loading;
 	loading = (async () => {
 		try {
-			const [cats, notes, scheds, txs, prefs] = await Promise.all([
-				query<{ id: string; name: string; tombstone: boolean }[]>("categories"),
-				query<{ id: string; note: string }[]>("notes"),
+			const [cats, scheds, txs, prefs] = await Promise.all([
+				query<{ id: string; name: string; tombstone: boolean; goal_def: string | null }[]>("categories"),
 				query<RawSchedule[]>("schedules"),
 				query<{ id: string; date: string; schedule: string }[]>("transactions", {
 					filter: { tombstone: false },
@@ -106,7 +107,8 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 			]);
 
 			const upcomingPref = prefs?.[0]?.value || "7";
-			const notesMap = new Map(notes.map((n) => [n.id, n.note || ""]));
+			categoryNameById.clear();
+			for (const c of cats) categoryNameById.set(c.id, c.name);
 			const schedsByName = new Map<string, RawSchedule>();
 			for (const s of scheds) {
 				if (s.name) schedsByName.set(s.name.trim().toLowerCase(), s);
@@ -133,24 +135,23 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 			const result = new Map<string, CategoryInsight>();
 			for (const c of cats) {
 				if (c.tombstone) continue;
-				const note = notesMap.get(c.id) || "";
-				const templates = parseTemplates(note);
-				if (templates.length === 0) continue;
+				const directives = parseGoalDef(c.goal_def);
+				if (directives.length === 0) continue;
 
 				const linkedSchedules: LinkedSchedule[] = [];
-				for (const t of templates) {
-					if (!t.scheduleName) continue;
-					const s = schedsByName.get(t.scheduleName.toLowerCase());
+				for (const d of directives) {
+					if (d.type !== "schedule") continue;
+					const s = schedsByName.get(d.name.trim().toLowerCase());
 					if (s) {
 						linkedSchedules.push({
-							template: t,
+							directive: d,
 							schedule: s,
 							paid: paidInfo.has(s.id),
 							paidDate: paidInfo.get(s.id) || null,
 						});
 					}
 				}
-				result.set(c.id, { id: c.id, name: c.name, templates, linkedSchedules });
+				result.set(c.id, { id: c.id, name: c.name, directives, linkedSchedules });
 			}
 
 			insights = result;
@@ -218,6 +219,42 @@ function getBudgetedCents(row: HTMLElement): number | null {
 	return Math.round(n * 100);
 }
 
+/**
+ * Derives the goal amount directly from an unambiguous "simple"/monthly
+ * "periodic"/"limit"+"refill" directive set, in cents. Returns null for
+ * anything else (average, percentage, by, spend, copy, remainder, a
+ * non-monthly periodic/limit cadence, or multiple mixed directives) since
+ * those targets can only be computed by Actual's budget engine — the caller
+ * falls back to the sheet cell in that case.
+ */
+function directGoalCents(entry: CategoryInsight): number | null {
+	const nonSchedule = entry.directives.filter((d) => d.type !== "schedule");
+
+	if (nonSchedule.length === 2) {
+		const limit = nonSchedule.find((d) => d.type === "limit");
+		const refill = nonSchedule.find((d) => d.type === "refill");
+		if (limit?.type === "limit" && refill?.type === "refill" && limit.period === "monthly") {
+			return Math.round(limit.amount * 100);
+		}
+		return null;
+	}
+
+	if (nonSchedule.length !== 1) return null;
+	const d = nonSchedule[0];
+	if (d.type === "simple") {
+		if (d.limit) return Math.round(d.limit.amount * 100);
+		if (d.monthly != null) return Math.round(d.monthly * 100);
+		return null;
+	}
+	if (d.type === "periodic" && d.period.period === "month" && d.period.amount === 1) {
+		return Math.round(d.amount * 100);
+	}
+	if (d.type === "limit" && d.period === "monthly") {
+		return Math.round(d.amount * 100);
+	}
+	return null;
+}
+
 export async function getProgressCents(row: HTMLElement, entry: CategoryInsight): Promise<ProgressInfo> {
 	const schedTotal = scheduleTotalCents(entry);
 	if (schedTotal > 0) {
@@ -225,8 +262,18 @@ export async function getProgressCents(row: HTMLElement, entry: CategoryInsight)
 		const num = leftover == null ? null : Math.max(0, leftover);
 		return { numerator: num, denominator: schedTotal, source: "schedule" };
 	}
+
+	// A "goal" directive overrides the indicator to compare the category's
+	// current balance (not its budgeted amount) against a target amount.
+	const goalDirective = entry.directives.find((d) => d.type === "goal");
+	if (goalDirective) {
+		const leftover = await fetchLeftoverCents(entry.id);
+		const num = leftover == null ? null : Math.max(0, leftover);
+		return { numerator: num, denominator: Math.round(goalDirective.amount * 100), source: "goal" };
+	}
+
 	const budgetedCents = getBudgetedCents(row);
-	const goalCents = await fetchGoalCents(entry.id);
+	const goalCents = directGoalCents(entry) ?? (await fetchGoalCents(entry.id));
 	return { numerator: budgetedCents, denominator: goalCents, source: "goal" };
 }
 

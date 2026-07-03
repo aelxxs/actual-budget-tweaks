@@ -1,11 +1,7 @@
-export interface ParsedTemplate {
-	priority: number | null;
-	raw: string;
-	scheduleName: string | null;
-}
+import type { GoalDefEntry } from "@lib/types/actual-schema";
 
 export interface LinkedSchedule {
-	template: ParsedTemplate;
+	directive: Extract<GoalDefEntry, { type: "schedule" }>;
 	schedule: RawSchedule;
 	paid: boolean;
 	paidDate: string | null;
@@ -14,7 +10,7 @@ export interface LinkedSchedule {
 export interface CategoryInsight {
 	id: string;
 	name: string;
-	templates: ParsedTemplate[];
+	directives: GoalDefEntry[];
 	linkedSchedules: LinkedSchedule[];
 }
 
