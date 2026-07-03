@@ -23,6 +23,7 @@ import { alternatingTransactionRows } from "./readability/alternating-transactio
 import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetPageBorders } from "./readability/budget-page-borders";
 import { budgetTotalsLabelStyling } from "./readability/budget-totals-label-styling";
+import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
 import { dimReconciled } from "./readability/dim-reconciled";
@@ -53,6 +54,7 @@ const layoutAndDensity = [
 const readability = [
 	alternatingTransactionRows,
 	budgetCardStyling,
+	categoryProgress,
 	colorNegativeBalances,
 	colorTransactions,
 	dimReconciled,
@@ -123,6 +125,7 @@ export const scripts: Setting<any>[][] = [
 	[
 		alternatingTransactionRows,
 		budgetCardStyling,
+		categoryProgress,
 		colorNegativeBalances,
 		colorTransactions,
 		dimReconciled,
