@@ -49,7 +49,7 @@
 	<div class="cp__bar" data-state={barState}>
 		<div class="cp__bar-fill" style="width: {fillPct}%"></div>
 	</div>
-	<div class="cp__status" data-state={barState}>{statusText}</div>
+	<div class="cp__status abt-privacy-number" data-state={barState}>{statusText}</div>
 
 	<div class="cp__rows">
 		<div class="cp__row">
