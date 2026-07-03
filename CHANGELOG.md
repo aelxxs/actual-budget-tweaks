@@ -1,6 +1,31 @@
 # Changelog
 
 
+## v0.1.46
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.45...v0.1.46)
+
+### 🚀 Enhancements
+
+- Add category progress indicators with popover details ([05556fb](https://github.com/aelxxs/actual-budget-tweaks/commit/05556fb))
+- Add gauge and progress ring icons to ICONS ([13ef07b](https://github.com/aelxxs/actual-budget-tweaks/commit/13ef07b))
+- Add goal_def property to Category interface and define GoalDefEntry type ([6b78dd8](https://github.com/aelxxs/actual-budget-tweaks/commit/6b78dd8))
+- Refactor category template handling to use goal_def directives and improve data parsing ([683dbe6](https://github.com/aelxxs/actual-budget-tweaks/commit/683dbe6))
+- Enhance budget status indicators with fully spent and current month checks ([9cecc4f](https://github.com/aelxxs/actual-budget-tweaks/commit/9cecc4f))
+
+### 🩹 Fixes
+
+- Improve CSS selector specificity for emoji button visibility ([a5920c9](https://github.com/aelxxs/actual-budget-tweaks/commit/a5920c9))
+- Add class to status div for improved styling ([4c4d4c0](https://github.com/aelxxs/actual-budget-tweaks/commit/4c4d4c0))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.45 ([3fc6f1a](https://github.com/aelxxs/actual-budget-tweaks/commit/3fc6f1a))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.45
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.44...v0.1.45)
