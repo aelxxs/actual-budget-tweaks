@@ -52,7 +52,33 @@ export interface Category {
   hidden?: boolean;
   sort_order?: number;
   tombstone?: boolean;
+  /** JSON-stringified array of goal/template directives — see `GoalDefEntry`. */
+  goal_def?: string | null;
 }
+
+/**
+ * A single parsed entry from a category's `goal_def` column — the structured
+ * form of `#template`/`#goal` directives, whether authored via notes or (in
+ * newer Actual versions) a dedicated template UI.
+ */
+export type GoalDefEntry =
+  | { directive: "template"; type: "simple"; monthly: number | null; limit: { amount: number; hold: unknown; period: string; start: string | null } | null; priority: number | null }
+  | { directive: "template"; type: "schedule"; name: string; priority: number | null; full: boolean | null; scheduleId?: string; description?: string }
+  | { directive: "template"; type: "average"; numMonths: number; priority: number | null }
+  /** Recurring amount every N days/weeks/months/years. */
+  | { directive: "template"; type: "periodic"; amount: number; period: { period: "day" | "week" | "month" | "year"; amount: number }; starting: string; limit?: number | null; priority: number | null; description?: string }
+  /** Save a target amount by a given month, optionally repeating annually or every N months. */
+  | { directive: "template"; type: "by"; amount: number; month: string; from: string | null; annual?: boolean; repeat?: number; priority: number | null }
+  /** Save a target amount by a given month, spending starts accruing from a given month. */
+  | { directive: "template"; type: "spend"; amount: number; month: string; from: string; priority: number | null }
+  | { directive: "template"; type: "percentage"; percent: number; previous: boolean; category: string; priority: number | null }
+  | { directive: "template"; type: "copy"; lookBack: number; limit: number | null; priority: number | null }
+  | { directive: "template"; type: "remainder"; weight: number; limit?: number | null; priority: number | null }
+  /** Balance-limit rule from the "Automate budget" UI — a spending cap, not itself a monthly target. */
+  | { directive: "template"; type: "limit"; amount: number; hold: boolean | null; period: string; start: string | null; priority: number | null }
+  /** Paired with a preceding "limit" entry: refill the category back up to that limit each period. */
+  | { directive: "template"; type: "refill"; priority: number | null }
+  | { directive: "goal"; type: "goal"; amount: number; priority: number | null };
 
 export interface CategoryGroup {
   id: UUID;
