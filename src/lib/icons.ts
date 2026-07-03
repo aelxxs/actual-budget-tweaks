@@ -48,6 +48,17 @@ const ICONS = {
 		strokeWidth: 1.75,
 		body: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
 	},
+	gauge: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 12a9 9 0 0 0-9-9" opacity="0.35"/><circle cx="12" cy="12" r="1" fill="currentColor"/><path d="M12 12l3.5-3.5"/>',
+	},
+	/** Donut progress ring — consumers set the fill arc via `.fill { stroke-dasharray: "<pct> 100" }` and color both classes in CSS. */
+	progressRing: {
+		viewBox: "0 0 16 16",
+		strokeWidth: 2.5,
+		body: '<circle class="track" cx="8" cy="8" r="6"/><circle class="fill" cx="8" cy="8" r="6" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 8 8)"/>',
+	},
 	star: {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.5,
