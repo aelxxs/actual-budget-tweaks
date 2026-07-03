@@ -62,7 +62,7 @@ const CSS = `
 		display: none;
 	}
 
-	[data-testid="row"]:hover .abt-emoji-btn--empty {
+	[data-testid="row"] *:hover > .abt-emoji-btn--empty {
 		display: inline-flex;
 		opacity: 0.4;
 	}
@@ -259,7 +259,11 @@ export const categoryEmojiPicker = defineSetting({
 	css: () => CSS,
 	init: async () => {
 		await loadCategoryIcons();
-		const unwatch = watchDom(scanRows, document.body, { childList: true, subtree: true, characterData: true });
+		const unwatch = watchDom(scanRows, document.body, {
+			childList: true,
+			subtree: true,
+			characterData: true,
+		});
 
 		return () => {
 			unwatch();
