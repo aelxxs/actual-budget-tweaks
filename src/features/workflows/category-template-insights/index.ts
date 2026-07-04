@@ -5,7 +5,8 @@ import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
 import { getValue, setValue } from "@lib/utilities/store";
-import { mountToNode } from "@lib/utilities/svelte";
+import { mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { unmount } from "svelte";
 import { getInsights, getProgressCents, invalidateCache, loadData, resetData } from "./data";
 import InsightsPopover from "./InsightsPopover.svelte";
 import type { CategoryInsight } from "./types";
@@ -271,6 +272,7 @@ let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 let currentRow: HTMLElement | null = null;
 let currentCol: HTMLElement | null = null;
 let popoverWrap: HTMLElement | null = null;
+let popoverInstance: ReturnType<typeof mountToNodeWithReturn>["instance"] | null = null;
 
 function onColMouseEnter(e: Event) {
 	const col = e.currentTarget as HTMLElement;
@@ -307,7 +309,7 @@ async function openPopover(row: HTMLElement, anchor: HTMLElement) {
 	const progress = await getProgressCents(row, entry);
 	if (currentRow !== row) return;
 
-	const wrap = mountToNode(InsightsPopover, {
+	const { node: wrap, instance } = mountToNodeWithReturn(InsightsPopover, {
 		entry,
 		progress,
 		onClose: closePopover,
@@ -316,11 +318,16 @@ async function openPopover(row: HTMLElement, anchor: HTMLElement) {
 	wrap.style.display = "block";
 	document.body.appendChild(wrap);
 	popoverWrap = wrap;
+	popoverInstance = instance;
 
 	positionPopover(wrap, anchor, { gap: 6 });
 }
 
 function closePopover() {
+	if (popoverInstance) {
+		unmount(popoverInstance);
+		popoverInstance = null;
+	}
 	if (popoverWrap) {
 		popoverWrap.remove();
 		popoverWrap = null;
