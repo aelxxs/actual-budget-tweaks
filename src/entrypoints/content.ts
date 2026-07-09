@@ -1,4 +1,7 @@
-import { getBaseUrl } from "@/lib/utilities/store";
+import { getBaseUrl } from "@lib/utilities/store";
+import type { PublicPath } from "wxt/browser";
+
+const contentCssPath = "/content-scripts/content.css" as unknown as PublicPath;
 
 export default defineContentScript({
 	matches: ["<all_urls>"],
@@ -30,18 +33,25 @@ export default defineContentScript({
 			if (mounted) return;
 			mounted = true;
 
-			const [{ default: Settings }, { scripts }, { createElement }, { mount, unmount }] = await Promise.all([
-				import("@/lib/ActualSettings.svelte"),
-				import("@/lib/scripts"),
-				import("@/lib/utilities/dom"),
+			const [
+				{ default: Settings },
+				{ scripts, coreScripts },
+				{ createElement },
+				{ mount, unmount },
+				{ bootstrapSettings },
+			] = await Promise.all([
+				import("@lib/ActualSettings.svelte"),
+				import("@features/index"),
+				import("@lib/utilities/dom"),
 				import("svelte"),
+				import("@features/runtime"),
 			]);
 
 			let baseCss: string;
 			let componentCss: string;
 			try {
 				baseCss = browser.runtime.getURL("/css/base.css");
-				componentCss = browser.runtime.getURL("/content-scripts/content.css");
+				componentCss = browser.runtime.getURL(contentCssPath);
 			} catch {
 				return; // Extension context invalidated
 			}
@@ -59,13 +69,12 @@ export default defineContentScript({
 				}),
 			);
 
-			for (const setting of scripts.flat()) {
-				if (setting.init) {
-					// @ts-ignore -- TODO: fix this type error
-					setting.init(setting.context);
-				}
-			}
-
+			// Not awaited: the settings panel only needs to read persisted values
+			// from storage to render, not wait for every feature to finish
+			// activating. bootstrapSettings uses Promise.all internally, so one
+			// feature's slow/hung init() would otherwise block the panel from
+			// ever mounting.
+			bootstrapSettings([...coreScripts, ...scripts.flat()]);
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
 				anchor: "[data-testid='settings'] > :nth-child(2)",
@@ -88,5 +97,15 @@ export default defineContentScript({
 		ctx.addEventListener(window, "wxt:locationchange", () => {
 			checkAndMount();
 		});
+
+		// Re-check immediately when the configured Actual URL changes (e.g. saved
+		// from the popup), instead of waiting for the next full page reload.
+		function handleStorageChange(changes: Record<string, unknown>, areaName: string) {
+			if (areaName === "local" && "local:user-link" in changes) {
+				checkAndMount();
+			}
+		}
+		browser.storage.onChanged.addListener(handleStorageChange);
+		ctx.onInvalidated(() => browser.storage.onChanged.removeListener(handleStorageChange));
 	},
 });

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420">
+  <rect width="1280" height="420" fill="#1a1b26"/>
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="200" height="420" fill="#16171f"/>
+  <rect x="16" y="16" width="168" height="28" rx="4" fill="#2a2b3d"/>
+  <rect x="16" y="56" width="120" height="14" rx="3" fill="#3a3b4d" opacity="0.6"/>
+  <rect x="16" y="80" width="100" height="12" rx="3" fill="#3a3b4d" opacity="0.4"/>
+  <rect x="16" y="100" width="130" height="12" rx="3" fill="#3a3b4d" opacity="0.4"/>
+  <rect x="16" y="120" width="90" height="12" rx="3" fill="#3a3b4d" opacity="0.4"/>
+  <rect x="16" y="156" width="80" height="10" rx="2" fill="#7c5cbf" opacity="0.6"/>
+  <rect x="16" y="176" width="160" height="12" rx="3" fill="#3a3b4d" opacity="0.5"/>
+  <rect x="24" y="196" width="12" height="12" rx="6" fill="#50c878"/>
+  <text x="42" y="206" font-family="sans-serif" font-size="11" fill="#8b8fa3">Checking</text>
+  <rect x="24" y="216" width="12" height="12" rx="6" fill="#e8a449"/>
+  <text x="42" y="226" font-family="sans-serif" font-size="11" fill="#8b8fa3">Savings</text>
+  <rect x="24" y="236" width="12" height="12" rx="6" fill="#d45c72"/>
+  <text x="42" y="246" font-family="sans-serif" font-size="11" fill="#8b8fa3">Credit Card</text>
+  <rect x="24" y="256" width="12" height="12" rx="6" fill="#5ca0d4"/>
+  <text x="42" y="266" font-family="sans-serif" font-size="11" fill="#8b8fa3">Investment</text>
+  <!-- Main content - Budget grid -->
+  <rect x="216" y="16" width="1048" height="44" rx="6" fill="#1e1f30"/>
+  <text x="232" y="44" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e4e5eb">Budget</text>
+  <text x="900" y="44" font-family="sans-serif" font-size="12" fill="#8b8fa3">June 2026</text>
+  <!-- Column headers -->
+  <rect x="216" y="72" width="1048" height="32" rx="0" fill="#1e1f30"/>
+  <text x="232" y="93" font-family="sans-serif" font-size="11" fill="#8b8fa3">Category</text>
+  <text x="700" y="93" font-family="sans-serif" font-size="11" fill="#8b8fa3">Budgeted</text>
+  <text x="880" y="93" font-family="sans-serif" font-size="11" fill="#8b8fa3">Spent</text>
+  <text x="1060" y="93" font-family="sans-serif" font-size="11" fill="#8b8fa3">Available</text>
+  <!-- Budget rows -->
+  <rect x="216" y="105" width="1048" height="1" fill="#2a2b3d"/>
+  <g opacity="0.9">
+    <text x="248" y="128" font-family="sans-serif" font-size="12" fill="#e4e5eb">Groceries</text>
+    <text x="700" y="128" font-family="sans-serif" font-size="12" fill="#e4e5eb">$500.00</text>
+    <text x="880" y="128" font-family="sans-serif" font-size="12" fill="#d45c72">$423.17</text>
+    <text x="1060" y="128" font-family="sans-serif" font-size="12" fill="#50c878">$76.83</text>
+  </g>
+  <rect x="216" y="140" width="1048" height="1" fill="#2a2b3d"/>
+  <g opacity="0.9">
+    <text x="248" y="163" font-family="sans-serif" font-size="12" fill="#e4e5eb">Rent</text>
+    <text x="700" y="163" font-family="sans-serif" font-size="12" fill="#e4e5eb">$1,800.00</text>
+    <text x="880" y="163" font-family="sans-serif" font-size="12" fill="#d45c72">$1,800.00</text>
+    <text x="1060" y="163" font-family="sans-serif" font-size="12" fill="#8b8fa3">$0.00</text>
+  </g>
+  <rect x="216" y="175" width="1048" height="1" fill="#2a2b3d"/>
+  <g opacity="0.9">
+    <text x="248" y="198" font-family="sans-serif" font-size="12" fill="#e4e5eb">Transportation</text>
+    <text x="700" y="198" font-family="sans-serif" font-size="12" fill="#e4e5eb">$200.00</text>
+    <text x="880" y="198" font-family="sans-serif" font-size="12" fill="#d45c72">$156.40</text>
+    <text x="1060" y="198" font-family="sans-serif" font-size="12" fill="#50c878">$43.60</text>
+  </g>
+  <rect x="216" y="210" width="1048" height="1" fill="#2a2b3d"/>
+  <g opacity="0.9">
+    <text x="248" y="233" font-family="sans-serif" font-size="12" fill="#e4e5eb">Utilities</text>
+    <text x="700" y="233" font-family="sans-serif" font-size="12" fill="#e4e5eb">$150.00</text>
+    <text x="880" y="233" font-family="sans-serif" font-size="12" fill="#d45c72">$132.88</text>
+    <text x="1060" y="233" font-family="sans-serif" font-size="12" fill="#50c878">$17.12</text>
+  </g>
+  <rect x="216" y="245" width="1048" height="1" fill="#2a2b3d"/>
+  <g opacity="0.9">
+    <text x="248" y="268" font-family="sans-serif" font-size="12" fill="#e4e5eb">Entertainment</text>
+    <text x="700" y="268" font-family="sans-serif" font-size="12" fill="#e4e5eb">$100.00</text>
+    <text x="880" y="268" font-family="sans-serif" font-size="12" fill="#d45c72">$147.50</text>
+    <text x="1060" y="268" font-family="sans-serif" font-size="12" fill="#d45c72">-$47.50</text>
+  </g>
+  <rect x="216" y="280" width="1048" height="1" fill="#2a2b3d"/>
+  <g opacity="0.9">
+    <text x="248" y="303" font-family="sans-serif" font-size="12" fill="#e4e5eb">Subscriptions</text>
+    <text x="700" y="303" font-family="sans-serif" font-size="12" fill="#e4e5eb">$45.00</text>
+    <text x="880" y="303" font-family="sans-serif" font-size="12" fill="#d45c72">$45.00</text>
+    <text x="1060" y="303" font-family="sans-serif" font-size="12" fill="#8b8fa3">$0.00</text>
+  </g>
+  <rect x="216" y="315" width="1048" height="1" fill="#2a2b3d"/>
+  <g opacity="0.9">
+    <text x="248" y="338" font-family="sans-serif" font-size="12" fill="#e4e5eb">Dining Out</text>
+    <text x="700" y="338" font-family="sans-serif" font-size="12" fill="#e4e5eb">$120.00</text>
+    <text x="880" y="338" font-family="sans-serif" font-size="12" fill="#d45c72">$89.25</text>
+    <text x="1060" y="338" font-family="sans-serif" font-size="12" fill="#50c878">$30.75</text>
+  </g>
+</svg>

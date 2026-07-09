@@ -1,0 +1,364 @@
+---
+const faqs = [
+	{
+		q: "Does this access my financial data?",
+		a: "No. ABT only reads the DOM to apply visual changes. It has no access to your budget data, server, or sync. All settings are stored locally in your browser.",
+	},
+	{
+		q: "Will it break when Actual Budget updates?",
+		a: "ABT is designed to be resilient to updates. If Actual changes its UI structure, some features may temporarily stop working, but your data is never affected. Just disable the setting and it reverts instantly.",
+	},
+	{
+		q: "Does this work with any Actual Budget instance?",
+		a: "Yes — any self-hosted instance, regardless of how you host it. The extension detects Actual Budget in your browser tab and activates automatically.",
+	},
+	{
+		q: "Can I use only some features?",
+		a: "Every feature is independently toggleable. Enable what you want, ignore the rest. There are no dependencies between settings.",
+	},
+	{
+		q: "Does this work on mobile?",
+		a: "Not at the moment. ABT is a browser extension for Chrome and Firefox on desktop. Mobile browsers don't support the extension APIs needed, so it's not available in their stores.",
+	},
+];
+---
+
+<section class="trust" data-reveal>
+	<div class="center">
+		<!-- Row 1: trust text + settings demo (original layout) -->
+		<div class="trust__top">
+			<div class="stack stack--md">
+				<h2 class="trust__heading">Built to layer,<br />not to replace</h2>
+				<p class="trust__body">
+					ABT is a browser extension, not a fork. It reads Actual Budget's existing
+					DOM and layers interface changes on top. Your data, sync, and server stay
+					untouched. Disable any setting and the original UI returns instantly.
+				</p>
+				<ul class="trust__checks stack stack--xs">
+					<li>Designed to feel built-in, not bolted on</li>
+					<li>Works with any self-hosted Actual instance</li>
+					<li>Zero data access — all settings stored locally</li>
+					<li>Open source, always</li>
+				</ul>
+			</div>
+
+			<div class="trust__visual" aria-hidden="true">
+				<div class="sp">
+					<div class="sp__header">
+						<strong>Interface Settings</strong>
+						<span>Configure Actual</span>
+					</div>
+					<div class="sp__section">
+						<span class="sp__label">Border Radius</span>
+						<div class="rp-grid">
+							{[
+								{ r: "0", label: "NONE" },
+								{ r: "3px", label: "SMALL" },
+								{ r: "6px", label: "MEDIUM", active: true },
+								{ r: "9px", label: "ROUNDER" },
+								{ r: "12px", label: "LARGE" },
+								{ r: "50%", label: "PILL" },
+							].map(o => (
+								<button class={`rp-option ${o.active ? "is-active" : ""}`} data-rp>
+									<div class="rp-preview"><div class="rp-box" style={`border-radius: 0 ${o.r} 0 0`}></div></div>
+									<span class="rp-label">{o.label}</span>
+								</button>
+							))}
+						</div>
+					</div>
+					<div class="sp__section">
+						<span class="sp__label">Background Pattern</span>
+						<div class="bpp-grid">
+							<button class="bpp-option is-active" data-bp><div class="bpp-swatch bpp-swatch--polka"></div><span class="bpp-label">POLKA DOTS</span></button>
+							<button class="bpp-option" data-bp><div class="bpp-swatch bpp-swatch--stripes"></div><span class="bpp-label">STRIPES</span></button>
+							<button class="bpp-option" data-bp><div class="bpp-swatch"></div><span class="bpp-label">NONE</span></button>
+						</div>
+					</div>
+					<div class="sp__section">
+						<span class="sp__label">Sidebar Account Spacing</span>
+						<div class="sp__select">
+							<span>Normal (Default)</span>
+							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+						</div>
+					</div>
+					<div class="sp__section sp__toggles">
+						<label class="sp__toggle"><span class="checkbox checked"></span> Color Negative Balances</label>
+						<label class="sp__toggle sp__toggle--animated"><span class="checkbox"></span> Dim Reconciled Transactions</label>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Row 2: FAQ -->
+		<div class="trust__faq" data-reveal>
+			<h3 class="faq__heading">Common questions</h3>
+			<div class="faq__list">
+				{faqs.map(f => (
+					<details class="faq__item">
+						<summary>{f.q}</summary>
+						<p>{f.a}</p>
+					</details>
+				))}
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.trust {
+		padding-block: 6rem;
+	}
+
+	/* Row 1: two-column trust + settings */
+	.trust__top {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 4rem;
+		align-items: center;
+	}
+
+	.trust__heading {
+		font-size: clamp(1.5rem, 3vw, 2rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.15;
+	}
+
+	.trust__body {
+		color: var(--text-secondary);
+		font-size: 1rem;
+		line-height: 1.65;
+	}
+
+	.trust__checks { list-style: none; }
+
+	.trust__checks li {
+		font-size: 0.92rem;
+		color: var(--text-secondary);
+		padding-inline-start: 1.4rem;
+		position: relative;
+	}
+
+	.trust__checks li::before {
+		content: "✓";
+		position: absolute;
+		inset-inline-start: 0;
+		color: var(--accent);
+		font-weight: 700;
+	}
+
+	/* Row 2: FAQ centered below */
+	.trust__faq {
+		margin-block-start: 4rem;
+		padding-block-start: 3rem;
+		border-block-start: 1px solid var(--border);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.faq__heading {
+		font-size: 1.3rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin-block-end: 1rem;
+	}
+
+	.faq__list {
+		max-inline-size: 640px;
+		inline-size: 100%;
+	}
+
+	.faq__item {
+		border-block-end: 1px solid var(--border);
+	}
+
+	.faq__item summary {
+		padding: 0.85rem 0;
+		font-size: 0.95rem;
+		font-weight: 500;
+		cursor: pointer;
+		list-style: none;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.faq__item summary::after {
+		content: "+";
+		font-size: 1.1rem;
+		color: var(--text-tertiary);
+		flex-shrink: 0;
+	}
+
+	.faq__item[open] summary::after { content: "−"; }
+
+	.faq__item p {
+		padding: 0 0 0.85rem;
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+		line-height: 1.6;
+	}
+
+	/* ── Settings panel ── */
+	.sp {
+		--sp-bg: var(--surface);
+		--sp-border: var(--border-strong);
+		--sp-muted: var(--text-tertiary);
+		--sp-text: var(--text);
+		--sp-accent: var(--accent);
+		--sp-check: var(--accent);
+		--sp-surface: var(--bg);
+
+		background: var(--sp-bg);
+		color: var(--sp-text);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 0.85rem 1rem;
+		font-size: 13px;
+		box-shadow: var(--shadow-lg);
+	}
+
+	.sp__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		padding-block-end: 0.6rem;
+		margin-block-end: 0.75rem;
+		border-block-end: 1px solid var(--sp-border);
+	}
+
+	.sp__header strong { font-size: 13px; font-weight: 600; }
+	.sp__header span { font-size: 11px; color: var(--sp-muted); }
+	.sp__section { margin-block-end: 0.85rem; }
+
+	.sp__label {
+		font-size: 12px;
+		font-weight: 600;
+		display: block;
+		margin-block-end: 0.4rem;
+	}
+
+	.rp-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+
+	.rp-option {
+		flex: 1;
+		min-width: 48px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		padding: 10px 6px 8px;
+		background: var(--sp-bg);
+		border: 1px solid var(--sp-border);
+		border-radius: 8px;
+		cursor: pointer;
+		font-family: inherit;
+		transition: border-color 0.15s, box-shadow 0.15s;
+	}
+
+	.rp-option:hover:not(.is-active) { border-color: color-mix(in srgb, var(--sp-accent) 40%, transparent); }
+
+	.rp-option.is-active {
+		border-color: var(--sp-accent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--sp-accent) 20%, transparent);
+		background: color-mix(in srgb, var(--sp-accent) 5%, var(--sp-bg));
+	}
+
+	.rp-preview { width: 44px; height: 30px; display: flex; align-items: center; justify-content: center; }
+
+	.rp-box {
+		width: 2.75rem; height: 2.5rem;
+		background: color-mix(in srgb, var(--sp-accent) 12%, transparent);
+		border-top: 2px solid color-mix(in srgb, var(--sp-accent) 50%, transparent);
+		border-right: 2px solid color-mix(in srgb, var(--sp-accent) 50%, transparent);
+		border-bottom-left-radius: 0.15rem;
+	}
+
+	.rp-option.is-active .rp-box { background: color-mix(in srgb, var(--sp-accent) 22%, transparent); border-color: var(--sp-accent); }
+
+	.rp-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sp-muted); font-weight: 600; white-space: nowrap; }
+	.rp-option.is-active .rp-label { color: var(--sp-accent); }
+
+	.bpp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+	.bpp-option {
+		display: flex; flex-direction: column; overflow: hidden; border-radius: 8px;
+		border: 1px solid var(--sp-border); cursor: pointer; font-family: inherit; padding: 0; background: none;
+		transition: border-color 0.15s, box-shadow 0.15s;
+	}
+
+	.bpp-option:hover:not(.is-active) { border-color: color-mix(in srgb, var(--sp-accent) 40%, transparent); }
+	.bpp-option.is-active { border-color: var(--sp-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--sp-accent) 20%, transparent); }
+
+	.bpp-swatch { height: 44px; background-color: var(--sp-bg); }
+	.bpp-swatch--polka { background-image: radial-gradient(var(--sp-border) 0.5px, var(--sp-bg) 0.5px); background-size: 10px 10px; }
+	.bpp-swatch--stripes { background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, color-mix(in srgb, var(--sp-border) 60%, transparent) 5px, color-mix(in srgb, var(--sp-border) 60%, transparent) 6px); }
+
+	.bpp-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: var(--sp-muted); padding: 5px 8px; background: var(--sp-bg); border-top: 1px solid var(--sp-border); }
+	.bpp-option.is-active .bpp-label { color: var(--sp-accent); background: color-mix(in srgb, var(--sp-accent) 6%, var(--sp-bg)); border-top-color: color-mix(in srgb, var(--sp-accent) 30%, transparent); }
+
+	.sp__select {
+		display: flex; align-items: center; justify-content: space-between;
+		padding: 7px 10px; background: var(--sp-surface); border: 1px solid var(--sp-border);
+		border-radius: 6px; font-size: 12px; cursor: pointer; transition: border-color 0.15s;
+	}
+	.sp__select:hover { border-color: var(--sp-accent); }
+	.sp__select svg { color: var(--sp-muted); flex-shrink: 0; }
+
+	.sp__toggles { display: flex; flex-direction: column; gap: 2px; }
+	.sp__toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; padding-block: 0.25rem; }
+
+	.checkbox {
+		position: relative; flex-shrink: 0; width: 15px; height: 15px;
+		border: 1px solid var(--sp-border); border-radius: 4px;
+		display: flex; align-items: center; justify-content: center;
+		background-color: var(--sp-surface); transition: background-color 0.15s, border-color 0.15s;
+	}
+
+	.checkbox.checked { border-color: var(--sp-check); background-color: var(--sp-check); }
+	.checkbox.checked::after { content: ""; display: block; width: 9px; height: 9px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="white" d="M0 11l2-2 5 5L18 3l2 2L7 18z"/></svg>') center / contain no-repeat; }
+
+	.sp__toggle--animated .checkbox { animation: cb-bg 3.5s ease-in-out infinite; }
+	.sp__toggle--animated .checkbox::after { content: ""; display: block; width: 9px; height: 9px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="white" d="M0 11l2-2 5 5L18 3l2 2L7 18z"/></svg>') center / contain no-repeat; animation: cb-mark 3.5s ease-in-out infinite; }
+
+	@keyframes cb-bg {
+		0%, 40% { background-color: var(--sp-surface); border-color: var(--sp-border); }
+		50%, 90% { background-color: var(--sp-check); border-color: var(--sp-check); }
+		100% { background-color: var(--sp-surface); border-color: var(--sp-border); }
+	}
+
+	@keyframes cb-mark {
+		0%, 40% { opacity: 0; }
+		50%, 90% { opacity: 1; }
+		100% { opacity: 0; }
+	}
+
+	@media (max-width: 768px) {
+		.trust__top { grid-template-columns: 1fr; gap: 2.5rem; }
+		.trust__visual { order: 2; }
+	}
+</style>
+
+<script>
+	const rpOptions = document.querySelectorAll("[data-rp]");
+	if (rpOptions.length) {
+		let idx = 2;
+		setInterval(() => {
+			rpOptions.forEach(o => o.classList.remove("is-active"));
+			idx = (idx + 1) % rpOptions.length;
+			rpOptions[idx].classList.add("is-active");
+		}, 2000);
+	}
+
+	const bpOptions = document.querySelectorAll("[data-bp]");
+	if (bpOptions.length) {
+		let pi = 0;
+		setInterval(() => {
+			bpOptions.forEach(o => o.classList.remove("is-active"));
+			pi = (pi + 1) % bpOptions.length;
+			bpOptions[pi].classList.add("is-active");
+		}, 2600);
+	}
+</script>

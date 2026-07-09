@@ -4,7 +4,6 @@ import { cyberpunk } from "./palettes/cyberpunk";
 import { dusk } from "./palettes/dusk";
 import { frappe } from "./palettes/frappe";
 import { ghibliTwilight } from "./palettes/ghibli-twilight";
-import { gruvbox } from "./palettes/gruvbox";
 import { latte } from "./palettes/latte";
 import { macchiato } from "./palettes/macchiato";
 import { material } from "./palettes/material";
@@ -12,7 +11,6 @@ import { midnight } from "./palettes/midnight";
 import { mocha } from "./palettes/mocha";
 import { monospaceMatrix } from "./palettes/monospace-matrix";
 import { nocturne } from "./palettes/nocturne";
-import { nord } from "./palettes/nord";
 import { obsidian } from "./palettes/obsidian";
 import { sandstone } from "./palettes/sandstone";
 import { tomorrowNight } from "./palettes/tomorrow-night";
@@ -26,7 +24,6 @@ export const themes: Record<string, Theme> = {
 	dusk,
 	frappe,
 	ghibliTwilight,
-	gruvbox,
 	latte,
 	macchiato,
 	material,
@@ -34,7 +31,6 @@ export const themes: Record<string, Theme> = {
 	mocha,
 	monospaceMatrix,
 	nocturne,
-	nord,
 	obsidian,
 	sandstone,
 	tomorrowNight,

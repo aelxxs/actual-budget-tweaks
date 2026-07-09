@@ -1,10 +1,49 @@
 <script lang="ts">
+	import { scriptSections, scripts } from "../features";
 	import CheckboxOption from "./components/Checkbox.svelte";
+	import Icon from "./components/Icon.svelte";
 	import SelectOption from "./components/Select.svelte";
-	import { scriptSections } from "./scripts";
+
+	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
+	const version = browser.runtime.getManifest().version;
+	const logoUrl = browser.runtime.getURL("/icon.svg");
 
 	let query = $state("");
 	let collapsed = $state<Record<string, boolean>>({});
+
+	let showBugModal = $state(false);
+	let bugFeature = $state("");
+	let bugDescription = $state("");
+	let importStatus = $state<"" | "success" | "error">("");
+
+	function openBugReport() {
+		bugFeature = "";
+		bugDescription = "";
+		showBugModal = true;
+	}
+
+	function closeBugReport() {
+		showBugModal = false;
+	}
+
+	function submitBugReport() {
+		const title = bugFeature ? `[Bug] ${bugFeature}` : "[Bug] General issue";
+		const body = [
+			bugFeature ? `**Feature:** ${bugFeature}` : "",
+			"",
+			"**Description:**",
+			bugDescription || "_No description provided._",
+			"",
+			"---",
+			"_Reported via Actual Budget Tweaks settings_",
+		]
+			.filter((line, i) => i > 0 || line)
+			.join("\n");
+
+		const url = `${REPO_URL}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=bug`;
+		window.open(url, "_blank", "noopener,noreferrer");
+		closeBugReport();
+	}
 
 	const normalizedQuery = $derived(query.trim().toLowerCase());
 	const filteredSections = $derived.by(() => {
@@ -28,11 +67,140 @@
 		// When searching, force all sections open
 		return !normalizedQuery && !!collapsed[title];
 	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	function groupSectionItems(items: any[]): { label: string | null; items: any[] }[] {
+		const hasAnyGroup = items.some((item) => item.group);
+		if (!hasAnyGroup) return [{ label: null, items }];
+
+		const order: string[] = [];
+		const buckets = new Map<string, any[]>();
+		const ungrouped: any[] = [];
+		for (const item of items) {
+			const g = item.group as string | undefined;
+			if (!g) {
+				ungrouped.push(item);
+				continue;
+			}
+			if (!buckets.has(g)) {
+				buckets.set(g, []);
+				order.push(g);
+			}
+			buckets.get(g)!.push(item);
+		}
+		const result: { label: string | null; items: any[] }[] = order.map((g) => ({
+			label: g,
+			items: buckets.get(g)!,
+		}));
+		if (ungrouped.length) result.push({ label: null, items: ungrouped });
+		return result;
+	}
+
+	const AUX_DEFAULTS: Record<string, unknown> = {
+		"local:category-colors": {},
+		"local:abt-account-icons": {},
+		"local:abt-category-icons": {},
+		"local:abt-sidebar-shortcuts": [],
+		"local:abt-sidebar-groups-collapsed": {},
+		"local:user-themes": {},
+		"local:side-panel-width": 420,
+		"local:side-panel-persist": null,
+		"local:theme-auto-switch": false,
+		"local:theme-auto-dark": null,
+		"local:theme-auto-light": null,
+	};
+
+	async function exportSettings() {
+		const stored = await browser.storage.local.get(null);
+		const data: Record<string, unknown> = { ...AUX_DEFAULTS, ...stored };
+		for (const group of scripts) {
+			for (const item of group) {
+				if ("context" in item && item.context?.key) {
+					const storageKey = `local:${item.context.key}`;
+					if (!(storageKey in data)) {
+						data[storageKey] = item.context.defaultValue;
+					}
+				}
+			}
+		}
+		const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `abt-settings-${new Date().toISOString().slice(0, 10)}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	async function importSettings() {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".json";
+		input.onchange = async () => {
+			const file = input.files?.[0];
+			if (!file) return;
+			try {
+				const text = await file.text();
+				const data = JSON.parse(text);
+				if (typeof data !== "object" || data === null || Array.isArray(data)) {
+					throw new Error("Invalid format");
+				}
+				await browser.storage.local.clear();
+				await browser.storage.local.set(data);
+				importStatus = "success";
+				setTimeout(() => location.reload(), 1000);
+			} catch {
+				importStatus = "error";
+				setTimeout(() => (importStatus = ""), 3000);
+			}
+		};
+		input.click();
+	}
+
+	function portal(node: HTMLElement) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				node.remove();
+			},
+		};
+	}
 </script>
 
 <div class="settings-page stack" style="--space: 1rem;">
 	<div class="header stack" style="--space: 0.6rem;">
-		<span><strong>Interface Settings</strong> — Configure Actual</span>
+		<div class="title-row cluster" style="--gutter: 0.5rem; --align: center; --justify: space-between;">
+			<span class="title-brand">
+				<img class="title-logo" src={logoUrl} alt="" />
+				<strong>Actual Budget Tweaks</strong> — Configure Actual <span class="version-tag">v{version}</span>
+			</span>
+			<div class="header-actions cluster" style="--gutter: 0.25rem; --align: center;">
+				{#if importStatus === "success"}
+					<span class="import-status import-status--ok">Imported — reloading...</span>
+				{:else if importStatus === "error"}
+					<span class="import-status import-status--err">Invalid settings file</span>
+				{/if}
+				<button
+					class="header-action-btn"
+					onclick={exportSettings}
+					title="Export settings"
+					aria-label="Export settings"
+				>
+					<Icon name="upload" size={14} strokeWidth={1.5} />
+				</button>
+				<button
+					class="header-action-btn"
+					onclick={importSettings}
+					title="Import settings"
+					aria-label="Import settings"
+				>
+					<Icon name="download" size={14} strokeWidth={1.5} />
+				</button>
+				<button class="bug-report-btn" onclick={openBugReport} title="Report a bug" aria-label="Report a bug">
+					<Icon name="bug" size={14} />
+				</button>
+			</div>
+		</div>
 		<div class="search-row cluster" style="--gutter: 0.5rem; --align: center;">
 			<input
 				type="search"
@@ -60,29 +228,48 @@
 						<h3>{section.title}</h3>
 						<p>{section.description}</p>
 					</div>
-					<svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-						<path
-							d="M4 6l4 4 4-4"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
+					<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
 				</button>
 				{#if !isCollapsed}
-					<div class="settings-list stack" style="--space: 0.55rem;">
-						{#each section.items as item (item.context.key)}
-							{#if item.type === "select"}
-								<SelectOption
-									labelText={item.label}
-									options={item.options}
-									ctx={item.context}
-									onChange={item.onChange}
-								/>
-							{:else if item.type === "checkbox"}
-								<CheckboxOption labelText={item.label} ctx={item.context} onChange={item.onChange} />
-							{/if}
+					<div class="settings-list stack" style="--space: 0.9rem;">
+						{#each groupSectionItems(section.items) as group (group.label ?? "__ungrouped__")}
+							<div class="settings-subgroup">
+								{#if group.label}
+									<div class="subgroup-label">{group.label}</div>
+								{/if}
+								<div class="stack" style="--space: 0;">
+									{#each group.items as item (item.context.key)}
+										{#if item.type === "select"}
+											<SelectOption
+												labelText={item.label}
+												options={item.options}
+												setting={item}
+												icon={item.icon}
+											/>
+										{:else if item.type === "custom"}
+											{#if item.component}
+												{@const C = item.component}
+												{@const description = (item as { description?: string }).description}
+												<div class="custom-setting" data-testid={item.context.key}>
+													{#if item.label}
+														<span class="setting-label-group">
+															<span class="setting-label">{item.label}</span>
+															{#if description}
+																<span class="setting-desc">{description}</span>
+															{/if}
+														</span>
+													{/if}
+													<C ctx={item.context} />
+												</div>
+											{:else}
+												<div data-testid={item.context.key}></div>
+											{/if}
+										{:else if item.type === "checkbox"}
+											<CheckboxOption labelText={item.label} setting={item} icon={item.icon} />
+										{/if}
+									{/each}
+								</div>
+							</div>
 						{/each}
 					</div>
 				{/if}
@@ -90,6 +277,57 @@
 		{/each}
 	{/if}
 </div>
+
+{#if showBugModal}
+	<div class="bug-modal" use:portal>
+		<div class="bug-backdrop" role="presentation" onclick={closeBugReport}></div>
+		<div class="bug-content">
+			<button class="bug-close" onclick={closeBugReport}>&times;</button>
+			<h3 class="bug-title">Report a Bug</h3>
+
+			<label class="bug-label" for="bug-feature">Affected Feature</label>
+			<select id="bug-feature" class="bug-select" bind:value={bugFeature}>
+				<option value="">General / Not sure</option>
+				{#each scriptSections as section}
+					<optgroup label={section.title}>
+						{#each section.items as item}
+							{#if item.label}
+								<option value={item.label}>{item.label}</option>
+							{:else}
+								<option value={section.title}>{section.title}</option>
+							{/if}
+						{/each}
+					</optgroup>
+				{/each}
+			</select>
+
+			<label class="bug-label" for="bug-description">What happened?</label>
+			<textarea
+				id="bug-description"
+				class="bug-textarea"
+				rows="4"
+				placeholder="Describe what you expected vs. what actually happened..."
+				bind:value={bugDescription}
+			></textarea>
+
+			<div class="bug-actions">
+				<button class="bug-cancel" onclick={closeBugReport}>Cancel</button>
+				<button class="bug-submit" onclick={submitBugReport}>
+					Open on GitHub
+					<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+						<path
+							d="M4.5 2.5h9m0 0v9m0-9L4 12"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	:global {
@@ -118,7 +356,6 @@
 		.settings-page {
 			width: 100%;
 			box-sizing: border-box;
-			padding: 0.75rem 0;
 			color: var(--color-pageText);
 		}
 
@@ -148,11 +385,42 @@
 			font-size: 0.85rem;
 		}
 
+		.title-brand {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+			flex-wrap: wrap;
+		}
+
+		.title-logo {
+			width: 16px;
+			height: 16px;
+			flex-shrink: 0;
+			border-radius: 4px;
+		}
+
+		.header-actions {
+			flex-shrink: 0;
+			margin-left: auto;
+		}
+
+		.version-tag {
+			font-size: 0.7rem;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			color: var(--color-sidebarItemAccentSelected);
+			background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+			border: 1px solid color-mix(in srgb, var(--color-sidebarItemAccentSelected) 30%, transparent);
+			border-radius: 4px;
+			padding: 1px 6px;
+			margin-left: 2px;
+		}
+
 		.settings-section {
 			padding: 0;
 			width: 100%;
 			box-sizing: border-box;
-			border-radius: 8px;
+			border-radius: var(--border-radius);
 			border: var(--border);
 			background: var(--color-cardBackground);
 			overflow: hidden;
@@ -210,6 +478,248 @@
 
 		.settings-list {
 			padding: 0 1rem 0.85rem;
+		}
+
+		.settings-subgroup {
+			display: flex;
+			flex-direction: column;
+			gap: 0.3rem;
+		}
+
+		.subgroup-label {
+			font-size: 10px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			color: var(--color-pageTextSubdued);
+			margin-bottom: 0.1rem;
+		}
+
+		.custom-setting {
+			display: flex;
+			flex-direction: column;
+			gap: 0.4rem;
+			padding: 8px;
+			margin: 0 -8px;
+			border-radius: 6px;
+			border-top: 1px solid color-mix(in srgb, var(--color-pageText) 7%, transparent);
+		}
+
+		.custom-setting:first-child {
+			border-top: none;
+		}
+
+		.setting-label-group {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.setting-label {
+			font-size: 13px;
+			font-weight: 500;
+		}
+
+		.setting-desc {
+			font-size: 11px;
+			font-weight: 400;
+			color: var(--color-pageTextSubdued);
+		}
+
+		.header-actions {
+			margin-left: auto;
+		}
+
+		.header-action-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--color-pageTextSubdued);
+			padding: 0.4rem;
+			border-radius: 6px;
+			border: var(--border);
+			background: none;
+			cursor: pointer;
+			transition:
+				color 0.15s,
+				border-color 0.15s;
+		}
+
+		.header-action-btn:hover {
+			color: var(--color-pageText);
+			border-color: var(--color-pageTextSubdued);
+		}
+
+		.import-status {
+			font-size: 0.8rem;
+			font-weight: 500;
+		}
+
+		.import-status--ok {
+			color: var(--color-noticeTextLight);
+		}
+
+		.import-status--err {
+			color: var(--color-errorText);
+		}
+
+		.bug-report-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--color-pageTextSubdued);
+			padding: 0.4rem;
+			border-radius: 6px;
+			border: var(--border);
+			background: none;
+			cursor: pointer;
+			transition:
+				color 0.15s,
+				border-color 0.15s;
+		}
+
+		.bug-report-btn:hover {
+			color: var(--color-errorText);
+			border-color: var(--color-errorBorder);
+		}
+
+		.bug-modal {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 10000;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.bug-backdrop {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.3);
+		}
+
+		.bug-content {
+			position: relative;
+			background: var(--color-modalBackground);
+			border: var(--border);
+			border-radius: var(--border-radius);
+			padding: 1.5rem;
+			width: 460px;
+			max-height: 80vh;
+			overflow-y: auto;
+			z-index: 10001;
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+
+		.bug-close {
+			position: absolute;
+			top: 0.75rem;
+			right: 0.75rem;
+			width: 24px;
+			height: 24px;
+			padding: 0;
+			border: 0;
+			background: transparent;
+			color: var(--color-pageTextSubdued);
+			font-size: 18px;
+			cursor: pointer;
+		}
+
+		.bug-close:hover {
+			color: var(--color-pageText);
+		}
+
+		.bug-title {
+			margin: 0;
+			font-size: 1.05rem;
+			font-weight: 600;
+			color: var(--color-pageText);
+		}
+
+		.bug-label {
+			font-size: 0.85rem;
+			font-weight: 500;
+			color: var(--color-pageText);
+		}
+
+		.bug-select,
+		.bug-textarea {
+			width: 100%;
+			padding: 0.45rem 0.7rem;
+			font-size: 0.9rem;
+			border-radius: 6px;
+			border: var(--border);
+			background: var(--color-formInputBackground);
+			color: var(--color-formInputText);
+			font-family: inherit;
+			box-sizing: border-box;
+		}
+
+		.bug-select:focus-visible,
+		.bug-textarea:focus-visible {
+			outline: none;
+			border-color: var(--color-formInputBorderSelected);
+			box-shadow: 0 0 0 1px var(--color-formInputBorderSelected);
+		}
+
+		.bug-textarea {
+			resize: vertical;
+			min-height: 80px;
+		}
+
+		.bug-textarea::placeholder {
+			color: var(--color-formInputTextPlaceholder);
+		}
+
+		.bug-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 0.5rem;
+			margin-top: 0.25rem;
+		}
+
+		.bug-cancel,
+		.bug-submit {
+			padding: 0.4rem 0.8rem;
+			font-size: 0.85rem;
+			border-radius: 6px;
+			cursor: pointer;
+			border: var(--border);
+		}
+
+		.bug-cancel {
+			background: none;
+			color: var(--color-pageText);
+		}
+
+		.bug-cancel:hover {
+			background: var(--color-tableRowBackgroundHover);
+		}
+
+		.bug-submit {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			background: var(--color-buttonPrimaryBackground);
+			color: var(--color-buttonPrimaryText);
+			border-color: var(--color-buttonPrimaryBackground);
+		}
+
+		.bug-submit:hover {
+			filter: brightness(1.1);
+		}
+
+		.bug-submit svg {
+			width: 13px;
+			height: 13px;
 		}
 
 		.empty {

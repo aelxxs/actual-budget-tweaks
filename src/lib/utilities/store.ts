@@ -6,13 +6,24 @@ function isContextInvalidated(): boolean {
 	}
 }
 
-export async function getValue(key: string, defaultValue: unknown) {
+export async function getValue<T>(key: string, defaultValue: T): Promise<T> {
 	if (isContextInvalidated()) return defaultValue;
 	try {
 		const result = await browser.storage.local.get("local:" + key);
-		return result["local:" + key] ?? defaultValue;
+		return (result["local:" + key] ?? defaultValue) as T;
 	} catch {
 		return defaultValue;
+	}
+}
+
+/** Distinguishes "never stored" from "stored a falsy/default-looking value" — getValue's fallback can't tell these apart. */
+export async function hasValue(key: string): Promise<boolean> {
+	if (isContextInvalidated()) return false;
+	try {
+		const result = await browser.storage.local.get("local:" + key);
+		return result["local:" + key] !== undefined;
+	} catch {
+		return false;
 	}
 }
 

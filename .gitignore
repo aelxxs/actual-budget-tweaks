@@ -29,3 +29,7 @@ web-ext.config.ts
 # Playwright MCP session artifacts
 .playwright-mcp/
 .claude/
+
+# Website build artifacts
+website/dist
+website/.astro

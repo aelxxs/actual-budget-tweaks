@@ -1,0 +1,79 @@
+---
+const year = new Date().getFullYear();
+
+const links = [
+	{ label: "Source", href: "https://github.com/aelxxs/actual-budget-tweaks" },
+	{ label: "Chrome", href: "https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm" },
+	{ label: "Firefox", href: "https://addons.mozilla.org/en/firefox/addon/actual-budget-tweaks/" },
+];
+---
+
+<footer class="footer">
+	<div class="center">
+		<div class="footer__inner cluster">
+			<div class="cluster footer__meta" style="--cluster-gap:0.4rem">
+				<span class="footer__name">Actual Budget Tweaks</span>
+				<span class="footer__sep" aria-hidden="true">&middot;</span>
+				<span>by <a href="https://github.com/aelxxs" target="_blank" rel="noopener">Alexis</a></span>
+				<span class="footer__sep" aria-hidden="true">&middot;</span>
+				<span>{year}</span>
+			</div>
+			<div class="cluster" style="--cluster-gap:1.25rem">
+				{links.map(l => (
+					<a href={l.href} target="_blank" rel="noopener" class="footer__link">{l.label}</a>
+				))}
+			</div>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.footer {
+		padding-block: 2rem;
+		border-block-start: 1px solid var(--border);
+	}
+
+	.footer__inner {
+		justify-content: space-between;
+	}
+
+	.footer__meta {
+		font-size: 0.85rem;
+		color: var(--text-tertiary);
+	}
+
+	.footer__name {
+		font-weight: 500;
+		color: var(--text-secondary);
+	}
+
+	.footer__sep {
+		color: var(--border-strong);
+	}
+
+	.footer__meta a {
+		color: var(--text-tertiary);
+	}
+
+	.footer__meta a:hover {
+		color: var(--accent);
+	}
+
+	.footer__link {
+		font-size: 0.85rem;
+		color: var(--text-tertiary);
+		font-weight: 500;
+	}
+
+	.footer__link:hover {
+		color: var(--accent);
+	}
+
+	@media (max-width: 480px) {
+		.footer__inner {
+			flex-direction: column;
+			text-align: center;
+			justify-content: center;
+		}
+	}
+</style>

@@ -1,34 +1,48 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { SettingContext } from "../scripts/types";
-	import { getValue, setValue } from "../utilities/store";
+	import type { SelectSetting } from "../../features/types";
+	import { applySettingChange } from "../../features/runtime";
+	import { getValue } from "../utilities/store";
+	import Icon from "./Icon.svelte";
+	import type { IconName } from "../icons";
 
-	// receive props in runes mode
-	const props = $props();
-	const labelText: string = props.labelText;
-	const options: { value: string; label: string }[] = props.options;
-	const ctx: SettingContext = props.ctx;
-	const onChange: (value: string, ctx: any) => void = props.onChange;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const { labelText, options, setting, icon } = $props<{
+		labelText: string;
+		options: { value: string; label: string }[];
+		setting: SelectSetting<any>;
+		icon?: IconName;
+	}>();
+	const ctx = setting.context;
 
 	// local reactive state for select value
-	let value = $state(ctx.defaultValue);
+	let value = $state("");
 
 	// initialize from storage on mount
 	onMount(async () => {
 		const saved = await getValue(ctx.key, ctx.defaultValue);
-		value = saved;
+		value = typeof saved === "string" ? saved : "";
 	});
 
 	async function handleChange(event: Event) {
 		const newValue = (event.target as HTMLSelectElement).value;
-		await onChange(newValue, ctx);
+		await applySettingChange(setting, newValue);
 		value = newValue;
-		setValue(ctx.key, newValue); // persist if desired
 	}
 </script>
 
-<div class="stack">
-	<span style="font-weight: 500;">{labelText}</span>
+<div class="stack select-row" data-testid={ctx.key}>
+	<span class="select-label-row">
+		{#if icon}
+			<span class="select-icon"><Icon name={icon} size={15} /></span>
+		{/if}
+		<span class="select-label-group">
+			<span class="select-label">{labelText}</span>
+			{#if setting.description}
+				<span class="select-desc">{setting.description}</span>
+			{/if}
+		</span>
+	</span>
 	<select bind:value class="select" onchange={handleChange}>
 		{#each options as option}
 			<option value={option.value}>{option.label}</option>
@@ -37,6 +51,47 @@
 </div>
 
 <style>
+	.select-row {
+		gap: 6px;
+		padding: 8px;
+		margin: 0 -8px;
+		border-radius: 6px;
+		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 7%, transparent);
+	}
+
+	.select-row:first-child {
+		border-top: none;
+	}
+
+	.select-label-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.select-icon {
+		display: inline-flex;
+		flex-shrink: 0;
+		color: var(--color-pageTextSubdued);
+	}
+
+	.select-label-group {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.select-label {
+		font-size: 13px;
+		font-weight: 500;
+	}
+
+	.select-desc {
+		font-size: 11px;
+		font-weight: 400;
+		color: var(--color-pageTextSubdued);
+	}
+
 	.select {
 		padding: 0.45rem 0.75rem;
 		font-size: 1em;

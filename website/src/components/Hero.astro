@@ -1,0 +1,214 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+
+<section class="hero">
+	<div class="hero__glow" aria-hidden="true"></div>
+	<div class="center">
+		<nav class="hero__nav cluster">
+			<div class="cluster" style="--cluster-gap:0.6rem">
+				<img src={`${base}icon/icon.svg`} alt="" width="28" height="28" class="hero__logo" />
+				<span class="hero__wordmark">Actual Budget Tweaks</span>
+			</div>
+			<div class="cluster" style="--cluster-gap:1.1rem">
+				<a href="/features" class="hero__nav-link">All settings</a>
+				<a href="https://github.com/aelxxs/actual-budget-tweaks" target="_blank" rel="noopener" class="hero__nav-link">
+					<img src={`${base}icon/github.svg`} alt="" width="16" height="16" class="hero__nav-icon" />
+					GitHub
+				</a>
+			</div>
+		</nav>
+
+		<div class="hero__content stack stack--md">
+			<div class="stack stack--xs" style="text-align:center" data-hero-enter="1">
+				<p class="hero__eyebrow">Browser extension for Chrome & Firefox</p>
+				<h1 class="hero__heading">Make Actual Budget<br /><em>yours</em>.</h1>
+			</div>
+			<p class="hero__sub" data-hero-enter="2">
+				Themes, layout controls, and readability tweaks that feel native —
+				layered on top of <a href="https://actualbudget.org" target="_blank" rel="noopener">Actual Budget</a>
+				without touching its core.
+			</p>
+			<div class="cluster" style="justify-content:center" data-hero-enter="3">
+				<a
+					href="https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm"
+					class="btn btn--primary"
+					target="_blank"
+					rel="noopener"
+				><img src={`${base}icon/chrome.svg`} alt="" class="btn__icon" /> Add to Chrome</a>
+				<a
+					href="https://github.com/aelxxs/actual-budget-tweaks/releases/latest"
+					class="btn btn--secondary"
+					target="_blank"
+					rel="noopener"
+				><img src={`${base}icon/firefox.svg`} alt="" class="btn__icon" /> Add to Firefox</a>
+			</div>
+		</div>
+
+		<div class="hero__screenshot" data-hero-enter="4">
+			<div class="browser-frame">
+				<div class="browser-frame__bar">
+					<span class="browser-frame__dot"></span>
+					<span class="browser-frame__dot"></span>
+					<span class="browser-frame__dot"></span>
+				</div>
+				<img
+					src={`${base}images/hero.png`}
+					alt="Actual Budget with Tweaks extension active, showing a themed multi-month budget view"
+					width="1920"
+					height="1080"
+				/>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		position: relative;
+	}
+
+	.hero__glow {
+		position: absolute;
+		inset: -20% -10%;
+		background:
+			radial-gradient(ellipse 50% 50% at 15% 30%, rgba(107, 79, 162, 0.25) 0%, transparent 70%),
+			radial-gradient(ellipse 40% 40% at 70% 60%, rgba(139, 111, 192, 0.18) 0%, transparent 70%),
+			radial-gradient(ellipse 30% 35% at 30% 70%, rgba(92, 160, 212, 0.12) 0%, transparent 70%),
+			radial-gradient(ellipse 45% 30% at 85% 20%, rgba(212, 92, 114, 0.10) 0%, transparent 70%);
+		pointer-events: none;
+		filter: blur(60px);
+	}
+
+	.hero__nav {
+		justify-content: space-between;
+		padding-block: 1.25rem;
+		position: relative;
+		z-index: 1;
+	}
+
+	.hero__logo {
+		border-radius: 6px;
+	}
+
+	.hero__wordmark {
+		font-weight: 600;
+		font-size: 0.95rem;
+		letter-spacing: -0.01em;
+	}
+
+	.hero__nav-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+		font-weight: 500;
+	}
+
+	.hero__nav-link:hover {
+		color: var(--accent);
+	}
+
+	.hero__nav-icon {
+		opacity: 0.6;
+	}
+
+	.hero__nav-link:hover .hero__nav-icon {
+		opacity: 1;
+	}
+
+	.hero__content {
+		padding-block: 5rem 3.5rem;
+		position: relative;
+		z-index: 1;
+	}
+
+	.hero__eyebrow {
+		font-family: var(--mono);
+		font-size: 0.8rem;
+		color: var(--accent);
+		letter-spacing: 0.04em;
+	}
+
+	.hero__heading {
+		font-size: clamp(2.6rem, 6vw, 4.2rem);
+		font-weight: 700;
+		line-height: 1.08;
+		letter-spacing: -0.02em;
+		text-align: center;
+	}
+
+	.hero__heading em {
+		font-style: italic;
+	}
+
+	.hero__sub {
+		font-size: clamp(1rem, 2vw, 1.15rem);
+		color: var(--text-secondary);
+		max-inline-size: 480px;
+		margin-inline: auto;
+		line-height: 1.65;
+		text-align: center;
+	}
+
+	.hero__sub a {
+		color: var(--text);
+		text-decoration: underline;
+		text-decoration-color: var(--border-strong);
+		text-underline-offset: 2px;
+	}
+
+	.hero__sub a:hover {
+		text-decoration-color: var(--accent);
+	}
+
+	.hero__screenshot {
+		padding-block-end: 4rem;
+		position: relative;
+		z-index: 1;
+	}
+
+	/* Browser frame */
+	.browser-frame {
+		border-radius: var(--radius);
+		overflow: hidden;
+		box-shadow: var(--shadow-hero);
+	}
+
+	.browser-frame__bar {
+		display: flex;
+		gap: 6px;
+		padding: 8px 12px;
+		background: #f0f0f0;
+		border-block-end: 1px solid #d9d9d9;
+	}
+
+	.browser-frame__dot {
+		inline-size: 10px;
+		block-size: 10px;
+		border-radius: 50%;
+	}
+
+	.browser-frame__dot:nth-child(1) { background: #ff5f57; }
+	.browser-frame__dot:nth-child(2) { background: #febc2e; }
+	.browser-frame__dot:nth-child(3) { background: #28c840; }
+
+	.browser-frame img {
+		inline-size: 100%;
+		block-size: auto;
+		display: block;
+	}
+
+	@media (max-width: 600px) {
+		.hero__content {
+			padding-block: 3rem 2.5rem;
+		}
+	}
+</style>
+
+<script>
+	requestAnimationFrame(() => {
+		document.querySelector(".hero")?.classList.add("hero--entered");
+	});
+</script>

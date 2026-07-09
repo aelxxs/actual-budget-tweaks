@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'website/**'
+      - '.github/**'
+      - '.gitignore'
+      - '*.md'
   workflow_dispatch:
 
 permissions:
@@ -53,23 +58,64 @@ jobs:
         run: |
           npx changelogen@latest gh release ${{ steps.version.outputs.new_version }} --token ${{ github.token }}
 
+      - name: Sign Firefox XPI for sideloading
+        timeout-minutes: 10
+        continue-on-error: true
+        run: |
+          npx web-ext sign \
+            --source-dir .output/firefox-mv2 \
+            --artifacts-dir .output \
+            --channel unlisted \
+            --api-key ${{ secrets.FIREFOX_JWT_ISSUER }} \
+            --api-secret ${{ secrets.FIREFOX_JWT_SECRET }}
+          # Rename to predictable filename
+          mv .output/*.xpi .output/actual-budget-tweaks-${{ steps.version.outputs.new_version }}.xpi || true
+
       - name: Upload artifacts to GitHub Release
         run: |
-          gh release upload v${{ steps.version.outputs.new_version }} .output/*-chrome.zip .output/*-firefox.zip
+          gh release upload v${{ steps.version.outputs.new_version }} \
+            .output/*-chrome.zip \
+            .output/*-firefox.zip \
+            .output/*.xpi || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Submit to Stores
+      - name: Update Firefox auto-update manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.new_version }}
+          XPI_URL="https://github.com/aelxxs/actual-budget-tweaks/releases/download/v${VERSION}/actual-budget-tweaks-${VERSION}.xpi"
+          CONTENT=$(cat <<EOF
+          {
+            "addons": {
+              "{423a1e86-3efa-4421-a7e8-65fb5786415e}": {
+                "updates": [
+                  {
+                    "version": "${VERSION}",
+                    "update_link": "${XPI_URL}"
+                  }
+                ]
+              }
+            }
+          }
+          EOF
+          )
+          SHA=$(gh api repos/${{ github.repository }}/contents/website/public/updates.json --jq '.sha')
+          ENCODED=$(echo "$CONTENT" | base64 -w 0)
+          gh api repos/${{ github.repository }}/contents/website/public/updates.json \
+            -X PUT \
+            -f message="chore: update Firefox auto-update manifest for v${VERSION}" \
+            -f content="$ENCODED" \
+            -f sha="$SHA"
+
+      - name: Submit to Chrome Web Store
+        continue-on-error: true
         run: |
           pnpm wxt submit \
-            --chrome-zip .output/*-chrome.zip \
-            --firefox-zip .output/*-firefox.zip \
-            --firefox-sources-zip .output/*-sources.zip
+            --chrome-zip .output/*-chrome.zip
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
-          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
-          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
