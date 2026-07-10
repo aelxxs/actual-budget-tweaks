@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.1.47
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.46...v0.1.47)
+
+### 🩹 Fixes
+
+- Unmount insights popover on close to prevent stacked schedule modals ([f31c3ee](https://github.com/aelxxs/actual-budget-tweaks/commit/f31c3ee))
+- Resolve all svelte-check errors and warnings ([ab1cacc](https://github.com/aelxxs/actual-budget-tweaks/commit/ab1cacc))
+- Show refill-to-limit templates as balance vs cap in insights progress ([bbb574e](https://github.com/aelxxs/actual-budget-tweaks/commit/bbb574e))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.46 ([d507417](https://github.com/aelxxs/actual-budget-tweaks/commit/d507417))
+
+### ❤️ Contributors
+
+- Ansidian <andysu1551@gmail.com>
+
 ## v0.1.46
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.45...v0.1.46)
