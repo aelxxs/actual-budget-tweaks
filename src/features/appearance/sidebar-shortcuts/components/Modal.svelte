@@ -168,8 +168,8 @@
 	}
 </script>
 
-<div class="overlay" role="presentation" onclick={onClose}>
-	<div class="modal" role="dialog" tabindex="-1" onclick={(e) => e.stopPropagation()}>
+<div class="overlay" role="presentation" onclick={(e) => e.target === e.currentTarget && onClose()}>
+	<div class="modal" role="dialog" tabindex="-1">
 		<div class="hd">
 			<h3>Shortcuts</h3>
 			<button class="close-btn" onclick={onClose}>✕</button>

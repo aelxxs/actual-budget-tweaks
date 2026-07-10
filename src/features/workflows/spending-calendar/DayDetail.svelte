@@ -3,10 +3,12 @@
 	import { fmtMoney } from "@lib/utilities/currency";
 	import type { DayTransaction } from "./types";
 
-	const { transactions } = $props<{
+	const {
+		transactions,
+	}: {
 		date: Date;
 		transactions: DayTransaction[];
-	}>();
+	} = $props();
 
 	function fmt(cents: number): string {
 		return fmtMoney(cents);

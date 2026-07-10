@@ -360,7 +360,7 @@
 			<h2 class="cal-title">{monthNames[month]} {year}</h2>
 		</div>
 		<div class="cal-header__right">
-			<button class="cal-nav" onclick={prevMonth}>
+			<button class="cal-nav" aria-label="Previous month" onclick={prevMonth}>
 				<svg
 					width="16"
 					height="16"
@@ -373,7 +373,7 @@
 				>
 			</button>
 			<button class="cal-today" onclick={goToday} disabled={isAtCurrentMonth()}>Today</button>
-			<button class="cal-nav" onclick={nextMonth} disabled={isAtCurrentMonth()}>
+			<button class="cal-nav" aria-label="Next month" onclick={nextMonth} disabled={isAtCurrentMonth()}>
 				<svg
 					width="16"
 					height="16"
@@ -398,6 +398,7 @@
 
 			{#each days as day, idx}
 				{@const lastRow = days.length - 7}
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -- role="button" and tabindex are set by the same condition -->
 				<div
 					class="cal-cell"
 					class:is-today={day.isToday}
