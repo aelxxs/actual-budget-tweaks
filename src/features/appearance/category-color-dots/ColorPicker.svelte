@@ -17,6 +17,7 @@
 				class="cp__swatch"
 				class:is-active={currentColor === color}
 				style="background: {color}"
+				aria-label="Select color {color}"
 				onclick={() => onSelect(color)}
 			></button>
 		{/each}

@@ -221,23 +221,15 @@ function getBudgetedCents(row: HTMLElement): number | null {
 
 /**
  * Derives the goal amount directly from an unambiguous "simple"/monthly
- * "periodic"/"limit"+"refill" directive set, in cents. Returns null for
- * anything else (average, percentage, by, spend, copy, remainder, a
- * non-monthly periodic/limit cadence, or multiple mixed directives) since
- * those targets can only be computed by Actual's budget engine — the caller
- * falls back to the sheet cell in that case.
+ * "periodic"/"limit" directive set, in cents. Returns null for anything
+ * else (average, percentage, by, spend, copy, remainder, a non-monthly
+ * periodic/limit cadence, or multiple mixed directives) since those
+ * targets can only be computed by Actual's budget engine — the caller
+ * falls back to the sheet cell in that case. Limit+refill never reaches
+ * here; getProgressCents handles it as a balance-vs-cap comparison.
  */
 function directGoalCents(entry: CategoryInsight): number | null {
 	const nonSchedule = entry.directives.filter((d) => d.type !== "schedule");
-
-	if (nonSchedule.length === 2) {
-		const limit = nonSchedule.find((d) => d.type === "limit");
-		const refill = nonSchedule.find((d) => d.type === "refill");
-		if (limit?.type === "limit" && refill?.type === "refill" && limit.period === "monthly") {
-			return Math.round(limit.amount * 100);
-		}
-		return null;
-	}
 
 	if (nonSchedule.length !== 1) return null;
 	const d = nonSchedule[0];
@@ -270,6 +262,17 @@ export async function getProgressCents(row: HTMLElement, entry: CategoryInsight)
 		const leftover = await fetchLeftoverCents(entry.id);
 		const num = leftover == null ? null : Math.max(0, leftover);
 		return { numerator: num, denominator: Math.round(goalDirective.amount * 100), source: "goal" };
+	}
+
+	// "Refill to limit" only budgets the top-up needed to bring the balance
+	// back to the cap, so budgeted-vs-goal underreports whenever funds carry
+	// over. The funded state is balance == limit, so compare balances too.
+	const limitDirective = entry.directives.find((d) => d.type === "limit");
+	const hasRefill = entry.directives.some((d) => d.type === "refill");
+	if (hasRefill && limitDirective?.type === "limit") {
+		const leftover = await fetchLeftoverCents(entry.id);
+		const num = leftover == null ? null : Math.max(0, leftover);
+		return { numerator: num, denominator: Math.round(limitDirective.amount * 100), source: "goal" };
 	}
 
 	const budgetedCents = getBudgetedCents(row);
