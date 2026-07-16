@@ -70,6 +70,12 @@
 				"group": "Budget"
 			},
 			{
+				"label": "Category Progress Indicators",
+				"description": "A progress ring next to each budget balance — hover for spending details.",
+				"icon": "gauge",
+				"group": "Budget"
+			},
+			{
 				"label": "Color Negative Account Balances",
 				"description": "Highlight negative account balances in red.",
 				"icon": "palette",

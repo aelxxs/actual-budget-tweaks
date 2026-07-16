@@ -6,16 +6,38 @@
 // because several setting files pull in Svelte components / browser APIs
 // that can't be safely evaluated in a plain Node script.
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { dirname, resolve, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 const featuresDir = resolve(root, "src/features");
 const entryFile = resolve(featuresDir, "index.ts");
 const outFile = resolve(root, "website/src/data/features.json");
+
+async function loadTypeScript() {
+	try {
+		return (await import("typescript")).default ?? (await import("typescript"));
+	} catch (error) {
+		const candidates = [
+			resolve(__dirname, "../node_modules/typescript/lib/typescript.js"),
+			resolve(__dirname, "../website/node_modules/typescript/lib/typescript.js"),
+		];
+		for (const candidate of candidates) {
+			if (!existsSync(candidate)) continue;
+			try {
+				const module = await import(pathToFileURL(candidate).href);
+				return module.default ?? module;
+			} catch {
+				// Keep trying the next candidate.
+			}
+		}
+		throw error;
+	}
+}
+
+const ts = await loadTypeScript();
 
 function parse(filePath) {
 	const text = readFileSync(filePath, "utf8");

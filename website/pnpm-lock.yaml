@@ -24,6 +24,9 @@ importers:
       '@types/node':
         specifier: ^26.0.1
         version: 26.0.1
+      svelte:
+        specifier: ^5.38.6
+        version: 5.56.5
 
 packages:
 
