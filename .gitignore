@@ -33,3 +33,4 @@ web-ext.config.ts
 # Website build artifacts
 website/dist
 website/.astro
+sidebar-test/*

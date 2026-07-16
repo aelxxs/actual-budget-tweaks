@@ -1,0 +1,33 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="Experimental Sidebar" description="Preview the experimental sidebar test harness.">
+	<div class="page">
+		<iframe src="http://127.0.0.1:5199/" title="Experimental Sidebar" loading="eager"></iframe>
+	</div>
+</Base>
+
+<style>
+	:global(html),
+	:global(body) {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	.page {
+		width: 100vw;
+		height: 100vh;
+		overflow: hidden;
+	}
+
+	iframe {
+		width: 100%;
+		height: 100%;
+		border: 0;
+		display: block;
+		background: #0d1117;
+	}
+</style>
