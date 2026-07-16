@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.1.50
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.49...v0.1.50)
+
+### 🚀 Enhancements
+
+- Add temporary sidebar testing page ([a1a23e5](https://github.com/aelxxs/actual-budget-tweaks/commit/a1a23e5))
+- Add experimental sidebar component and integrate into the experimental sidebar page ([76e39af](https://github.com/aelxxs/actual-budget-tweaks/commit/76e39af))
+- Add TrendChart component for visualizing monthly trends and update features manifest ([19730ba](https://github.com/aelxxs/actual-budget-tweaks/commit/19730ba))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.49 ([437f2fb](https://github.com/aelxxs/actual-budget-tweaks/commit/437f2fb))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.49
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.48...v0.1.49)
