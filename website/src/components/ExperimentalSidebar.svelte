@@ -225,6 +225,72 @@
 		}
 	});
 
+	// ---- custom tooltip (replaces native title=) ----
+	type TipPlacement = "right" | "left" | "top" | "bottom";
+	type TipOpts = { text: string; placement?: TipPlacement };
+	let tip = $state<{ text: string; x: number; y: number; placement: TipPlacement } | null>(null);
+	let tipTimer: ReturnType<typeof setTimeout> | null = null;
+	const TIP_DELAY = 320;
+
+	function placeTip(el: HTMLElement, o: Required<TipOpts>) {
+		const r = el.getBoundingClientRect();
+		const gap = 9;
+		let x = 0;
+		let y = 0;
+		if (o.placement === "right") {
+			x = r.right + gap;
+			y = r.top + r.height / 2;
+		} else if (o.placement === "left") {
+			x = r.left - gap;
+			y = r.top + r.height / 2;
+		} else if (o.placement === "top") {
+			x = r.left + r.width / 2;
+			y = r.top - gap;
+		} else {
+			x = r.left + r.width / 2;
+			y = r.bottom + gap;
+		}
+		tip = { text: o.text, x, y, placement: o.placement };
+	}
+	function hideTip() {
+		if (tipTimer) {
+			clearTimeout(tipTimer);
+			tipTimer = null;
+		}
+		tip = null;
+	}
+	function tooltip(node: HTMLElement, param: string | TipOpts) {
+		let o: Required<TipOpts> = {
+			text: "",
+			placement: "right",
+			...(typeof param === "string" ? { text: param } : param),
+		};
+		const enter = () => {
+			if (tipTimer) clearTimeout(tipTimer);
+			if (!o.text) return;
+			tipTimer = setTimeout(() => placeTip(node, o), TIP_DELAY);
+		};
+		const leave = () => hideTip();
+		node.addEventListener("pointerenter", enter);
+		node.addEventListener("pointerleave", leave);
+		node.addEventListener("pointerdown", leave);
+		node.addEventListener("focusin", enter);
+		node.addEventListener("focusout", leave);
+		return {
+			update(next: string | TipOpts) {
+				o = { text: "", placement: "right", ...(typeof next === "string" ? { text: next } : next) };
+			},
+			destroy() {
+				node.removeEventListener("pointerenter", enter);
+				node.removeEventListener("pointerleave", leave);
+				node.removeEventListener("pointerdown", leave);
+				node.removeEventListener("focusin", enter);
+				node.removeEventListener("focusout", leave);
+				leave();
+			},
+		};
+	}
+
 	// ---- collapse (icon rail) ----
 	const RAIL_WIDTH = 64;
 	let collapsed = $state(false);
@@ -903,7 +969,7 @@
 	// ---- resize ----
 	const MIN_WIDTH = 240;
 	const MAX_WIDTH = 560;
-	const DEFAULT_WIDTH = 340;
+	const DEFAULT_WIDTH = 300;
 	let sidebarWidth = $state(DEFAULT_WIDTH);
 	let resizing = $state(false);
 	let dragStartX = 0;
@@ -1354,8 +1420,8 @@
 				class:has-icon={!!a.icon}
 				role="button"
 				tabindex="-1"
-				title="Change icon"
 				aria-label="Change icon"
+				use:tooltip={{ text: "Change icon", placement: "right" }}
 				onclick={(e) => {
 					e.stopPropagation();
 					openIconPicker((e.currentTarget as HTMLElement).getBoundingClientRect(), a);
@@ -1388,10 +1454,20 @@
 >
 	{#if collapsed}
 		<!-- ===== Collapsed icon rail ===== -->
-		<button type="button" class="rail-avatar" onclick={expandSidebar} title="{currentBudget} — expand"
-			>{budgetInitials}</button
+		<button
+			type="button"
+			class="rail-avatar"
+			onclick={expandSidebar}
+			aria-label={`${currentBudget} — expand`}
+			use:tooltip={`${currentBudget} — expand`}>{budgetInitials}</button
 		>
-		<button type="button" class="rail-icon" onclick={expandAndSearch} aria-label="Search" title="Search (⌘K)">
+		<button
+			type="button"
+			class="rail-icon"
+			onclick={expandAndSearch}
+			aria-label="Search"
+			use:tooltip={"Search (⌘K)"}
+		>
 			<svg
 				viewBox="0 0 24 24"
 				fill="none"
@@ -1412,13 +1488,13 @@
 					class="rail-icon"
 					class:active={activePage === item}
 					onclick={() => (activePage = item)}
-					title={item}
 					aria-label={item}
+					use:tooltip={item}
 				>
 					{@render navIcon(item)}
 				</button>
 			{/each}
-			<button type="button" class="rail-icon" onclick={expandSidebar} title="More" aria-label="More">
+			<button type="button" class="rail-icon" onclick={expandSidebar} aria-label="More" use:tooltip={"More"}>
 				{@render navIcon("More")}
 			</button>
 		</div>
@@ -1427,7 +1503,7 @@
 			{#each sections as section}
 				{#if sectionHasAccounts(section)}
 					{@const [first, ...rest] = section.label.split(" ")}
-					<div class="rail-section" title={`${section.label} · ${section.total}`}>
+					<div class="rail-section" use:tooltip={`${section.label} · ${section.total}`}>
 						{first}{#if rest.length}<small>{rest.join(" ")}</small>{/if}
 					</div>
 					{#each section.groups as group, gi}
@@ -1438,7 +1514,8 @@
 								type="button"
 								class="rtile-wrap"
 								class:selected={activePage === key}
-								title={`${a.name} · ${a.amount}`}
+								aria-label={`${a.name} · ${a.amount}`}
+								use:tooltip={`${a.name} · ${a.amount}`}
 								onclick={() => (activePage = key)}
 							>
 								<span class="rtile">
@@ -1455,7 +1532,7 @@
 			{/each}
 		</div>
 		<div class="rail-foot">
-			<button type="button" class="rail-icon" title="Add account" aria-label="Add account">
+			<button type="button" class="rail-icon" aria-label="Add account" use:tooltip={"Add account"}>
 				<svg
 					viewBox="0 0 24 24"
 					fill="none"
@@ -1472,8 +1549,8 @@
 				type="button"
 				class="rail-icon"
 				onclick={expandSidebar}
-				title="Expand sidebar"
 				aria-label="Expand sidebar"
+				use:tooltip={"Expand sidebar"}
 			>
 				<svg
 					viewBox="0 0 24 24"
@@ -1530,7 +1607,7 @@
 						<button
 							type="button"
 							class="budget-name-btn"
-							title="Click to rename"
+							use:tooltip={{ text: "Click to rename", placement: "bottom" }}
 							onclick={(e) => {
 								e.stopPropagation();
 								startEdit();
@@ -1589,8 +1666,8 @@
 							<span class="budget-item-name">{b.name}</span>
 							<span
 								class="budget-state budget-state-{b.state}"
-								title={budgetStateLabel(b.state)}
 								aria-label={budgetStateLabel(b.state)}
+								use:tooltip={{ text: budgetStateLabel(b.state), placement: "left" }}
 							>
 								{@render budgetStateIcon(b.state)}
 							</span>
@@ -1708,9 +1785,12 @@
 						class="group-toggle"
 						class:on={groupAccounts}
 						aria-pressed={groupAccounts}
-						title={groupAccounts
-							? "Grouped by category — click for a flat list"
-							: "Flat list — click to group by category"}
+						use:tooltip={{
+							text: groupAccounts
+								? "Grouped by category — click for a flat list"
+								: "Flat list — click to group by category",
+							placement: "right",
+						}}
 						onclick={() => (groupAccounts = !groupAccounts)}
 					>
 						{@render groupToggleIcon(groupAccounts)}
@@ -1743,8 +1823,8 @@
 								<button
 									type="button"
 									class="section-add"
-									title="New category"
 									aria-label="New category in {section.label}"
+									use:tooltip={{ text: "New category", placement: "top" }}
 									onclick={(e) => {
 										e.stopPropagation();
 										addCategory(section);
@@ -1862,7 +1942,10 @@
 				type="button"
 				class="theme-toggle"
 				aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-				title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+				use:tooltip={{
+					text: theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
+					placement: "top",
+				}}
 				onclick={toggleTheme}
 			>
 				{#if theme === "dark"}
@@ -1900,7 +1983,7 @@
 				type="button"
 				class="collapse"
 				aria-label="Collapse sidebar"
-				title="Collapse sidebar"
+				use:tooltip={{ text: "Collapse sidebar", placement: "top" }}
 				onclick={() => (collapsed = true)}
 			>
 				<svg
@@ -1919,6 +2002,13 @@
 		</div>
 	{/if}
 
+	<!-- Custom tooltip (replaces native title=) -->
+	{#if tip}
+		<div class="tooltip tip-{tip.placement}" style="left: {tip.x}px; top: {tip.y}px" role="tooltip">
+			{tip.text}
+		</div>
+	{/if}
+
 	<!-- Drag to resize (double-click to reset) -->
 	{#if !collapsed}
 		<div
@@ -1927,7 +2017,7 @@
 			role="separator"
 			aria-orientation="vertical"
 			aria-label="Resize sidebar"
-			title="Drag to resize · double-click to reset"
+			use:tooltip={{ text: "Drag to resize · double-click to reset", placement: "left" }}
 			onpointerdown={startResize}
 			onpointermove={onResizeMove}
 			onpointerup={endResize}
@@ -3457,6 +3547,83 @@
 	.collapse svg {
 		width: 18px;
 		height: 18px;
+	}
+
+	/* ===== Custom tooltip ===== */
+	.tooltip {
+		position: fixed;
+		z-index: 200;
+		max-width: 240px;
+		padding: 5px 9px;
+		background: var(--sb-surface);
+		border: 1px solid var(--sb-border);
+		border-radius: 7px;
+		color: var(--sb-fg);
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.35;
+		white-space: nowrap;
+		box-shadow: 0 6px 20px var(--sb-shadow);
+		pointer-events: none;
+		animation: tip-in 0.11s ease;
+	}
+	.tip-right {
+		transform: translateY(-50%);
+	}
+	.tip-left {
+		transform: translate(-100%, -50%);
+	}
+	.tip-top {
+		transform: translate(-50%, -100%);
+	}
+	.tip-bottom {
+		transform: translateX(-50%);
+	}
+	/* little arrow that points back to the anchor */
+	.tooltip::after {
+		content: "";
+		position: absolute;
+		width: 7px;
+		height: 7px;
+		background: var(--sb-surface);
+		border: 1px solid var(--sb-border);
+		transform: rotate(45deg);
+	}
+	.tip-right::after {
+		left: -4.5px;
+		top: 50%;
+		margin-top: -3.5px;
+		border-right: none;
+		border-top: none;
+	}
+	.tip-left::after {
+		right: -4.5px;
+		top: 50%;
+		margin-top: -3.5px;
+		border-left: none;
+		border-bottom: none;
+	}
+	.tip-top::after {
+		bottom: -4.5px;
+		left: 50%;
+		margin-left: -3.5px;
+		border-left: none;
+		border-top: none;
+	}
+	.tip-bottom::after {
+		top: -4.5px;
+		left: 50%;
+		margin-left: -3.5px;
+		border-right: none;
+		border-bottom: none;
+	}
+	@keyframes tip-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 
 	/* ===== Account hover card ===== */
