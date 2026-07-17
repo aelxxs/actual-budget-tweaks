@@ -17,24 +17,22 @@ const entryFile = resolve(featuresDir, "index.ts");
 const outFile = resolve(root, "website/src/data/features.json");
 
 async function loadTypeScript() {
-	try {
-		return (await import("typescript")).default ?? (await import("typescript"));
-	} catch (error) {
-		const candidates = [
-			resolve(__dirname, "../node_modules/typescript/lib/typescript.js"),
-			resolve(__dirname, "../website/node_modules/typescript/lib/typescript.js"),
-		];
-		for (const candidate of candidates) {
-			if (!existsSync(candidate)) continue;
-			try {
-				const module = await import(pathToFileURL(candidate).href);
-				return module.default ?? module;
-			} catch {
-				// Keep trying the next candidate.
-			}
+	const candidates = [
+		"typescript",
+		resolve(__dirname, "../node_modules/typescript/lib/typescript.js"),
+		resolve(__dirname, "../website/node_modules/typescript/lib/typescript.js"),
+		resolve(__dirname, "../node_modules/.pnpm/typescript@*/node_modules/typescript/lib/typescript.js"),
+	];
+	for (const candidate of candidates) {
+		try {
+			const resolved = typeof candidate === "string" ? candidate : pathToFileURL(candidate).href;
+			const module = await import(resolved);
+			return module.default ?? module;
+		} catch {
+			// Keep trying the next candidate.
 		}
-		throw error;
 	}
+	throw new Error("Could not load TypeScript from the workspace or website dependencies.");
 }
 
 const ts = await loadTypeScript();
