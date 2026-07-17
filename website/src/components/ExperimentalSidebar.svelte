@@ -1,17 +1,25 @@
 <script lang="ts">
 	// Standalone port of the "Actual Budget — Sidebar" Figma frame (node 46:890).
 	// Self-contained test component: Catppuccin Mocha palette, sample data below.
+	import emojiData from "unicode-emoji-json/data-by-group.json";
 
 	// Sync-status "dot grammar": fill = connection, motion = activity.
 	//   synced  → solid dot        manual → hollow dot
 	//   syncing → orbiting arc      error  → solid dot in a pulsing alert ring
 	type Status = "synced" | "syncing" | "error" | "manual";
 
+	// Optional per-account icon (emoji, fetched logo, or uploaded image) — mirrors ABT.
+	interface AccountIcon {
+		type: "emoji" | "url" | "dataUrl";
+		value: string;
+	}
+
 	interface Account {
 		name: string;
 		amount: string; // pre-formatted
 		status: Status;
 		negative?: boolean;
+		icon?: AccountIcon;
 	}
 
 	interface Group {
@@ -107,7 +115,20 @@
 	let query = $state("");
 	let searchEl = $state<HTMLInputElement | null>(null);
 	let groupAccounts = $state(true); // false = flat list under each section (no sub-categories)
-	let accountsMaskState = $state<"top" | "middle" | "bottom">("middle");
+	// edge-fade mask for the scrollable accounts list. "top" = scrolled to the top
+	// (fade the bottom only), which is the correct state on load. "none" = the list
+	// fits without scrolling, so no fade at all.
+	let accountsMaskState = $state<"none" | "top" | "middle" | "bottom">("top");
+	let accountsEl = $state<HTMLElement | null>(null);
+	const accountsMask = $derived(
+		accountsMaskState === "none"
+			? "none"
+			: accountsMaskState === "top"
+				? "linear-gradient(black 0%, black calc(100% - 34px), transparent 100%)"
+				: accountsMaskState === "bottom"
+					? "linear-gradient(transparent 0px, black 34px, black 100%)"
+					: "linear-gradient(transparent 0px, black 34px, black calc(100% - 34px), transparent 100%)",
+	);
 
 	// ---- budget selector ----
 	type BudgetState = "syncing" | "downloadable" | "local";
@@ -170,16 +191,27 @@
 	function handleWindowClick(e: MouseEvent) {
 		if (budgetOpen && budgetEl && !budgetEl.contains(e.target as Node)) closeBudget();
 		if (menuAccount || menuGroup) closeMenus();
+		if (iconAccount && iconPickerEl && !iconPickerEl.contains(e.target as Node)) closeIconPicker();
+	}
+	function updateAccountsMask(el: HTMLElement) {
+		const maxScroll = el.scrollHeight - el.clientHeight;
+		if (maxScroll <= 1) {
+			accountsMaskState = "none";
+			return;
+		}
+		const atTop = el.scrollTop <= 0;
+		const atBottom = el.scrollTop >= maxScroll - 1;
+		accountsMaskState = atTop ? "top" : atBottom ? "bottom" : "middle";
 	}
 	function handleAccountsScroll(event: Event) {
-		const target = event.currentTarget as HTMLElement;
-		const maxScroll = target.scrollHeight - target.clientHeight;
-		const atTop = target.scrollTop <= 0;
-		const atBottom = maxScroll > 0 && target.scrollTop >= maxScroll - 1;
-		accountsMaskState = atTop ? "top" : atBottom ? "bottom" : "middle";
+		updateAccountsMask(event.currentTarget as HTMLElement);
 		hideHoverCard();
 		if (menuAccount || menuGroup) closeMenus();
 	}
+	// set the correct mask once the list mounts / re-mounts (e.g. expanding the rail)
+	$effect(() => {
+		if (accountsEl) updateAccountsMask(accountsEl);
+	});
 
 	// ---- collapse (icon rail) ----
 	const RAIL_WIDTH = 64;
@@ -429,7 +461,8 @@
 		hoverAccount = a;
 	}
 	function onAccountEnter(e: MouseEvent, a: Account) {
-		if (dragging) return;
+		// don't surface the hover card while dragging, or while the icon picker / a menu is open
+		if (dragging || iconAccount || menuAccount || menuGroup) return;
 		const el = e.currentTarget as HTMLElement;
 		if (hoverTimer) clearTimeout(hoverTimer);
 		hoverTimer = setTimeout(() => showHoverCard(el, a), HOVER_DELAY);
@@ -449,6 +482,9 @@
 	function openAccountMenu(e: MouseEvent, a: Account) {
 		e.preventDefault();
 		hideHoverCard();
+		// anchor a later icon-picker to the row's leading glyph, not the whole row
+		const glyph = (e.currentTarget as HTMLElement).querySelector(".acct-glyph") as HTMLElement | null;
+		menuAnchorRect = (glyph ?? (e.currentTarget as HTMLElement)).getBoundingClientRect();
 		const MW = 200;
 		const MH = 250;
 		menuX = Math.min(e.clientX, window.innerWidth - MW - 8);
@@ -729,6 +765,129 @@
 		if (i !== -1) section.groups.splice(i, 1);
 	}
 
+	// ---- account icon picker (Emoji / Logo / Upload) — ported from ABT ----
+	interface EmojiEntry {
+		emoji: string;
+		name: string;
+		slug: string;
+		skin_tone_support: boolean;
+	}
+	interface EmojiGroup {
+		name: string;
+		emojis: EmojiEntry[];
+	}
+	const emojiGroups = emojiData as unknown as EmojiGroup[];
+	const EMOJI_GROUP_ICONS: Record<string, string> = {
+		"Smileys & Emotion": "😀",
+		"People & Body": "🧑",
+		"Animals & Nature": "🐶",
+		"Food & Drink": "🍕",
+		"Travel & Places": "✈️",
+		Activities: "⚽",
+		Objects: "💡",
+		Symbols: "💱",
+		Flags: "🏳️",
+	};
+	const FAVICON_BASE =
+		"https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://";
+	function faviconUrl(input: string, size = 128): string | null {
+		try {
+			const domain = input.includes("://") ? new URL(input).hostname : input.replace(/^www\./, "");
+			return domain ? `${FAVICON_BASE}${domain}&size=${size}` : null;
+		} catch {
+			return null;
+		}
+	}
+
+	type IconTab = "emoji" | "logo" | "upload";
+	let iconAccount = $state<Account | null>(null);
+	let iconX = $state(0);
+	let iconY = $state(0);
+	let iconTab = $state<IconTab>("emoji");
+	let iconPickerEl = $state<HTMLElement | null>(null);
+	let menuAnchorRect: DOMRect | null = null;
+
+	// emoji tab
+	let emojiSearch = $state("");
+	let emojiActiveGroup = $state(emojiGroups[0]?.name ?? "");
+	let emojiGridWrap = $state<HTMLElement | null>(null);
+	const filteredEmoji = $derived.by(() => {
+		const q = emojiSearch.trim().toLowerCase();
+		if (!q) return null;
+		const out: EmojiEntry[] = [];
+		for (const g of emojiGroups)
+			for (const e of g.emojis) {
+				if (e.name.includes(q) || e.slug.includes(q)) out.push(e);
+				if (out.length >= 80) return out;
+			}
+		return out;
+	});
+	function scrollToEmojiGroup(name: string) {
+		emojiActiveGroup = name;
+		emojiSearch = "";
+		emojiGridWrap?.querySelector(`[data-egroup="${name}"]`)?.scrollIntoView({ block: "start", behavior: "smooth" });
+	}
+
+	// logo tab
+	let logoDomain = $state("");
+	let logoUrl = $state<string | null>(null);
+	let logoLoaded = $state(false);
+	let logoError = $state(false);
+	let logoDebounce: ReturnType<typeof setTimeout> | null = null;
+	function fetchLogo() {
+		logoUrl = faviconUrl(logoDomain.trim().toLowerCase());
+		logoLoaded = false;
+		logoError = false;
+	}
+	function onLogoInput() {
+		if (logoDebounce) clearTimeout(logoDebounce);
+		logoDebounce = setTimeout(fetchLogo, 400);
+	}
+
+	// upload tab
+	let uploadDataUrl = $state<string | null>(null);
+	let uploadDragOver = $state(false);
+	let uploadInputEl = $state<HTMLInputElement | null>(null);
+	function readImageFile(file: File) {
+		if (!file.type.startsWith("image/")) return;
+		const reader = new FileReader();
+		reader.onload = (e) => (uploadDataUrl = e.target?.result as string);
+		reader.readAsDataURL(file);
+	}
+
+	const IP_W = 280;
+	const IP_H = 372;
+	// `rect` is the account's leading-glyph rect, so the picker opens right by the icon.
+	function openIconPicker(rect: DOMRect, a: Account) {
+		closeMenus();
+		hideHoverCard();
+		const m = 8;
+		// left-align with the icon, drop it just below; flip above if there's no room
+		let left = Math.min(rect.left - 4, window.innerWidth - IP_W - m);
+		iconX = Math.max(m, left);
+		let top = rect.bottom + 6;
+		if (top + IP_H > window.innerHeight - m) top = rect.top - IP_H - 6;
+		iconY = Math.max(m, top);
+		iconTab = "emoji";
+		emojiSearch = "";
+		logoDomain = "";
+		logoUrl = null;
+		uploadDataUrl = null;
+		iconAccount = a;
+	}
+	function closeIconPicker() {
+		iconAccount = null;
+	}
+	function chooseIcon(icon: AccountIcon) {
+		if (iconAccount) iconAccount.icon = icon;
+		closeIconPicker();
+	}
+	function removeIcon(a: Account) {
+		a.icon = undefined;
+		closeIconPicker();
+		closeMenus();
+	}
+
 	// ---- resize ----
 	const MIN_WIDTH = 240;
 	const MAX_WIDTH = 560;
@@ -769,6 +928,7 @@
 	const groupHasMatches = (g: Group) => visibleAccounts(g).length > 0;
 	const sectionHasMatches = (s: Section) => q === "" || s.groups.some(groupHasMatches);
 	const sectionHasAccounts = (s: Section) => s.groups.some((g) => g.accounts.length > 0);
+	const sectionCount = (s: Section) => s.groups.reduce((n, g) => n + g.accounts.length, 0);
 	// Flat mode: every visible account in a section, ignoring its sub-category grouping.
 	const sectionAccounts = (s: Section) => s.groups.flatMap(visibleAccounts);
 
@@ -792,6 +952,8 @@
 		if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
 			e.preventDefault();
 			searchEl?.focus();
+		} else if (e.key === "Escape" && iconAccount) {
+			closeIconPicker();
 		} else if (e.key === "Escape" && (menuAccount || menuGroup)) {
 			closeMenus();
 		} else if (e.key === "Escape" && budgetOpen) {
@@ -1076,6 +1238,19 @@
 	</span>
 {/snippet}
 
+<!-- account icon (avatar): sits to the left of the name, separate from the status dot -->
+{#snippet acctIcon(a: Account)}
+	{#if a.icon}
+		<span class="acct-icon">
+			{#if a.icon.type === "emoji"}
+				<span class="acct-icon-emoji">{a.icon.value}</span>
+			{:else}
+				<img class="acct-icon-img" src={a.icon.value} alt="" />
+			{/if}
+		</span>
+	{/if}
+{/snippet}
+
 {#snippet ctxIcon(name: string)}
 	<svg
 		viewBox="0 0 24 24"
@@ -1102,6 +1277,11 @@
 		{:else if name === "link"}
 			<path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
 			<path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+		{:else if name === "emoji"}
+			<circle cx="12" cy="12" r="9" />
+			<path d="M8.5 14s1.2 2 3.5 2 3.5-2 3.5-2" />
+			<line x1="9" y1="9.5" x2="9.01" y2="9.5" />
+			<line x1="15" y1="9.5" x2="15.01" y2="9.5" />
 		{:else if name === "unlink"}
 			<path d="M18.84 12.25l1.72-1.71a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
 			<path d="M5.17 11.75l-1.71 1.71a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -1130,6 +1310,7 @@
 	{#if editingAccount === a.name}
 		<div class="account editing">
 			{@render statusIcon(a.status)}
+			{@render acctIcon(a)}
 			<input
 				class="account-rename"
 				bind:value={acctEditValue}
@@ -1156,7 +1337,29 @@
 			ondrop={(e) => onAccountDrop(e, a)}
 			ondragend={endDrag}
 		>
-			{@render statusIcon(a.status)}
+			<span
+				class="acct-glyph"
+				class:has-icon={!!a.icon}
+				role="button"
+				tabindex="-1"
+				title="Change icon"
+				aria-label="Change icon"
+				onclick={(e) => {
+					e.stopPropagation();
+					openIconPicker((e.currentTarget as HTMLElement).getBoundingClientRect(), a);
+				}}
+				onkeydown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						e.stopPropagation();
+						openIconPicker((e.currentTarget as HTMLElement).getBoundingClientRect(), a);
+					}
+				}}
+			>
+				{@render statusIcon(a.status)}
+				{@render acctIcon(a)}
+				<span class="acct-glyph-edit" aria-hidden="true">{@render ctxIcon("emoji")}</span>
+			</span>
 			<span class="account-name" class:mauve={isSelected}>{a.name}</span>
 			<span class="account-amount" class:mauve={isSelected} class:red={!isSelected && a.negative}>{a.amount}</span
 			>
@@ -1220,7 +1423,12 @@
 								title={`${a.name} · ${a.amount}`}
 								onclick={() => (activePage = key)}
 							>
-								<span class="rtile">{accountInitials(a.name)}</span>
+								<span class="rtile">
+									{#if a.icon}
+										{#if a.icon.type === "emoji"}<span class="rtile-emoji">{a.icon.value}</span
+											>{:else}<img class="rtile-img" src={a.icon.value} alt="" />{/if}
+									{:else}{accountInitials(a.name)}{/if}
+								</span>
 								<span class="rtile-badge">{@render statusIcon(a.status)}</span>
 							</button>
 						{/each}
@@ -1469,16 +1677,9 @@
 		<!-- Accounts -->
 		<div
 			class="accounts"
-			style:mask-image={accountsMaskState === "top"
-				? "linear-gradient(black 0%, black calc(100% - 34px), transparent 100%)"
-				: accountsMaskState === "bottom"
-					? "linear-gradient(transparent 0px, black 34px, black 100%)"
-					: "linear-gradient(transparent 0px, black 34px, black calc(100% - 34px), transparent 100%)"}
-			style:-webkit-mask-image={accountsMaskState === "top"
-				? "linear-gradient(black 0%, black calc(100% - 34px), transparent 100%)"
-				: accountsMaskState === "bottom"
-					? "linear-gradient(transparent 0px, black 34px, black 100%)"
-					: "linear-gradient(transparent 0px, black 34px, black calc(100% - 34px), transparent 100%)"}
+			bind:this={accountsEl}
+			style:mask-image={accountsMask}
+			style:-webkit-mask-image={accountsMask}
 			onscroll={handleAccountsScroll}
 		>
 			<div class="all-accounts">
@@ -1516,6 +1717,7 @@
 							</button>
 							<button type="button" class="section-nav" onclick={() => (activePage = section.label)}>
 								<span class="group-label" class:dim={section.muted}>{section.label}</span>
+								{#if sectionCount(section)}<span class="group-count">{sectionCount(section)}</span>{/if}
 								{@render pageIcon()}
 								<span class="group-total">{section.total}</span>
 							</button>
@@ -1571,6 +1773,9 @@
 												>
 													{@render caret(groupOpen(group))}
 													<span class="group-label sub-label">{group.label}</span>
+													{#if group.accounts.length}<span class="group-count sub-count"
+															>{group.accounts.length}</span
+														>{/if}
 													{#if group.total}<span class="group-total">{group.total}</span>{/if}
 												</button>
 											{/if}
@@ -1769,6 +1974,21 @@
 			<button type="button" class="ctx-item" onclick={() => startRename(a)}>
 				{@render ctxIcon("rename")}<span>Rename</span>
 			</button>
+			<button
+				type="button"
+				class="ctx-item"
+				onclick={(e) => {
+					e.stopPropagation();
+					if (menuAnchorRect) openIconPicker(menuAnchorRect, a);
+				}}
+			>
+				{@render ctxIcon("emoji")}<span>Change icon…</span>
+			</button>
+			{#if a.icon}
+				<button type="button" class="ctx-item" onclick={() => removeIcon(a)}>
+					{@render ctxIcon("close")}<span>Remove icon</span>
+				</button>
+			{/if}
 			{#if linked}
 				<button type="button" class="ctx-item" onclick={() => syncNow(a)}>
 					{@render ctxIcon("sync")}<span>Sync now</span>
@@ -1798,6 +2018,194 @@
 			<button type="button" class="ctx-item danger" onclick={() => removeCategory(g)}>
 				{@render ctxIcon("ungroup")}<span>Remove category</span>
 			</button>
+		</div>
+	{/if}
+
+	<!-- Account icon picker (Emoji / Logo / Upload) -->
+	{#if iconAccount}
+		<div
+			class="ipick"
+			style="top: {iconY}px; left: {iconX}px"
+			bind:this={iconPickerEl}
+			role="dialog"
+			aria-label="Account icon"
+		>
+			<div class="ipick-tabs">
+				<button class="ipick-tab" class:active={iconTab === "emoji"} onclick={() => (iconTab = "emoji")}
+					>Emoji</button
+				>
+				<button class="ipick-tab" class:active={iconTab === "logo"} onclick={() => (iconTab = "logo")}
+					>Logo</button
+				>
+				<button class="ipick-tab" class:active={iconTab === "upload"} onclick={() => (iconTab = "upload")}
+					>Upload</button
+				>
+				<button class="ipick-close" aria-label="Close" onclick={closeIconPicker}>
+					<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+						><path d="M4 4l8 8M12 4l-8 8" /></svg
+					>
+				</button>
+			</div>
+
+			{#if iconTab === "emoji"}
+				<div class="ipick-pane">
+					<input class="ipick-input" type="text" placeholder="Search emoji…" bind:value={emojiSearch} />
+					{#if !emojiSearch.trim()}
+						<div class="eg-tabs">
+							{#each emojiGroups as g}
+								<button
+									class="eg-tab"
+									class:active={emojiActiveGroup === g.name}
+									title={g.name}
+									onclick={() => scrollToEmojiGroup(g.name)}
+									>{EMOJI_GROUP_ICONS[g.name] ?? "·"}</button
+								>
+							{/each}
+						</div>
+					{/if}
+					<div class="eg-grid-wrap" bind:this={emojiGridWrap}>
+						{#if filteredEmoji}
+							{#if filteredEmoji.length}
+								<div class="eg-grid">
+									{#each filteredEmoji as e}
+										<button
+											class="eg-btn"
+											title={e.name}
+											onclick={() => chooseIcon({ type: "emoji", value: e.emoji })}
+											>{e.emoji}</button
+										>
+									{/each}
+								</div>
+							{:else}
+								<div class="ipick-hint">No results</div>
+							{/if}
+						{:else}
+							{#each emojiGroups as g}
+								<div data-egroup={g.name}>
+									<div class="eg-label">{g.name}</div>
+									<div class="eg-grid">
+										{#each g.emojis as e}
+											{#if !e.skin_tone_support || !e.name.includes("skin tone")}
+												<button
+													class="eg-btn"
+													title={e.name}
+													onclick={() => chooseIcon({ type: "emoji", value: e.emoji })}
+													>{e.emoji}</button
+												>
+											{/if}
+										{/each}
+									</div>
+								</div>
+							{/each}
+						{/if}
+					</div>
+				</div>
+			{:else if iconTab === "logo"}
+				<div class="ipick-pane">
+					<input
+						class="ipick-input"
+						type="text"
+						placeholder="bankofamerica.com"
+						bind:value={logoDomain}
+						oninput={onLogoInput}
+						onkeydown={(e) => e.key === "Enter" && fetchLogo()}
+					/>
+					{#if logoUrl}
+						<button
+							class="logo-preview"
+							class:loaded={logoLoaded}
+							disabled={!logoLoaded}
+							onclick={() => logoLoaded && chooseIcon({ type: "url", value: logoUrl! })}
+						>
+							{#if logoError}
+								<span class="logo-err">No logo found</span>
+							{:else}
+								<img
+									src={logoUrl}
+									alt="logo"
+									onload={() => {
+										logoLoaded = true;
+										logoError = false;
+									}}
+									onerror={() => {
+										logoLoaded = false;
+										logoError = true;
+									}}
+								/>
+								{#if logoLoaded}<span class="logo-hint">Click to use</span>{/if}
+							{/if}
+						</button>
+					{:else}
+						<p class="ipick-hint">Type a domain to fetch its logo</p>
+					{/if}
+				</div>
+			{:else}
+				<div class="ipick-pane">
+					<input
+						type="file"
+						accept="image/*"
+						class="ipick-sr"
+						bind:this={uploadInputEl}
+						onchange={(e) => {
+							const f = (e.target as HTMLInputElement).files?.[0];
+							if (f) readImageFile(f);
+						}}
+					/>
+					<div
+						class="dropzone"
+						class:over={uploadDragOver}
+						role="button"
+						tabindex="0"
+						onclick={() => uploadInputEl?.click()}
+						onkeydown={(e) => e.key === "Enter" && uploadInputEl?.click()}
+						ondragover={(e) => {
+							e.preventDefault();
+							uploadDragOver = true;
+						}}
+						ondragleave={() => (uploadDragOver = false)}
+						ondrop={(e) => {
+							e.preventDefault();
+							uploadDragOver = false;
+							const f = e.dataTransfer?.files?.[0];
+							if (f) readImageFile(f);
+						}}
+					>
+						{#if uploadDataUrl}
+							<img src={uploadDataUrl} alt="preview" class="dropzone-img" />
+							<span class="ipick-hint">Click to replace</span>
+						{:else}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="dropzone-icon"
+								><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
+									points="17 8 12 3 7 8"
+								/><line x1="12" y1="3" x2="12" y2="15" /></svg
+							>
+							<span class="ipick-hint">Drop image or click to browse</span>
+						{/if}
+					</div>
+					{#if uploadDataUrl}
+						<button
+							class="ipick-primary"
+							onclick={() => chooseIcon({ type: "dataUrl", value: uploadDataUrl! })}
+							>Use this image</button
+						>
+					{/if}
+				</div>
+			{/if}
+
+			{#if iconAccount.icon}
+				<div class="ipick-foot">
+					<button class="ipick-remove" onclick={() => iconAccount && removeIcon(iconAccount)}
+						>Remove icon</button
+					>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -1930,6 +2338,18 @@
 		font-weight: 700;
 		letter-spacing: 0.2px;
 		transition: filter 0.12s ease;
+	}
+	.rtile-emoji {
+		font-size: 18px;
+		line-height: 1;
+	}
+	.rtile-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 9px;
 	}
 	.rtile-wrap:hover .rtile {
 		filter: brightness(1.2);
@@ -2638,6 +3058,7 @@
 		color: rgba(139, 148, 158, 0.75);
 	}
 	.sub-label {
+		flex: 0 1 auto;
 		font-size: 10.5px;
 		letter-spacing: 0.115px;
 		color: rgba(139, 148, 158, 0.5);
@@ -2649,6 +3070,31 @@
 		text-transform: uppercase;
 		color: #c9d1d9;
 		font-variant-numeric: tabular-nums;
+	}
+	/* account-count badge next to a category label */
+	.group-count {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 16px;
+		height: 15px;
+		padding: 0 5px;
+		border-radius: 8px;
+		background: rgba(139, 148, 158, 0.16);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.2px;
+		color: rgba(201, 209, 217, 0.85);
+		font-variant-numeric: tabular-nums;
+	}
+	/* sub-category counts appear on hover only */
+	.sub-count {
+		opacity: 0;
+		transition: opacity 0.12s ease;
+	}
+	.group-header.sub.toggleable:hover .sub-count {
+		opacity: 1;
 	}
 
 	.account-list {
@@ -3308,5 +3754,348 @@
 		border-color: #58a6ff;
 		color: #58a6ff;
 		background: rgba(56, 139, 253, 0.08);
+	}
+
+	/* ===== account leading glyph (status + icon), clickable to set an icon ===== */
+	.acct-glyph {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		flex-shrink: 0;
+		cursor: pointer;
+		outline: none;
+	}
+	/* the edit affordance sits over the status-dot slot only (never over the icon) */
+	.acct-glyph-edit {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 17px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #8b949e;
+		opacity: 0;
+		transition:
+			opacity 0.1s ease,
+			color 0.1s ease;
+		pointer-events: none;
+	}
+	.acct-glyph-edit svg {
+		width: 15px;
+		height: 15px;
+	}
+	/* accounts WITHOUT an icon: cross-fade the status dot to the "add icon" affordance */
+	.account:hover .acct-glyph:not(.has-icon) .status {
+		opacity: 0;
+	}
+	.account:hover .acct-glyph:not(.has-icon) .acct-glyph-edit {
+		opacity: 1;
+	}
+	.acct-glyph:not(.has-icon):hover .acct-glyph-edit {
+		color: #e6edf3;
+	}
+	/* accounts WITH an icon: keep it visible, just give it a subtle clickable highlight */
+	.acct-glyph.has-icon .acct-icon {
+		border-radius: 5px;
+		transition: background 0.1s ease;
+	}
+	.acct-glyph.has-icon:hover .acct-icon {
+		background: rgba(255, 255, 255, 0.12);
+	}
+
+	/* ===== account icon (avatar), left of the name ===== */
+	.acct-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 16px;
+		height: 16px;
+		flex-shrink: 0;
+		margin-left: -1px;
+	}
+	.acct-icon-emoji {
+		font-size: 14px;
+		line-height: 1;
+	}
+	.acct-icon-img {
+		width: 16px;
+		height: 16px;
+		object-fit: cover;
+		border-radius: 2px;
+		background: #30363d;
+	}
+
+	/* ===== account icon picker ===== */
+	.ipick {
+		position: fixed;
+		z-index: 80;
+		width: 280px;
+		display: flex;
+		flex-direction: column;
+		background: #1c2129;
+		border: 1px solid #30363d;
+		border-radius: 12px;
+		box-shadow: 0 12px 34px rgba(1, 4, 9, 0.6);
+		overflow: hidden;
+		animation: acard-in 0.12s ease;
+	}
+	.ipick-tabs {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		padding: 5px 6px;
+		border-bottom: 1px solid #262c36;
+	}
+	.ipick-tab {
+		padding: 6px 10px;
+		border-radius: 6px;
+		font-size: 12.5px;
+		font-weight: 600;
+		color: #8b949e;
+		transition:
+			background 0.1s ease,
+			color 0.1s ease;
+	}
+	.ipick-tab:hover {
+		color: #e6edf3;
+		background: rgba(255, 255, 255, 0.05);
+	}
+	.ipick-tab.active {
+		color: #58a6ff;
+		background: rgba(56, 139, 253, 0.15);
+	}
+	.ipick-close {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		border-radius: 5px;
+		color: #8b949e;
+		transition:
+			background 0.1s ease,
+			color 0.1s ease;
+	}
+	.ipick-close:hover {
+		color: #e6edf3;
+		background: rgba(255, 255, 255, 0.06);
+	}
+	.ipick-close svg {
+		width: 12px;
+		height: 12px;
+	}
+	.ipick-pane {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 9px;
+	}
+	.ipick-input {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 7px 9px;
+		font-family: inherit;
+		font-size: 12.5px;
+		color: #e6edf3;
+		background: #0d1117;
+		border: 1px solid #30363d;
+		border-radius: 7px;
+		outline: none;
+		transition:
+			border-color 0.12s ease,
+			box-shadow 0.12s ease;
+	}
+	.ipick-input:focus {
+		border-color: #58a6ff;
+		box-shadow: 0 0 0 2px rgba(56, 139, 253, 0.15);
+	}
+	.ipick-input::placeholder {
+		color: rgba(230, 237, 243, 0.4);
+	}
+	.eg-tabs {
+		display: flex;
+		gap: 1px;
+		padding-bottom: 6px;
+		border-bottom: 1px solid #262c36;
+	}
+	.eg-tab {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 4px 0;
+		border-radius: 5px;
+		font-size: 14px;
+		line-height: 1;
+		opacity: 0.5;
+		transition:
+			opacity 0.08s ease,
+			background 0.08s ease;
+	}
+	.eg-tab:hover {
+		opacity: 0.85;
+		background: rgba(255, 255, 255, 0.05);
+	}
+	.eg-tab.active {
+		opacity: 1;
+		background: rgba(56, 139, 253, 0.15);
+	}
+	.eg-grid-wrap {
+		max-height: 220px;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(230, 237, 243, 0.22) transparent;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.eg-label {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		padding: 4px 2px 3px;
+		font-size: 9px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #8b949e;
+		background: #1c2129;
+	}
+	.eg-grid {
+		display: grid;
+		grid-template-columns: repeat(8, 1fr);
+		gap: 1px;
+	}
+	.eg-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		aspect-ratio: 1;
+		border-radius: 5px;
+		font-size: 18px;
+		line-height: 1;
+		transition: background 0.08s ease;
+	}
+	.eg-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+	}
+	.logo-preview {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		width: 100%;
+		min-height: 84px;
+		padding: 12px;
+		border: 1px solid #30363d;
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.02);
+		cursor: default;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease;
+	}
+	.logo-preview.loaded {
+		cursor: pointer;
+		border-color: #58a6ff;
+		background: rgba(56, 139, 253, 0.08);
+	}
+	.logo-preview.loaded:hover {
+		background: rgba(56, 139, 253, 0.14);
+	}
+	.logo-preview img {
+		width: 48px;
+		height: 48px;
+		object-fit: contain;
+		border-radius: 6px;
+	}
+	.logo-hint {
+		font-size: 10.5px;
+		font-weight: 600;
+		color: #58a6ff;
+	}
+	.logo-err {
+		font-size: 11px;
+		color: #f85149;
+	}
+	.dropzone {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		min-height: 104px;
+		padding: 12px;
+		border: 2px dashed #30363d;
+		border-radius: 8px;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease;
+	}
+	.dropzone:hover,
+	.dropzone.over {
+		border-color: #58a6ff;
+		background: rgba(56, 139, 253, 0.06);
+	}
+	.dropzone-icon {
+		width: 22px;
+		height: 22px;
+		opacity: 0.35;
+		color: #e6edf3;
+	}
+	.dropzone-img {
+		max-width: 100%;
+		max-height: 82px;
+		object-fit: contain;
+		border-radius: 6px;
+	}
+	.ipick-hint {
+		font-size: 11.5px;
+		color: rgba(139, 148, 158, 0.8);
+		text-align: center;
+		margin: 0;
+		padding: 4px 0;
+	}
+	.ipick-primary {
+		width: 100%;
+		padding: 8px;
+		border-radius: 7px;
+		font-size: 12.5px;
+		font-weight: 600;
+		color: #fff;
+		background: #1f6feb;
+		transition: background 0.1s ease;
+	}
+	.ipick-primary:hover {
+		background: #388bfd;
+	}
+	.ipick-foot {
+		padding: 6px 9px 9px;
+		border-top: 1px solid #262c36;
+	}
+	.ipick-remove {
+		width: 100%;
+		padding: 6px;
+		border-radius: 6px;
+		font-size: 11.5px;
+		font-weight: 500;
+		color: #f85149;
+		transition: background 0.1s ease;
+	}
+	.ipick-remove:hover {
+		background: rgba(248, 81, 73, 0.1);
+	}
+	.ipick-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
 	}
 </style>
