@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v0.1.51
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.50...v0.1.51)
+
+### 🚀 Enhancements
+
+- Add experimental sidebar demo ([ead8eb5](https://github.com/aelxxs/actual-budget-tweaks/commit/ead8eb5))
+- Enable client-side loading for ExperimentalSidebar component ([d6afd6b](https://github.com/aelxxs/actual-budget-tweaks/commit/d6afd6b))
+- Add account icon picker with emoji, logo, and upload options ([455a5cc](https://github.com/aelxxs/actual-budget-tweaks/commit/455a5cc))
+
+### 🩹 Fixes
+
+- Improve TypeScript loading logic in generate-features-manifest script ([44c5e40](https://github.com/aelxxs/actual-budget-tweaks/commit/44c5e40))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.50 ([cc1635b](https://github.com/aelxxs/actual-budget-tweaks/commit/cc1635b))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.50
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.49...v0.1.50)
