@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400&family=Inter:wght@400..800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400&family=Inter:wght@400..800&display=swap");
 
 /* ── Tokens ── */
 :root {
@@ -21,10 +21,10 @@
 	--border-strong: rgba(0, 0, 0, 0.15);
 
 	/* Shadow */
-	--shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
-	--shadow-md: 0 4px 20px rgba(0,0,0,0.06);
-	--shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
-	--shadow-hero: 0 20px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+	--shadow-md: 0 4px 20px rgba(0, 0, 0, 0.06);
+	--shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+	--shadow-hero: 0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
 
 	/* Dark surface (used in demo insets) */
 	--dark-bg: #1e1f30;
@@ -36,8 +36,8 @@
 	--dark-accent: #9b7dd4;
 
 	/* Type */
-	--font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-	--mono: 'DM Mono', 'SF Mono', Menlo, monospace;
+	--font: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+	--mono: "DM Mono", "SF Mono", Menlo, monospace;
 
 	/* Spacing & shape */
 	--max-w: 1060px;
@@ -50,7 +50,9 @@
 }
 
 /* ── Reset ── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -69,7 +71,10 @@ body {
 	overflow-x: hidden;
 }
 
-img { max-inline-size: 100%; display: block; }
+img {
+	max-inline-size: 100%;
+	display: block;
+}
 
 a {
 	color: var(--accent);
@@ -77,7 +82,9 @@ a {
 	transition: color 0.15s;
 }
 
-a:hover { color: var(--accent-light); }
+a:hover {
+	color: var(--accent-light);
+}
 
 ::selection {
 	background: var(--accent);
@@ -100,10 +107,18 @@ a:hover { color: var(--accent-light); }
 	margin-block-start: var(--stack-gap, 1rem);
 }
 
-.stack--xs  { --stack-gap: 0.35rem; }
-.stack--sm  { --stack-gap: 0.75rem; }
-.stack--md  { --stack-gap: 1.5rem; }
-.stack--lg  { --stack-gap: 2.5rem; }
+.stack--xs {
+	--stack-gap: 0.35rem;
+}
+.stack--sm {
+	--stack-gap: 0.75rem;
+}
+.stack--md {
+	--stack-gap: 1.5rem;
+}
+.stack--lg {
+	--stack-gap: 2.5rem;
+}
 
 .cluster {
 	display: flex;
@@ -138,8 +153,12 @@ a:hover { color: var(--accent-light); }
 	font-size: 0.625rem;
 }
 
-.color-pos { color: var(--color-pos); }
-.color-neg { color: var(--color-neg); }
+.color-pos {
+	color: var(--color-pos);
+}
+.color-neg {
+	color: var(--color-neg);
+}
 
 .dot {
 	inline-size: 8px;
@@ -159,7 +178,10 @@ a:hover { color: var(--accent-light); }
 	font-weight: 500;
 	font-family: var(--font);
 	text-decoration: none;
-	transition: background 0.2s, border-color 0.2s, color 0.2s;
+	transition:
+		background 0.2s,
+		border-color 0.2s,
+		color 0.2s;
 }
 
 .btn__icon {
@@ -204,7 +226,9 @@ a:hover { color: var(--accent-light); }
 	background: rgba(255, 255, 255, 0.06);
 	color: rgba(255, 255, 255, 0.4);
 	white-space: nowrap;
-	transition: background 0.25s, color 0.25s;
+	transition:
+		background 0.25s,
+		color 0.25s;
 }
 
 .pill--active {
@@ -216,7 +240,9 @@ a:hover { color: var(--accent-light); }
 [data-reveal] {
 	opacity: 0;
 	translate: 0 20px;
-	transition: opacity 0.5s ease, translate 0.5s ease;
+	transition:
+		opacity 0.5s ease,
+		translate 0.5s ease;
 }
 
 [data-reveal].visible {
@@ -228,7 +254,9 @@ a:hover { color: var(--accent-light); }
 [data-stagger] > * {
 	opacity: 0;
 	translate: 0 24px;
-	transition: opacity 0.45s ease, translate 0.45s ease;
+	transition:
+		opacity 0.45s ease,
+		translate 0.45s ease;
 }
 
 [data-stagger].visible > * {
@@ -236,18 +264,32 @@ a:hover { color: var(--accent-light); }
 	translate: none;
 }
 
-[data-stagger].visible > *:nth-child(1) { transition-delay: 0ms; }
-[data-stagger].visible > *:nth-child(2) { transition-delay: 70ms; }
-[data-stagger].visible > *:nth-child(3) { transition-delay: 140ms; }
-[data-stagger].visible > *:nth-child(4) { transition-delay: 210ms; }
-[data-stagger].visible > *:nth-child(5) { transition-delay: 280ms; }
-[data-stagger].visible > *:nth-child(6) { transition-delay: 350ms; }
+[data-stagger].visible > *:nth-child(1) {
+	transition-delay: 0ms;
+}
+[data-stagger].visible > *:nth-child(2) {
+	transition-delay: 70ms;
+}
+[data-stagger].visible > *:nth-child(3) {
+	transition-delay: 140ms;
+}
+[data-stagger].visible > *:nth-child(4) {
+	transition-delay: 210ms;
+}
+[data-stagger].visible > *:nth-child(5) {
+	transition-delay: 280ms;
+}
+[data-stagger].visible > *:nth-child(6) {
+	transition-delay: 350ms;
+}
 
 /* ── Hero entrance ── */
 .hero [data-hero-enter] {
 	opacity: 0;
 	translate: 0 18px;
-	transition: opacity 0.6s ease, translate 0.6s ease;
+	transition:
+		opacity 0.6s ease,
+		translate 0.6s ease;
 }
 
 .hero.hero--entered [data-hero-enter] {
@@ -255,15 +297,27 @@ a:hover { color: var(--accent-light); }
 	translate: none;
 }
 
-.hero.hero--entered [data-hero-enter="1"] { transition-delay: 0ms; }
-.hero.hero--entered [data-hero-enter="2"] { transition-delay: 120ms; }
-.hero.hero--entered [data-hero-enter="3"] { transition-delay: 240ms; }
-.hero.hero--entered [data-hero-enter="4"] { transition-delay: 400ms; }
+.hero.hero--entered [data-hero-enter="1"] {
+	transition-delay: 0ms;
+}
+.hero.hero--entered [data-hero-enter="2"] {
+	transition-delay: 120ms;
+}
+.hero.hero--entered [data-hero-enter="3"] {
+	transition-delay: 240ms;
+}
+.hero.hero--entered [data-hero-enter="4"] {
+	transition-delay: 400ms;
+}
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-	html { scroll-behavior: auto; }
-	*, *::before, *::after {
+	html {
+		scroll-behavior: auto;
+	}
+	*,
+	*::before,
+	*::after {
 		animation-duration: 0.01ms !important;
 		transition-duration: 0.01ms !important;
 	}

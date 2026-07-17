@@ -23,5 +23,11 @@ import ExperimentalSidebar from "../components/ExperimentalSidebar.svelte";
 		min-height: 100vh;
 		overflow: hidden;
 		background: #0d1117;
+		transition: background 0.15s ease;
+	}
+
+	/* follow the sidebar's theme toggle (set on <html> by the component) */
+	:global(html[data-sidebar-theme="light"]) .page {
+		background: #f6f8fa;
 	}
 </style>
