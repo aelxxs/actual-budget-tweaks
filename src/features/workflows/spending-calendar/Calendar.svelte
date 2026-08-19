@@ -3,6 +3,8 @@
 	import { query } from "@lib/utilities/actual-api";
 	import { getCategoryColor, loadCategoryColors } from "@lib/utilities/category-colors";
 	import { loadCurrency, fmtMoney } from "@lib/utilities/currency";
+	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+	import { getValue, setValue } from "@lib/utilities/store";
 	import { mount, onMount, unmount } from "svelte";
 	import DayDetail from "./DayDetail.svelte";
 	import DayHeader from "./DayHeader.svelte";
@@ -18,11 +20,14 @@
 		category: string;
 		account: string;
 		notes: string;
+		transfer_id?: string | null;
 	}
 
 	interface Payee {
 		id: string;
 		name: string;
+		/** Set when the payee stands in for another account — i.e. the transaction is a transfer. */
+		transfer_acct?: string | null;
 	}
 
 	interface Category {
@@ -33,6 +38,7 @@
 	interface Account {
 		id: string;
 		name: string;
+		offbudget?: boolean;
 	}
 
 	interface Schedule {
@@ -65,6 +71,9 @@
 	}
 
 
+	const HIDE_TRANSFERS_KEY = "spending-calendar-hide-transfers";
+	const HIDE_OFFBUDGET_KEY = "spending-calendar-hide-offbudget";
+
 	let year = $state(new Date().getFullYear());
 	let month = $state(new Date().getMonth());
 	let days = $state<DayData[]>([]);
@@ -72,6 +81,14 @@
 	let payeeMap = new Map<string, string>();
 	let categoryMap = $state(new Map<string, string>());
 	let accountMap = new Map<string, string>();
+	/** Payees that represent the other side of a transfer, for rows without a `transfer_id` (schedules). */
+	let transferPayees = new Set<string>();
+	let offBudgetAccounts = new Set<string>();
+	let hideTransfers = $state(true);
+	let hideOffBudget = $state(true);
+	let filtersOpen = $state(false);
+	let filterButton = $state<HTMLElement | null>(null);
+	let filterMenu = $state<HTMLElement | null>(null);
 	let detailInstance: ReturnType<typeof mount> | null = null;
 	let detailContainer: HTMLElement | null = null;
 	let headerInstance: ReturnType<typeof mount> | null = null;
@@ -147,6 +164,18 @@
 		return 0;
 	}
 
+	function isTransfer(t: Transaction): boolean {
+		return Boolean(t.transfer_id) || (Boolean(t.payee) && transferPayees.has(t.payee));
+	}
+
+	async function setFilter(key: string, hidden: boolean) {
+		if (key === HIDE_TRANSFERS_KEY) hideTransfers = hidden;
+		else hideOffBudget = hidden;
+		closeDayPanel();
+		await setValue(key, hidden);
+		loadMonth();
+	}
+
 	function dedupeTransactions(txs: DayTx[]): (DayTx & { count: number })[] {
 		const map = new Map<string, DayTx & { count: number }>();
 		for (const tx of txs) {
@@ -183,12 +212,14 @@
 
 			if (payees) {
 				payeeMap = new Map(payees.map((p) => [p.id, p.name]));
+				transferPayees = new Set(payees.filter((p) => p.transfer_acct).map((p) => p.id));
 			}
 			if (categories) {
 				categoryMap = new Map(categories.map((c) => [c.id, c.name]));
 			}
 			if (accounts) {
 				accountMap = new Map(accounts.map((a) => [a.id, a.name]));
+				offBudgetAccounts = new Set(accounts.filter((a) => a.offbudget).map((a) => a.id));
 			}
 
 			const today = new Date();
@@ -199,6 +230,8 @@
 			const byDay = new Map<number, DayTx[]>();
 			for (const t of transactions) {
 				if (!t.date) continue;
+				if (hideTransfers && isTransfer(t)) continue;
+				if (hideOffBudget && offBudgetAccounts.has(t.account)) continue;
 				const day = parseInt(t.date.split("-")[2]);
 				if (!byDay.has(day)) byDay.set(day, []);
 				byDay.get(day)!.push({
@@ -214,6 +247,8 @@
 			// Add upcoming schedules to the calendar
 			for (const s of schedules) {
 				if (s.completed || s.tombstone || !s.next_date) continue;
+				if (hideTransfers && s._payee && transferPayees.has(s._payee)) continue;
+				if (hideOffBudget && s._account && offBudgetAccounts.has(s._account)) continue;
 				const [sy, sm, sd] = s.next_date.split("-").map(Number);
 				if (sy !== year || sm !== month + 1) continue;
 				if (!byDay.has(sd)) byDay.set(sd, []);
@@ -337,11 +372,30 @@
 		cleanupPanel();
 	}
 
+	$effect(() => {
+		if (!filtersOpen || !filterMenu || !filterButton) return;
+		positionPopover(filterMenu, filterButton, { align: "right" });
+		return onOutsideClick([filterMenu, filterButton], () => (filtersOpen = false));
+	});
+
 	onMount(() => {
-		Promise.all([loadCurrency(), loadCategoryColors()]).then(() => loadMonth());
+		Promise.all([
+			loadCurrency(),
+			loadCategoryColors(),
+			getValue(HIDE_TRANSFERS_KEY, true),
+			getValue(HIDE_OFFBUDGET_KEY, true),
+		]).then(([, , transfers, offBudget]) => {
+			hideTransfers = Boolean(transfers);
+			hideOffBudget = Boolean(offBudget);
+			loadMonth();
+		});
 
 		function onKey(e: KeyboardEvent) {
 			if (e.key === "Escape") {
+				if (filtersOpen) {
+					filtersOpen = false;
+					return;
+				}
 				closeDayPanel();
 				onClose();
 			}
@@ -360,6 +414,26 @@
 			<h2 class="cal-title">{monthNames[month]} {year}</h2>
 		</div>
 		<div class="cal-header__right">
+			<button
+				class="cal-nav"
+				class:is-active={filtersOpen}
+				aria-label="Filters"
+				aria-expanded={filtersOpen}
+				bind:this={filterButton}
+				onclick={() => (filtersOpen = !filtersOpen)}
+			>
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg
+				>
+			</button>
+			<span class="cal-header__sep"></span>
 			<button class="cal-nav" aria-label="Previous month" onclick={prevMonth}>
 				<svg
 					width="16"
@@ -475,6 +549,28 @@
 			{/each}
 		</div>
 	{/if}
+
+	{#if filtersOpen}
+		<div class="cal-filters" bind:this={filterMenu}>
+			<div class="cal-filters__title">Show</div>
+			<label class="cal-filters__row">
+				<span>Transfers</span>
+				<input
+					type="checkbox"
+					checked={!hideTransfers}
+					onchange={(e) => setFilter(HIDE_TRANSFERS_KEY, !e.currentTarget.checked)}
+				/>
+			</label>
+			<label class="cal-filters__row">
+				<span>Off-budget accounts</span>
+				<input
+					type="checkbox"
+					checked={!hideOffBudget}
+					onchange={(e) => setFilter(HIDE_OFFBUDGET_KEY, !e.currentTarget.checked)}
+				/>
+			</label>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -534,6 +630,58 @@
 	.cal-nav:hover:not(:disabled) {
 		opacity: 1;
 		background: var(--color-tableRowBackgroundHover);
+	}
+
+	.cal-nav.is-active {
+		opacity: 1;
+		background: var(--color-tableRowBackgroundHover);
+	}
+
+	.cal-header__sep {
+		width: 1px;
+		height: 18px;
+		margin: 0 2px;
+		background: var(--color-tableBorder);
+	}
+
+	.cal-filters {
+		position: fixed;
+		z-index: 9999;
+		min-width: 200px;
+		padding: 4px;
+		border: 1px solid var(--color-tableBorder);
+		border-radius: 6px;
+		background: var(--color-tooltipBackground, var(--color-pageBackground));
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	}
+
+	.cal-filters__title {
+		padding: 5px 8px 4px;
+		font-size: 10px;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--color-pageTextSubdued);
+	}
+
+	.cal-filters__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 5px 8px;
+		border-radius: 4px;
+		font-size: 13px;
+		cursor: pointer;
+	}
+
+	.cal-filters__row:hover {
+		background: var(--color-tableRowBackgroundHover);
+	}
+
+	.cal-filters__row input {
+		accent-color: var(--color-sidebarItemAccentSelected);
+		cursor: pointer;
+		margin: 0;
 	}
 
 	.cal-nav:disabled,
