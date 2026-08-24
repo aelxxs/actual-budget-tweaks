@@ -14,6 +14,7 @@
 		fetchCommunityThemeCatalog,
 		getBuiltinPreviewColors,
 		isCommunityTheme,
+		NATIVE_THEME_KEY,
 		type RemoteTheme,
 	} from "./theme-apply";
 	import ThemeColorEditor from "./ThemeColorEditor.svelte";
@@ -60,6 +61,7 @@
 	onDestroy(() => mql.removeEventListener("change", onSchemeChange));
 
 	function getThemeName(key: string): string {
+		if (key === NATIVE_THEME_KEY) return "Actual default";
 		if (themes[key]) return themes[key].name;
 		if (isUserTheme(key)) return userThemeState.themes[key]?.name ?? key;
 		if (isCommunityTheme(key)) {
@@ -179,6 +181,11 @@
 			return matchesSearch && matchesCreator && matchesThemeType;
 		}),
 	);
+	const showNative = $derived(
+		(!q || "actual default native no theme".includes(q)) &&
+			themeFilter === "all" &&
+			(creatorFilter === "all" || creatorFilter === "ABT"),
+	);
 
 	const filteredCommunity = $derived(
 		remoteThemes.filter((theme) => {
@@ -198,7 +205,7 @@
 	]);
 
 	const isEmpty = $derived(
-		filteredBuiltin.length === 0 && filteredCommunity.length === 0 && !loadingRemote,
+		!showNative && filteredBuiltin.length === 0 && filteredCommunity.length === 0 && !loadingRemote,
 	);
 
 	let creatorNode: Node | null = null;
@@ -523,10 +530,29 @@
 				</div>
 			{/if}
 
-			{#if filteredBuiltin.length > 0}
+			{#if showNative || filteredBuiltin.length > 0}
 				<div class="gallery__section">
 					<div class="gallery__section-label">Built-in</div>
 					<div class="gallery__grid">
+						{#if showNative}
+							<button
+								class="card"
+								class:card--active={activeThemeKey === NATIVE_THEME_KEY}
+								onclick={() => selectTheme(NATIVE_THEME_KEY)}
+								title="Use Actual Budget's default theme"
+							>
+								<div class="card__swatches card__swatches--placeholder">
+									<div class="swatch" style="background: var(--color-pageBackground);"></div>
+								</div>
+								<div class="card__body">
+									<div class="card__name">Actual default</div>
+									<div class="card__meta"><span class="card__source">No theme</span></div>
+								</div>
+								{#if activeThemeKey === NATIVE_THEME_KEY}
+									<div class="card__check" aria-label="Active theme">✓</div>
+								{/if}
+							</button>
+						{/if}
 						{#each filteredBuiltin as [key, theme]}
 							{@const previewColors = getBuiltinPreviewColors(key)}
 							{@const isActive = activeThemeKey === key}

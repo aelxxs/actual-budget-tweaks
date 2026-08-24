@@ -16,7 +16,7 @@ export const reportWidgetBackgroundColor = defineSetting({
 			width: 100%;
 			height: 100%;
 			transition: box-shadow 0.25s;
-			background-color: var(--ctp-crust);
+			background-color: var(--ctp-crust, var(--color-pageBackground));
 		}
 	`,
 });
