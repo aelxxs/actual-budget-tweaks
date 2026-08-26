@@ -81,6 +81,19 @@ export async function loadSidebarAccounts(): Promise<SidebarAccount[]> {
 	}));
 }
 
+export async function refreshBalances(accounts: SidebarAccount[]): Promise<string[]> {
+	if (!accounts.length) return [];
+	const balances = await Promise.all(accounts.map((a) => loadBalance(a.id)));
+	const changed: string[] = [];
+	accounts.forEach((account, i) => {
+		if (balances[i] !== account.balance) {
+			account.balance = balances[i];
+			changed.push(account.id);
+		}
+	});
+	return changed;
+}
+
 // Re-polls just sync_status for these accounts (no push event exists for
 // it) and updates status in place — kept narrow so it's cheap to call
 // often. Returns ids whose status actually changed.
@@ -172,6 +185,20 @@ export function readNativeSyncingAccountIds(): Set<string> {
 		if (id) ids.add(id);
 	}
 	return ids;
+}
+
+// Balance cell is spreadsheet-bound and re-renders on its own on sync/tx changes.
+export function readNativeAccountBalanceTexts(): Map<string, string> {
+	const texts = new Map<string, string>();
+	for (const link of document.querySelectorAll<HTMLAnchorElement>(
+		'a[href^="/accounts/"][href*="-"]',
+	)) {
+		const id = link.getAttribute("href")?.split("/accounts/")[1];
+		if (!id) continue;
+		const cell = link.querySelector<HTMLElement>('[data-cellname^="__global!balance-"]');
+		if (cell?.textContent) texts.set(id, cell.textContent);
+	}
+	return texts;
 }
 
 // Reads the native "N uncategorized transactions" button's text, if

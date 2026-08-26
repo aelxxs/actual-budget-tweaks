@@ -23,8 +23,10 @@
 	import {
 		closeAccount,
 		loadSidebarAccounts,
+		readNativeAccountBalanceTexts,
 		readNativeSyncingAccountIds,
 		readNativeUncategorizedButtonText,
+		refreshBalances,
 		refreshSyncStatuses,
 		refreshUncategorizedCounts,
 		renameAccount,
@@ -227,6 +229,30 @@
 			if (text === lastUncatButtonText) return;
 			lastUncatButtonText = text;
 			refreshUncategorizedCounts(accounts);
+		});
+	});
+
+	// null until the first run, which just seeds the baseline.
+	let lastBalanceTexts: Map<string, string> | null = null;
+
+	$effect(() => {
+		return watchDom(() => {
+			const nowTexts = readNativeAccountBalanceTexts();
+			if (!lastBalanceTexts) {
+				lastBalanceTexts = nowTexts;
+				return;
+			}
+			const prevTexts = lastBalanceTexts;
+			lastBalanceTexts = nowTexts;
+
+			const changedAccounts = accounts.filter((a) => {
+				const text = nowTexts.get(a.id);
+				return text !== undefined && prevTexts.get(a.id) !== text;
+			});
+			if (!changedAccounts.length) return;
+			refreshBalances(changedAccounts).then((changed) => {
+				for (const id of changed) invalidateAccountDetail(id);
+			});
 		});
 	});
 
