@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.61
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.60...v0.1.61)
+
+### 🚀 Enhancements
+
+- Implement account balance synchronization in sidebar ([50a323b](https://github.com/aelxxs/actual-budget-tweaks/commit/50a323b))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.60 ([ada64f7](https://github.com/aelxxs/actual-budget-tweaks/commit/ada64f7))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.60
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.59...v0.1.60)
