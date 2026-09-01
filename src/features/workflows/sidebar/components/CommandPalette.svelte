@@ -6,6 +6,7 @@
 		applyThemeByKey,
 		fetchCommunityThemeCatalog,
 		getBuiltinPreviewColors,
+		NATIVE_THEME_KEY,
 		type RemoteTheme,
 	} from "@features/theme/theme-apply";
 	import { closeCalendar, isCalendarOpen } from "@features/workflows/spending-calendar";
@@ -197,14 +198,19 @@
 				: [];
 		}
 		if (page === "themes") {
-			const builtinItems: PaletteItem[] = Object.entries(themes)
-				.filter(([, t]) => match(t.name))
-				.map(([key, t]) => ({
-					kind: "theme" as const,
-					key,
-					name: t.name,
-					swatch: getBuiltinPreviewColors(key),
-				}));
+			const builtinItems: PaletteItem[] = [
+				...(match("Actual default")
+					? [{ kind: "theme" as const, key: NATIVE_THEME_KEY, name: "Actual default", swatch: [] }]
+					: []),
+				...Object.entries(themes)
+					.filter(([, t]) => match(t.name))
+					.map(([key, t]) => ({
+						kind: "theme" as const,
+						key,
+						name: t.name,
+						swatch: getBuiltinPreviewColors(key),
+					})),
+			];
 			const communityItems: PaletteItem[] = communityThemes
 				.filter((t) => match(t.name))
 				.map((t) => ({ kind: "theme" as const, key: t.repo, name: t.name, swatch: t.colors }));

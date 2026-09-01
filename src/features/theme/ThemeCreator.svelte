@@ -4,7 +4,7 @@
 	import { applyGlobalCSS } from "@lib/utilities/dom";
 	import { onMount } from "svelte";
 	import ColorRow from "./ColorRow.svelte";
-	import { BUILTIN_CSS, TOKENS_STYLE_ID } from "./theme-apply";
+	import { BUILTIN_CSS, setRootProperty, TOKENS_STYLE_ID } from "./theme-apply";
 
 	type Tab = "palette" | "css";
 
@@ -84,7 +84,7 @@
 		colors[key] = value;
 		const root = document.querySelector<HTMLElement>(":root");
 		if (root) {
-			root.style.setProperty(key, value);
+			setRootProperty(root, key, value);
 		}
 		applyGlobalCSS(BUILTIN_CSS, TOKENS_STYLE_ID);
 		onPaletteChange({ ...colors });
@@ -149,7 +149,7 @@
 		const root = document.querySelector<HTMLElement>(":root");
 		if (root) {
 			for (const [key, val] of Object.entries(newColors)) {
-				root.style.setProperty(key, val);
+				setRootProperty(root, key, val);
 			}
 		}
 		applyGlobalCSS(BUILTIN_CSS, TOKENS_STYLE_ID);

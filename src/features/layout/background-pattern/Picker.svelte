@@ -71,7 +71,7 @@
 
 	.bpp-swatch {
 		height: 52px;
-		background-color: var(--ctp-crust);
+		background-color: var(--ctp-crust, var(--color-pageBackground));
 	}
 
 	.bpp-label {

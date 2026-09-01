@@ -1,6 +1,7 @@
 import { defineSetting } from "@features/types";
 import { getValue as getVal, getValue } from "@lib/utilities/store";
 import { editorState, type ThemeOverrides } from "./editor-state.svelte";
+import { applyOverrides } from "./theme-apply";
 
 export const themeLoader = defineSetting({
 	type: "custom",
@@ -16,23 +17,14 @@ export const themeLoader = defineSetting({
 
 		// Detect and handle old flat format (keys start with "--color-")
 		const firstKey = Object.keys(stored)[0];
-		const overrides: Record<string, string> = firstKey?.startsWith("--")
-			? (stored as Record<string, string>)
-			: ((stored as ThemeOverrides)[activeTheme] ?? {});
 
-		if (Object.keys(overrides).length === 0) return;
-
-		const root = document.querySelector<HTMLElement>(":root");
-		if (!root) return;
-		for (const [key, val] of Object.entries(overrides)) {
-			root.style.setProperty(key, val);
-		}
-
-		// Populate shared state so ThemeCustomizer can show indicators immediately
+		// Populate shared state for every theme, not just the active one, so switching
+		// themes in-session still re-applies that theme's saved overrides
 		const normalized: ThemeOverrides = firstKey?.startsWith("--")
 			? { [activeTheme]: stored as Record<string, string> }
 			: (stored as ThemeOverrides);
 		editorState.overrides = normalized;
 		editorState.activeTheme = activeTheme;
+		applyOverrides(activeTheme);
 	},
 });

@@ -11,10 +11,11 @@ function colorUpcomingRows() {
 			const account = row.querySelector<HTMLElement>('*[data-testid="account"]');
 			const payee = row.querySelector<HTMLElement>('*[data-testid="payee"]');
 			const notes = row.querySelector<HTMLElement>('*[data-testid="notes"]');
-			if (date) date.style.color = "var(--ctp-peach)";
-			if (account) account.style.color = "var(--ctp-peach)";
-			if (payee) payee.style.color = "var(--ctp-peach)";
-			if (notes) notes.style.color = "var(--ctp-peach)";
+			const upcoming = "var(--ctp-peach, var(--color-warningText))";
+			if (date) date.style.color = upcoming;
+			if (account) account.style.color = upcoming;
+			if (payee) payee.style.color = upcoming;
+			if (notes) notes.style.color = upcoming;
 		}
 	});
 }

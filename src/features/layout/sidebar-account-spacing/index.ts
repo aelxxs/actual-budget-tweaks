@@ -14,7 +14,7 @@ export const sidebarAccountSpacing = defineSetting({
 		css: (value: string) => `
 	        /* sidebar -- section title */
 	        .css-hfi7l9 {
-	            border-bottom: 2.5px solid var(--ctp-blue);
+	            border-bottom: 2.5px solid var(--ctp-blue, var(--color-pageTextLink));
 	            padding-bottom: ${value};
 	        }
 

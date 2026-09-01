@@ -11,6 +11,19 @@ export type RemoteTheme = {
 };
 
 export const TOKENS_STYLE_ID = "color-tokens";
+export const NATIVE_THEME_KEY = "native";
+
+const originalRootProperties = new Map<string, { value: string; priority: string }>();
+
+export function setRootProperty(root: HTMLElement, name: string, value: string) {
+	if (!originalRootProperties.has(name)) {
+		originalRootProperties.set(name, {
+			value: root.style.getPropertyValue(name),
+			priority: root.style.getPropertyPriority(name),
+		});
+	}
+	root.style.setProperty(name, value);
+}
 
 export const BUILTIN_CSS = `:root {
 	/* Budget */
@@ -308,7 +321,7 @@ export function applyUserPaletteTheme(id: string, keys: Record<string, string>) 
 	const root = document.querySelector<HTMLElement>(":root");
 	if (!root) return;
 	for (const [varName, val] of Object.entries(keys)) {
-		root.style.setProperty(varName, val);
+		setRootProperty(root, varName, val);
 	}
 	applyGlobalCSS(BUILTIN_CSS, TOKENS_STYLE_ID);
 	editorState.activeTheme = id;
@@ -333,7 +346,7 @@ export function applyOverrides(key: string) {
 	const root = document.querySelector<HTMLElement>(":root");
 	if (!root) return;
 	for (const [prop, val] of Object.entries(overrides)) {
-		root.style.setProperty(prop, val);
+		setRootProperty(root, prop, val);
 	}
 }
 
@@ -343,7 +356,7 @@ export function applyPalette(name: string) {
 	const root = document.querySelector<HTMLElement>(":root");
 	if (!root) return;
 	for (const [varName, val] of Object.entries(palette.keys)) {
-		root.style.setProperty(varName, val);
+		setRootProperty(root, varName, val);
 	}
 	applyGlobalCSS(BUILTIN_CSS, TOKENS_STYLE_ID);
 	editorState.activeTheme = name;
@@ -400,8 +413,27 @@ export async function applyCommunityTheme(repo: string) {
 	applyOverrides(repo);
 }
 
+export function applyNativeTheme() {
+	applyGlobalCSS("", TOKENS_STYLE_ID);
+	const root = document.querySelector<HTMLElement>(":root");
+	if (root) {
+		for (const [prop, original] of originalRootProperties) {
+			if (original.value) {
+				root.style.setProperty(prop, original.value, original.priority);
+			} else {
+				root.style.removeProperty(prop);
+			}
+		}
+	}
+	originalRootProperties.clear();
+	editorState.activeTheme = NATIVE_THEME_KEY;
+	applyOverrides(NATIVE_THEME_KEY);
+}
+
 export async function applyThemeByKey(key: string, fallback: string) {
-	if (isUserTheme(key)) {
+	if (key === NATIVE_THEME_KEY) {
+		applyNativeTheme();
+	} else if (isUserTheme(key)) {
 		const userTheme = userThemeState.themes[key];
 		if (userTheme) {
 			if (userTheme.type === "palette" && userTheme.keys) {

@@ -2,6 +2,7 @@
 	import { getValue, setValue } from "@lib/utilities/store";
 	import ColorRow from "./ColorRow.svelte";
 	import { editorState, type ThemeOverrides } from "./editor-state.svelte";
+	import { setRootProperty } from "./theme-apply";
 
 	type ColorKeys = Record<string, string>;
 
@@ -395,7 +396,7 @@
 		const root = document.querySelector<HTMLElement>(":root");
 		if (!root) return;
 		for (const [key, val] of Object.entries(keys)) {
-			root.style.setProperty(key, val);
+			setRootProperty(root, key, val);
 		}
 	}
 
