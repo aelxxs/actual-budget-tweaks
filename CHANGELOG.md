@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.62
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.61...v0.1.62)
+
+### 🚀 Enhancements
+
+- **theme:** Add "Actual default" native theme option ([9d72d60](https://github.com/aelxxs/actual-budget-tweaks/commit/9d72d60))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.61 ([4a9ed52](https://github.com/aelxxs/actual-budget-tweaks/commit/4a9ed52))
+
+### ❤️ Contributors
+
+- Matt Farrell <mfarrell@squareup.com>
+
 ## v0.1.61
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.60...v0.1.61)
