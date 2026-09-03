@@ -30,7 +30,7 @@
     <br />
     <br />
     <b>Install from your browser's extension store:</b><br />
-    <a href="https://addons.mozilla.org/en/firefox/addon/actual-budget-tweaks/">Firefox</a> |
+    <a href="https://github.com/aelxxs/actual-budget-tweaks/releases/latest">Firefox (.xpi)</a> |
     <a href="https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm">Chrome Web Store</a>
     <br />
     <br />
@@ -59,9 +59,9 @@
 
 ![Screenshot](images/screenshot-2.png)
 
-Adds user-configurable interface options to Actual Budget — dynamic themes, layout adjustments, readability tweaks, and workflow additions — without altering core app behavior. Everything ships off by default; turn on what you want, ignore the rest.
+Adds user-configurable interface options to Actual Budget — dynamic themes, layout adjustments, readability tweaks, and workflow additions — without altering core app behavior.
 
-Built with [Svelte 5][Svelte-url] on [WXT][WXT-url]. Every setting is one self-contained file (see [CONTRIBUTING.md](CONTRIBUTING.md)) — the project's grown almost entirely through the settings people wanted for themselves.
+Built with [Svelte 5][Svelte-url] on [WXT][WXT-url].
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -69,14 +69,14 @@ Built with [Svelte 5][Svelte-url] on [WXT][WXT-url]. Every setting is one self-c
 
 **Install Actual Budget Tweaks from your browser's extension store:**
 
-- **Firefox:** [Install from Firefox Add-ons](https://addons.mozilla.org/en/firefox/addon/actual-budget-tweaks/)
+- **Firefox:** [Download the latest release (.xpi)](https://github.com/aelxxs/actual-budget-tweaks/releases/latest)
 - **Chrome:** [Install from Chrome Web Store](https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm)
 
 <!-- CONTRIBUTING -->
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create — any you make are **greatly appreciated**. Adding a new tweak usually takes about 5 minutes; see [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, the scaffolding command, and the conventions this codebase expects.
+Adding a new tweak usually takes about 5 minutes; see [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, the scaffolding command, and the conventions this codebase expects.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
