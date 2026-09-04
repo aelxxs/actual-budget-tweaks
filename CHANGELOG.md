@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.64
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.63...v0.1.64)
+
+### 🩹 Fixes
+
+- Correct goal funding check in overview tab ([356d0ed](https://github.com/aelxxs/actual-budget-tweaks/commit/356d0ed))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.63 ([e76bfc5](https://github.com/aelxxs/actual-budget-tweaks/commit/e76bfc5))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.63
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.62...v0.1.63)
