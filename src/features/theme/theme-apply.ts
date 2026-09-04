@@ -216,7 +216,7 @@ export const BUILTIN_CSS = `:root {
 	--color-pageTextLight: var(--ctp-subtext0);
 	--color-pageTextLink: var(--ctp-blue);
 	--color-pageTextLinkLight: var(--ctp-sky);
-	--color-pageTextPositive: var(--ctp-green);
+	--color-pageTextPositive: var(--ctp-mauve);
 	--color-pageTextSubdued: var(--ctp-overlay0);
 
 	/* Pills */
@@ -258,7 +258,7 @@ export const BUILTIN_CSS = `:root {
 	--color-tableBackground: var(--ctp-mantle);
 	--color-tableBorder: var(--ctp-surface0);
 	--color-tableBorderHover: var(--ctp-mauve);
-	--color-tableBorderSelected: var(--ctp-blue);
+	--color-tableBorderSelected: var(--ctp-mauve);
 	--color-tableBorderSeparator: var(--ctp-overlay0);
 	--color-tableHeaderBackground: var(--ctp-crust);
 	--color-tableHeaderText: var(--ctp-subtext0);
@@ -288,7 +288,7 @@ export const BUILTIN_CSS = `:root {
 	--color-tooltipText: var(--ctp-text);
 
 	/* Upcoming */
-	--color-upcomingBackground: var(--ctp-mauve);
+	--color-upcomingBackground: color-mix(in srgb, var(--ctp-mauve), transparent 85%);
 	--color-upcomingBorder: var(--ctp-surface0);
 	--color-upcomingText: var(--ctp-mantle);
 
