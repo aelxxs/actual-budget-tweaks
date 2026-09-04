@@ -121,17 +121,12 @@ async function handleYahooChart(req, res, urlPath, search) {
 }
 
 function proxyToActual(req, res) {
-	// Only the HTML document needs decompressing to inject into.
-	const wantsHtml = (req.headers.accept || "").includes("text/html");
+	// Actual never compresses responses, so no accept-encoding dance needed.
+	// Conditional-GET is stripped for everything (not just guessed "HTML"
+	// requests) since guessing from the Accept header broke injection outright.
 	const outHeaders = { ...req.headers, host: actualUrl.host };
-	if (wantsHtml) {
-		outHeaders["accept-encoding"] = "identity";
-		// Otherwise Actual can legitimately 304 (its own file didn't change)
-		// and we'd have no body to inject into — the browser then just
-		// redisplays whatever it cached from before injection existed.
-		delete outHeaders["if-none-match"];
-		delete outHeaders["if-modified-since"];
-	}
+	delete outHeaders["if-none-match"];
+	delete outHeaders["if-modified-since"];
 
 	const upstreamReqOpts = {
 		protocol: actualUrl.protocol,
@@ -143,9 +138,7 @@ function proxyToActual(req, res) {
 	}
 	const upstreamReq = http.request(upstreamReqOpts, (upstreamRes) => {
 		const contentType = upstreamRes.headers["content-type"] || "";
-		// wantsHtml also guarantees identity encoding, so it's safe to treat
-		// the body as UTF-8 text below.
-		if (!wantsHtml || !contentType.includes("text/html")) {
+		if (!contentType.includes("text/html")) {
 			const headers = { ...upstreamRes.headers };
 			res.writeHead(upstreamRes.statusCode, headers);
 			upstreamRes.pipe(res);
