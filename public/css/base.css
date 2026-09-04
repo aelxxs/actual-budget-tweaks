@@ -183,7 +183,7 @@ textarea,
 	box-shadow: none;
 	border-radius: var(--border-radius);
 	border: var(--border) !important;
-	overflow: hidden;
+	overflow: auto;
 }
 
 [data-placement]:has([role="dialog"]) {
