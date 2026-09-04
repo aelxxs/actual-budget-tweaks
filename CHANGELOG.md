@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.66
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.65...v0.1.66)
+
+### 🩹 Fixes
+
+- Update Content Security Policy and request headers for improved proxy handling ([7c30283](https://github.com/aelxxs/actual-budget-tweaks/commit/7c30283))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.65 ([2f23d6f](https://github.com/aelxxs/actual-budget-tweaks/commit/2f23d6f))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.65
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.64...v0.1.65)
