@@ -46,9 +46,13 @@ const CSP = [
 	"default-src 'self'",
 	"script-src 'self'",
 	"style-src 'self' 'unsafe-inline'",
-	"img-src 'self' data: blob:",
+	// t1.gstatic.com: favicon.ts's getFaviconUrl() (account/shortcut icons).
+	// cdn.jsdelivr.net: Twemoji SVGs for the account icon emoji picker.
+	"img-src 'self' data: blob: https://t1.gstatic.com https://cdn.jsdelivr.net",
 	"font-src 'self' data:",
-	"connect-src 'self' https://query2.finance.yahoo.com https://raw.githubusercontent.com https://api.exchangerate-api.com",
+	// api.github.com: Actual's own update-check, not ABT's. More hosts may
+	// surface here as Actual's own features get exercised (e.g. bank sync).
+	"connect-src 'self' https://query2.finance.yahoo.com https://raw.githubusercontent.com https://api.exchangerate-api.com https://api.github.com",
 	"worker-src 'self' blob:",
 	"object-src 'none'",
 	"base-uri 'self'",
@@ -120,7 +124,14 @@ function proxyToActual(req, res) {
 	// Only the HTML document needs decompressing to inject into.
 	const wantsHtml = (req.headers.accept || "").includes("text/html");
 	const outHeaders = { ...req.headers, host: actualUrl.host };
-	if (wantsHtml) outHeaders["accept-encoding"] = "identity";
+	if (wantsHtml) {
+		outHeaders["accept-encoding"] = "identity";
+		// Otherwise Actual can legitimately 304 (its own file didn't change)
+		// and we'd have no body to inject into — the browser then just
+		// redisplays whatever it cached from before injection existed.
+		delete outHeaders["if-none-match"];
+		delete outHeaders["if-modified-since"];
+	}
 
 	const upstreamReqOpts = {
 		protocol: actualUrl.protocol,
@@ -152,7 +163,10 @@ function proxyToActual(req, res) {
 			const headers = { ...upstreamRes.headers };
 			delete headers["content-length"];
 			delete headers["content-security-policy-report-only"];
+			delete headers["etag"];
+			delete headers["last-modified"];
 			headers["content-security-policy"] = CSP;
+			headers["cache-control"] = "no-store";
 			res.writeHead(upstreamRes.statusCode, headers);
 			res.end(injected);
 		});
