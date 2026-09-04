@@ -78,7 +78,12 @@ function serveStatic(req, res, urlPath) {
 			return;
 		}
 		const ext = path.extname(filePath);
-		res.writeHead(200, { "Content-Type": CONTENT_TYPES[ext] || "application/octet-stream" });
+		// Fixed URLs, unlike Actual's own content-hashed asset filenames — a
+		// cached copy here has no reason to ever be re-requested otherwise.
+		res.writeHead(200, {
+			"Content-Type": CONTENT_TYPES[ext] || "application/octet-stream",
+			"Cache-Control": "no-store",
+		});
 		if (rel === "browser-shim.js") {
 			res.end(data.toString("utf8").replace("__ABT_VERSION__", ABT_VERSION));
 			return;
