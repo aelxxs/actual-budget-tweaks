@@ -190,6 +190,7 @@ async function refreshOverview(): Promise<void> {
 			"buffered-selected",
 			...visibleCats.map((c) => `sum-amount-${c.id}`),
 			...visibleCats.map((c) => `leftover-${c.id}`),
+			...visibleCats.map((c) => `budget-${c.id}`),
 			...visibleCats.map((c) => `goal-${c.id}`),
 		];
 
@@ -213,6 +214,7 @@ async function refreshOverview(): Promise<void> {
 		for (const cat of visibleCats) {
 			const sumAmount = cells.get(`sum-amount-${cat.id}`) ?? 0;
 			const leftover = cells.get(`leftover-${cat.id}`) ?? 0;
+			const budgeted = cells.get(`budget-${cat.id}`) ?? 0;
 			const goal = cells.get(`goal-${cat.id}`) ?? 0;
 
 			if (sumAmount < 0) totalSpent += Math.abs(sumAmount);
@@ -226,16 +228,21 @@ async function refreshOverview(): Promise<void> {
 				});
 			}
 
+			// A goal can be met either by this month's assignment (recurring spend
+			// goals like rent, where the balance is expected to be drawn to 0) or
+			// by the running balance (savings goals like an emergency fund, which
+			// stay funded even in a month nothing new is budgeted).
+			const goalProgress = Math.max(leftover, budgeted);
 			if (goal > 0) {
 				totalGoalCount++;
-				if (leftover >= goal) {
+				if (goalProgress >= goal) {
 					fullyFundedGoalCount++;
 				} else {
 					underfundedGoals.push({
 						id: cat.id,
 						name: cat.name,
 						groupName: cat.group_name,
-						leftover,
+						leftover: goalProgress,
 						goal,
 					});
 				}
