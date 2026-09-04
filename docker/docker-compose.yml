@@ -1,0 +1,50 @@
+services:
+  actual:
+    image: actualbudget/actual-server:latest
+    restart: unless-stopped
+    volumes:
+      - actual-data:/data
+    # Not published — only reachable through the proxy, same as it would be
+    # in the real deployment where the proxy is the only public entrypoint.
+    healthcheck:
+      # No curl/wget in this image, but Node is always there.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:5006/account/needs-bootstrap', r => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  proxy:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      - ACTUAL_ORIGIN=http://actual:5006
+      - PORT=3005
+    depends_on:
+      actual:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:3005/abt/browser-shim.js', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  actual-data:

@@ -36,3 +36,6 @@ jobs:
 
       - name: Generate features manifest
         run: pnpm generate:features-manifest
+
+      - name: Build sidecar image
+        run: docker build -f docker/Dockerfile .

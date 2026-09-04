@@ -1,0 +1,11 @@
+node_modules
+.output
+.wxt
+.git
+.github
+website
+sidebar-test
+.playwright-mcp
+.vscode
+.idea
+*.log

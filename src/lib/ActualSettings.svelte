@@ -134,8 +134,10 @@
 		const input = document.createElement("input");
 		input.type = "file";
 		input.accept = ".json";
+		input.style.display = "none";
 		input.onchange = async () => {
 			const file = input.files?.[0];
+			input.remove();
 			if (!file) return;
 			try {
 				const text = await file.text();
@@ -152,6 +154,9 @@
 				setTimeout(() => (importStatus = ""), 3000);
 			}
 		};
+		// Some browsers (Firefox, Safari) won't reliably open the native file
+		// picker from a detached input's synthetic click.
+		document.body.appendChild(input);
 		input.click();
 	}
 
