@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.65
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.64...v0.1.65)
+
+### 🚀 Enhancements
+
+- Add Docker support with build and deployment configurations ([5dd98e9](https://github.com/aelxxs/actual-budget-tweaks/commit/5dd98e9))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.64 ([5c5ee7d](https://github.com/aelxxs/actual-budget-tweaks/commit/5c5ee7d))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.64
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.63...v0.1.64)
