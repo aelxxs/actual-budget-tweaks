@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v0.1.63
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.62...v0.1.63)
+
+### 🚀 Enhancements
+
+- Remove AI slop from README ([70c36d0](https://github.com/aelxxs/actual-budget-tweaks/commit/70c36d0))
+
+### 🩹 Fixes
+
+- Resolve overflow issue with dropdown content ([0a225b9](https://github.com/aelxxs/actual-budget-tweaks/commit/0a225b9))
+- Resolve color contrast issue in automations ui ([3a5f696](https://github.com/aelxxs/actual-budget-tweaks/commit/3a5f696))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.62 ([62531dd](https://github.com/aelxxs/actual-budget-tweaks/commit/62531dd))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.62
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.61...v0.1.62)
