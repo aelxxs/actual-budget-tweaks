@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.67
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.66...v0.1.67)
+
+### 🩹 Fixes
+
+- Simplify proxy handling by removing unnecessary HTML checks and accept-encoding adjustments ([9720358](https://github.com/aelxxs/actual-budget-tweaks/commit/9720358))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.66 ([6f34d8f](https://github.com/aelxxs/actual-budget-tweaks/commit/6f34d8f))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.66
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.65...v0.1.66)
