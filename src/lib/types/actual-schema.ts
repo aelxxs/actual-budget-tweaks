@@ -326,7 +326,7 @@ export interface SendMethodMap {
 	};
 	"budget/dry-run-category-template": {
 		args: { month: string; categoryId: string; templates: unknown[] };
-		result: { perTemplate: number[] };
+		result: { budgeted: number; perTemplate: number[] };
 	};
 }
 

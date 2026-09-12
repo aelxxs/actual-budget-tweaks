@@ -5,6 +5,10 @@
 	import TrendChart from "./TrendChart.svelte";
 
 	const data = $derived(templatePlanState.overviewData);
+	const useGoalTemplates = $derived(templatePlanState.coverageMethod === "goal-templates");
+	const coverageTarget = $derived(
+		data ? (useGoalTemplates ? data.nextMonthGoalTotal : data.recentAvgSpending) : null,
+	);
 	const loading = $derived(templatePlanState.overviewLoading);
 
 	let closed = $state<Record<string, boolean>>({});
@@ -73,10 +77,10 @@
 	{@const daysLeft = isCurrentMonth ? daysInMonth - dayOfMonth : 0}
 	{@const spentAhead = data.totalBudgeted > 0 && spentPct > monthElapsedPct}
 	{@const nextCoveragePct =
-		data.recentAvgSpending > 0
-			? Math.round((data.nextMonthToBudget / data.recentAvgSpending) * 100)
+		coverageTarget !== null && coverageTarget > 0
+			? Math.round((data.nextMonthToBudget / coverageTarget) * 100)
 			: 0}
-	{@const nextOver = data.nextMonthToBudget - data.recentAvgSpending}
+	{@const nextOver = data.nextMonthToBudget - (coverageTarget ?? 0)}
 	{@const maxOver =
 		data.overspentCategories.length > 0 ? Math.abs(data.overspentCategories[0].leftover) : 1}
 
@@ -292,7 +296,7 @@
 	{/if}
 
 	<!-- ── Next Month Coverage ────────────────────────────────────── -->
-	{#if data.recentAvgSpending > 0}
+	{#if coverageTarget !== null && coverageTarget > 0}
 		<div class="abt-tab-overview-cs">
 			<button class="abt-tab-overview-sh" onclick={() => toggle("nextMonth")}>
 				<span class="abt-tab-overview-st">Next Month Coverage</span>
@@ -319,14 +323,16 @@
 					<!-- Month + method header -->
 					<div class="abt-tab-overview-next-month-header">
 						<span class="abt-tab-overview-next-month-name">{longMonth(data.nextMonthKey)}</span>
-						<span class="abt-tab-overview-next-month-sub">Recent average</span>
+						<span class="abt-tab-overview-next-month-sub"
+							>{useGoalTemplates ? "Goal template projection" : "Recent average"}</span
+						>
 					</div>
 
 					<!-- Large % -->
 					<div class="abt-tab-overview-next-hero">
 						<span
 							class="abt-tab-overview-next-pct abt-privacy-number"
-							data-sign={nextCoveragePct >= 100 ? "pos" : "warn"}>{nextCoveragePct}%</span
+							data-sign={nextOver >= 0 ? "pos" : "warn"}>{nextCoveragePct}%</span
 						>
 						<span class="abt-tab-overview-next-sub">prepared</span>
 					</div>
@@ -346,19 +352,19 @@
 					<div class="abt-tab-overview-card-bar-wrap" style="margin-top:10px">
 						<div
 							class="abt-tab-overview-card-bar"
-							style="width:{Math.min(100, nextCoveragePct)}%"
-							data-status={nextCoveragePct >= 100 ? "ok" : nextCoveragePct >= 70 ? "warn" : "over"}
+							style="width:{Math.max(0, Math.min(100, nextCoveragePct))}%"
+							data-status={nextOver >= 0 ? "ok" : nextCoveragePct >= 70 ? "warn" : "over"}
 						></div>
 					</div>
 
 					<!-- Amounts -->
 					<div class="abt-tab-overview-next-amounts abt-privacy-number">
-						{fmtMoney(data.nextMonthToBudget)} of {fmtMoney(data.recentAvgSpending)}
+						{fmtMoney(data.nextMonthToBudget)} of {fmtMoney(coverageTarget)}
 					</div>
 
 					<!-- Summary sentence -->
 					<div class="abt-tab-overview-next-summary abt-privacy-number">
-						{#if nextCoveragePct >= 100}
+						{#if nextOver >= 0}
 							Fully prepared for {longMonth(data.nextMonthKey)} — {fmtMoney(nextOver)} over target.
 						{:else}
 							{fmtMoney(Math.abs(nextOver))} more needed to fully cover {longMonth(
@@ -378,6 +384,23 @@
 					</div>
 				</div>
 			{/if}
+		</div>
+	{:else}
+		<div class="abt-tab-overview-cs">
+			<div class="abt-tab-overview-sh">
+				<span class="abt-tab-overview-st">Next Month Coverage</span>
+			</div>
+			<div class="abt-tab-overview-card">
+				<div class="abt-tab-overview-next-summary">
+					{#if coverageTarget === null}
+						Unable to preview next month’s goal templates. Refresh to try again.
+					{:else if useGoalTemplates}
+						No funding needed from goal templates for {longMonth(data.nextMonthKey)}.
+					{:else}
+						No spending history or budget available to calculate coverage.
+					{/if}
+				</div>
+			</div>
 		</div>
 	{/if}
 

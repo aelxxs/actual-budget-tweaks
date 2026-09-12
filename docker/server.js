@@ -41,7 +41,6 @@ const INJECTION = `
 		<script src="/abt/content-scripts/income-breakdown.js"></script>
 	</body>`;
 
-
 const CSP = [
 	"default-src 'self'",
 	"script-src 'self'",
@@ -93,7 +92,9 @@ async function handleYahooChart(req, res, urlPath, search) {
 	// fall back to Referer.
 	const expectedOrigin = `${req.headers["x-forwarded-proto"] || "http"}://${req.headers.host}`;
 	const { origin, referer } = req.headers;
-	const sameOrigin = origin ? origin === expectedOrigin : !!referer?.startsWith(`${expectedOrigin}/`);
+	const sameOrigin = origin
+		? origin === expectedOrigin
+		: !!referer?.startsWith(`${expectedOrigin}/`);
 	if (!sameOrigin) {
 		res.writeHead(403).end();
 		return;
@@ -135,7 +136,7 @@ function proxyToActual(req, res) {
 		method: req.method,
 		path: req.url,
 		headers: outHeaders,
-	}
+	};
 	const upstreamReq = http.request(upstreamReqOpts, (upstreamRes) => {
 		const contentType = upstreamRes.headers["content-type"] || "";
 		if (!contentType.includes("text/html")) {
@@ -163,8 +164,7 @@ function proxyToActual(req, res) {
 			res.writeHead(upstreamRes.statusCode, headers);
 			res.end(injected);
 		});
-	},
-	);
+	});
 
 	upstreamReq.on("error", (err) => {
 		res.writeHead(502).end(`upstream error: ${err.message}`);

@@ -20,6 +20,7 @@ import {
 	waitForQuiescence,
 	type SnapshotDescriptor,
 } from "@lib/utilities/template-plan/actual-data";
+import { previewMonthTemplateTotal } from "@lib/utilities/template-plan/next-month-coverage";
 import { createPriorityPlanner } from "@lib/utilities/template-plan/priority-plan";
 import { query, send } from "@lib/utilities/actual-api";
 import type { Schedule } from "@lib/types/actual-schema";
@@ -282,9 +283,10 @@ async function refreshOverview(): Promise<void> {
 			...visibleCats.map((c) => `sum-amount-${c.id}`),
 		];
 
-		const [pastResults, nextResult] = await Promise.all([
+		const [pastResults, nextResult, nextMonthGoalTotal] = await Promise.all([
 			Promise.all(pastKeys.map((k) => getCells(keyToSheet(k), trendNames))),
 			getCells(keyToSheet(nextMonthKey), ["to-budget"]),
+			previewMonthTemplateTotal(nextMonthKey, visibleCats),
 		]);
 
 		const trend: MonthTrend[] = pastKeys.map((key, i) => {
@@ -302,13 +304,15 @@ async function refreshOverview(): Promise<void> {
 			};
 		});
 
+		// Preserve the original method: average the last three non-zero spending
+		// months among the five preceding months; fall back to this month's budget.
 		const nonZeroRecent = trend
 			.slice(0, 5)
 			.filter((t) => t.spent > 0)
 			.slice(-3);
 		const recentAvgSpending =
 			nonZeroRecent.length > 0
-				? nonZeroRecent.reduce((s, t) => s + t.spent, 0) / nonZeroRecent.length
+				? nonZeroRecent.reduce((sum, t) => sum + t.spent, 0) / nonZeroRecent.length
 				: totalBudgeted;
 
 		const nextMonthToBudget = nextResult.get("to-budget") ?? 0;
@@ -330,6 +334,7 @@ async function refreshOverview(): Promise<void> {
 			trend,
 			nextMonthKey,
 			nextMonthToBudget,
+			nextMonthGoalTotal,
 			recentAvgSpending,
 		};
 	} catch (e) {

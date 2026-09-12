@@ -31,8 +31,8 @@
 			getURL: (path) => "/abt" + (path.startsWith("/") ? path : "/" + path),
 			// Templated in by server.js from the repo's package.json at request
 			getManifest: () => ({ version: "__ABT_VERSION__" }),
-			onMessage: { addListener() { }, removeListener() { } },
-			onInstalled: { addListener() { } },
+			onMessage: { addListener() {}, removeListener() {} },
+			onInstalled: { addListener() {} },
 			// Try direct fetch first; only Yahoo's chart API lacks CORS.
 			sendMessage: async (message) => {
 				if (message?.type !== "fetch") return undefined;
@@ -65,7 +65,11 @@
 			local: {
 				get: async (keys) => {
 					const list =
-						typeof keys === "string" ? [keys] : Array.isArray(keys) ? keys : Object.keys(keys || {});
+						typeof keys === "string"
+							? [keys]
+							: Array.isArray(keys)
+								? keys
+								: Object.keys(keys || {});
 					const out = {};
 					for (const k of list) {
 						const v = readLocalStorage(k);
