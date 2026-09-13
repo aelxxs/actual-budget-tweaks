@@ -338,7 +338,9 @@ function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
 	}
 }
 
-export async function loadTemplatesByCategoryId(): Promise<Map<string, TemplateEntry[]>> {
+export async function loadTemplatesByCategoryId(
+	throwOnError = false,
+): Promise<Map<string, TemplateEntry[]>> {
 	const byCat = new Map<string, TemplateEntry[]>();
 	try {
 		const cats =
@@ -349,6 +351,7 @@ export async function loadTemplatesByCategoryId(): Promise<Map<string, TemplateE
 			if (budgetTpls.length) byCat.set(c.id, budgetTpls);
 		}
 	} catch (e) {
+		if (throwOnError) throw e;
 		console.warn("[ABT TAB] categories query failed", e);
 	}
 	return byCat;

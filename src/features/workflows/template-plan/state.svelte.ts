@@ -40,6 +40,7 @@ export interface OverviewData {
 	trend: MonthTrend[];
 	nextMonthKey: string;
 	nextMonthToBudget: number;
+	nextMonthGoalTotal: number | null;
 	recentAvgSpending: number;
 }
 
@@ -79,6 +80,7 @@ export interface BreakdownState {
 }
 
 export const templatePlanState = $state({
+	coverageMethod: "goal-templates" as "goal-templates" | "spending-average",
 	activeTab: "overview" as "breakdown" | "priority" | "overview",
 	showAllRows: false,
 	breakdownState: null as BreakdownState | null,

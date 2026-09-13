@@ -39,6 +39,7 @@ import type { Setting } from "./types";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { experimentalSidebar } from "./workflows/sidebar";
 import { spendingCalendar } from "./workflows/spending-calendar";
+import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 import { templatePlan } from "./workflows/template-plan";
 
 const layoutAndDensity = [
@@ -79,7 +80,12 @@ const appearance = [
 	categoryEmojiPicker,
 ];
 
-const workflows = [categoryTemplateInsights, templatePlan, spendingCalendar];
+const workflows = [
+	categoryTemplateInsights,
+	templatePlan,
+	nextMonthCoverageMethod,
+	spendingCalendar,
+];
 
 const experimental = [experimentalSidebar];
 
