@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.68
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.67...v0.1.68)
+
+### 🚀 Enhancements
+
+- Add selectable next-month coverage calculation ([9d22eb5](https://github.com/aelxxs/actual-budget-tweaks/commit/9d22eb5))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.67 ([6ae8379](https://github.com/aelxxs/actual-budget-tweaks/commit/6ae8379))
+
+### ❤️ Contributors
+
+- Zeldridge <github@mail.zeldridge.com>
+
 ## v0.1.67
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.66...v0.1.67)
