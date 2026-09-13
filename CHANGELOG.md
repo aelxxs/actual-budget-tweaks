@@ -1,6 +1,14 @@
 # Changelog
 
 
+## v0.1.69
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.68...v0.1.69)
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.68 ([2342108](https://github.com/aelxxs/actual-budget-tweaks/commit/2342108))
+
 ## v0.1.68
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.67...v0.1.68)
