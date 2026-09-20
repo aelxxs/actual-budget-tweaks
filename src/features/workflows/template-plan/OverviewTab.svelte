@@ -324,7 +324,7 @@
 					<div class="abt-tab-overview-next-month-header">
 						<span class="abt-tab-overview-next-month-name">{longMonth(data.nextMonthKey)}</span>
 						<span class="abt-tab-overview-next-month-sub"
-							>{useGoalTemplates ? "Goal template projection" : "Recent average"}</span
+							>{useGoalTemplates ? "Remaining goal funding" : "Recent average"}</span
 						>
 					</div>
 
@@ -374,6 +374,11 @@
 					</div>
 
 					<!-- Breakdown -->
+					{#if useGoalTemplates}
+						<div class="abt-tab-overview-next-summary">
+							Funds already assigned to next month’s goals have been deducted from the target.
+						</div>
+					{/if}
 					<div class="abt-tab-overview-next-breakdown">
 						<span class="abt-tab-overview-next-breakdown-label"
 							>Ready to assign in {longMonth(data.nextMonthKey)}</span
@@ -395,7 +400,7 @@
 					{#if coverageTarget === null}
 						Unable to preview next month’s goal templates. Refresh to try again.
 					{:else if useGoalTemplates}
-						No funding needed from goal templates for {longMonth(data.nextMonthKey)}.
+						No additional goal funding needed for {longMonth(data.nextMonthKey)} after existing assignments.
 					{:else}
 						No spending history or budget available to calculate coverage.
 					{/if}

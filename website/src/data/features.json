@@ -205,7 +205,13 @@
 				"label": "Template Plan",
 				"description": "Side panel breakdown after applying or overwriting budget templates.",
 				"icon": "layout",
-				"group": null
+				"group": "Budget"
+			},
+			{
+				"label": "Next Month Coverage Method",
+				"description": "Choose the target used by Next Month Coverage in Plan → Overview.",
+				"icon": "layout",
+				"group": "Budget"
 			},
 			{
 				"label": "Spending Calendar",

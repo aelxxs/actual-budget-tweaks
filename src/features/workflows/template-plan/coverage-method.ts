@@ -6,6 +6,7 @@ export const nextMonthCoverageMethod = defineSetting({
 	label: "Next Month Coverage Method",
 	description: "Choose the target used by Next Month Coverage in Plan → Overview.",
 	icon: "layout",
+	group: "Budget",
 	context: {
 		key: "next-month-coverage-method",
 		defaultValue: "goal-templates",

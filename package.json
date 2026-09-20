@@ -13,6 +13,8 @@
 		"zip": "wxt zip",
 		"zip:firefox": "wxt zip -b firefox",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
+		"test:coverage": "node --experimental-vm-modules --test scripts/next-month-coverage.test.mjs",
+		"test:lifecycle": "node --experimental-vm-modules --test scripts/template-plan-lifecycle.test.mjs",
 		"lint": "eslint .",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",

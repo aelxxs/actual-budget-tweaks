@@ -44,6 +44,8 @@ import {
 import TemplatePlanPanel from "./TemplatePlanPanel.svelte";
 
 const TRIGGER_ID = "abt-template-plan-trigger";
+let enabled = false;
+let lifecycleVersion = 0;
 
 const priorityPlanner = createPriorityPlanner({
 	getCurrentSheet,
@@ -80,6 +82,7 @@ function teardownPanel(): void {
 		unmount(panelInstance);
 		panelInstance = null;
 	}
+	bodyContainer?.remove();
 	bodyContainer = null;
 }
 
@@ -87,6 +90,7 @@ function teardownPanel(): void {
 let triggerBtn: HTMLButtonElement | null = null;
 
 function ensureTriggerButton(): void {
+	if (!enabled) return;
 	if (document.getElementById(TRIGGER_ID)) return;
 	const btn = document.createElement("button");
 	btn.id = TRIGGER_ID;
@@ -110,6 +114,7 @@ function removeTriggerButton(): void {
 let drawerOpen = false;
 
 function openPanel(): void {
+	if (!enabled || !isBudgetPage()) return;
 	drawerOpen = true;
 	removeTriggerButton();
 	const bodyNode = ensurePanelMounted();
@@ -133,7 +138,9 @@ function openPanel(): void {
 // falls back to just showing the trigger button. See wasPanelPersistedOpen's
 // doc for why this can't just check sidepanel.isOpen() instead.
 function reopenIfPersisted(): void {
+	const version = lifecycleVersion;
 	wasPanelPersistedOpen().then((persisted) => {
+		if (!enabled || version !== lifecycleVersion || !isBudgetPage()) return;
 		if (persisted) {
 			if (!drawerOpen) openPanel();
 		} else if (!drawerOpen) {
@@ -566,12 +573,15 @@ export const templatePlan = defineSetting({
 	label: "Template Plan",
 	description: "Side panel breakdown after applying or overwriting budget templates.",
 	icon: "layout",
+	group: "Budget",
 	context: {
 		key: "actual-template-apply-breakdown",
 		defaultValue: true,
 	},
 	css: () => CSS,
 	init: async () => {
+		enabled = true;
+		lifecycleVersion++;
 		loadCurrency();
 		await loadPersistedState();
 		// Not awaited: loadCategories() internally waits for the budget page's
@@ -608,15 +618,24 @@ export const templatePlan = defineSetting({
 		}
 
 		return () => {
+			enabled = false;
+			lifecycleVersion++;
+			runSeq++;
 			unwatch();
 			stopClickListener();
 			stopKeyboard();
 			clearInterval(pollInterval);
 			removeTriggerButton();
+			if (drawerOpen) {
+				sidepanel.close();
+				sidepanel.dismiss();
+			}
 			teardownPanel();
 			templatePlanState.onTabChange = null;
 			templatePlanState.applyTemplates = null;
 			templatePlanState.overviewData = null;
+			templatePlanState.breakdownLoading = false;
+			lastSheetKey = null;
 			drawerOpen = false;
 			wasOnBudgetPage = false;
 		};
