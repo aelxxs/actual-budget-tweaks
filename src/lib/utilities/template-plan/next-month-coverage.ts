@@ -4,7 +4,7 @@ import { isRemainderTemplate } from "./templates";
 
 const CONCURRENCY = 8;
 
-/** Preview saved templates without applying them or reading stale goal cells. */
+/** Preview remaining template funding after the requested month's assignments. */
 export async function previewMonthTemplateTotal(
 	month: string,
 	categories: { id: string }[],
@@ -21,15 +21,29 @@ export async function previewMonthTemplateTotal(
 						.filter((entry) => !isRemainderTemplate(entry))
 						.map((entry) => entry.engineTemplate);
 					if (templates.length === 0) return 0;
-					const result = await send("budget/dry-run-category-template", {
-						month,
-						categoryId: id,
-						templates,
-					});
+					const [result, assignedCell] = await Promise.all([
+						send("budget/dry-run-category-template", {
+							month,
+							categoryId: id,
+							templates,
+						}),
+						send("get-cell", {
+							sheetName: `budget${month.replace("-", "")}`,
+							name: `budget-${id}`,
+						}),
+					]);
 					if (!result || !Number.isFinite(result.budgeted)) {
 						throw new Error("Template preview did not return a funding amount");
 					}
-					return Math.max(0, result.budgeted);
+					// Empty cells are unassigned; failed reads must not look like zero.
+					const value: unknown = assignedCell?.value;
+					const assigned = value === "" ? 0 : value;
+					if (typeof assigned !== "number" || !Number.isFinite(assigned)) {
+						throw new Error("Could not read existing template funding");
+					}
+					// The preview is the final assignment, not an additional amount.
+					// Clamp each category so excess cannot cover a different goal.
+					return Math.max(0, result.budgeted - assigned);
 				}),
 			);
 			total += amounts.reduce((sum, amount) => sum + amount, 0);
