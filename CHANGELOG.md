@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.70
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.69...v0.1.70)
+
+### 🩹 Fixes
+
+- Account for assigned funds in next month goal coverage ([eebbc07](https://github.com/aelxxs/actual-budget-tweaks/commit/eebbc07))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.69 ([9ce212a](https://github.com/aelxxs/actual-budget-tweaks/commit/9ce212a))
+
+### ❤️ Contributors
+
+- Zeldridge <malware-01-poppers@icloud.com>
+
 ## v0.1.69
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.68...v0.1.69)
