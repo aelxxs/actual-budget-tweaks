@@ -21,8 +21,8 @@
 		margin-top: 8px;
 	}
 	.callout[data-tone="neutral"] {
-		background: rgba(255, 255, 255, 0.03);
-		border-color: var(--color-menuBorder, rgba(255, 255, 255, 0.06));
+		background: var(--abt-panel-surface);
+		border-color: var(--abt-panel-border);
 		opacity: 0.75;
 	}
 	.callout[data-tone="positive"] {

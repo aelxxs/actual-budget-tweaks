@@ -64,7 +64,7 @@
 			? "var(--color-errorText, #e57373)"
 			: spentPct >= 85
 				? "var(--color-warningText, #e0c590)"
-				: "#7c3aed"}
+				: "var(--abt-panel-accent)"}
 	{@const dashFill = (RING_CIRC * spentPctCapped) / 100}
 	{@const [yearNum, monthNum] = data.monthKey.split("-").map(Number)}
 	{@const today = new Date()}
@@ -114,7 +114,7 @@
 						cy="24"
 						r={RING_R}
 						fill="none"
-						stroke="rgba(255,255,255,0.08)"
+						stroke="var(--abt-panel-track)"
 						stroke-width="6"
 					/>
 					{#if data.totalBudgeted > 0}
@@ -327,8 +327,8 @@
 				trend={data.trend}
 				valueKey="spent"
 				currentMonthKey={data.monthKey}
-				barColor="#7c3aed"
-				barColorDim="rgba(124,58,237,0.35)"
+				barColor="var(--abt-panel-accent)"
+				barColorDim="color-mix(in srgb, var(--abt-panel-accent) 35%, transparent)"
 				higherIsBad={true}
 			/>
 		</Section>
@@ -338,8 +338,8 @@
 				trend={data.trend}
 				valueKey="budgeted"
 				currentMonthKey={data.monthKey}
-				barColor="#2563eb"
-				barColorDim="rgba(37,99,235,0.35)"
+				barColor="var(--abt-panel-accent-secondary)"
+				barColorDim="color-mix(in srgb, var(--abt-panel-accent-secondary) 35%, transparent)"
 			/>
 		</Section>
 	{/if}

@@ -1,5 +1,14 @@
 :root {
 	--border: 1px solid var(--color-tableBorder);
+
+	/* Side panel surfaces. Mixing in pageText (not white) keeps them visible on light and dark themes. */
+	--abt-panel-accent: var(--color-sidebarItemAccentSelected);
+	--abt-panel-accent-secondary: var(--color-pageTextLink);
+	--abt-panel-accent-muted: color-mix(in srgb, var(--abt-panel-accent) 10%, transparent);
+	--abt-panel-surface: color-mix(in srgb, var(--color-pageText) 3%, transparent);
+	--abt-panel-surface-hover: color-mix(in srgb, var(--color-pageText) 6%, transparent);
+	--abt-panel-border: color-mix(in srgb, var(--color-pageText) 9%, transparent);
+	--abt-panel-track: color-mix(in srgb, var(--color-pageText) 8%, transparent);
 }
 
 html,

@@ -86,7 +86,7 @@
 
 <style>
 	.section {
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.07));
+		border-top: 1px solid var(--abt-panel-border);
 	}
 	/* The tab bar above already draws a border. */
 	.section:first-child {
@@ -102,7 +102,7 @@
 		background: transparent;
 		border: none;
 		font: inherit;
-		color: #a78bfa;
+		color: var(--abt-panel-accent);
 		text-align: left;
 	}
 	button.head {
@@ -110,7 +110,7 @@
 		transition: background 0.1s;
 	}
 	button.head:hover {
-		background: rgba(124, 58, 237, 0.07);
+		background: var(--abt-panel-accent-muted);
 	}
 	.head[data-tone="error"] {
 		color: var(--color-errorText, #e57373);
@@ -157,7 +157,7 @@
 		margin: 0 10px 10px;
 		padding: 10px;
 		border-radius: 6px;
-		border: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
-		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid var(--abt-panel-border);
+		background: var(--abt-panel-surface);
 	}
 </style>

@@ -4,7 +4,7 @@ export const CSS = `
 		display: flex;
 		gap: 6px;
 		padding: 8px 12px 6px;
-		padding-block: 0px;
+		padding-top: 0px;
 	}
 
 	.abt-tab-overview-apply-btn {
@@ -20,6 +20,7 @@ export const CSS = `
 		align-items: center;
 		justify-content: center;
 		gap: 5px;
+		/* Fixed on purpose: saturated enough for white text on any theme. */
 		background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
 		color: #fff;
 		letter-spacing: 0.2px;
@@ -33,7 +34,7 @@ export const CSS = `
 		height: 30px;
 		flex-shrink: 0;
 		border-radius: 6px;
-		border: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.1));
+		border: 1px solid var(--abt-panel-border);
 		background: transparent;
 		color: inherit;
 		font-size: 14px;
@@ -50,7 +51,7 @@ export const CSS = `
 	.abt-tab-overview-load-btn {
 		appearance: none;
 		background: transparent;
-		border: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.1));
+		border: 1px solid var(--abt-panel-border);
 		border-radius: 4px;
 		color: inherit;
 		cursor: pointer;
@@ -116,7 +117,7 @@ export const CSS = `
 	.abt-tab-overview-card-bar-wrap {
 		height: 5px;
 		border-radius: 2.5px;
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--abt-panel-track);
 		overflow: hidden;
 		margin-bottom: 10px;
 	}
@@ -125,7 +126,7 @@ export const CSS = `
 		border-radius: 2.5px;
 		min-width: 2px;
 	}
-	.abt-tab-overview-card-bar[data-status="ok"]   { background: #7c3aed; }
+	.abt-tab-overview-card-bar[data-status="ok"]   { background: var(--abt-panel-accent); }
 	.abt-tab-overview-card-bar[data-status="warn"] { background: var(--color-warningText, #e0c590); }
 	.abt-tab-overview-card-bar[data-status="over"] { background: var(--color-errorText, #e57373); }
 
@@ -169,7 +170,7 @@ export const CSS = `
 	.abt-tab-overview-bdr--total {
 		padding-top: 6px;
 		margin-top: 3px;
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
+		border-top: 1px solid var(--abt-panel-border);
 		font-size: 12px;
 	}
 	.abt-tab-overview-bdr--total .abt-tab-overview-bdr-op { opacity: 0.6; }
@@ -216,7 +217,7 @@ export const CSS = `
 	.abt-tab-overview-mini-bar-wrap {
 		height: 4px;
 		border-radius: 2px;
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--abt-panel-track);
 		overflow: hidden;
 	}
 	.abt-tab-overview-mini-bar {
@@ -224,11 +225,11 @@ export const CSS = `
 		border-radius: 2px;
 		min-width: 2px;
 	}
-	.abt-tab-overview-mini-bar[data-status="ok"]      { background: #7c3aed; }
+	.abt-tab-overview-mini-bar[data-status="ok"]      { background: var(--abt-panel-accent); }
 	.abt-tab-overview-mini-bar[data-status="warn"]    { background: var(--color-warningText, #e0c590); }
 	.abt-tab-overview-mini-bar[data-status="over"]    { background: var(--color-errorText, #e57373); }
-	.abt-tab-overview-mini-bar[data-status="goal"]    { background: linear-gradient(90deg, #7c3aed 0%, #2563eb 100%); }
-	.abt-tab-overview-mini-bar[data-status="elapsed"] { background: rgba(255, 255, 255, 0.22); }
+	.abt-tab-overview-mini-bar[data-status="goal"]    { background: linear-gradient(90deg, var(--abt-panel-accent) 0%, var(--abt-panel-accent-secondary) 100%); }
+	.abt-tab-overview-mini-bar[data-status="elapsed"] { background: color-mix(in srgb, var(--color-pageText) 22%, transparent); }
 
 	/* ── Next Month hero ─────────────────────────────────────────── */
 	.abt-tab-overview-next-hero {
@@ -263,11 +264,11 @@ export const CSS = `
 		white-space: nowrap;
 	}
 	.abt-tab-overview-pill[data-status="ok"]   {
-		background: rgba(76, 175, 80, 0.15);
+		background: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 15%, transparent);
 		color: var(--color-budgetNumberPositive, #4caf50);
 	}
 	.abt-tab-overview-pill[data-status="warn"] {
-		background: rgba(229, 115, 115, 0.15);
+		background: color-mix(in srgb, var(--color-errorText, #e57373) 15%, transparent);
 		color: var(--color-errorText, #e57373);
 	}
 
@@ -316,7 +317,7 @@ export const CSS = `
 		gap: 8px;
 		margin-top: 10px;
 		padding-top: 8px;
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
+		border-top: 1px solid var(--abt-panel-border);
 		font-size: 11px;
 	}
 
@@ -359,11 +360,11 @@ export const CSS = `
 		border-radius: 999px;
 	}
 	.abt-tab-overview-chart-delta[data-sign="neg"] {
-		background: rgba(229, 115, 115, 0.15);
+		background: color-mix(in srgb, var(--color-errorText, #e57373) 15%, transparent);
 		color: var(--color-errorText, #e57373);
 	}
 	.abt-tab-overview-chart-delta[data-sign="pos"] {
-		background: rgba(76, 175, 80, 0.15);
+		background: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 15%, transparent);
 		color: var(--color-budgetNumberPositive, #4caf50);
 	}
 
@@ -380,7 +381,7 @@ export const CSS = `
 		width: 6px;
 		height: 6px;
 		border-radius: 50%;
-		background: rgba(124, 58, 237, 0.6);
+		background: color-mix(in srgb, var(--abt-panel-accent) 60%, transparent);
 		flex-shrink: 0;
 	}
 
@@ -416,9 +417,9 @@ export const CSS = `
 
 	.abt-tab-footer {
 		flex-shrink: 0;
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
+		border-top: 1px solid var(--abt-panel-border);
 		padding: 8px 12px;
-		background: rgba(255, 255, 255, 0.02);
+		background: var(--abt-panel-surface);
 		display: grid;
 		grid-template-columns: 1fr auto;
 		gap: 4px 8px;
@@ -443,7 +444,7 @@ export const CSS = `
 		gap: 6px;
 		padding: 6px 12px;
 		border: none;
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
+		border-top: 1px solid var(--abt-panel-border);
 		background: transparent;
 		font: inherit;
 		font-size: 11px;
@@ -454,7 +455,7 @@ export const CSS = `
 	}
 	.abt-tab-toggle:hover {
 		opacity: 1;
-		background: rgba(255, 255, 255, 0.04);
+		background: var(--abt-panel-surface-hover);
 	}
 
 	.abt-tab-loading {
