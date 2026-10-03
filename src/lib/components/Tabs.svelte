@@ -36,7 +36,7 @@
 		padding: 10px 12px 0;
 		flex-shrink: 0;
 		background: var(--color-pageBackground);
-		border-bottom: var(--border);
+		border-bottom: 1px solid var(--abt-panel-border);
 	}
 
 	.abt-tabs__tab {
@@ -47,7 +47,7 @@
 		text-transform: uppercase;
 		padding: 4px 10px 5px;
 		border-radius: var(--abt-radius-sm) var(--abt-radius-sm) 0 0;
-		border: var(--border);
+		border: 1px solid var(--abt-panel-border);
 		border-bottom: none;
 		background: transparent;
 		color: var(--color-pageTextSubdued);
