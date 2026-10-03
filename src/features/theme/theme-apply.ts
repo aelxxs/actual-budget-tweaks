@@ -88,6 +88,7 @@ export const BUILTIN_CSS = `:root {
 	--color-calendarItemText: var(--ctp-text);
 	--color-calendarSelectedBackground: var(--ctp-blue);
 	--color-calendarText: var(--ctp-text);
+	--color-datePickerRangeBackground: color-mix(in srgb, var(--ctp-blue) 25%, var(--ctp-base));
 
 	/* Card */
 	--color-cardBackground: var(--ctp-mantle);
@@ -245,14 +246,25 @@ export const BUILTIN_CSS = `:root {
 
 	/* Sidebar */
 	--color-sidebarBackground: var(--ctp-mantle);
+	--color-sidebarBackgroundFailedSubtle: color-mix(in srgb, var(--ctp-red) 16%, transparent);
+	--color-sidebarBorder: var(--ctp-surface0);
+	--color-sidebarBrand: var(--ctp-mauve);
 	--color-sidebarBudgetName: var(--ctp-text);
+	--color-sidebarControlBackground: var(--ctp-surface0);
+	--color-sidebarHeaderText: var(--ctp-text);
 	--color-sidebarItemAccentSelected: var(--ctp-mauve);
 	--color-sidebarItemBackgroundFailed: var(--ctp-red);
 	--color-sidebarItemBackgroundHover: var(--ctp-surface0);
 	--color-sidebarItemBackgroundPending: var(--ctp-yellow);
 	--color-sidebarItemBackgroundPositive: var(--ctp-green);
+	--color-sidebarItemBackgroundSelected: color-mix(in srgb, var(--ctp-mauve) 18%, transparent);
 	--color-sidebarItemText: var(--ctp-text);
 	--color-sidebarItemTextSelected: var(--ctp-mauve);
+	--color-sidebarItemTextUpdated: var(--ctp-blue);
+	--color-sidebarTextFailed: var(--ctp-red);
+	--color-sidebarTextMuted: var(--ctp-overlay1);
+	--color-sidebarTextPositive: var(--ctp-green);
+	--color-sidebarTextSubdued: var(--ctp-subtext0);
 
 	/* Table */
 	--color-tableBackground: var(--ctp-mantle);
@@ -262,7 +274,6 @@ export const BUILTIN_CSS = `:root {
 	--color-tableBorderSeparator: var(--ctp-overlay0);
 	--color-tableHeaderBackground: color-mix(in srgb, var(--ctp-base), var(--ctp-surface0) 25%);
 	--color-tableHeaderText: var(--ctp-subtext0);
-	--color-tableHeaderSubText: var(--ctp-text);
 	--color-tableRowBackgroundHighlight: var(--ctp-base);
 	--color-tableRowBackgroundHighlightText: var(--ctp-text);
 	--color-tableRowBackgroundHover: var(--ctp-base);
@@ -273,6 +284,7 @@ export const BUILTIN_CSS = `:root {
 	--color-tableTextInactive: var(--ctp-overlay1);
 	--color-tableTextLight: var(--ctp-text);
 	--color-tableTextSelected: var(--ctp-overlay2);
+	--color-tableTextItemAdded: var(--ctp-blue);
 	--color-tableTextSubdued: var(--ctp-subtext0);
 
 	/* Template/To Budget */
