@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.75
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.74...v0.1.75)
+
+### 🩹 Fixes
+
+- Build the sidecar image natively instead of under QEMU ([a2c0ddf](https://github.com/aelxxs/actual-budget-tweaks/commit/a2c0ddf))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.74
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.73...v0.1.74)
