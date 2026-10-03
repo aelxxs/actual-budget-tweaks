@@ -5,14 +5,16 @@ import { watchRoute } from "@lib/utilities/route-watcher";
 import { getValue, setValue } from "@lib/utilities/store";
 
 type HeaderColumn =
-	"date" | "account" | "payee" | "notes" | "category" | "payment" | "deposit" | "balance";
+	"date" | "account" | "payee" | "notes" | "group" | "category" | "payment" | "deposit" | "balance";
 type ResizableColumn = Exclude<HeaderColumn, "date">;
+type AmountColumn = "payment" | "deposit" | "balance";
 type StoredWidths = Partial<Record<HeaderColumn, number>>;
 
 const RESIZE_HANDLE_CLASS = "abt-col-resizer";
-const RESET_BUTTON_CLASS = "abt-col-reset-btn";
 const ROOT_TOGGLE_ATTR = "data-abt-resizable-cols";
 const ROOT_RESIZING_ATTR = "data-abt-resizing-cols";
+/** Amount columns the user has resized; the rest keep Actual's auto-measured width. */
+const ROOT_FIXED_AMOUNTS_ATTR = "data-abt-fixed-amounts";
 const ROUTE_REFRESH_DELAY_MS = 0;
 const INITIAL_ATTACH_RETRY_FRAMES = 6;
 const HEADER_COLUMNS: HeaderColumn[] = [
@@ -20,12 +22,20 @@ const HEADER_COLUMNS: HeaderColumn[] = [
 	"account",
 	"payee",
 	"notes",
+	"group",
 	"category",
 	"payment",
 	"deposit",
 	"balance",
 ];
-const RESIZABLE_COLUMNS: ResizableColumn[] = ["account", "payee", "notes", "category", "payment"];
+const RESIZABLE_COLUMNS: ResizableColumn[] = [
+	"account",
+	"payee",
+	"notes",
+	"group",
+	"category",
+	"payment",
+];
 const NON_FREE_COLUMNS = new Set<string>(["select", "cleared", "date"]);
 const MIN_COL_WIDTH = 80;
 const MAX_COL_WIDTH_SAFETY = 9999;
@@ -37,21 +47,20 @@ const NUMERIC_MAX_WIDTH: Partial<Record<ResizableColumn, number>> = {
 	deposit: 190,
 	balance: 190,
 };
-const FLEX_DEFAULT_COLUMNS = new Set<HeaderColumn>(["account", "payee", "notes", "category"]);
+const FLEX_DEFAULT_COLUMNS = new Set<HeaderColumn>([
+	"account",
+	"payee",
+	"notes",
+	"group",
+	"category",
+]);
+const AMOUNT_COLUMNS = new Set<HeaderColumn>(["payment", "deposit", "balance"]);
 const STATIC_FIXED_WIDTHS = {
 	select: 20,
 	cleared: 38,
 } as const;
-const DEFAULT_FIXED_WIDTHS: Record<
-	Exclude<HeaderColumn, "account" | "payee" | "notes" | "category">,
-	number
-> = {
-	date: 110,
-	payment: 100,
-	deposit: 100,
-	balance: 100,
-};
-const LEGACY_COLUMNS: Array<Exclude<HeaderColumn, "account">> = [
+const DEFAULT_DATE_WIDTH = 110;
+const LEGACY_COLUMNS: Array<Exclude<HeaderColumn, "account" | "group">> = [
 	"date",
 	"payee",
 	"notes",
@@ -60,7 +69,7 @@ const LEGACY_COLUMNS: Array<Exclude<HeaderColumn, "account">> = [
 	"deposit",
 	"balance",
 ];
-const LEGACY_DEFAULT_WIDTHS: Record<Exclude<HeaderColumn, "account">, number> = {
+const LEGACY_DEFAULT_WIDTHS: Record<Exclude<HeaderColumn, "account" | "group">, number> = {
 	date: 110,
 	payee: 240,
 	notes: 200,
@@ -176,6 +185,13 @@ function setFlexColumn(column: HeaderColumn): void {
 	root.style.setProperty(`--abt-col-${column}-flex`, "1 1 0px");
 }
 
+function syncFixedAmountsAttr(widths: StoredWidths): void {
+	const fixed = HEADER_COLUMNS.filter(
+		(column) => AMOUNT_COLUMNS.has(column) && typeof widths[column] === "number",
+	);
+	document.documentElement.setAttribute(ROOT_FIXED_AMOUNTS_ATTR, fixed.join(" "));
+}
+
 function applyWidths(widths: StoredWidths): void {
 	setFixedColumn("select", STATIC_FIXED_WIDTHS.select, false);
 	setFixedColumn("cleared", STATIC_FIXED_WIDTHS.cleared, false);
@@ -184,26 +200,19 @@ function applyWidths(widths: StoredWidths): void {
 		const savedWidth = widths[column];
 		if (typeof savedWidth === "number") {
 			setFixedColumn(column, savedWidth);
-			continue;
-		}
-
-		if (FLEX_DEFAULT_COLUMNS.has(column)) {
+		} else if (FLEX_DEFAULT_COLUMNS.has(column)) {
 			setFlexColumn(column);
-			continue;
-		}
-
-		if (column in DEFAULT_FIXED_WIDTHS) {
-			setFixedColumn(
-				column as keyof typeof DEFAULT_FIXED_WIDTHS,
-				DEFAULT_FIXED_WIDTHS[column as keyof typeof DEFAULT_FIXED_WIDTHS],
-			);
+		} else if (column === "date") {
+			setFixedColumn(column, DEFAULT_DATE_WIDTH);
 		}
 	}
+	syncFixedAmountsAttr(widths);
 }
 
 function updateColumnWidth(column: HeaderColumn, width: number): void {
 	cachedWidths[column] = clampWidthLive(width);
 	setFixedColumn(column, cachedWidths[column] as number, false);
+	if (AMOUNT_COLUMNS.has(column)) syncFixedAmountsAttr(cachedWidths);
 }
 
 async function persistCurrentWidths(): Promise<void> {
@@ -340,7 +349,6 @@ function uninstallRouteListeners(): void {
 
 function removeHandles(): void {
 	document.querySelectorAll(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => handle.remove());
-	document.querySelectorAll(`.${RESET_BUTTON_CLASS}`).forEach((button) => button.remove());
 }
 
 function getColumnCell(row: HTMLElement, testId: string): HTMLElement | null {
@@ -371,9 +379,15 @@ function getVisibleFreeColumns(row: HTMLElement): ResizableColumn[] {
 	return visibleColumns.filter((col): col is ResizableColumn => !NON_FREE_COLUMNS.has(col));
 }
 
+/** The last free column absorbs leftover space, so it never gets a handle or a fixed width. */
+function getAnchorColumn(row: HTMLElement): ResizableColumn | undefined {
+	const freeColumns = getVisibleFreeColumns(row);
+	return freeColumns[freeColumns.length - 1];
+}
+
 function getVisibleResizableColumns(row: HTMLElement): ResizableColumn[] {
 	const freeColumns = getVisibleFreeColumns(row);
-	const anchorColumn = freeColumns[freeColumns.length - 1];
+	const anchorColumn = getAnchorColumn(row);
 	const resizableSet = new Set<string>([...RESIZABLE_COLUMNS, "deposit", "balance"]);
 	return freeColumns.filter(
 		(col): col is ResizableColumn => col !== anchorColumn && resizableSet.has(col),
@@ -391,6 +405,10 @@ function findHeaderRow(): HTMLElement | null {
 		return ids.includes("date") && ids.some((id) => amountIds.has(id));
 	};
 
+	const header = document.querySelector<HTMLElement>("[data-testid='transaction-table-header']");
+	if (header && isHeaderLike(header)) return header;
+
+	// Older Actual versions render the header as a plain row.
 	const rows = document.querySelectorAll<HTMLElement>("[data-testid='row']");
 	for (const row of rows) {
 		if (isHeaderLike(row)) {
@@ -427,8 +445,9 @@ function getCellWidth(row: HTMLElement, testId: string): number {
 	return cell ? cell.getBoundingClientRect().width : 0;
 }
 
-function getHardMaxWidth(column: ResizableColumn): number {
-	return NUMERIC_MAX_WIDTH[column] ?? MAX_COL_WIDTH_SAFETY;
+/** Never below the current width: Actual may auto-widen amount columns past our cap. */
+function getHardMaxWidth(column: ResizableColumn, currentWidth = 0): number {
+	return Math.max(NUMERIC_MAX_WIDTH[column] ?? MAX_COL_WIDTH_SAFETY, currentWidth);
 }
 
 function getMaxResizableWidth(column: ResizableColumn): number {
@@ -453,7 +472,10 @@ function getMaxResizableWidth(column: ResizableColumn): number {
 
 	return Math.max(
 		MIN_COL_WIDTH,
-		Math.min(getHardMaxWidth(column), Math.floor(containerWidth - reserved)),
+		Math.min(
+			getHardMaxWidth(column, getCellWidth(headerRow, column)),
+			Math.floor(containerWidth - reserved),
+		),
 	);
 }
 
@@ -468,7 +490,10 @@ function getNextResizableColumn(
 	const freeColumns = getVisibleFreeColumns(headerRow);
 	const index = freeColumns.indexOf(column);
 	if (index === -1) return null;
-	return freeColumns[index + 1] ?? null;
+	const next = freeColumns[index + 1] ?? null;
+	// A flexible anchor absorbs the change itself; pairing would fix its width.
+	if (next && next === getAnchorColumn(headerRow) && FLEX_DEFAULT_COLUMNS.has(next)) return null;
+	return next;
 }
 
 function addHandle(cell: HTMLElement, column: ResizableColumn): void {
@@ -482,6 +507,11 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 	handle.addEventListener("pointerdown", (event: PointerEvent) => {
 		event.preventDefault();
 		event.stopPropagation();
+
+		// Bail before entering drag state, or nothing would ever clear it.
+		const headerRow = findHeaderRow();
+		if (!headerRow || !isVisibleColumn(headerRow, column)) return;
+
 		document.documentElement.setAttribute(ROOT_RESIZING_ATTR, "on");
 		handle.setPointerCapture(event.pointerId);
 		handle.dataset.dragging = "true";
@@ -491,11 +521,8 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 		let latestX = startX;
 		let framePending = false;
 
-		const headerRow = findHeaderRow();
-		if (!headerRow || !isVisibleColumn(headerRow, column)) return;
-
 		const nextColumn = getNextResizableColumn(column, headerRow);
-		const nextCell = nextColumn && headerRow ? getColumnCell(headerRow, nextColumn) : null;
+		const nextCell = nextColumn ? getColumnCell(headerRow, nextColumn) : null;
 		const startNextWidth = nextCell?.getBoundingClientRect().width ?? 0;
 
 		const applyDrag = () => {
@@ -507,10 +534,10 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 				const rawDelta = deltaX;
 				const minDelta = Math.max(
 					getMinWidth(column) - startWidth,
-					startNextWidth - getHardMaxWidth(nextColumn),
+					startNextWidth - getHardMaxWidth(nextColumn, startNextWidth),
 				);
 				const maxDelta = Math.min(
-					getHardMaxWidth(column) - startWidth,
+					getHardMaxWidth(column, startWidth) - startWidth,
 					startNextWidth - getMinWidth(nextColumn),
 				);
 				const delta = Math.max(minDelta, Math.min(maxDelta, rawDelta));
@@ -597,6 +624,14 @@ function attachHandles(): void {
 	}
 
 	const resizable = new Set<string>(getVisibleResizableColumns(headerRow));
+
+	// Earlier versions could save a width for a flexible anchor, leaving nothing to fill the row.
+	const anchor = getAnchorColumn(headerRow);
+	if (anchor && FLEX_DEFAULT_COLUMNS.has(anchor) && typeof cachedWidths[anchor] === "number") {
+		delete cachedWidths[anchor];
+		applyWidths(cachedWidths);
+		void persistCurrentWidths();
+	}
 
 	// Remove handles from columns that are now the anchor or hidden.
 	headerRow.querySelectorAll<HTMLElement>(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => {
@@ -693,6 +728,17 @@ function stopObserving(): void {
 	}
 }
 
+function amountColumnCss(column: AmountColumn, testIds: string[], rootSuffix = ""): string {
+	const root = `:root[${ROOT_TOGGLE_ATTR}="on"][${ROOT_FIXED_AMOUNTS_ATTR}~="${column}"]${rootSuffix}`;
+	return `
+		${testIds.map((id) => `${root} [data-testid="${id}"]`).join(",\n\t\t")} {
+			width: var(--abt-col-${column}) !important;
+			min-width: var(--abt-col-${column}-min) !important;
+			max-width: var(--abt-col-${column}-max) !important;
+			flex: var(--abt-col-${column}-flex) !important;
+		}`;
+}
+
 export const resizableTransactionColumns = defineSetting({
 	type: "checkbox",
 	label: "Resizable Transaction Columns",
@@ -710,6 +756,7 @@ export const resizableTransactionColumns = defineSetting({
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="account"],
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="payee"],
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="notes"],
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="group"],
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="category"],
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="payment"],
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="debit"],
@@ -718,6 +765,10 @@ export const resizableTransactionColumns = defineSetting({
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="balance"] {
 				position: relative;
 				padding-right: 8px;
+			}
+			/* Group isn't sortable, so Actual renders bare text without the 5px button padding the other headers get. */
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="transaction-table-header"] [data-testid="group"] span {
+				padding: 0 5px;
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="select"] {
 				width: var(--abt-col-select, 20px) !important;
@@ -754,32 +805,22 @@ export const resizableTransactionColumns = defineSetting({
 				max-width: var(--abt-col-notes-max, none) !important;
 				flex: var(--abt-col-notes-flex, 1 1 0px) !important;
 			}
+			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="group"] {
+				width: var(--abt-col-group, auto) !important;
+				min-width: var(--abt-col-group-min, 80px) !important;
+				max-width: var(--abt-col-group-max, none) !important;
+				flex: var(--abt-col-group-flex, 1 1 0px) !important;
+			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="category"] {
 				width: var(--abt-col-category, auto) !important;
 				min-width: var(--abt-col-category-min, 80px) !important;
 				max-width: var(--abt-col-category-max, none) !important;
 				flex: var(--abt-col-category-flex, 1 1 0px) !important;
 			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="payment"],
-			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="debit"] {
-				width: var(--abt-col-payment, 100px) !important;
-				min-width: var(--abt-col-payment-min, 100px) !important;
-				max-width: var(--abt-col-payment-max, 100px) !important;
-				flex: var(--abt-col-payment-flex, 0 0 100px) !important;
-			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="deposit"],
-			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="credit"] {
-				width: var(--abt-col-deposit, 100px) !important;
-				min-width: var(--abt-col-deposit-min, 100px) !important;
-				max-width: var(--abt-col-deposit-max, 100px) !important;
-				flex: var(--abt-col-deposit-flex, 0 0 100px) !important;
-			}
-			:root[${ROOT_TOGGLE_ATTR}="on"]:not(:has([data-testid="budget-table"])) [data-testid="balance"] {
-				width: var(--abt-col-balance, 100px) !important;
-				min-width: var(--abt-col-balance-min, 100px) !important;
-				max-width: var(--abt-col-balance-max, 100px) !important;
-				flex: var(--abt-col-balance-flex, 0 0 100px) !important;
-			}
+			/* Amount columns stay on Actual's auto-measured width until resized. */
+			${amountColumnCss("payment", ["payment", "debit"])}
+			${amountColumnCss("deposit", ["deposit", "credit"])}
+			${amountColumnCss("balance", ["balance"], ':not(:has([data-testid="budget-table"]))')}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="cleared"] {
 				width: var(--abt-col-cleared, 38px) !important;
 				min-width: var(--abt-col-cleared-min, 38px) !important;
@@ -845,25 +886,6 @@ export const resizableTransactionColumns = defineSetting({
 				box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-sidebarItemAccentSelected) 22%, transparent);
 				transition: none;
 			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESET_BUTTON_CLASS} {
-				position: absolute;
-				top: -40px;
-				right: 385px;
-				height: 22px;
-				width: 22px;
-				padding: 0;
-				border: 0;
-				border-radius: 0;
-				background: transparent;
-				color: var(--color-buttonNormalText);
-				font-size: 14px;
-				line-height: 1;
-				cursor: pointer;
-				z-index: 40;
-			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESET_BUTTON_CLASS}:hover {
-				color: var(--color-buttonNormalTextHover);
-			}
 		`,
 	init: async (ctx) => {
 		stopObserving();
@@ -883,6 +905,7 @@ export const resizableTransactionColumns = defineSetting({
 			removeHandles();
 			document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
 			document.documentElement.removeAttribute(ROOT_RESIZING_ATTR);
+			document.documentElement.removeAttribute(ROOT_FIXED_AMOUNTS_ATTR);
 			storagePrefixKey = "";
 			currentStorageKey = "";
 		};
