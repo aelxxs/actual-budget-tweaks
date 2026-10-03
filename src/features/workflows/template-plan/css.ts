@@ -1,206 +1,10 @@
 export const CSS = `
-	/* ── Priority tab ──────────────────────────────────────────────── */
-	.abt-tab-prio-summary {
-		margin: 8px 12px 4px;
-		padding: 8px 10px;
-		border-radius: 4px;
-		background: rgba(255, 255, 255, 0.04);
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 2px 8px;
-		font-variant-numeric: tabular-nums;
-		font-size: 11px;
-	}
-	.abt-tab-prio-summary-label {
-		opacity: 0.7;
-	}
-	.abt-tab-prio-summary-value {
-		text-align: right;
-		font-weight: 600;
-	}
-	.abt-tab-prio-summary-value[data-status="gap"] {
-		color: var(--color-warningText, #e0c590);
-	}
-	.abt-tab-prio-summary-value[data-status="ok"] {
-		color: var(--color-pageTextPositive, #4caf50);
-	}
-	.abt-tab-prio-watermark {
-		grid-column: 1 / -1;
-		margin-top: 4px;
-		padding-top: 4px;
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
-		opacity: 0.85;
-		font-size: 11px;
-	}
-	.abt-tab-prio-watermark[data-status="full"] {
-		color: var(--color-pageTextPositive, #4caf50);
-	}
-	.abt-tab-prio-watermark[data-status="partial"] {
-		color: var(--color-warningText, #e0c590);
-	}
-	.abt-tab-prio-watermark[data-status="none"] {
-		color: var(--color-errorText, #e57373);
-	}
-	.abt-tab-prio-mode {
-		grid-column: 1 / -1;
-		opacity: 0.55;
-		font-size: 10px;
-	}
-
-	.abt-tab-prio-tier {
-		padding: 2px 0;
-	}
-
-	.abt-tab-prio-tier-header {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		padding: 6px 12px;
-		font-size: 11px;
-		appearance: none;
-		background: transparent;
-		border: none;
-		color: inherit;
-		font: inherit;
-		font-size: 11px;
-		width: 100%;
-		text-align: left;
-		cursor: pointer;
-	}
-	.abt-tab-prio-tier-header:hover {
-		background: rgba(255, 255, 255, 0.04);
-	}
-	.abt-tab-prio-tier-header:focus-visible {
-		outline: 1px solid var(--color-pageTextPositive, #4caf50);
-		outline-offset: -1px;
-	}
-
-	.abt-tab-prio-chevron {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 12px;
-		height: 12px;
-		flex-shrink: 0;
-		opacity: 0.72;
-		transition: transform 150ms ease;
-	}
-	.abt-tab-prio-tier:not([data-collapsed="true"]) .abt-tab-prio-chevron {
-		transform: rotate(90deg);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.abt-tab-prio-chevron {
-			transition: none;
-		}
-	}
-
-	.abt-tab-prio-tier-meta {
-		opacity: 0.5;
-		font-size: 10px;
-		font-weight: 400;
-		white-space: nowrap;
-	}
-
-	.abt-tab-prio-tier[data-collapsed="true"] .abt-tab-prio-tier-rows {
-		display: none;
-	}
-
-	.abt-tab-prio-badge {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		font-size: 10px;
-		font-weight: 700;
-		line-height: 1;
-		flex-shrink: 0;
-	}
-	.abt-tab-prio-badge[data-status="full"] {
-		background: rgba(76, 175, 80, 0.22);
-		color: var(--color-pageTextPositive, #4caf50);
-	}
-	.abt-tab-prio-badge[data-status="partial"] {
-		background: rgba(224, 197, 144, 0.22);
-		color: var(--color-warningText, #e0c590);
-	}
-	.abt-tab-prio-badge[data-status="none"] {
-		background: rgba(229, 115, 115, 0.18);
-		color: var(--color-errorText, #e57373);
-		opacity: 0.85;
-	}
-
-	.abt-tab-prio-tier-label {
-		flex: 1;
-		min-width: 0;
-		font-weight: 600;
-		letter-spacing: 0.3px;
-	}
-
-	.abt-tab-prio-tier-amount {
-		font-variant-numeric: tabular-nums;
-		font-weight: 600;
-		white-space: nowrap;
-	}
-
-	.abt-tab-prio-tier[data-status="none"] .abt-tab-prio-tier-label,
-	.abt-tab-prio-tier[data-status="none"] .abt-tab-prio-tier-amount {
-		opacity: 0.55;
-	}
-
-	.abt-tab-prio-row {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		padding: 2px 12px 2px 28px;
-		font-size: 11px;
-	}
-
-	.abt-tab-prio-row-name {
-		flex: 1;
-		min-width: 0;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.abt-tab-prio-row-meta {
-		opacity: 0.5;
-		font-size: 10px;
-		margin-left: 4px;
-		font-style: italic;
-	}
-
-	.abt-tab-prio-row-amount {
-		font-variant-numeric: tabular-nums;
-		white-space: nowrap;
-		font-size: 10.5px;
-	}
-
-	.abt-tab-prio-row[data-status="partial"] .abt-tab-prio-row-amount {
-		color: var(--color-warningText, #e0c590);
-	}
-
-	.abt-tab-prio-row[data-status="none"] {
-		opacity: 0.5;
-	}
-
-	.abt-tab-prio-tier[data-status="none"] .abt-tab-prio-row {
-		opacity: 0.5;
-	}
-
-	.abt-tab-prio-tier[data-status="full"] .abt-tab-prio-tier-amount,
-	.abt-tab-prio-row[data-status="full"] .abt-tab-prio-row-amount {
-		color: var(--color-pageTextPositive, #4caf50);
-	}
-
 	/* ── Overview tab ──────────────────────────────────────────────── */
 	.abt-tab-overview-actions {
 		display: flex;
 		gap: 6px;
 		padding: 8px 12px 6px;
+		padding-block: 0px;
 	}
 
 	.abt-tab-overview-apply-btn {
@@ -257,108 +61,6 @@ export const CSS = `
 	}
 	.abt-tab-overview-load-btn:hover { opacity: 1; }
 
-	/* ── Collapsible card section (cs = card section) ───────────── */
-	.abt-tab-overview-cs {
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.07));
-	}
-
-	/* Section header button (sh = section header) */
-	.abt-tab-overview-sh {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		width: 100%;
-		padding: 7px 12px;
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		font: inherit;
-		color: #a78bfa;
-		text-align: left;
-		transition: background 0.1s;
-	}
-	.abt-tab-overview-sh:hover {
-		background: rgba(124, 58, 237, 0.07);
-	}
-	.abt-tab-overview-sh[data-status="error"] {
-		color: var(--color-errorText, #e57373);
-	}
-
-	/* Section title */
-	.abt-tab-overview-st {
-		font-size: 10.5px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.7px;
-		flex: 1;
-		min-width: 0;
-	}
-
-	/* Count label next to title (e.g. "(1)") */
-	.abt-tab-overview-st-count {
-		font-size: 10px;
-		opacity: 0.7;
-		font-weight: 400;
-		letter-spacing: 0;
-		text-transform: none;
-	}
-
-	/* Funded tally (e.g. "12/17") */
-	.abt-tab-overview-st-tally {
-		font-size: 10px;
-		opacity: 0.6;
-		font-variant-numeric: tabular-nums;
-		letter-spacing: 0;
-		text-transform: none;
-	}
-
-	/* Small inline status badge in section header */
-	.abt-tab-overview-st-badge {
-		display: inline-flex;
-		align-items: center;
-		padding: 1px 6px;
-		border-radius: 999px;
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.2px;
-		text-transform: none;
-	}
-	.abt-tab-overview-st-badge[data-status="warn"] {
-		background: rgba(224, 197, 144, 0.18);
-		color: var(--color-warningText, #e0c590);
-	}
-	.abt-tab-overview-st-badge[data-status="ok"] {
-		background: rgba(76, 175, 80, 0.15);
-		color: var(--color-pageTextPositive, #4caf50);
-	}
-	.abt-tab-overview-st-badge[data-status="over"] {
-		background: rgba(229, 115, 115, 0.18);
-		color: var(--color-errorText, #e57373);
-	}
-
-	/* Chevron icon */
-	.abt-tab-overview-chevron {
-		flex-shrink: 0;
-		opacity: 0.65;
-		transition: transform 150ms ease;
-	}
-	.abt-tab-overview-chevron[data-open="false"] {
-		transform: rotate(-90deg);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.abt-tab-overview-chevron { transition: none; }
-	}
-
-	/* Card body */
-	.abt-tab-overview-card {
-		margin: 0 10px 10px;
-		padding: 10px;
-		border-radius: 6px;
-		border: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.08));
-		background: rgba(255, 255, 255, 0.03);
-	}
-
 	/* ── Card hero (ring + available amount) ────────────────────── */
 	.abt-tab-overview-card-hero {
 		display: flex;
@@ -408,7 +110,7 @@ export const CSS = `
 		line-height: 1.2;
 	}
 	.abt-tab-overview-hero-amount[data-sign="neg"] { color: var(--color-errorText, #e57373); }
-	.abt-tab-overview-hero-amount[data-sign="pos"] { color: var(--color-pageTextPositive, #4caf50); }
+	.abt-tab-overview-hero-amount[data-sign="pos"] { color: var(--color-budgetNumberPositive, #4caf50); }
 
 	/* Card-level progress bar */
 	.abt-tab-overview-card-bar-wrap {
@@ -477,23 +179,7 @@ export const CSS = `
 		font-weight: 700;
 	}
 	.abt-tab-overview-bdr-avail[data-sign="neg"] { color: var(--color-errorText, #e57373); }
-	.abt-tab-overview-bdr-avail[data-sign="pos"] { color: var(--color-pageTextPositive, #4caf50); }
-
-	/* Callout banner inside a card */
-	.abt-tab-overview-callout {
-		margin-top: 8px;
-		padding: 5px 8px;
-		border-radius: 4px;
-		font-size: 10.5px;
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
-	.abt-tab-overview-callout[data-type="success"] {
-		background: rgba(76, 175, 80, 0.1);
-		border: 1px solid rgba(76, 175, 80, 0.18);
-		color: var(--color-pageTextPositive, #4caf50);
-	}
+	.abt-tab-overview-bdr-avail[data-sign="pos"] { color: var(--color-budgetNumberPositive, #4caf50); }
 
 	/* ── Spending Pace rows ──────────────────────────────────────── */
 	.abt-tab-overview-pace-row {
@@ -559,7 +245,7 @@ export const CSS = `
 		font-variant-numeric: tabular-nums;
 		line-height: 1;
 	}
-	.abt-tab-overview-next-pct[data-sign="pos"]  { color: var(--color-pageTextPositive, #4caf50); }
+	.abt-tab-overview-next-pct[data-sign="pos"]  { color: var(--color-budgetNumberPositive, #4caf50); }
 	.abt-tab-overview-next-pct[data-sign="warn"] { color: var(--color-warningText, #e0c590); }
 
 	.abt-tab-overview-next-sub {
@@ -578,7 +264,7 @@ export const CSS = `
 	}
 	.abt-tab-overview-pill[data-status="ok"]   {
 		background: rgba(76, 175, 80, 0.15);
-		color: var(--color-pageTextPositive, #4caf50);
+		color: var(--color-budgetNumberPositive, #4caf50);
 	}
 	.abt-tab-overview-pill[data-status="warn"] {
 		background: rgba(229, 115, 115, 0.15);
@@ -643,7 +329,7 @@ export const CSS = `
 	.abt-tab-overview-next-breakdown-val {
 		font-variant-numeric: tabular-nums;
 		font-weight: 700;
-		color: var(--color-pageTextPositive, #4caf50);
+		color: var(--color-budgetNumberPositive, #4caf50);
 		white-space: nowrap;
 		flex-shrink: 0;
 	}
@@ -678,7 +364,7 @@ export const CSS = `
 	}
 	.abt-tab-overview-chart-delta[data-sign="pos"] {
 		background: rgba(76, 175, 80, 0.15);
-		color: var(--color-pageTextPositive, #4caf50);
+		color: var(--color-budgetNumberPositive, #4caf50);
 	}
 
 	.abt-tab-overview-chart-avg {
@@ -688,64 +374,7 @@ export const CSS = `
 		white-space: nowrap;
 	}
 
-	/* ── Detail rows (overspent / goals) ─────────────────────────── */
-	.abt-tab-overview-detail-row {
-		padding: 2px 0 6px;
-	}
-	.abt-tab-overview-detail-row + .abt-tab-overview-detail-row {
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.05));
-		padding-top: 6px;
-	}
-
-	.abt-tab-overview-detail-header {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		font-size: 11px;
-		margin-bottom: 4px;
-	}
-
-	.abt-tab-overview-row-name {
-		flex: 1;
-		min-width: 0;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.abt-tab-overview-row-meta {
-		opacity: 0.4;
-		font-size: 10px;
-		margin-left: 5px;
-		font-style: italic;
-	}
-
-	.abt-tab-overview-row-value {
-		font-variant-numeric: tabular-nums;
-		font-weight: 600;
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-	.abt-tab-overview-row-value[data-sign="neg"] { color: var(--color-errorText, #e57373); }
-	.abt-tab-overview-row-value[data-sign="pos"] { color: var(--color-pageTextPositive, #4caf50); }
-
-	.abt-tab-overview-all-funded-row {
-		font-size: 11px;
-		color: var(--color-pageTextPositive, #4caf50);
-		opacity: 0.9;
-	}
-
 	/* ── Scheduled transaction rows ──────────────────────────────── */
-	.abt-tab-overview-sched-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 3px 0;
-		font-size: 11px;
-	}
-	.abt-tab-overview-sched-row + .abt-tab-overview-sched-row {
-		border-top: 1px solid var(--color-menuBorder, rgba(255, 255, 255, 0.05));
-	}
 
 	.abt-tab-overview-sched-dot {
 		width: 6px;
@@ -763,14 +392,6 @@ export const CSS = `
 		font-size: 10.5px;
 	}
 
-	.abt-tab-overview-sched-name {
-		flex: 1;
-		min-width: 0;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
 	.abt-tab-overview-empty-row {
 		font-size: 11px;
 		opacity: 0.4;
@@ -783,171 +404,14 @@ export const CSS = `
 		padding: 6px 0;
 	}
 
-	.abt-tab-notice {
-		margin: 8px 12px;
-		padding: 6px 8px;
-		border-radius: 4px;
-		font-size: 11px;
-		background: rgba(255, 200, 100, 0.12);
-		color: var(--color-warningText, #e0c590);
-	}
-	.abt-tab-notice[data-type="error"] {
-		background: rgba(255, 100, 100, 0.14);
-		color: var(--color-errorText, #f08383);
+	.abt-tab-pad {
+		padding: 8px 12px;
 	}
 
 	.abt-tab-empty {
 		padding: 16px 14px;
 		text-align: center;
 		opacity: 0.6;
-	}
-
-	.abt-tab-breakdown-priority {
-		margin: 8px 12px 10px;
-		padding: 8px 0;
-		border: 1px solid var(--color-tableBorder, var(--color-menuBorder, rgba(255, 255, 255, 0.08)));
-		border-radius: 6px;
-		background: var(--color-pageBackground);
-	}
-
-	.abt-tab-breakdown-priority-title {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		padding: 0 10px 6px;
-		font-size: 10px;
-		text-transform: uppercase;
-		letter-spacing: 0.6px;
-		opacity: 0.72;
-		font-weight: 600;
-	}
-
-	.abt-tab-breakdown-priority-total {
-		margin-left: auto;
-		font-variant-numeric: tabular-nums;
-		text-transform: none;
-		letter-spacing: 0;
-		opacity: 0.9;
-	}
-
-	.abt-tab-breakdown-priority-tier {
-		padding: 4px 0;
-	}
-
-	.abt-tab-breakdown-priority-tier + .abt-tab-breakdown-priority-tier {
-		border-top: 1px solid var(--color-tableBorder, rgba(255, 255, 255, 0.06));
-	}
-
-	.abt-tab-breakdown-priority-tier-header,
-	.abt-tab-breakdown-priority-row {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-	}
-
-	.abt-tab-breakdown-priority-tier-header {
-		padding: 2px 10px;
-	}
-
-	.abt-tab-breakdown-priority-tier-label {
-		flex: 1;
-		min-width: 0;
-		font-weight: 600;
-	}
-
-	.abt-tab-breakdown-priority-tier-amount,
-	.abt-tab-breakdown-priority-row-amount {
-		font-variant-numeric: tabular-nums;
-		white-space: nowrap;
-	}
-
-	.abt-tab-breakdown-priority-tier-amount {
-		font-weight: 600;
-	}
-
-	.abt-tab-breakdown-priority-rows {
-		padding-top: 2px;
-	}
-
-	.abt-tab-breakdown-priority-row {
-		padding: 2px 10px 2px 32px;
-		font-size: 11px;
-	}
-
-	.abt-tab-breakdown-priority-row-name {
-		flex: 1;
-		min-width: 0;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		opacity: 0.82;
-	}
-
-	.abt-tab-breakdown-priority-row-amount {
-		font-size: 10.5px;
-	}
-
-	.abt-tab-breakdown-priority-tier[data-status="full"] .abt-tab-breakdown-priority-tier-amount,
-	.abt-tab-breakdown-priority-row[data-status="full"] .abt-tab-breakdown-priority-row-amount {
-		color: var(--color-pageTextPositive, #4caf50);
-	}
-
-	.abt-tab-breakdown-priority-tier[data-status="partial"] .abt-tab-breakdown-priority-tier-amount,
-	.abt-tab-breakdown-priority-row[data-status="partial"] .abt-tab-breakdown-priority-row-amount {
-		color: var(--color-warningText, #e0c590);
-	}
-
-	.abt-tab-group {
-		padding: 4px 0;
-		background: var(--color-pageBackground);
-		border: var(--border);
-		border-radius: var(--border-radius);
-		margin: 8px 12px 10px;
-	}
-
-	.abt-tab-group-name {
-		padding: 6px 12px 2px;
-		font-size: 10px;
-		text-transform: uppercase;
-		letter-spacing: 0.6px;
-		opacity: 0.55;
-		font-weight: 600;
-	}
-
-	.abt-tab-row {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		padding: 4px 12px;
-	}
-
-	.abt-tab-row-name {
-		flex: 1;
-		min-width: 0;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.abt-tab-row-delta {
-		font-variant-numeric: tabular-nums;
-		font-weight: 600;
-		white-space: nowrap;
-	}
-
-	.abt-tab-row-delta[data-sign="pos"] {
-		color: var(--color-pageTextPositive, #4caf50);
-	}
-	.abt-tab-row-delta[data-sign="neg"] {
-		color: var(--color-errorText, #e57373);
-	}
-	.abt-tab-row-delta[data-sign="zero"] {
-		opacity: 0.5;
-	}
-
-	.abt-tab-row[data-changed="false"] .abt-tab-row-name,
-	.abt-tab-row[data-changed="false"] .abt-tab-row-delta {
-		opacity: 0.45;
 	}
 
 	.abt-tab-footer {
