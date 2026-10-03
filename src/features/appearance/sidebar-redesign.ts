@@ -2,6 +2,8 @@ import { defineSetting } from "@features/types";
 import { icon } from "@lib/icons";
 import { query } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { findUncategorizedButton } from "@lib/utilities/native-ui";
+import { NATIVE_ROOT_ATTR } from "@features/workflows/sidebar/lib/data";
 
 let uncatInterval: ReturnType<typeof setInterval> | null = null;
 let stopWatchingUncatButton: (() => void) | null = null;
@@ -62,26 +64,13 @@ async function updateUncategorizedBadges() {
 	}
 }
 
-let uncatButtonRef: WeakRef<HTMLButtonElement> | null = null;
-
-function findUncatButton(): HTMLButtonElement | null {
-	const cached = uncatButtonRef?.deref();
-	if (cached?.isConnected) return cached;
-	for (const btn of document.querySelectorAll<HTMLButtonElement>("button")) {
-		if (btn.textContent?.includes("uncategorized")) {
-			uncatButtonRef = new WeakRef(btn);
-			return btn;
-		}
-	}
-	uncatButtonRef = null;
-	return null;
-}
-
 function watchUncatButton() {
 	if (stopWatchingUncatButton) return;
 	stopWatchingUncatButton = watchDom(
 		() => {
-			const btn = findUncatButton();
+			// The live sidebar hides the native one these badges decorate.
+			if (document.querySelector(`[${NATIVE_ROOT_ATTR}]`)) return;
+			const btn = findUncategorizedButton();
 			const text = btn?.textContent?.trim() ?? "";
 			if (text !== lastUncatText) {
 				lastUncatText = text;

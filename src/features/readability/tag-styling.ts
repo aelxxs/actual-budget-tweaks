@@ -62,6 +62,7 @@ function readNativeBg(el: HTMLElement): string {
 }
 
 function applyTagColors(el: HTMLElement) {
+	el.dataset.abtTagClass = el.className;
 	const bg = readNativeBg(el);
 	const rgb = parseRgb(bg);
 	if (rgb) {
@@ -73,6 +74,12 @@ function applyTagColors(el: HTMLElement) {
 }
 
 function refreshTagColors(el: HTMLElement) {
+	// Re-reading the native color forces a style recalc per tag, so only do it when
+	// the emotion class (which carries the color) changed or React dropped our override.
+	if (el.className === el.dataset.abtTagClass && el.style.getPropertyValue("background-color")) {
+		return;
+	}
+	el.dataset.abtTagClass = el.className;
 	const bg = readNativeBg(el);
 	const rgb = parseRgb(bg);
 	if (!rgb) return;

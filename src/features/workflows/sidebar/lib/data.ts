@@ -1,5 +1,6 @@
 import type { Account, Transaction } from "@lib/types/actual-schema";
 import { dispatch, query, send } from "@lib/utilities/actual-api";
+import { findUncategorizedButton } from "@lib/utilities/native-ui";
 
 export type SyncStatus = "synced" | "syncing" | "error" | "manual";
 
@@ -175,33 +176,46 @@ function collectDotStateColors(): Map<string, string> {
 	return colors;
 }
 
+// Emotion class names hash their styles, so a class's color never changes: cache
+// the map and rescan stylesheets only when an unseen class shows up.
+let dotStateColors = new Map<string, string>();
+/** Class sets with no color rule even after a rescan, so they don't trigger rescans forever. */
+const unresolvedDotClasses = new Set<string>();
+
 // Classic sidebar: each row's `.dot` gets a per-state emotion class (e.g.
 // css-1c4utta) rather than an inline style, and its *computed* color can't be
 // trusted either — when the account is the active route, a higher-priority
 // rule overrides the rendered color without touching `.dot`'s classList. So
 // this reads the declared rule for whichever class is actually in the
 // classList, which stays correct regardless of selection.
-function isClassicDotPending(row: HTMLElement, dotStateColors: Map<string, string>): boolean {
+function isClassicDotPending(row: HTMLElement, pass: { rescanned: boolean }): boolean {
 	const dot = row.querySelector<HTMLElement>(".dot");
 	if (!dot) return false;
-	const ownColor = [...dot.classList]
-		.filter((cls) => cls !== "dot")
-		.map((cls) => dotStateColors.get(cls))
-		.find((color) => color !== undefined);
+	const classes = [...dot.classList].filter((cls) => cls !== "dot");
+	const lookup = () =>
+		classes.map((cls) => dotStateColors.get(cls)).find((color) => color !== undefined);
+
+	let ownColor = lookup();
+	const signature = classes.join(" ");
+	if (ownColor === undefined && !pass.rescanned && !unresolvedDotClasses.has(signature)) {
+		pass.rescanned = true;
+		dotStateColors = collectDotStateColors();
+		ownColor = lookup();
+		if (ownColor === undefined) unresolvedDotClasses.add(signature);
+	}
 	return ownColor === PENDING_DOT_VAR;
 }
 
 // Reads which accounts the hidden native sidebar shows as syncing.
 export function readNativeSyncingAccountIds(): Set<string> {
-	let dotStateColors: Map<string, string> | null = null;
+	const pass = { rescanned: false };
 	const ids = new Set<string>();
 	for (const [id, { row }] of readNativeAccountRows()) {
 		if (row.querySelector(`[title="${REDESIGN_SYNCING_TITLE}"]`)) {
 			ids.add(id);
 			continue;
 		}
-		dotStateColors ??= collectDotStateColors();
-		if (isClassicDotPending(row, dotStateColors)) ids.add(id);
+		if (isClassicDotPending(row, pass)) ids.add(id);
 	}
 	return ids;
 }
@@ -220,20 +234,7 @@ export function readNativeAccountBalanceTexts(): Map<string, string> {
 // comparing this against its last-seen value (see Sidebar.svelte) is the
 // only way to detect it outside of a bank sync completing.
 export function readNativeUncategorizedButtonText(): string {
-	// The button is a direct child of the top bar, the closest ancestor holding
-	// both test-id'd buttons; the other controls there sit in wrapper divs.
-	const notifications = document.querySelector('[data-testid="notifications-button"]');
-	const help = document.querySelector('[data-testid="help-menu-button"]');
-	if (notifications && help) {
-		let bar = notifications.parentElement;
-		while (bar && !bar.contains(help)) bar = bar.parentElement;
-		return bar?.querySelector<HTMLButtonElement>(":scope > button")?.textContent?.trim() ?? "";
-	}
-
-	for (const btn of document.querySelectorAll<HTMLButtonElement>("button")) {
-		if (btn.textContent?.includes("uncategorized")) return btn.textContent.trim();
-	}
-	return "";
+	return findUncategorizedButton()?.textContent?.trim() ?? "";
 }
 
 // Re-reads uncategorized counts for just these accounts — same narrow-
