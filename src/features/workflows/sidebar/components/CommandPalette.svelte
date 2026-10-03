@@ -40,12 +40,12 @@
 	import type { SidebarAccount } from "../lib/data";
 	import { syncAllAccounts } from "../lib/data";
 	import StatusIcon from "./StatusIcon.svelte";
+	import { DEFAULT_THEME } from "@features/theme/defaults";
 
-	// Matches theme.ts's defineSetting context ("catppuccin-palette" /
-	// "mocha") — this palette applies/persists the same setting the full
-	// ThemeCustomizer settings panel reads from, so they stay in sync.
+	// Matches theme.ts's setting key — this palette applies/persists the same
+	// setting the full ThemeCustomizer settings panel reads from, so they stay in sync.
 	const THEME_SETTING_KEY = "catppuccin-palette";
-	const DEFAULT_THEME_KEY = "mocha";
+	const DEFAULT_THEME_KEY = DEFAULT_THEME;
 
 	interface CustomReport {
 		id: string;

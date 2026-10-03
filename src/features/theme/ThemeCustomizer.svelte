@@ -5,6 +5,7 @@
 	import { mountToNode, mountToPanelBody } from "@lib/utilities/svelte";
 	import { onDestroy, onMount } from "svelte";
 	import { sidepanel } from "../core/side-panel";
+	import { DEFAULT_THEME } from "./defaults";
 	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
 	import {
 		applyPalette,
@@ -44,7 +45,7 @@
 	let themeFilter = $state("all");
 
 	let autoSwitch = $state(false);
-	let autoDarkKey = $state("mocha");
+	let autoDarkKey = $state(DEFAULT_THEME);
 	let autoLightKey = $state("latte");
 	let systemIsDark = $state(window.matchMedia("(prefers-color-scheme: dark)").matches);
 
@@ -328,7 +329,7 @@
 		await loadUserThemes();
 
 		autoSwitch = await getValue<boolean>("theme-auto-switch", false);
-		autoDarkKey = (await getValue<string>("theme-auto-dark", "mocha")) as string;
+		autoDarkKey = (await getValue<string>("theme-auto-dark", DEFAULT_THEME)) as string;
 		autoLightKey = (await getValue<string>("theme-auto-light", "latte")) as string;
 
 		if (autoSwitch) {
