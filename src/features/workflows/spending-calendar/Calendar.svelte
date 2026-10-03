@@ -848,8 +848,7 @@
 		gap: 2px;
 		overflow: hidden;
 		transition: background 0.1s;
-		/* Opaque on purpose: the Background Pattern shows around the grid, not through the cells. */
-		background: color-mix(in srgb, var(--color-pageText) 2%, var(--color-pageBackground));
+		background: var(--color-tableBackground);
 	}
 
 	.cal-cell.is-clickable {
@@ -861,13 +860,13 @@
 		background: color-mix(
 			in srgb,
 			var(--color-sidebarItemAccentSelected) 6%,
-			var(--color-pageBackground)
+			var(--color-tableBackground)
 		);
 	}
 
-	/* Recreates the old 50% cell opacity while staying opaque: half tint, half-strength border, faded contents. */
+	/* Half step between table and page, matching the budget table's other-month columns. */
 	.cal-cell.is-muted {
-		background: color-mix(in srgb, var(--color-pageText) 1%, var(--color-pageBackground));
+		background: color-mix(in srgb, var(--color-tableBackground), var(--color-pageBackground));
 		border-color: color-mix(in srgb, var(--color-tableBorder) 50%, var(--color-pageBackground));
 	}
 	.cal-cell.is-muted > * {
