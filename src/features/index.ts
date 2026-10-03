@@ -22,6 +22,7 @@ import { alternatingTransactionRows } from "./readability/alternating-transactio
 import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetPageBorders } from "./readability/budget-page-borders";
 import { budgetTotalsLabelStyling } from "./readability/budget-totals-label-styling";
+import { balancePills } from "./readability/balance-pills";
 import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
@@ -37,6 +38,7 @@ import { themeLoader } from "./theme/themeLoader";
 import type { Setting } from "./types";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { budgetViewOptions } from "./workflows/budget-view-options";
+import { goalFunding } from "./workflows/goal-funding";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
@@ -55,6 +57,7 @@ const readability = [
 	alternatingTransactionRows,
 	budgetCardStyling,
 	categoryProgress,
+	balancePills,
 	colorNegativeBalances,
 	colorTransactions,
 	dimReconciled,
@@ -81,6 +84,7 @@ const appearance = [
 
 const workflows = [
 	categoryTemplateInsights,
+	goalFunding,
 	templatePlan,
 	nextMonthCoverageMethod,
 	spendingCalendar,

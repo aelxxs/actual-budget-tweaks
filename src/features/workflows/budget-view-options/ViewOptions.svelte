@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { budgetTableRowHeight } from "@features/layout/budget-table-row-height";
 	import { ROW_HEIGHT_OPTIONS } from "@features/layout/budget-table-row-height/options";
+	import { balancePills } from "@features/readability/balance-pills";
 	import { categoryProgress } from "@features/readability/category-progress";
 	import { applySettingChange } from "@features/runtime";
 	import type { CheckboxSetting } from "@features/types";
@@ -14,6 +15,7 @@
 	const toggles: { setting: CheckboxSetting<any>; label: string }[] = [
 		{ setting: categoryTemplateInsights, label: "Template insight bars" },
 		{ setting: categoryProgress, label: "Progress rings" },
+		{ setting: balancePills, label: "Balance status pills" },
 	];
 
 	const rowHeightCtx = budgetTableRowHeight.context;

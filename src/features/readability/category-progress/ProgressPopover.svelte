@@ -8,12 +8,24 @@
 		budgeted: number;
 		spent: number;
 		balance: number;
-		goal: number;
+		goalShortfall: number;
+		/** Goal Funding is on, so the balance menu can fund the shortfall. */
+		canFund: boolean;
 		avgSpent: number | null;
 		daysLeft: number | null;
 	};
 
-	const { name, month, budgeted, spent, balance, goal, avgSpent, daysLeft }: Props = $props();
+	const {
+		name,
+		month,
+		budgeted,
+		spent,
+		balance,
+		goalShortfall,
+		canFund,
+		avgSpent,
+		daysLeft,
+	}: Props = $props();
 
 	const ratio = $derived(budgeted > 0 ? spent / budgeted : spent > 0 ? Infinity : 0);
 	const fillPct = $derived(Math.min(100, Math.max(0, (Number.isFinite(ratio) ? ratio : 1) * 100)));
@@ -52,9 +64,6 @@
 					: "under",
 	);
 
-	const goalFundedPct = $derived(
-		goal > 0 ? Math.min(100, Math.max(0, (budgeted / goal) * 100)) : 0,
-	);
 	const perDay = $derived(
 		daysLeft && daysLeft > 0 && balance > 0 ? Math.floor(balance / daysLeft) : null,
 	);
@@ -110,15 +119,11 @@
 		{/if}
 	</div>
 
-	{#if goal > 0}
-		<div class="cp__goal">
-			<div class="cp__goal-head">
-				<span class="cp__label">Goal</span>
-				<span class="cp__value abt-privacy-number">{fmtMoney(budgeted)} / {fmtMoney(goal)}</span>
-			</div>
-			<div class="cp__bar cp__bar--goal">
-				<div class="cp__bar-fill" style="width: {goalFundedPct}%"></div>
-			</div>
+	<!-- Funding lives in the balance menu (Goal Funding); this only points there. -->
+	{#if goalShortfall > 0}
+		<div class="cp__goal-hint">
+			<span class="abt-privacy-number">{fmtMoney(goalShortfall)}</span> short of goal{#if canFund}
+				· click balance to fund{/if}
 		</div>
 	{/if}
 </div>
@@ -229,21 +234,11 @@
 		color: var(--color-warningText);
 	}
 
-	.cp__goal {
+	.cp__goal-hint {
 		margin-top: 8px;
 		padding-top: 8px;
 		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
-	}
-
-	.cp__goal-head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 4px;
-	}
-
-	.cp__bar--goal .cp__bar-fill {
-		background: var(--color-formInputBorderSelected);
+		font-size: 11px;
+		color: var(--color-warningText);
 	}
 </style>

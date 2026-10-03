@@ -1,18 +1,24 @@
 import { defineSetting } from "@features/types";
+import { goalFunding } from "@features/workflows/goal-funding";
 import { icon } from "@lib/icons";
-import { send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
+import { getValue } from "@lib/utilities/store";
 import { mountToNode } from "@lib/utilities/svelte";
+import {
+	BALANCE_CELL_RE,
+	BALANCE_WATCH_OPTIONS,
+	cellValue,
+	clearCellCache,
+	fetchCells,
+	type CatCells,
+} from "./cells";
 import ProgressPopover from "./ProgressPopover.svelte";
 
 const RING_CLASS = "abt-catprog-ring";
 const POPOVER_CLASS = "abt-catprog-popover";
-const CELL_RE =
-	/^(budget\d{6})!leftover-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
-const CACHE_MS = 15000;
 const HOVER_DELAY_MS = 150;
 const CLOSE_DELAY_MS = 150;
 const AVG_MONTHS = 3;
@@ -84,66 +90,15 @@ export const categoryProgress = defineSetting({
 	css: () => CSS,
 	init: () => {
 		loadCurrency();
-		const unwatch = watchDom(scanAndDecorate);
+		const unwatch = watchDom(scanAndDecorate, document.body, BALANCE_WATCH_OPTIONS);
 		return () => {
 			unwatch();
 			undecorateAll();
 			closePopover(true);
-			cellCache.clear();
+			clearCellCache();
 		};
 	},
 });
-
-// ── Cell data ───────────────────────────────────────────────────
-
-interface CatCells {
-	budgeted: number;
-	spent: number; // positive cents
-	balance: number;
-	goal: number;
-	fetchedAt: number;
-}
-
-const cellCache = new Map<string, CatCells>();
-const inflight = new Map<string, Promise<CatCells>>();
-
-async function cellValue(sheet: string, name: string): Promise<number> {
-	try {
-		const res = await send("get-cell", { sheetName: sheet, name });
-		return res && typeof res.value === "number" ? res.value : 0;
-	} catch {
-		return 0;
-	}
-}
-
-function fetchCells(sheet: string, catId: string, force?: boolean): Promise<CatCells> {
-	const key = `${sheet}:${catId}`;
-	const cached = cellCache.get(key);
-	if (!force && cached && Date.now() - cached.fetchedAt < CACHE_MS) return Promise.resolve(cached);
-	const pending = inflight.get(key);
-	if (!force && pending) return pending;
-
-	const promise = (async () => {
-		const [budgeted, sumAmount, balance, goal] = await Promise.all([
-			cellValue(sheet, `budget-${catId}`),
-			cellValue(sheet, `sum-amount-${catId}`),
-			cellValue(sheet, `leftover-${catId}`),
-			cellValue(sheet, `goal-${catId}`),
-		]);
-		const data: CatCells = {
-			budgeted,
-			spent: Math.max(0, -sumAmount),
-			balance,
-			goal,
-			fetchedAt: Date.now(),
-		};
-		cellCache.set(key, data);
-		inflight.delete(key);
-		return data;
-	})();
-	inflight.set(key, promise);
-	return promise;
-}
 
 async function fetchAvgSpent(sheet: string, catId: string): Promise<number | null> {
 	const values = await Promise.all(
@@ -226,7 +181,7 @@ function scanAndDecorate() {
 	for (const span of document.querySelectorAll<HTMLElement>(
 		'[data-testid="balance"] span[data-cellname]',
 	)) {
-		const m = (span.getAttribute("data-cellname") || "").match(CELL_RE);
+		const m = (span.getAttribute("data-cellname") || "").match(BALANCE_CELL_RE);
 		if (!m) continue;
 		const [, sheet, catId] = m;
 
@@ -304,9 +259,10 @@ async function openPopover(ring: HTMLElement) {
 	const name =
 		row?.querySelector('[data-testid="category-name"]')?.textContent?.trim() || "Category";
 
-	const [data, avgSpent] = await Promise.all([
+	const [data, avgSpent, canFund] = await Promise.all([
 		fetchCells(sheet, catId, true),
 		fetchAvgSpent(sheet, catId),
+		getValue(goalFunding.context.key, goalFunding.context.defaultValue),
 	]);
 	if (!ring.isConnected) return;
 	paintRing(ring, data);
@@ -319,7 +275,8 @@ async function openPopover(ring: HTMLElement) {
 		budgeted: data.budgeted,
 		spent: data.spent,
 		balance: data.balance,
-		goal: data.goal,
+		goalShortfall: data.goalShortfall,
+		canFund: Boolean(canFund),
 		avgSpent,
 		daysLeft: daysLeftInMonth(sheet),
 	});
