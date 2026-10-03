@@ -1563,7 +1563,7 @@
 	font-weight: 400;
 	letter-spacing: 0.14px;
 	text-transform: uppercase;
-	color: var(--sb-fgm-a75);
+	color: var(--sb-fg-muted);
 	font-variant-numeric: tabular-nums;
 	flex-shrink: 0;
 }
