@@ -725,7 +725,7 @@
 	gap: 8px;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 8px 13px;
+	padding: calc(var(--sb-row-pad-y, 5px) + 2px) 13px;
 	background: color-mix(in srgb, var(--color-sidebarItemText) 5%, transparent);
 	border: 1px solid var(--sb-border);
 	border-radius: 11px;
@@ -1021,7 +1021,7 @@
 	align-items: center;
 	gap: 13px;
 	width: 100%;
-	padding: 8px 8px;
+	padding: calc(var(--sb-row-pad-y, 5px) + 2px) 8px;
 	border-radius: 6px;
 	text-align: left;
 	transition: background 0.12s ease;
@@ -1080,7 +1080,7 @@
 }
 .sidebar .nav-sublink {
 	gap: 11px;
-	padding: 6px 8px;
+	padding: calc(var(--sb-row-pad-y, 5px) + 1px) 8px;
 }
 .sidebar .nav-sublink .nav-icon {
 	width: 16px;
@@ -1220,7 +1220,7 @@
 	gap: 5px;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 6px 8px;
+	padding: var(--sb-row-pad-y, 5px) 8px;
 	border-radius: 6px;
 	text-align: left;
 	cursor: default;
@@ -1285,7 +1285,7 @@
 	color: var(--sb-accent);
 }
 .sidebar .group-header.sub {
-	padding-block: 4px;
+	padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
 	padding-left: 16px;
 	transition:
 		background-color 0.3s ease,
@@ -1380,7 +1380,7 @@
 }
 /* accounts nested under a sub-category sit a touch tighter */
 .sidebar .account-list.indented .account {
-	padding-block: 4px;
+	padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
 }
 /* VS Code layout: the indent has to live inside the row (padding), not on
    the list container, otherwise a selected nested row's background would
@@ -1398,7 +1398,7 @@
 	gap: 5px;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 6px 8px 6px 13px;
+	padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
 	border-radius: 7px;
 	text-align: left;
 	transition: background 0.12s ease;
@@ -1493,7 +1493,7 @@
 	gap: 5px;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 6px 8px 6px 13px;
+	padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
 }
 .sidebar .skel-glyph {
 	width: 17px;
@@ -2176,7 +2176,7 @@
 	gap: 5px;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 6px 8px 6px 13px;
+	padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
 	border-radius: 7px;
 	background: var(--sb-accent-subtle);
 }

@@ -50,7 +50,6 @@ const layoutAndDensity = [
 	hideMonthOnScroll,
 	toggleColumns,
 	resizableTransactionColumns,
-	sidebarAccountSpacing,
 ];
 
 const readability = [
@@ -75,6 +74,7 @@ const appearance = [
 	sidebarIcons,
 	sidebarSearch,
 	sidebarShortcuts,
+	sidebarAccountSpacing,
 	accountIconPicker,
 	categoryColorDots,
 	categoryEmojiPicker,

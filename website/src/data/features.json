@@ -44,12 +44,6 @@
 				"description": "Drag column edges to resize the transaction table.",
 				"icon": "layout",
 				"group": "Transactions"
-			},
-			{
-				"label": "Sidebar Account Spacing",
-				"description": "Adjust the spacing between accounts in the sidebar.",
-				"icon": null,
-				"group": "Sidebar"
 			}
 		]
 	},
@@ -172,6 +166,12 @@
 				"group": "Sidebar"
 			},
 			{
+				"label": "Sidebar Density",
+				"description": "Adjust the spacing of accounts, nav links, and search in the sidebar.",
+				"icon": null,
+				"group": "Sidebar"
+			},
+			{
 				"label": "Account Icon Picker",
 				"description": "Set a custom favicon or emoji icon per account.",
 				"icon": "image",
@@ -212,6 +212,12 @@
 				"description": "Choose the target used by Next Month Coverage in Plan → Overview.",
 				"icon": "layout",
 				"group": "Budget"
+			},
+			{
+				"label": "Next Month Coverage Method",
+				"description": "Choose the target used by Next Month Coverage in Plan → Overview.",
+				"icon": "layout",
+				"group": null
 			},
 			{
 				"label": "Spending Calendar",

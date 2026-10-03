@@ -9,7 +9,7 @@ const CSS = /* css */ `
 		align-items: center;
 		gap: 6px;
 		margin: 0 10px 4px;
-		padding: 8px 10px;
+		padding: calc(var(--sb-row-pad-y, 5px) + 3px) 10px;
 		border-radius: var(--border-radius);
 		background: color-mix(in srgb, var(--color-sidebarItemText) 8%, transparent);
 		cursor: pointer;
