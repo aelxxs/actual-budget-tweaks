@@ -1,6 +1,55 @@
 # Changelog
 
 
+## v0.1.72
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.71...v0.1.72)
+
+### 🚀 Enhancements
+
+- Extend sidebar density to the live sidebar, nav links, and search ([23f9eca](https://github.com/aelxxs/actual-budget-tweaks/commit/23f9eca))
+- Unify live sidebar rails and move layout choice to settings ([4ad3be6](https://github.com/aelxxs/actual-budget-tweaks/commit/4ad3be6))
+- Rename template plan panel to Budget Insights ([64b062e](https://github.com/aelxxs/actual-budget-tweaks/commit/64b062e))
+
+### 🔥 Performance
+
+- Render live sidebar accounts without waiting on uncategorized counts ([c279d6c](https://github.com/aelxxs/actual-budget-tweaks/commit/c279d6c))
+
+### 🩹 Fixes
+
+- Add Cache-Control header to serveStatic for improved asset caching ([09f72b2](https://github.com/aelxxs/actual-budget-tweaks/commit/09f72b2))
+- Respect sidebar search setting in the live sidebar ([f68ea0d](https://github.com/aelxxs/actual-budget-tweaks/commit/f68ea0d))
+- Ack API bridge requests to stop duplicate re-sends ([bb5af4a](https://github.com/aelxxs/actual-budget-tweaks/commit/bb5af4a))
+- Reserve budget status line while it loads ([ad07fd3](https://github.com/aelxxs/actual-budget-tweaks/commit/ad07fd3))
+- Blur account hover card amounts in privacy mode ([da9516d](https://github.com/aelxxs/actual-budget-tweaks/commit/da9516d))
+- Scope settings page chevron style so it doesn't leak to other carets ([b9718d4](https://github.com/aelxxs/actual-budget-tweaks/commit/b9718d4))
+- Use theme-derived border for side panel and header border ([fd886b2](https://github.com/aelxxs/actual-budget-tweaks/commit/fd886b2))
+- Hide insights button when the panel is restored open on reload ([f8f4eb5](https://github.com/aelxxs/actual-budget-tweaks/commit/f8f4eb5))
+- Restore saved side panel width when the panel opens ([352aada](https://github.com/aelxxs/actual-budget-tweaks/commit/352aada))
+- Let background pattern show around the spending calendar ([022043a](https://github.com/aelxxs/actual-budget-tweaks/commit/022043a))
+- Extend background pattern selectors ([2d04d65](https://github.com/aelxxs/actual-budget-tweaks/commit/2d04d65))
+
+### 💅 Refactors
+
+- Shared panel components for the insights side panel ([94c9cda](https://github.com/aelxxs/actual-budget-tweaks/commit/94c9cda))
+- Use shared panel components in calendar day panel and theme creator ([37fb86c](https://github.com/aelxxs/actual-budget-tweaks/commit/37fb86c))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.71 ([708edc9](https://github.com/aelxxs/actual-budget-tweaks/commit/708edc9))
+- Update Firefox auto-update manifest for v0.1.71 ([441f6fc](https://github.com/aelxxs/actual-budget-tweaks/commit/441f6fc))
+- Remove debug logging from live sidebar ([75d2cd4](https://github.com/aelxxs/actual-budget-tweaks/commit/75d2cd4))
+- Add each-block keys and clear lint warnings ([70e8d20](https://github.com/aelxxs/actual-budget-tweaks/commit/70e8d20))
+
+### 🎨 Styles
+
+- Narrow live sidebar rail to 4rem ([8086477](https://github.com/aelxxs/actual-budget-tweaks/commit/8086477))
+- Derive side panel colors from the theme ([ed91621](https://github.com/aelxxs/actual-budget-tweaks/commit/ed91621))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.71
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.70...v0.1.71)
