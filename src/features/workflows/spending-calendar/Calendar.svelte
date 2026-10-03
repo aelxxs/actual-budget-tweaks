@@ -1,13 +1,17 @@
 <script lang="ts">
 	import { sidepanel } from "@features/core/side-panel";
+	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 	import Switch from "@lib/components/Switch.svelte";
 	import type { Account, Category, Payee, Schedule, Transaction } from "@lib/types/actual-schema";
 	import { query, send } from "@lib/utilities/actual-api";
 	import { getCategoryColor, loadCategoryColors } from "@lib/utilities/category-colors";
 	import { fmtMoney, loadCurrency } from "@lib/utilities/currency";
+	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 	import { getValue, setValue } from "@lib/utilities/store";
-	import { mount, onMount, unmount } from "svelte";
+	import { mount, onMount, tick, unmount } from "svelte";
+	import { cubicOut } from "svelte/easing";
+	import { fly } from "svelte/transition";
 	import DayDetail from "./DayDetail.svelte";
 	import DayHeader from "./DayHeader.svelte";
 	import type { DayTransaction } from "./types";
@@ -20,9 +24,14 @@
 
 	interface DayData {
 		date: number;
+		iso: string;
 		total: number;
+		/** Posted outflows only, for the heat tint. */
+		spent: number;
 		transactions: DayTransaction[];
+		hasMissed: boolean;
 		isToday: boolean;
+		isFuture: boolean;
 		isCurrentMonth: boolean;
 	}
 
@@ -34,11 +43,25 @@
 	let payeeMap = new Map<string, string>();
 	let payeeTransferAcctMap = new Map<string, string | null>();
 	let categoryMap = $state(new Map<string, string>());
+	let incomeCategoryIds = new Set<string>();
 	let accountMap = new Map<string, string>();
 	let accountOffbudgetMap = new Map<string, boolean>();
 	/** Expanded recurrence dates per schedule id, grown as the user pages further ahead. */
 	const upcomingDates = new Map<string, { count: number; dates: string[] }>();
 	let hideOffBudget = $state(true);
+	let selectedIso = $state<string | null>(null);
+	let focusIso = $state<string | null>(null);
+	let pendingFocus: { open: boolean } | null = null;
+	let navDir = $state(0);
+	let gridVersion = $state(0);
+	let loadSeq = 0;
+	let pageEl = $state<HTMLElement | null>(null);
+	let gridEl = $state<HTMLElement | null>(null);
+	let pickerOpen = $state(false);
+	let pickerYear = $state(new Date().getFullYear());
+	let pickerButton = $state<HTMLElement | null>(null);
+	let pickerMenu = $state<HTMLElement | null>(null);
+	const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 	let filtersOpen = $state(false);
 	let filterButton = $state<HTMLElement | null>(null);
 	let filterMenu = $state<HTMLElement | null>(null);
@@ -68,43 +91,165 @@
 		return year === now.getFullYear() && month === now.getMonth();
 	});
 
-	/** Months between the displayed month and the current one — negative for the past. */
-	function monthsFromNow(): number {
+	/** Months between the given month (default: displayed) and the current one — negative for the past. */
+	function monthsFromNow(y = year, m = month): number {
 		const now = new Date();
-		return (year - now.getFullYear()) * 12 + (month - now.getMonth());
+		return (y - now.getFullYear()) * 12 + (m - now.getMonth());
 	}
 
 	const isAtMaxMonth = $derived(() => monthsFromNow() >= MAX_FUTURE_MONTHS);
 
-	function prevMonth() {
-		if (month === 0) {
-			month = 11;
-			year--;
-		} else month--;
+	function setMonth(y: number, m: number): boolean {
+		if (monthsFromNow(y, m) > MAX_FUTURE_MONTHS) return false;
+		navDir = Math.sign((y - year) * 12 + (m - month));
+		year = y;
+		month = m;
 		loadMonth();
+		return true;
+	}
+
+	function prevMonth() {
+		const d = new Date(year, month - 1, 1);
+		setMonth(d.getFullYear(), d.getMonth());
 	}
 
 	function nextMonth() {
-		if (month === 11) {
-			month = 0;
-			year++;
-		} else month++;
-		loadMonth();
+		const d = new Date(year, month + 1, 1);
+		setMonth(d.getFullYear(), d.getMonth());
 	}
 
 	function goToday() {
 		const now = new Date();
-		year = now.getFullYear();
-		month = now.getMonth();
-		loadMonth();
+		setMonth(now.getFullYear(), now.getMonth());
+	}
+
+	/**
+	 * Mirrors the budget page's Spent/Income: category activity, so refunds net out
+	 * and uncategorized money or on-budget transfers don't count.
+	 */
+	const summary = $derived.by(() => {
+		let spent = 0;
+		let income = 0;
+		let upcoming = 0;
+		let hasUpcoming = false;
+		for (const d of days) {
+			if (!d.isCurrentMonth) continue;
+			for (const t of d.transactions) {
+				if (t.missed) continue;
+				if (t.upcoming) {
+					upcoming += t.amount;
+					hasUpcoming = true;
+				} else if (!t.categoryId) continue;
+				else if (incomeCategoryIds.has(t.categoryId)) income += t.amount;
+				else spent -= t.amount;
+			}
+		}
+		return { spent, income, net: income - spent, upcoming, hasUpcoming };
+	});
+
+	const maxSpent = $derived(Math.max(0, ...days.map((d) => d.spent)));
+
+	/** sqrt so mid-sized days still register next to one huge outlier. */
+	function heat(day: DayData): number {
+		return day.isCurrentMonth && maxSpent > 0 ? Math.sqrt(day.spent / maxSpent) : 0;
+	}
+
+	/** The one day cell reachable with Tab; arrows move from there. */
+	const tabIso = $derived.by(() => {
+		const inMonth = (iso: string | null) =>
+			!!iso && days.some((d) => d.isCurrentMonth && d.iso === iso);
+		if (inMonth(focusIso)) return focusIso;
+		if (inMonth(selectedIso)) return selectedIso;
+		return days.find((d) => d.isToday)?.iso ?? days.find((d) => d.isCurrentMonth)?.iso ?? null;
+	});
+
+	function corner(idx: number, len: number): string | undefined {
+		if (idx === 0) return "tl";
+		if (idx === 6) return "tr";
+		if (idx === len - 7) return "bl";
+		if (idx === len - 1) return "br";
+		return undefined;
+	}
+
+	function hasTx(day: DayData): boolean {
+		return day.isCurrentMonth && day.transactions.length > 0;
+	}
+
+	function moreTitle(hidden: (DayTransaction & { count: number })[]): string | undefined {
+		if (document.body.classList.contains("abt-privacy-enabled")) return undefined;
+		return hidden.map((t) => (t.count > 1 ? `${t.payee} ×${t.count}` : t.payee)).join("\n");
+	}
+
+	function focusCell(iso: string, open: boolean) {
+		pageEl?.querySelector<HTMLElement>(`[data-iso="${iso}"]`)?.focus();
+		const day = days.find((d) => d.isCurrentMonth && d.iso === iso);
+		if (open && day && hasTx(day)) openDayPanel(day);
+	}
+
+	async function focusDate(d: Date, open: boolean) {
+		const iso = isoDate(d);
+		focusIso = iso;
+		if (d.getFullYear() !== year || d.getMonth() !== month) {
+			pendingFocus = { open };
+			if (!setMonth(d.getFullYear(), d.getMonth())) pendingFocus = null;
+			return;
+		}
+		await tick();
+		focusCell(iso, open);
+	}
+
+	function isTyping(t: EventTarget | null): boolean {
+		return (
+			t instanceof HTMLElement &&
+			(t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))
+		);
+	}
+
+	const ARROW_STEPS: Record<string, number> = {
+		ArrowLeft: -1,
+		ArrowRight: 1,
+		ArrowUp: -7,
+		ArrowDown: 7,
+	};
+
+	function onArrowKey(e: KeyboardEvent) {
+		if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return;
+		if (filtersOpen || pickerOpen) return;
+		const target = e.target as Node;
+		if (document.querySelector(`[${SIDEBAR_ATTR}]`)?.contains(target)) return;
+
+		const step = ARROW_STEPS[e.key];
+		if (!step) return;
+		const inGrid = !!gridEl?.contains(target);
+		// Outside the grid, arrows only drive the open day panel.
+		if (!inGrid && !(selectedIso && target === document.body)) return;
+		const from =
+			(inGrid && (target as HTMLElement).closest<HTMLElement>("[data-iso]")?.dataset.iso) ||
+			selectedIso ||
+			tabIso;
+		if (!from) return;
+		e.preventDefault();
+
+		const panelOpen = !!selectedIso;
+		if (panelOpen && Math.abs(step) === 1) {
+			const withTx = days.filter(hasTx);
+			const next =
+				step > 0
+					? withTx.find((d) => d.iso > from)
+					: [...withTx].reverse().find((d) => d.iso < from);
+			if (next) {
+				focusIso = next.iso;
+				focusCell(next.iso, true);
+			}
+			return;
+		}
+		const d = new Date(`${from}T00:00:00`);
+		d.setDate(d.getDate() + step);
+		focusDate(d, panelOpen);
 	}
 
 	function formatAmount(cents: number): string {
 		return fmtMoney(cents);
-	}
-
-	function formatAmountShort(cents: number): string {
-		return fmtMoney(cents, { short: true });
 	}
 
 	function parseScheduleAmount(raw: unknown): number {
@@ -183,6 +328,7 @@
 
 	async function setHideOffBudget(hidden: boolean) {
 		hideOffBudget = hidden;
+		navDir = 0;
 		closeDayPanel();
 		await setValue(HIDE_OFFBUDGET_KEY, hidden);
 		loadMonth();
@@ -204,6 +350,7 @@
 	}
 
 	async function loadMonth() {
+		const seq = ++loadSeq;
 		loading = true;
 
 		try {
@@ -227,6 +374,7 @@
 			}
 			if (categories) {
 				categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+				incomeCategoryIds = new Set(categories.filter((c) => c.is_income).map((c) => c.id));
 			}
 			if (accounts) {
 				accountMap = new Map(accounts.map((a) => [a.id, a.name]));
@@ -360,25 +508,27 @@
 
 			// Previous month padding
 			for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-				grid.push({
-					date: daysInPrevMonth - i,
-					total: 0,
-					transactions: [],
-					isToday: false,
-					isCurrentMonth: false,
-				});
+				grid.push(paddingDay(new Date(year, month - 1, daysInPrevMonth - i)));
 			}
 
 			// Current month
 			for (let d = 1; d <= daysInMonth; d++) {
 				const txs = byDay.get(d) || [];
 				const total = txs.reduce((sum, t) => sum + (t.missed ? 0 : t.amount), 0);
+				const spent = txs.reduce(
+					(sum, t) => sum + (!t.missed && !t.upcoming && t.amount < 0 ? -t.amount : 0),
+					0,
+				);
+				const iso = `${monthPrefix}${String(d).padStart(2, "0")}`;
 				grid.push({
 					date: d,
+					iso,
 					total,
+					spent,
 					transactions: txs,
-					isToday:
-						d === today.getDate() && month === today.getMonth() && year === today.getFullYear(),
+					hasMissed: txs.some((t) => t.missed),
+					isToday: iso === todayIso,
+					isFuture: iso > todayIso,
 					isCurrentMonth: true,
 				});
 			}
@@ -387,23 +537,42 @@
 			const remaining = 7 - (grid.length % 7);
 			if (remaining < 7) {
 				for (let d = 1; d <= remaining; d++) {
-					grid.push({
-						date: d,
-						total: 0,
-						transactions: [],
-						isToday: false,
-						isCurrentMonth: false,
-					});
+					grid.push(paddingDay(new Date(year, month + 1, d)));
 				}
 			}
 
+			// A slower, older request must not overwrite the month paged to since.
+			if (seq !== loadSeq) return;
 			days = grid;
+			gridVersion++;
+			if (pendingFocus && focusIso) {
+				const { open } = pendingFocus;
+				pendingFocus = null;
+				await tick();
+				focusCell(focusIso, open);
+			}
 		} catch (e) {
 			console.warn("[ABT Calendar]", e);
 		} finally {
-			loading = false;
-			hasLoadedOnce = true;
+			if (seq === loadSeq) {
+				loading = false;
+				hasLoadedOnce = true;
+			}
 		}
+	}
+
+	function paddingDay(d: Date): DayData {
+		return {
+			date: d.getDate(),
+			iso: isoDate(d),
+			total: 0,
+			spent: 0,
+			transactions: [],
+			hasMissed: false,
+			isToday: false,
+			isFuture: false,
+			isCurrentMonth: false,
+		};
 	}
 
 	function cleanupPanel() {
@@ -426,11 +595,12 @@
 	}
 
 	function openDayPanel(day: DayData) {
-		if (!day.isCurrentMonth || day.transactions.length === 0) return;
+		if (!hasTx(day)) return;
 
 		cleanupPanel();
 
 		const date = new Date(year, month, day.date);
+		selectedIso = isoDate(date);
 		const total = day.transactions.reduce((s, t) => s + (t.missed ? 0 : t.amount), 0);
 
 		headerContainer = document.createElement("div");
@@ -465,12 +635,23 @@
 	function closeDayPanel() {
 		sidepanel.close();
 		cleanupPanel();
+		selectedIso = null;
+	}
+
+	function isSelected(day: DayData): boolean {
+		return day.isCurrentMonth && selectedIso === day.iso;
 	}
 
 	$effect(() => {
 		if (!filtersOpen || !filterMenu || !filterButton) return;
 		positionPopover(filterMenu, filterButton, { align: "right" });
 		return onOutsideClick([filterMenu, filterButton], () => (filtersOpen = false));
+	});
+
+	$effect(() => {
+		if (!pickerOpen || !pickerMenu || !pickerButton) return;
+		positionPopover(pickerMenu, pickerButton);
+		return onOutsideClick([pickerMenu, pickerButton], () => (pickerOpen = false));
 	});
 
 	onMount(() => {
@@ -483,32 +664,93 @@
 
 		function onKey(e: KeyboardEvent) {
 			if (e.key === "Escape") {
-				if (filtersOpen) {
-					filtersOpen = false;
+				if (filtersOpen || pickerOpen) {
+					filtersOpen = pickerOpen = false;
 					return;
 				}
 				closeDayPanel();
 				onClose();
+				return;
 			}
+			onArrowKey(e);
 		}
 		window.addEventListener("keydown", onKey);
+		// The panel's own close button doesn't notify us, so follow its presence instead.
+		const unwatch = watchDom(() => {
+			if (selectedIso && !sidepanel.isOpen()) selectedIso = null;
+		});
 		return () => {
+			unwatch();
 			window.removeEventListener("keydown", onKey);
 			closeDayPanel();
 		};
 	});
 </script>
 
-<div class="cal-page">
+<div class="cal-page" bind:this={pageEl}>
 	<div class="cal-header">
 		<div class="cal-header__left">
-			<h2 class="cal-title">{monthNames[month]} {year}</h2>
+			<button
+				type="button"
+				class="cal-title"
+				title="Jump to month"
+				aria-haspopup="dialog"
+				aria-expanded={pickerOpen}
+				bind:this={pickerButton}
+				onclick={() => {
+					pickerYear = year;
+					pickerOpen = !pickerOpen;
+				}}
+			>
+				{monthNames[month]}
+				{year}
+				<svg
+					class="cal-title__chevron"
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
+				>
+			</button>
+			{#if hasLoadedOnce}
+				<dl class="cal-summary" class:is-stale={loading}>
+					<div>
+						<dt>Spent</dt>
+						<dd class="abt-privacy-number">{formatAmount(summary.spent)}</dd>
+					</div>
+					<div>
+						<dt>Income</dt>
+						<dd class="abt-privacy-number is-pos">{formatAmount(summary.income)}</dd>
+					</div>
+					<div>
+						<dt>Net</dt>
+						<dd
+							class="abt-privacy-number"
+							class:is-pos={summary.net > 0}
+							class:is-neg={summary.net < 0}
+						>
+							{fmtMoney(summary.net, { sign: true })}
+						</dd>
+					</div>
+					{#if summary.hasUpcoming}
+						<div class="is-upcoming">
+							<dt>Upcoming</dt>
+							<dd class="abt-privacy-number">{fmtMoney(summary.upcoming, { sign: true })}</dd>
+						</div>
+					{/if}
+				</dl>
+			{/if}
 		</div>
 		<div class="cal-header__right">
 			<button
 				type="button"
 				class="cal-nav"
 				class:is-active={filtersOpen}
+				title="Filters"
 				aria-label="Filters"
 				aria-expanded={filtersOpen}
 				bind:this={filterButton}
@@ -527,7 +769,12 @@
 				>
 			</button>
 			<span class="cal-header__sep"></span>
-			<button class="cal-nav" aria-label="Previous month" onclick={prevMonth}>
+			<button
+				class="cal-nav"
+				title="Previous month"
+				aria-label="Previous month"
+				onclick={prevMonth}
+			>
 				<svg
 					width="16"
 					height="16"
@@ -540,7 +787,13 @@
 				>
 			</button>
 			<button class="cal-today" onclick={goToday} disabled={isAtCurrentMonth()}>Today</button>
-			<button class="cal-nav" aria-label="Next month" onclick={nextMonth} disabled={isAtMaxMonth()}>
+			<button
+				class="cal-nav"
+				title="Next month"
+				aria-label="Next month"
+				onclick={nextMonth}
+				disabled={isAtMaxMonth()}
+			>
 				<svg
 					width="16"
 					height="16"
@@ -556,98 +809,130 @@
 	</div>
 
 	{#if loading && !hasLoadedOnce}
-		<div class="cal-loading">Loading…</div>
-	{:else}
-		<div class="cal-grid" role="main">
+		<div class="cal-grid" aria-busy="true" aria-label="Loading calendar">
 			{#each dayNames as name (name)}
 				<div class="cal-day-name">{name}</div>
 			{/each}
-
-			{#each days as day, idx (idx)}
-				{@const lastRow = days.length - 7}
-				<!-- role="button" and tabindex are set by the same condition -->
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div
-					class="cal-cell"
-					class:is-today={day.isToday}
-					class:is-muted={!day.isCurrentMonth}
-					class:is-clickable={day.isCurrentMonth && day.transactions.length > 0}
-					data-corner={idx === 0
-						? "tl"
-						: idx === 6
-							? "tr"
-							: idx === lastRow
-								? "bl"
-								: idx === days.length - 1
-									? "br"
-									: undefined}
-					role={day.isCurrentMonth && day.transactions.length > 0 ? "button" : undefined}
-					tabindex={day.isCurrentMonth && day.transactions.length > 0 ? 0 : undefined}
-					onclick={() => openDayPanel(day)}
-					onkeydown={(e) => {
-						if (e.key === "Enter") openDayPanel(day);
-					}}
-				>
-					<div class="cal-cell__header">
-						<span class="cal-cell__date" class:is-today={day.isToday}>{day.date}</span>
-						{#if day.total !== 0 && day.isCurrentMonth}
-							<span
-								class="cal-cell__total abt-privacy-number"
-								class:is-neg={day.total < 0}
-								class:is-pos={day.total > 0}
-							>
-								{formatAmountShort(day.total)}
-							</span>
-						{/if}
-					</div>
-
-					{#if day.isCurrentMonth && day.transactions.length > 0}
-						{@const deduped = dedupeTransactions(day.transactions)}
-						<div class="cal-cell__txs">
-							{#each deduped.slice(0, 3) as tx, i (i)}
-								<div class="cal-tx" class:is-upcoming={tx.upcoming} class:is-missed={tx.missed}>
-									<span
-										class="cal-tx__dot"
-										style="background: {tx.upcoming
-											? 'var(--color-pageTextSubdued)'
-											: tx.missed
-												? 'var(--color-errorText)'
-												: getCategoryColor(tx.categoryId)}"
-									></span>
-									<span class="cal-tx__payee abt-privacy-number">{tx.payee}</span>
-									{#if tx.count > 1}
-										<span class="cal-tx__count">×{tx.count}</span>
-									{/if}
-								</div>
-							{/each}
-							{#if deduped.length > 3}
-								<div class="cal-tx cal-tx--more">+{deduped.length - 3} more</div>
-							{/if}
-						</div>
-
-						<div class="cal-cell__bars">
-							{#each Object.entries(day.transactions.reduce((acc, t) => {
-										if (!t.missed && t.amount < 0) {
-											acc[t.categoryId] = (acc[t.categoryId] || 0) + Math.abs(t.amount);
-										}
-										return acc;
-									}, {} as Record<string, number>)).sort((a, b) => b[1] - a[1]) as [catId, amount] (catId)}
-								{@const pct = Math.max(8, (amount / Math.abs(day.total || 1)) * 100)}
-								<div
-									class="cal-bar"
-									style="width: {pct}%; background: {getCategoryColor(catId)}"
-									title="{categoryMap.get(catId) || 'Uncategorized'}: {formatAmount(-amount)}"
-								></div>
-							{/each}
-						</div>
+			{#each { length: 35 } as _, idx (idx)}
+				<div class="cal-cell cal-cell--skeleton" data-corner={corner(idx, 35)}>
+					<span class="cal-skel cal-skel--date"></span>
+					{#if idx % 3 !== 1}
+						<span class="cal-skel" style="width: {40 + ((idx * 37) % 45)}%"></span>
 					{/if}
 				</div>
 			{/each}
 		</div>
+	{:else}
+		{#key gridVersion}
+			<div
+				class="cal-grid"
+				class:is-loading={loading}
+				role="main"
+				bind:this={gridEl}
+				in:fly={{ x: navDir * 16, duration: reducedMotion ? 0 : 180, easing: cubicOut }}
+			>
+				{#each dayNames as name (name)}
+					<div class="cal-day-name">{name}</div>
+				{/each}
+
+				{#each days as day, idx (idx)}
+					{@const h = heat(day)}
+					<!-- Roving tabindex: every in-month day is focusable for arrow navigation. -->
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+					<div
+						class="cal-cell"
+						class:is-today={day.isToday}
+						class:is-selected={isSelected(day)}
+						class:is-future={day.isFuture}
+						class:is-muted={!day.isCurrentMonth}
+						class:is-clickable={hasTx(day)}
+						style={h > 0 ? `--heat-raw: ${h.toFixed(3)}` : undefined}
+						data-corner={corner(idx, days.length)}
+						data-iso={day.isCurrentMonth ? day.iso : undefined}
+						role={hasTx(day) ? "button" : undefined}
+						aria-pressed={hasTx(day) ? isSelected(day) : undefined}
+						tabindex={day.isCurrentMonth ? (day.iso === tabIso ? 0 : -1) : undefined}
+						onfocus={() => {
+							if (day.isCurrentMonth) focusIso = day.iso;
+						}}
+						onclick={() => openDayPanel(day)}
+						onkeydown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								openDayPanel(day);
+							}
+						}}
+					>
+						<div class="cal-cell__header">
+							<span class="cal-cell__datewrap">
+								<span class="cal-cell__date" class:is-today={day.isToday}>{day.date}</span>
+								{#if day.hasMissed}
+									<span class="cal-cell__missed" title="Missed schedule"></span>
+								{/if}
+							</span>
+							{#if day.total !== 0 && day.isCurrentMonth}
+								<span
+									class="cal-cell__total abt-privacy-number"
+									class:is-neg={day.total < 0}
+									class:is-pos={day.total > 0}
+								>
+									{fmtMoney(day.total, { short: true, sign: true })}
+								</span>
+							{/if}
+						</div>
+
+						{#if hasTx(day)}
+							{@const deduped = dedupeTransactions(day.transactions)}
+							<div class="cal-cell__txs">
+								{#each deduped.slice(0, 3) as tx, i (i)}
+									<div class="cal-tx" class:is-upcoming={tx.upcoming} class:is-missed={tx.missed}>
+										<span
+											class="cal-tx__dot"
+											style="background: {tx.upcoming
+												? 'var(--color-pageTextSubdued)'
+												: tx.missed
+													? 'var(--color-errorText)'
+													: getCategoryColor(tx.categoryId)}"
+										></span>
+										<span class="cal-tx__payee abt-privacy-number">{tx.payee}</span>
+										{#if tx.count > 1}
+											<span class="cal-tx__count">×{tx.count}</span>
+										{/if}
+									</div>
+								{/each}
+								{#if deduped.length > 3}
+									<div class="cal-tx">
+										<span class="cal-more" title={moreTitle(deduped.slice(3))}
+											>+{deduped.length - 3} more</span
+										>
+									</div>
+								{/if}
+							</div>
+
+							<div class="cal-cell__bars">
+								{#each Object.entries(day.transactions.reduce((acc, t) => {
+											if (!t.missed && t.amount < 0) {
+												acc[t.categoryId] = (acc[t.categoryId] || 0) + Math.abs(t.amount);
+											}
+											return acc;
+										}, {} as Record<string, number>)).sort((a, b) => b[1] - a[1]) as [catId, amount] (catId)}
+									{@const pct = Math.max(8, (amount / Math.abs(day.total || 1)) * 100)}
+									<div
+										class="cal-bar"
+										style="width: {pct}%; background: {getCategoryColor(catId)}"
+										title="{categoryMap.get(catId) || 'Uncategorized'}: {formatAmount(-amount)}"
+									></div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
+		{/key}
 	{/if}
 
 	{#if filtersOpen}
-		<div class="cal-filters" bind:this={filterMenu}>
+		<div class="cal-popover cal-filters" bind:this={filterMenu}>
 			<div class="cal-filters__title">Show</div>
 			<label class="cal-filters__row">
 				<span>Off-budget accounts</span>
@@ -656,6 +941,73 @@
 					onCheckedChange={(checked) => setHideOffBudget(!checked)}
 				/>
 			</label>
+		</div>
+	{/if}
+
+	{#if pickerOpen}
+		{@const now = new Date()}
+		<div
+			class="cal-popover cal-picker"
+			role="dialog"
+			aria-label="Jump to month"
+			bind:this={pickerMenu}
+		>
+			<div class="cal-picker__head">
+				<button
+					type="button"
+					class="cal-nav cal-nav--sm"
+					aria-label="Previous year"
+					onclick={() => pickerYear--}
+				>
+					<svg
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg
+					>
+				</button>
+				<span class="cal-picker__year">{pickerYear}</span>
+				<button
+					type="button"
+					class="cal-nav cal-nav--sm"
+					aria-label="Next year"
+					disabled={monthsFromNow(pickerYear + 1, 0) > MAX_FUTURE_MONTHS}
+					onclick={() => pickerYear++}
+				>
+					<svg
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg
+					>
+				</button>
+			</div>
+			<div class="cal-picker__months">
+				{#each monthNames as name, m (name)}
+					<button
+						type="button"
+						class="cal-picker__month"
+						class:is-active={pickerYear === year && m === month}
+						class:is-current={pickerYear === now.getFullYear() && m === now.getMonth()}
+						aria-current={pickerYear === year && m === month ? "date" : undefined}
+						disabled={monthsFromNow(pickerYear, m) > MAX_FUTURE_MONTHS}
+						onclick={() => {
+							pickerOpen = false;
+							setMonth(pickerYear, m);
+						}}
+					>
+						{name.slice(0, 3)}
+					</button>
+				{/each}
+			</div>
 		</div>
 	{/if}
 </div>
@@ -669,27 +1021,104 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+		container-type: inline-size;
 	}
 
 	.cal-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 9px 24px;
+		padding: 8px 24px;
 		flex-shrink: 0;
 		border-bottom: 1px solid var(--color-tableBorder);
 	}
 
 	.cal-title {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin: 0 0 0 -8px;
+		padding: 2px 8px;
+		border: none;
+		border-radius: var(--abt-radius-sm);
+		background: none;
+		color: inherit;
+		font: inherit;
 		font-size: 25px;
 		font-weight: 500;
-		margin: 0;
+		white-space: nowrap;
+		cursor: pointer;
+		transition: background 0.1s;
+	}
+	.cal-title:hover,
+	.cal-title[aria-expanded="true"] {
+		background: var(--color-tableRowBackgroundHover);
+	}
+	.cal-title__chevron {
+		opacity: 0.45;
+		transition: transform 0.15s;
+	}
+	.cal-title[aria-expanded="true"] .cal-title__chevron {
+		transform: rotate(180deg);
 	}
 
 	.cal-header__left {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 6px;
+		min-width: 0;
+	}
+
+	.cal-summary {
+		display: flex;
+		gap: 20px;
+		margin: 0;
+		padding-left: 16px;
+		border-left: 1px solid var(--color-tableBorder);
+		transition: opacity 0.15s;
+	}
+	.cal-summary.is-stale {
+		opacity: 0.5;
+	}
+	.cal-summary > div {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+	.cal-summary dt {
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--color-pageTextSubdued);
+	}
+	.cal-summary dd {
+		margin: 0;
+		font-size: 13px;
+		font-weight: 400;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+	.cal-summary dd.is-pos {
+		color: var(--color-noticeTextLight);
+	}
+	.cal-summary dd.is-neg {
+		color: var(--color-errorText);
+	}
+	.cal-summary .is-upcoming dd {
+		font-style: italic;
+		opacity: 0.65;
+	}
+
+	@container (max-width: 820px) {
+		.cal-summary .is-upcoming {
+			display: none;
+		}
+	}
+	@container (max-width: 680px) {
+		.cal-summary {
+			display: none;
+		}
 	}
 
 	.cal-header__right {
@@ -732,15 +1161,68 @@
 		background: var(--color-tableBorder);
 	}
 
-	.cal-filters {
+	.cal-popover {
 		position: fixed;
 		z-index: 9999;
-		min-width: 200px;
 		padding: 4px;
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius);
 		background: var(--color-tooltipBackground, var(--color-pageBackground));
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	}
+
+	.cal-filters {
+		min-width: 200px;
+	}
+
+	.cal-picker {
+		width: 220px;
+		padding: 8px;
+	}
+	.cal-picker__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 6px;
+	}
+	.cal-picker__year {
+		font-size: 13px;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+	.cal-nav.cal-nav--sm {
+		width: 26px;
+		height: 26px;
+	}
+	.cal-picker__months {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 2px;
+	}
+	.cal-picker__month {
+		padding: 7px 0;
+		border: none;
+		border-radius: var(--abt-radius-sm);
+		background: none;
+		color: var(--color-pageText);
+		font: inherit;
+		font-size: 12px;
+		cursor: pointer;
+	}
+	.cal-picker__month:hover:not(:disabled):not(.is-active) {
+		background: var(--color-tableRowBackgroundHover);
+	}
+	.cal-picker__month.is-current:not(.is-active) {
+		box-shadow: inset 0 0 0 1px var(--color-tableBorder);
+	}
+	.cal-picker__month.is-active {
+		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 20%, transparent);
+		color: var(--color-sidebarItemAccentSelected);
+		font-weight: 600;
+	}
+	.cal-picker__month:disabled {
+		opacity: 0.3;
+		cursor: default;
 	}
 
 	.cal-filters__title {
@@ -789,15 +1271,6 @@
 		background: var(--color-tableRowBackgroundHover);
 	}
 
-	.cal-loading {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 14px;
-		opacity: 0.5;
-	}
-
 	.cal-grid {
 		flex: 1;
 		display: grid;
@@ -806,6 +1279,11 @@
 		grid-auto-rows: 1fr;
 		overflow-y: auto;
 		padding: 0 12px 12px;
+	}
+	/* Delayed so quick loads don't flicker. */
+	.cal-grid.is-loading {
+		opacity: 0.6;
+		transition: opacity 0.15s 0.12s;
 	}
 
 	.cal-cell[data-corner="tl"] {
@@ -848,7 +1326,17 @@
 		gap: 2px;
 		overflow: hidden;
 		transition: background 0.1s;
-		background: var(--color-tableBackground);
+		--heat: var(--heat-raw, 0);
+		--cell-bg: color-mix(
+			in srgb,
+			var(--color-errorText) calc(var(--heat) * 10%),
+			var(--color-tableBackground)
+		);
+		background: var(--cell-bg);
+	}
+	/* The tint would reveal spending patterns that privacy mode blurs. */
+	:global(body.abt-privacy-enabled) .cal-cell {
+		--heat: 0;
 	}
 
 	.cal-cell.is-clickable {
@@ -857,11 +1345,25 @@
 
 	.cal-cell.is-clickable:hover,
 	.cal-cell.is-today {
-		background: color-mix(
-			in srgb,
-			var(--color-sidebarItemAccentSelected) 6%,
-			var(--color-tableBackground)
-		);
+		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, var(--cell-bg));
+	}
+
+	.cal-cell.is-selected,
+	.cal-cell.is-selected:hover {
+		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, var(--cell-bg));
+		box-shadow: inset 0 0 0 1.5px var(--color-sidebarItemAccentSelected);
+	}
+
+	.cal-cell:focus-visible {
+		outline: none;
+		box-shadow: inset 0 0 0 1.5px
+			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 60%, transparent);
+	}
+
+	.cal-cell.is-selected .cal-cell__date:not(.is-today) {
+		color: var(--color-sidebarItemAccentSelected);
+		font-weight: 700;
+		opacity: 1;
 	}
 
 	/* Half step between table and page, matching the budget table's other-month columns. */
@@ -880,10 +1382,26 @@
 		margin-bottom: 2px;
 	}
 
+	.cal-cell__datewrap {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
 	.cal-cell__date {
 		font-size: 12px;
 		font-weight: 500;
 		opacity: 0.6;
+	}
+	.cal-cell.is-future .cal-cell__date {
+		opacity: 0.35;
+	}
+
+	.cal-cell__missed {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--color-errorText);
 	}
 
 	.cal-cell__date.is-today {
@@ -957,10 +1475,37 @@
 		line-height: 1.5;
 	}
 
-	.cal-tx--more {
+	.cal-more {
+		margin-left: 9px;
+		padding: 0 6px;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		color: var(--color-pageTextSubdued);
 		font-size: 9px;
-		opacity: 0.4;
-		padding-left: 9px;
+		font-weight: 600;
+		line-height: 1.6;
+	}
+
+	.cal-skel {
+		display: block;
+		height: 8px;
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--color-pageText) 8%, transparent);
+	}
+	.cal-skel--date {
+		width: 14px;
+		height: 10px;
+		margin-bottom: 6px;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.cal-skel {
+			animation: cal-pulse 1.2s ease-in-out infinite;
+		}
+	}
+	@keyframes cal-pulse {
+		50% {
+			opacity: 0.45;
+		}
 	}
 
 	.cal-tx.is-upcoming {
