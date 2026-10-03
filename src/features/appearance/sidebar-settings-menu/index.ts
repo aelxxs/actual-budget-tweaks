@@ -3,6 +3,7 @@ import { applyGlobalCSS } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { createLogger } from "@lib/utilities/logger";
 import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+import { NATIVE_ROOT_ATTR } from "@features/workflows/sidebar/lib/data";
 import { mountToNode } from "@lib/utilities/svelte";
 import SidebarSettingsMenu from "./SidebarSettingsMenu.svelte";
 
@@ -44,12 +45,10 @@ const CSS = `
 // break this, but requiring both avoids matching an unrelated "add" button
 // that happens to share one of the two.
 function findAddAccountButton(): HTMLButtonElement | null {
-	const buttons = document.querySelectorAll<HTMLButtonElement>("button");
-	log.debug(`scanning ${buttons.length} buttons for "Add account"`);
+	const buttons = document.querySelectorAll<HTMLButtonElement>('button:has(path[d^="M23 11.5"])');
+	log.debug(`checking ${buttons.length} plus-icon buttons for "Add account"`);
 	for (const btn of buttons) {
-		const text = btn.textContent?.trim();
-		const hasPlusIcon = btn.querySelector('path[d^="M23 11.5"]');
-		if (text === "Add account" && hasPlusIcon) {
+		if (btn.textContent?.trim() === "Add account") {
 			log.debug("found Add account button", btn);
 			return btn;
 		}
@@ -60,6 +59,9 @@ function findAddAccountButton(): HTMLButtonElement | null {
 
 function injectCogButton(): void {
 	if (document.querySelector(`[${COG_ATTR}]`)) return;
+	// The live sidebar hides the native one (and has its own settings), so the
+	// button would never be found and this would rescan on every DOM change.
+	if (document.querySelector(`[${NATIVE_ROOT_ATTR}]`)) return;
 
 	const addAccountBtn = findAddAccountButton();
 	if (!addAccountBtn) return;
