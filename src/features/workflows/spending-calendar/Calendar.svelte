@@ -663,7 +663,8 @@
 <style>
 	.cal-page {
 		flex: 1;
-		background: var(--color-pageBackground, #1a1b26);
+		/* Transparent so the Background Pattern setting (painted on ancestors) shows through. */
+		background: transparent;
 		color: var(--color-pageText, #e0e0e0);
 		display: flex;
 		flex-direction: column;
@@ -830,7 +831,9 @@
 		padding: 10px 0;
 		position: sticky;
 		top: 0;
-		background: var(--color-pageBackground, #1a1b26);
+		/* Sticky over scrolling cells, so mostly opaque; the blur keeps the pattern from reading as a seam. */
+		background: color-mix(in srgb, var(--color-pageBackground, #1a1b26) 85%, transparent);
+		backdrop-filter: blur(6px);
 		z-index: 1;
 		margin-bottom: 1px;
 	}
@@ -845,6 +848,7 @@
 		gap: 2px;
 		overflow: hidden;
 		transition: background 0.1s;
+		/* Opaque on purpose: the Background Pattern shows around the grid, not through the cells. */
 		background: color-mix(in srgb, var(--color-pageText) 2%, var(--color-pageBackground));
 	}
 
@@ -852,16 +856,22 @@
 		cursor: pointer;
 	}
 
-	.cal-cell.is-clickable:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, transparent);
-	}
-
-	.cal-cell.is-muted {
-		opacity: 0.5;
-	}
-
+	.cal-cell.is-clickable:hover,
 	.cal-cell.is-today {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, transparent);
+		background: color-mix(
+			in srgb,
+			var(--color-sidebarItemAccentSelected) 6%,
+			var(--color-pageBackground)
+		);
+	}
+
+	/* Recreates the old 50% cell opacity while staying opaque: half tint, half-strength border, faded contents. */
+	.cal-cell.is-muted {
+		background: color-mix(in srgb, var(--color-pageText) 1%, var(--color-pageBackground));
+		border-color: color-mix(in srgb, var(--color-tableBorder) 50%, var(--color-pageBackground));
+	}
+	.cal-cell.is-muted > * {
+		opacity: 0.5;
 	}
 
 	.cal-cell__header {
