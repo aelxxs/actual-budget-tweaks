@@ -202,8 +202,8 @@
 				"group": null
 			},
 			{
-				"label": "Template Plan",
-				"description": "Side panel breakdown after applying or overwriting budget templates.",
+				"label": "Budget Insights",
+				"description": "Month summary, template breakdowns, and priority planning in a side panel.",
 				"icon": "layout",
 				"group": "Budget"
 			},

@@ -36,7 +36,9 @@
 				? actionLabel(templatePlanState.breakdownState.ctx.kind)
 				: templatePlanState.activeTab === "overview"
 					? "Overview"
-					: "Template plan";
+					: templatePlanState.activeTab === "priority"
+						? "Priority plan"
+						: "Breakdown";
 		return monthLabel ? `${headerTitleText} • ${monthLabel}` : headerTitleText;
 	});
 

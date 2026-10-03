@@ -96,10 +96,10 @@ function ensureTriggerButton(): void {
 	btn.id = TRIGGER_ID;
 	btn.className = "abt-template-drawer-trigger";
 	btn.type = "button";
-	btn.title = "Open template plan";
-	btn.setAttribute("aria-label", "Open template plan");
+	btn.title = "Open insights";
+	btn.setAttribute("aria-label", "Open insights");
 	btn.innerHTML = icon("chevronLeft", { size: 14 });
-	btn.appendChild(document.createTextNode("Plan"));
+	btn.appendChild(document.createTextNode("Insights"));
 	btn.addEventListener("click", () => openPanel());
 	document.body.appendChild(btn);
 	triggerBtn = btn;
@@ -570,8 +570,8 @@ function tick(): void {
 
 export const templatePlan = defineSetting({
 	type: "checkbox",
-	label: "Template Plan",
-	description: "Side panel breakdown after applying or overwriting budget templates.",
+	label: "Budget Insights",
+	description: "Month summary, template breakdowns, and priority planning in a side panel.",
 	icon: "layout",
 	group: "Budget",
 	context: {
