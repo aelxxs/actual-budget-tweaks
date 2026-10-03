@@ -807,26 +807,42 @@ export const resizableTransactionColumns = defineSetting({
 				overscroll-behavior-y: contain;
 				overscroll-behavior-x: none;
 			}
+			/* Transparent grab area; the visible line is ::before so it can stay short. */
 			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS} {
 				position: absolute;
-				top: 2px;
-				right: 2px;
-				width: 1px;
-				height: calc(100% - 4px);
+				top: 0;
+				right: 0;
+				width: 7px;
+				height: 100%;
 				cursor: col-resize;
 				z-index: 30;
-				border-radius: 1px;
-				background: color-mix(in srgb, var(--color-tableText) 24%, transparent);
 				touch-action: none;
 			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}:hover {
-				right: 0;
-				width: 4px;
-				background: color-mix(in srgb, var(--color-tableText) 34%, transparent);
+			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}::before {
+				content: "";
+				position: absolute;
+				top: 50%;
+				right: 2px;
+				width: 1px;
+				height: 45%;
+				border-radius: 999px;
+				transform: translateY(-50%);
+				background: color-mix(in srgb, var(--color-tableText) 22%, transparent);
+				transition:
+					height 0.12s ease,
+					width 0.12s ease,
+					background 0.12s ease;
 			}
-			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}[data-dragging="true"] {
-				right: 0;
-				width: 4px;
+			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}:hover::before {
+				width: 3px;
+				height: 70%;
+				background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 70%, transparent);
+			}
+			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}[data-dragging="true"]::before {
+				width: 3px;
+				height: 100%;
+				background: var(--color-sidebarItemAccentSelected);
+				box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-sidebarItemAccentSelected) 22%, transparent);
 				transition: none;
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESET_BUTTON_CLASS} {
