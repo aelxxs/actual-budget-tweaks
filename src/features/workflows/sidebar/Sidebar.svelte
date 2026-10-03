@@ -290,6 +290,11 @@
 		if (account) account.name = name;
 	}
 
+	async function reloadAccounts() {
+		accounts = await loadSidebarAccounts(accounts);
+		await refreshUncategorizedCounts(accounts);
+	}
+
 	// Closing routes through Actual's real native modal (balance transfer /
 	// category prompts are its job, not ours) — see data.ts's closeAccount().
 	// We can't know synchronously whether the user confirmed or cancelled, but
@@ -308,35 +313,38 @@
 			}
 			if (!modalSeen) return;
 			stop();
-			loadSidebarAccounts().then((next) => (accounts = next));
+			reloadAccounts();
 		});
 	}
 
 	onMount(async () => {
-		const [storedCollapsed, storedWidth, storedGroupMode, storedLayoutMode] = await Promise.all([
-			getValue<boolean>(COLLAPSED_KEY, false),
-			getValue<number>(WIDTH_KEY, DEFAULT_WIDTH),
-			getValue<boolean>(GROUP_MODE_KEY, true),
-			getValue<"full" | "vscode">(LAYOUT_MODE_KEY, "full"),
-		]);
+		const [storedCollapsed, storedWidth, storedGroupMode, storedLayoutMode, loadedIcons] =
+			await Promise.all([
+				getValue<boolean>(COLLAPSED_KEY, false),
+				getValue<number>(WIDTH_KEY, DEFAULT_WIDTH),
+				getValue<boolean>(GROUP_MODE_KEY, true),
+				getValue<"full" | "vscode">(LAYOUT_MODE_KEY, "full"),
+				loadIconCache(),
+			]);
 		collapsed = storedCollapsed;
 		sidebarWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, storedWidth));
 		groupAccounts = storedGroupMode;
 		layoutMode = storedLayoutMode;
+		icons = loadedIcons;
 		requestAnimationFrame(() => (transitionsReady = true));
 
 		try {
-			await loadCurrency();
-			const [, loadedAccounts, loadedIcons] = await Promise.all([
+			const [, , loadedAccounts] = await Promise.all([
+				loadCurrency(),
 				refreshBudgetContext(),
 				loadSidebarAccounts(),
-				loadIconCache(),
 			]);
 			accounts = loadedAccounts;
-			icons = loadedIcons;
+			loading = false;
+			await refreshUncategorizedCounts(accounts);
 		} catch (err) {
 			console.error("[ABT experimental sidebar] failed to load live data", err);
-			failed = true;
+			if (loading) failed = true;
 		} finally {
 			loading = false;
 		}

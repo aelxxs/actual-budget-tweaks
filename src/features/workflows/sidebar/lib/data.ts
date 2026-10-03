@@ -38,34 +38,23 @@ async function loadBalance(accountId: string): Promise<number> {
 }
 
 /**
- * Loads real accounts plus their live balances and uncategorized-transaction
- * counts.
+ * Loads real accounts plus their live balances. Uncategorized counts are
+ * carried over from `previous` — fill them with `refreshUncategorizedCounts`,
+ * which scans transactions and shouldn't block the first paint.
  */
-export async function loadSidebarAccounts(): Promise<SidebarAccount[]> {
-	const [accounts, txs] = await Promise.all([
-		query<
-			(Pick<Account, "id" | "name" | "type" | "offbudget" | "closed" | "tombstone"> & {
-				sync_status?: string | null;
-				bank_sync_status?: string | null;
-			})[]
-		>("accounts"),
-		query<
-			Pick<
-				Transaction,
-				"account" | "category" | "is_parent" | "is_child" | "transfer_id" | "tombstone"
-			>[]
-		>("transactions", { filter: { tombstone: false } }),
-	]);
+export async function loadSidebarAccounts(
+	previous: SidebarAccount[] = [],
+): Promise<SidebarAccount[]> {
+	const accounts = await query<
+		(Pick<Account, "id" | "name" | "type" | "offbudget" | "closed" | "tombstone"> & {
+			sync_status?: string | null;
+			bank_sync_status?: string | null;
+		})[]
+	>("accounts");
 
 	console.debug("[ABT experimental sidebar] accounts ->", accounts);
 
-	const uncategorized = new Map<string, number>();
-	for (const tx of txs) {
-		if (!tx.account) continue;
-		if (tx.category || tx.is_parent || tx.is_child || tx.transfer_id) continue;
-		uncategorized.set(tx.account, (uncategorized.get(tx.account) || 0) + 1);
-	}
-
+	const prevUncategorized = new Map(previous.map((a) => [a.id, a.uncategorized]));
 	const live = accounts.filter((a) => !a.tombstone);
 	const balances = await Promise.all(live.map((a) => loadBalance(a.id)));
 
@@ -76,7 +65,7 @@ export async function loadSidebarAccounts(): Promise<SidebarAccount[]> {
 		offbudget: a.offbudget,
 		closed: a.closed,
 		balance: balances[i],
-		uncategorized: a.offbudget ? 0 : uncategorized.get(a.id) || 0,
+		uncategorized: prevUncategorized.get(a.id) ?? 0,
 		status: toSyncStatus(a.sync_status ?? a.bank_sync_status),
 	}));
 }
