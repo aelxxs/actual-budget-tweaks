@@ -164,6 +164,8 @@
 	flex-shrink: 0;
 	height: 100%;
 	border-right: 1px solid var(--sb-border);
+	/* Darker than the accounts panel beside it, so the two read as separate. */
+	background-color: color-mix(in oklab, var(--sb-bg), black 10%);
 }
 .sidebar .rail-spacer {
 	flex: 1 1 auto;
