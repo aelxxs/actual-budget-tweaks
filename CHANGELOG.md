@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.74
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.73...v0.1.74)
+
+### 🚀 Enhancements
+
+- Read live sidebar signals from both native sidebar designs ([8aa164e](https://github.com/aelxxs/actual-budget-tweaks/commit/8aa164e))
+
+### 🩹 Fixes
+
+- Open the calendar correctly while a side panel is open ([917426d](https://github.com/aelxxs/actual-budget-tweaks/commit/917426d))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.73
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.72...v0.1.73)
