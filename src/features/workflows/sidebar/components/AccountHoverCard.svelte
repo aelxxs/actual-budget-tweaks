@@ -60,7 +60,9 @@
 
 		<div class="acard-balrow">
 			<span class="acard-ballabel">Balance</span>
-			<span class="acard-bal" class:neg={account.balance < 0}>{fmtMoney(account.balance)}</span>
+			<span class="acard-bal abt-privacy-number" class:neg={account.balance < 0}
+				>{fmtMoney(account.balance)}</span
+			>
 		</div>
 
 		<div class="acard-chart">
@@ -86,7 +88,9 @@
 				<span class="acard-delta" class:up class:down={!up}>
 					{up ? "▲" : "▼"}
 					{Math.abs(d.deltaPct).toFixed(1)}%
-					<span class="acard-delta-abs">{fmtMoney(d.deltaAbs, { sign: true })}</span>
+					<span class="acard-delta-abs abt-privacy-number"
+						>{fmtMoney(d.deltaAbs, { sign: true })}</span
+					>
 				</span>
 			</div>
 		</div>
@@ -95,12 +99,12 @@
 		<div class="acard-lines">
 			<div class="acard-line">
 				<span class="k">Cleared</span>
-				<span class="v">{fmtMoney(d.clearedBalance)}</span>
+				<span class="v abt-privacy-number">{fmtMoney(d.clearedBalance)}</span>
 			</div>
 			{#if d.unclearedCount}
 				<div class="acard-line">
 					<span class="k">Uncleared <span class="acard-badge">{d.unclearedCount}</span></span>
-					<span class="v" class:neg={d.unclearedAmount < 0}
+					<span class="v abt-privacy-number" class:neg={d.unclearedAmount < 0}
 						>{fmtMoney(d.unclearedAmount, { sign: true })}</span
 					>
 				</div>
@@ -115,7 +119,7 @@
 					<div class="acard-sched">
 						<span class="acard-date">{u.date}</span>
 						<span class="acard-payee">{u.payee}</span>
-						<span class="acard-amt" class:neg={u.amount < 0}
+						<span class="acard-amt abt-privacy-number" class:neg={u.amount < 0}
 							>{fmtMoney(u.amount, { sign: true })}</span
 						>
 					</div>
