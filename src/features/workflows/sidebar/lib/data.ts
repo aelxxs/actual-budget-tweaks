@@ -115,6 +115,35 @@ export async function refreshSyncStatuses(accounts: SidebarAccount[]): Promise<s
 
 const PENDING_DOT_VAR = "var(--color-sidebarItemBackgroundPending)";
 
+/** Set on the hidden native sidebar's root by index.ts; scopes reads away from the rest of the page. */
+export const NATIVE_ROOT_ATTR = "data-abt-native-sidebar-root";
+const BALANCE_CELL_PREFIX = "__global!balance-";
+/** The redesigned sidebar's SyncDot title while an account syncs (ABT is English-only). */
+const REDESIGN_SYNCING_TITLE = "Syncing";
+
+interface NativeAccountRow {
+	row: HTMLElement;
+	balance: HTMLElement;
+}
+
+/**
+ * Native account rows keyed by account id, for both the classic sidebar (one `<a>`
+ * per account) and the redesign (react-aria tree rows). Both render the balance
+ * through the same spreadsheet cell, whose name carries the id.
+ */
+function readNativeAccountRows(): Map<string, NativeAccountRow> {
+	const root = document.querySelector(`[${NATIVE_ROOT_ATTR}]`) ?? document;
+	const rows = new Map<string, NativeAccountRow>();
+	for (const balance of root.querySelectorAll<HTMLElement>(
+		`[data-cellname^="${BALANCE_CELL_PREFIX}"]`,
+	)) {
+		const id = balance.dataset.cellname?.slice(BALANCE_CELL_PREFIX.length);
+		const row = balance.closest<HTMLElement>('a[href^="/accounts/"], [role="row"]');
+		if (id && row) rows.set(id, { row, balance });
+	}
+	return rows;
+}
+
 // Maps Actual's emotion-generated classes (css-xxxx) to their literal
 // background-color, read off the CSSOM rule (not resolved) so var(...)
 // comes back as a reference string. Scoped to <style data-emotion> sheets
@@ -146,30 +175,33 @@ function collectDotStateColors(): Map<string, string> {
 	return colors;
 }
 
-// Reads which accounts the hidden native sidebar shows as syncing. Each
-// row's `.dot` gets a per-state emotion class (e.g. css-1c4utta) rather
-// than an inline style, and its *computed* color can't be trusted either —
-// when the account is the active route, a higher-priority rule overrides
-// the rendered color without touching `.dot`'s classList. So this reads the
-// declared rule for whichever class is actually in the classList, which
-// stays correct regardless of selection.
+// Classic sidebar: each row's `.dot` gets a per-state emotion class (e.g.
+// css-1c4utta) rather than an inline style, and its *computed* color can't be
+// trusted either — when the account is the active route, a higher-priority
+// rule overrides the rendered color without touching `.dot`'s classList. So
+// this reads the declared rule for whichever class is actually in the
+// classList, which stays correct regardless of selection.
+function isClassicDotPending(row: HTMLElement, dotStateColors: Map<string, string>): boolean {
+	const dot = row.querySelector<HTMLElement>(".dot");
+	if (!dot) return false;
+	const ownColor = [...dot.classList]
+		.filter((cls) => cls !== "dot")
+		.map((cls) => dotStateColors.get(cls))
+		.find((color) => color !== undefined);
+	return ownColor === PENDING_DOT_VAR;
+}
+
+// Reads which accounts the hidden native sidebar shows as syncing.
 export function readNativeSyncingAccountIds(): Set<string> {
-	const dotStateColors = collectDotStateColors();
+	let dotStateColors: Map<string, string> | null = null;
 	const ids = new Set<string>();
-	for (const link of document.querySelectorAll<HTMLAnchorElement>(
-		'a[href^="/accounts/"][href*="-"]',
-	)) {
-		const dot = link.querySelector<HTMLElement>(".dot");
-		if (!dot) continue;
-
-		const ownColor = [...dot.classList]
-			.filter((cls) => cls !== "dot")
-			.map((cls) => dotStateColors.get(cls))
-			.find((color) => color !== undefined);
-		if (ownColor !== PENDING_DOT_VAR) continue;
-
-		const id = link.getAttribute("href")?.split("/accounts/")[1];
-		if (id) ids.add(id);
+	for (const [id, { row }] of readNativeAccountRows()) {
+		if (row.querySelector(`[title="${REDESIGN_SYNCING_TITLE}"]`)) {
+			ids.add(id);
+			continue;
+		}
+		dotStateColors ??= collectDotStateColors();
+		if (isClassicDotPending(row, dotStateColors)) ids.add(id);
 	}
 	return ids;
 }
@@ -177,13 +209,8 @@ export function readNativeSyncingAccountIds(): Set<string> {
 // Balance cell is spreadsheet-bound and re-renders on its own on sync/tx changes.
 export function readNativeAccountBalanceTexts(): Map<string, string> {
 	const texts = new Map<string, string>();
-	for (const link of document.querySelectorAll<HTMLAnchorElement>(
-		'a[href^="/accounts/"][href*="-"]',
-	)) {
-		const id = link.getAttribute("href")?.split("/accounts/")[1];
-		if (!id) continue;
-		const cell = link.querySelector<HTMLElement>('[data-cellname^="__global!balance-"]');
-		if (cell?.textContent) texts.set(id, cell.textContent);
+	for (const [id, { balance }] of readNativeAccountRows()) {
+		if (balance.textContent) texts.set(id, balance.textContent);
 	}
 	return texts;
 }
@@ -193,6 +220,16 @@ export function readNativeAccountBalanceTexts(): Map<string, string> {
 // comparing this against its last-seen value (see Sidebar.svelte) is the
 // only way to detect it outside of a bank sync completing.
 export function readNativeUncategorizedButtonText(): string {
+	// The button is a direct child of the top bar, the closest ancestor holding
+	// both test-id'd buttons; the other controls there sit in wrapper divs.
+	const notifications = document.querySelector('[data-testid="notifications-button"]');
+	const help = document.querySelector('[data-testid="help-menu-button"]');
+	if (notifications && help) {
+		let bar = notifications.parentElement;
+		while (bar && !bar.contains(help)) bar = bar.parentElement;
+		return bar?.querySelector<HTMLButtonElement>(":scope > button")?.textContent?.trim() ?? "";
+	}
+
 	for (const btn of document.querySelectorAll<HTMLButtonElement>("button")) {
 		if (btn.textContent?.includes("uncategorized")) return btn.textContent.trim();
 	}

@@ -3,10 +3,10 @@ import { watchDom } from "@lib/utilities/dom-watcher";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
 import LayoutPicker from "./LayoutPicker.svelte";
+import { NATIVE_ROOT_ATTR } from "./lib/data";
 import { LAYOUT_KEY } from "./lib/layout";
 import Sidebar from "./Sidebar.svelte";
 
-const NATIVE_ROOT_ATTR = "data-abt-native-sidebar-root";
 const MOUNT_ATTR = "data-abt-live-sidebar";
 
 function findNativeSidebarRoot(): HTMLElement | null {
