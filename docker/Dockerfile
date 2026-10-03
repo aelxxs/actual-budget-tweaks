@@ -1,6 +1,8 @@
 # Build context is the repo root (see docker-compose.yml) so this stage can
 # run the extension's own build unmodified.
-FROM node:20-alpine AS build
+# The build output is platform-independent, so build natively once instead of under
+# QEMU per target arch (where pnpm install crawls or hangs); only the runtime stage is per-arch.
+FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 WORKDIR /repo
 RUN corepack enable
 COPY . .

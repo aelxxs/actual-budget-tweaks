@@ -60,6 +60,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & push sidecar image
+        timeout-minutes: 15
         uses: docker/build-push-action@v6
         with:
           context: .
