@@ -52,8 +52,6 @@ export async function loadSidebarAccounts(
 		})[]
 	>("accounts");
 
-	console.debug("[ABT experimental sidebar] accounts ->", accounts);
-
 	const prevUncategorized = new Map(previous.map((a) => [a.id, a.uncategorized]));
 	const live = accounts.filter((a) => !a.tombstone);
 	const balances = await Promise.all(live.map((a) => loadBalance(a.id)));

@@ -87,12 +87,6 @@ export async function loadBudgetFiles(): Promise<BudgetFile[]> {
 		send<RawBudget[]>("get-budgets"),
 		send<RawRemoteFile[]>("get-remote-files").catch(() => null),
 	]);
-	console.debug(
-		"[ABT experimental sidebar] get-budgets ->",
-		budgets,
-		"get-remote-files ->",
-		remoteFiles,
-	);
 	return reconcileFiles(budgets, remoteFiles);
 }
 
@@ -113,7 +107,6 @@ export async function loadCurrentBudgetName(): Promise<string> {
 
 export async function selectBudgetFile(file: BudgetFile): Promise<void> {
 	if (file.id) {
-		console.log("closeAndLoadBudget");
 		await dispatch("closeAndLoadBudget", { fileId: file.id });
 	} else if (file.cloudFileId) {
 		// `fileId`, matching closeAndLoadBudget's convention above.

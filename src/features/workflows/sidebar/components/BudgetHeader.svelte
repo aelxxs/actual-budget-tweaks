@@ -62,7 +62,6 @@
 		try {
 			const [id, loadedFiles] = await Promise.all([loadCurrentBudgetId(), loadBudgetFiles()]);
 			currentId = id;
-			console.log(loadedFiles);
 			files = loadedFiles;
 			filesLoaded = true;
 			if (id) icon = await loadBudgetIcon(id);
@@ -162,7 +161,6 @@
 	}
 
 	async function onSelectFile(file: BudgetFile) {
-		console.log({ file });
 		if (file.state === "broken") return;
 		if (file.id && file.id === currentId) {
 			closeMenu();
