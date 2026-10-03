@@ -18,7 +18,6 @@ import { hideMonthOnScroll } from "./layout/hide-month-on-scroll";
 import { reportWidgetBackgroundColor } from "./layout/report-widget-background-color";
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
 import { sidebarAccountSpacing } from "./layout/sidebar-account-spacing";
-import { toggleColumns } from "./layout/toggle-columns";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetPageBorders } from "./readability/budget-page-borders";
@@ -49,7 +48,6 @@ const layoutAndDensity = [
 	budgetTableRowHeight,
 	reportWidgetBackgroundColor,
 	hideMonthOnScroll,
-	toggleColumns,
 	resizableTransactionColumns,
 ];
 

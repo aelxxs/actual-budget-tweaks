@@ -40,7 +40,6 @@ const sections = [
       { feature: "Category Emoji Picker", file: "src/features/appearance/category-emoji-picker/index.ts", selectors: ["data-testid=\"category-name\""], checks: ["Emoji button on budget rows", "Picker opens and applies emoji"] },
       { feature: "Highlight Uncategorized", file: "src/features/readability/highlight-uncategorized.ts", selectors: ["data-testid=\"row\""], checks: ["Uncategorized rows have yellow tint", "Categorized rows unaffected"] },
       { feature: "Resizable Columns", file: "src/features/layout/resizable-transaction-columns.ts", selectors: ["data-testid=\"transaction-table\"", "data-testid=\"row\""], checks: ["Column drag handles appear", "Columns resize and persist"] },
-      { feature: "Toggle Columns", file: "src/features/layout/toggle-columns/index.ts", selectors: ["data-testid=\"${testId}\""], checks: ["Column visibility toggles work", "Hidden columns persist"] },
       { feature: "Color Transactions", file: "src/features/readability/color-transactions.ts", selectors: ["data-testid=\"category\"", "data-testid=\"date\""], checks: ["Transaction rows colored by category"] },
       { feature: "Color Negative Balances", file: "src/features/readability/color-negative-balances.ts", selectors: ["data-testid^=\"__global!balance-\""], checks: ["Negative balances show in red"] },
       { feature: "Show Daily Available", file: "src/features/readability/show-daily-available.ts", selectors: ["data-testid=\"account-balance\""], checks: ["Daily available amount shows on account pages"] },
