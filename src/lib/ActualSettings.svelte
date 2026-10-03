@@ -475,7 +475,7 @@
 			margin: 0;
 		}
 
-		.chevron {
+		.settings-section .chevron {
 			width: 16px;
 			height: 16px;
 			flex-shrink: 0;
