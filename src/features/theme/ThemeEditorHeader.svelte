@@ -87,7 +87,7 @@
 		font-family: inherit;
 		font-size: 11px;
 		padding: 4px 10px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-buttonNormalBackground);
 		color: var(--color-sidebarItemAccentSelected);
@@ -105,7 +105,7 @@
 		font-family: inherit;
 		font-size: 11px;
 		padding: 4px 10px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-buttonNormalBackground);
 		color: var(--color-pageTextSubdued);

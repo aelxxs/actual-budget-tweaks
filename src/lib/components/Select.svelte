@@ -54,7 +54,7 @@
 		gap: 6px;
 		padding: 8px;
 		margin: 0 -8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 7%, transparent);
 	}
 

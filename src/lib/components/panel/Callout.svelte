@@ -12,7 +12,7 @@
 <style>
 	.callout {
 		padding: 5px 8px;
-		border-radius: var(--abt-panel-radius-sm);
+		border-radius: var(--abt-radius-sm);
 		border: 1px solid transparent;
 		font-size: 10.5px;
 		line-height: 1.4;

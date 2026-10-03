@@ -541,7 +541,7 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		padding: 4px 10px 5px;
-		border-radius: 6px 6px 0 0;
+		border-radius: var(--abt-radius-sm) var(--abt-radius-sm) 0 0;
 		border: var(--border);
 		border-bottom: none;
 		background: transparent;
@@ -572,7 +572,7 @@
 		font-size: 11px;
 		width: 100%;
 		padding: 5px 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-formInputBackground);
 		color: var(--color-formInputText);

@@ -611,7 +611,7 @@
 	/* ── Upload ── */
 	.dropzone {
 		border: 2px dashed var(--color-tableBorder);
-		border-radius: 8px;
+		border-radius: var(--abt-radius-sm);
 		min-height: 100px;
 		display: flex;
 		flex-direction: column;
@@ -667,7 +667,7 @@
 		font-size: 12px;
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
 		color: var(--color-pageText);
 		outline: none;
@@ -695,7 +695,7 @@
 		width: 100%;
 		padding: 7px;
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: var(--color-buttonPrimaryBackground);
 		color: var(--color-buttonPrimaryText);
 		font-size: 12px;
@@ -713,7 +713,7 @@
 		width: 100%;
 		padding: 5px;
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: transparent;
 		color: var(--color-errorText);
 		font-size: 11px;

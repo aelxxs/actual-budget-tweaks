@@ -10,7 +10,7 @@ export const CSS = `
 	.abt-tab-overview-apply-btn {
 		flex: 1;
 		height: 30px;
-		border-radius: var(--abt-panel-radius);
+		border-radius: var(--abt-radius);
 		border: none;
 		cursor: pointer;
 		font-size: 11px;
@@ -33,7 +33,7 @@ export const CSS = `
 		width: 30px;
 		height: 30px;
 		flex-shrink: 0;
-		border-radius: var(--abt-panel-radius);
+		border-radius: var(--abt-radius);
 		border: 1px solid var(--abt-panel-border);
 		background: transparent;
 		color: inherit;
@@ -52,7 +52,7 @@ export const CSS = `
 		appearance: none;
 		background: transparent;
 		border: 1px solid var(--abt-panel-border);
-		border-radius: var(--abt-panel-radius-sm);
+		border-radius: var(--abt-radius-sm);
 		color: inherit;
 		cursor: pointer;
 		font: inherit;

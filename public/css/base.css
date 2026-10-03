@@ -10,9 +10,9 @@
 	--abt-panel-border: color-mix(in srgb, var(--color-pageText) 9%, transparent);
 	--abt-panel-track: color-mix(in srgb, var(--color-pageText) 8%, transparent);
 
-	/* Follows the Border Radius setting, capped so "Pill" doesn't turn cards into capsules. */
-	--abt-panel-radius: clamp(0px, var(--border-radius, 0.5rem), 0.75rem);
-	--abt-panel-radius-sm: clamp(0px, calc(var(--border-radius, 0.5rem) * 0.5), 0.375rem);
+	/* Extension surfaces follow the Border Radius setting, capped so "Pill" doesn't turn cards into capsules. */
+	--abt-radius: clamp(0px, var(--border-radius, 0.5rem), 0.75rem);
+	--abt-radius-sm: clamp(0px, calc(var(--border-radius, 0.5rem) * 0.5), 0.375rem);
 }
 
 html,

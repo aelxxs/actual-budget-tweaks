@@ -728,7 +728,7 @@
 		flex-direction: column;
 		gap: 8px;
 		padding: 10px 12px;
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		background: color-mix(in srgb, var(--color-pageText) 3%, transparent);
 		border: var(--border);
 	}
@@ -850,7 +850,7 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		padding: 7px 12px;
-		border-radius: 8px;
+		border-radius: var(--abt-radius-sm);
 		border: 1px dashed color-mix(in srgb, var(--color-sidebarItemAccentSelected) 50%, transparent);
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
 		color: var(--color-sidebarItemAccentSelected);
@@ -882,7 +882,7 @@
 		font-family: inherit;
 		font-size: 12px;
 		padding: 5px 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-formInputBackground);
 		color: var(--color-formInputText);
@@ -959,7 +959,7 @@
 	.card {
 		background: var(--color-cardBackground);
 		border: var(--border);
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		cursor: pointer;
 		padding: 0;
 		overflow: hidden;

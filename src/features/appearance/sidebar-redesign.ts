@@ -263,7 +263,7 @@ export const sidebarRedesign = defineSetting({
 			/* ── Pin/unpin button ── */
 			button[aria-label="Unpin sidebar"],
 			button[aria-label="Pin sidebar"] {
-				border-radius: 6px;
+				border-radius: var(--abt-radius-sm);
 				transition: background 0.1s, color 0.1s;
 				color: var(--color-sidebarItemText) !important;
 				opacity: 0.6;

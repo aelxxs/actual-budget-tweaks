@@ -66,7 +66,7 @@
 		font-size: 12px;
 		font-weight: 600;
 		padding: 4px 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-formInputBackground);
 		color: var(--color-formInputText);
@@ -83,7 +83,7 @@
 		font-family: inherit;
 		font-size: 10px;
 		padding: 4px 6px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-formInputBackground);
 		color: var(--color-formInputText);
@@ -100,7 +100,7 @@
 		font-family: inherit;
 		font-size: 11px;
 		padding: 4px 10px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		cursor: pointer;
 		transition:

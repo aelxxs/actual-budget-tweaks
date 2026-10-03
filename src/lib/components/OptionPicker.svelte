@@ -45,7 +45,7 @@
 		padding: 8px 6px;
 		background: var(--color-cardBackground);
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		cursor: pointer;
 		font-family: inherit;
 		transition:

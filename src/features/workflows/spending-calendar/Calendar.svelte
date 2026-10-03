@@ -702,7 +702,7 @@
 		width: 32px;
 		height: 32px;
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: none;
 		color: var(--color-pageText);
 		cursor: pointer;
@@ -738,7 +738,7 @@
 		min-width: 200px;
 		padding: 4px;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 6px;
+		border-radius: var(--abt-radius);
 		background: var(--color-tooltipBackground, var(--color-pageBackground));
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 	}
@@ -778,7 +778,7 @@
 		font-weight: 500;
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: none;
 		color: var(--color-pageText);
 		cursor: pointer;

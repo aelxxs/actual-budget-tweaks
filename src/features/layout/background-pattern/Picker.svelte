@@ -47,7 +47,7 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		border: 1px solid var(--color-tableBorder);
 		cursor: pointer;
 		font-family: inherit;

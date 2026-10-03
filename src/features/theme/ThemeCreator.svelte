@@ -242,7 +242,7 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		padding: 8px 12px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: 1px dashed color-mix(in srgb, var(--color-sidebarItemAccentSelected) 40%, transparent);
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
 		color: var(--color-sidebarItemAccentSelected);
@@ -276,7 +276,7 @@
 		font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", monospace;
 		font-size: 11px;
 		padding: 10px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-formInputBackground);
 		color: var(--color-formInputText);
@@ -296,7 +296,7 @@
 		font-family: inherit;
 		font-size: 11px;
 		padding: 7px 12px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		border: none;
 		background: var(--color-buttonPrimaryBackground);
 		color: var(--color-buttonPrimaryText);

@@ -46,7 +46,7 @@
 		background: var(--color-sidebarBackground, #2a2b3d);
 		color: var(--color-sidebarItemText, #e0e0e0);
 		border: 1px solid color-mix(in srgb, var(--color-sidebarItemText) 10%, transparent);
-		border-radius: 10px;
+		border-radius: var(--abt-radius);
 		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 		overflow: hidden;
 	}

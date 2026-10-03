@@ -74,7 +74,7 @@
 		background: var(--color-menuBackground);
 		color: var(--color-menuItemText);
 		border: 1px solid var(--color-menuBorder);
-		border-radius: 10px;
+		border-radius: var(--abt-radius);
 		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
 		font-family: inherit;
 		overflow: hidden;

@@ -115,7 +115,7 @@
 		display: flex;
 		align-items: center;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
 		overflow: hidden;
 	}
@@ -163,7 +163,7 @@
 		font-size: 12px;
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
 		color: var(--color-pageText);
 		outline: none;
@@ -179,7 +179,7 @@
 		flex-direction: column;
 		gap: 4px;
 		padding: 10px;
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 8%, transparent);
 	}
 

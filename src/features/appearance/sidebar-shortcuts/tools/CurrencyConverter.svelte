@@ -163,7 +163,7 @@
 		flex: 1;
 		display: flex;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 8px;
+		border-radius: var(--abt-radius-sm);
 		overflow: hidden;
 		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
 	}

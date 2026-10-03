@@ -375,7 +375,7 @@
 			width: min(420px, 100%);
 			padding: 0.45rem 0.7rem;
 			font-size: 0.95rem;
-			border-radius: 6px;
+			border-radius: var(--abt-radius-sm);
 			border: var(--border);
 			background: var(--color-formInputBackground);
 			color: var(--color-formInputText);
@@ -512,7 +512,7 @@
 			gap: 0.4rem;
 			padding: 8px;
 			margin: 0 -8px;
-			border-radius: 6px;
+			border-radius: var(--abt-radius);
 			border-top: 1px solid color-mix(in srgb, var(--color-pageText) 7%, transparent);
 		}
 
@@ -547,7 +547,7 @@
 			justify-content: center;
 			color: var(--color-pageTextSubdued);
 			padding: 0.4rem;
-			border-radius: 6px;
+			border-radius: var(--abt-radius-sm);
 			border: var(--border);
 			background: none;
 			cursor: pointer;
@@ -580,7 +580,7 @@
 			justify-content: center;
 			color: var(--color-pageTextSubdued);
 			padding: 0.4rem;
-			border-radius: 6px;
+			border-radius: var(--abt-radius-sm);
 			border: var(--border);
 			background: none;
 			cursor: pointer;
@@ -666,7 +666,7 @@
 			width: 100%;
 			padding: 0.45rem 0.7rem;
 			font-size: 0.9rem;
-			border-radius: 6px;
+			border-radius: var(--abt-radius-sm);
 			border: var(--border);
 			background: var(--color-formInputBackground);
 			color: var(--color-formInputText);
@@ -701,7 +701,7 @@
 		.bug-submit {
 			padding: 0.4rem 0.8rem;
 			font-size: 0.85rem;
-			border-radius: 6px;
+			border-radius: var(--abt-radius-sm);
 			cursor: pointer;
 			border: var(--border);
 		}

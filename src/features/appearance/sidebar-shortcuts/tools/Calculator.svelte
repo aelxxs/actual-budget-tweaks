@@ -169,7 +169,7 @@
 	.calc__btn {
 		padding: 10px;
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: color-mix(in srgb, var(--color-pageText) 6%, transparent);
 		color: var(--color-pageText);
 		font-family: inherit;

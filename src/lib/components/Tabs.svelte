@@ -46,7 +46,7 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		padding: 4px 10px 5px;
-		border-radius: 6px 6px 0 0;
+		border-radius: var(--abt-radius-sm) var(--abt-radius-sm) 0 0;
 		border: var(--border);
 		border-bottom: none;
 		background: transparent;

@@ -382,7 +382,7 @@
 		background: var(--color-cardBackground, #2a2b3d);
 		color: var(--color-pageText, #e0e0e0);
 		border: 1px solid var(--color-tableBorder, rgba(255, 255, 255, 0.1));
-		border-radius: 12px;
+		border-radius: var(--abt-radius);
 		width: 420px;
 		max-height: 80vh;
 		display: flex;
@@ -448,7 +448,7 @@
 		align-items: center;
 		gap: 8px;
 		padding: 6px 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		transition:
 			background 0.08s,
 			opacity 0.08s;
@@ -604,7 +604,7 @@
 		font-size: 12px;
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
 		color: var(--color-pageText);
 		outline: none;
@@ -646,7 +646,7 @@
 		gap: 6px;
 		padding: 7px 12px;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 8px;
+		border-radius: var(--abt-radius-sm);
 		background: none;
 		color: var(--color-pageText);
 		font-family: inherit;
@@ -671,7 +671,7 @@
 		flex-direction: column;
 		gap: 6px;
 		padding: 8px 10px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		background: color-mix(in srgb, var(--color-pageText) 3%, transparent);
 		border: 1px solid color-mix(in srgb, var(--color-pageText) 6%, transparent);
 	}
@@ -714,7 +714,7 @@
 		font-family: inherit;
 		font-weight: 500;
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		cursor: pointer;
 	}
 	.btn:disabled {

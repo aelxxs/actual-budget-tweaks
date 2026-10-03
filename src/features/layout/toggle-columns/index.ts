@@ -51,7 +51,7 @@ const CSS = `
 		z-index: 9999;
 		background: var(--color-tooltipBackground);
 		border: var(--border);
-		border-radius: 6px;
+		border-radius: var(--abt-radius);
 		padding: 4px;
 		box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 		min-width: 160px;
