@@ -27,7 +27,7 @@
 </script>
 
 <div class="rp-grid">
-	{#each options as opt}
+	{#each options as opt (opt.value)}
 		<button
 			class="rp-option"
 			class:is-active={selected === opt.value}

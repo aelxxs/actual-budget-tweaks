@@ -47,7 +47,7 @@
 		</div>
 
 		<div class="flow__legend">
-			{#each legend as item}
+			{#each legend as item (item.label)}
 				<div
 					class="flow__item"
 					class:flow__item--negative={item.negative}

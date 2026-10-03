@@ -132,7 +132,7 @@
 	</div>
 
 	<ul class="pop__templates">
-		{#each entry.directives as d}
+		{#each entry.directives as d, i (i)}
 			{@const link =
 				d.type === "schedule" ? entry.linkedSchedules.find((ls) => ls.directive === d) : null}
 			<li class="pop__tpl" class:pop__tpl--missing={d.type === "schedule" && !link}>

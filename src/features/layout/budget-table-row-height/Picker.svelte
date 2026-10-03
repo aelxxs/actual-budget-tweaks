@@ -36,7 +36,7 @@
 <OptionPicker {options} {selected} onPick={pick}>
 	{#snippet preview({ value })}
 		<div class="rhp-header"></div>
-		{#each { length: PREVIEW_ROWS } as _}
+		{#each { length: PREVIEW_ROWS } as _, i (i)}
 			<div class="rhp-tr" style="height: {rowPxFor(value)}px;">
 				<div class="rhp-dot"></div>
 				<div class="rhp-bar"></div>

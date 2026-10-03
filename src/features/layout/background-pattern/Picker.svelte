@@ -23,7 +23,7 @@
 </script>
 
 <div class="bpp-grid">
-	{#each options as name}
+	{#each options as name (name)}
 		<button
 			class="bpp-option"
 			class:is-active={selected === name}

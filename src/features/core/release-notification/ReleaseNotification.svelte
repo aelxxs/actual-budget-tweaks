@@ -38,12 +38,12 @@
 
 	<div class="toast__body">
 		{#if sections && sections.length}
-			{#each sections as section}
+			{#each sections as section, i (i)}
 				{#if section.heading}
 					<div class="toast__section-heading">{section.heading}</div>
 				{/if}
 				<ul class="toast__list">
-					{#each section.items as item}
+					{#each section.items as item, i (i)}
 						<li>{item}</li>
 					{/each}
 				</ul>

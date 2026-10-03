@@ -61,7 +61,7 @@
 		<label class="ic__field">
 			<span class="ic__label">Compound</span>
 			<select class="ic__select" bind:value={compounding}>
-				{#each compoundOptions as opt}
+				{#each compoundOptions as opt (opt.value)}
 					<option value={opt.value}>{opt.label}</option>
 				{/each}
 			</select>

@@ -261,7 +261,7 @@
 			<!-- Tools -->
 			<div class="section-label">Tools</div>
 			<div class="tools">
-				{#each builtinTools as tool}
+				{#each builtinTools as tool (tool.id)}
 					{@const exists = items.some((s) => s.type === "tool" && s.url === tool.id)}
 					{#if !exists}
 						<button class="tool-btn" onclick={() => addTool(tool)}>

@@ -441,7 +441,7 @@
 				{#each groups as group, gi (group.label)}
 					{@const base = groupBase(gi)}
 					<div class="cp-group-label">{group.label}</div>
-					{#each group.items as item, ii}
+					{#each group.items as item, ii (ii)}
 						{@const idx = base + ii}
 						<button
 							type="button"
@@ -481,7 +481,7 @@
 								<ArrowUpRight class="cp-go" strokeWidth={2.2} />
 							{:else if item.kind === "theme"}
 								<span class="cp-item-glyph">
-									{#each item.swatch.slice(0, 4) as color}
+									{#each item.swatch.slice(0, 4) as color, i (i)}
 										<span class="cp-swatch-dot" style="background:{color}"></span>
 									{/each}
 								</span>

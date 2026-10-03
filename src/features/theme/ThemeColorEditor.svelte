@@ -479,7 +479,7 @@
 
 <div class="editor">
 	<div class="editor__tabs">
-		{#each COLOR_GROUPS as group, i}
+		{#each COLOR_GROUPS as group, i (group.label)}
 			<button
 				class="editor__tab"
 				class:editor__tab--active={activeGroup === i}
@@ -503,7 +503,7 @@
 	</div>
 
 	<div class="editor__rows">
-		{#each filteredKeys as key}
+		{#each filteredKeys as key (key)}
 			<ColorRow
 				label={toLabel(key)}
 				value={colors[key] ?? ""}

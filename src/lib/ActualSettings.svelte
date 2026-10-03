@@ -300,9 +300,9 @@
 			<label class="bug-label" for="bug-feature">Affected Feature</label>
 			<select id="bug-feature" class="bug-select" bind:value={bugFeature}>
 				<option value="">General / Not sure</option>
-				{#each scriptSections as section}
+				{#each scriptSections as section, i (i)}
 					<optgroup label={section.title}>
-						{#each section.items as item}
+						{#each section.items as item, i (i)}
 							{#if item.label}
 								<option value={item.label}>{item.label}</option>
 							{:else}

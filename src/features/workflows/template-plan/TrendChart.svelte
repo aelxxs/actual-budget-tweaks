@@ -78,7 +78,7 @@
 			style="display:block;overflow:visible"
 			onmouseleave={() => (hovered = null)}
 		>
-			{#each trend as point, i}
+			{#each trend as point, i (point.monthKey)}
 				{@const x = xScale(point.monthKey) ?? 0}
 				{@const bw = xScale.bandwidth()}
 				{@const top = yScale(point[valueKey])}

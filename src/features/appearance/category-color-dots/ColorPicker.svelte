@@ -18,7 +18,7 @@
 
 <div class="cp">
 	<div class="cp__grid">
-		{#each PRESET_COLORS as color}
+		{#each PRESET_COLORS as color (color)}
 			<button
 				class="cp__swatch"
 				class:is-active={currentColor === color}

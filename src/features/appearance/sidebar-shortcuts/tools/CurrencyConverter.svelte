@@ -102,7 +102,7 @@
 	<div class="conv__row">
 		<div class="conv__field">
 			<select class="conv__select" bind:value={fromCurrency} onchange={() => fetchRates()}>
-				{#each CURRENCIES as c}
+				{#each CURRENCIES as c (c)}
 					<option value={c}>{c}</option>
 				{/each}
 			</select>
@@ -119,7 +119,7 @@
 	<div class="conv__row">
 		<div class="conv__field">
 			<select class="conv__select" bind:value={toCurrency}>
-				{#each CURRENCIES as c}
+				{#each CURRENCIES as c (c)}
 					<option value={c}>{c}</option>
 				{/each}
 			</select>

@@ -245,7 +245,7 @@
 			<input class="inp" type="text" placeholder="Search emoji…" bind:value={emojiSearch} />
 			{#if !emojiSearch.trim()}
 				<div class="eg-tabs">
-					{#each groups as g}
+					{#each groups as g (g.name)}
 						<button
 							class="eg-tab"
 							class:active={activeGroup === g.name}
@@ -260,7 +260,7 @@
 			<div class="eg-grid-wrap" bind:this={gridWrap}>
 				{#if filteredEmoji}
 					<div class="eg-grid">
-						{#each filteredEmoji as e}
+						{#each filteredEmoji as e, i (i)}
 							<button
 								class="eg-btn"
 								title={e.name}
@@ -272,11 +272,11 @@
 							No results
 						</div>{/if}
 				{:else}
-					{#each groups as g}
+					{#each groups as g (g.name)}
 						<div data-group={g.name}>
 							<div class="eg-label">{g.name}</div>
 							<div class="eg-grid">
-								{#each g.emojis as e}
+								{#each g.emojis as e, i (i)}
 									{#if !e.skin_tone_support || !e.name.includes("skin tone")}
 										<button
 											class="eg-btn"

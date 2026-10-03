@@ -559,11 +559,11 @@
 		<div class="cal-loading">Loading…</div>
 	{:else}
 		<div class="cal-grid" role="main">
-			{#each dayNames as name}
+			{#each dayNames as name (name)}
 				<div class="cal-day-name">{name}</div>
 			{/each}
 
-			{#each days as day, idx}
+			{#each days as day, idx (idx)}
 				{@const lastRow = days.length - 7}
 				<!-- role="button" and tabindex are set by the same condition -->
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -604,7 +604,7 @@
 					{#if day.isCurrentMonth && day.transactions.length > 0}
 						{@const deduped = dedupeTransactions(day.transactions)}
 						<div class="cal-cell__txs">
-							{#each deduped.slice(0, 3) as tx}
+							{#each deduped.slice(0, 3) as tx, i (i)}
 								<div class="cal-tx" class:is-upcoming={tx.upcoming} class:is-missed={tx.missed}>
 									<span
 										class="cal-tx__dot"
@@ -631,7 +631,7 @@
 											acc[t.categoryId] = (acc[t.categoryId] || 0) + Math.abs(t.amount);
 										}
 										return acc;
-									}, {} as Record<string, number>)).sort((a, b) => b[1] - a[1]) as [catId, amount]}
+									}, {} as Record<string, number>)).sort((a, b) => b[1] - a[1]) as [catId, amount] (catId)}
 								{@const pct = Math.max(8, (amount / Math.abs(day.total || 1)) * 100)}
 								<div
 									class="cal-bar"

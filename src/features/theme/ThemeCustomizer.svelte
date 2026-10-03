@@ -401,7 +401,7 @@
 		/>
 		<select class="controls__creator" bind:value={creatorFilter}>
 			<option value="all">All creators</option>
-			{#each availableCreators as creator}
+			{#each availableCreators as creator, i (i)}
 				<option value={creator}>{creator === "ABT" ? "ABT (Built-in)" : creator}</option>
 			{/each}
 		</select>
@@ -440,7 +440,7 @@
 							>
 								{#if previewColors.length > 0}
 									<div class="card__swatches">
-										{#each previewColors as color}
+										{#each previewColors as color, i (i)}
 											<div class="swatch" style="background: {color};"></div>
 										{/each}
 									</div>
@@ -553,7 +553,7 @@
 								{/if}
 							</button>
 						{/if}
-						{#each filteredBuiltin as [key, theme]}
+						{#each filteredBuiltin as [key, theme] (key)}
 							{@const previewColors = getBuiltinPreviewColors(key)}
 							{@const isActive = activeThemeKey === key}
 							<button
@@ -563,7 +563,7 @@
 								title={theme.name}
 							>
 								<div class="card__swatches">
-									{#each previewColors as color}
+									{#each previewColors as color, i (i)}
 										<div class="swatch" style="background: {color};"></div>
 									{/each}
 								</div>
@@ -605,7 +605,7 @@
 									</div>
 									{#if isExpanded}
 										<ul class="card__edits-list">
-											{#each editedTokens as token}
+											{#each editedTokens as token (token)}
 												<li>{formatToken(token)}</li>
 											{/each}
 										</ul>
@@ -629,7 +629,7 @@
 						<p class="gallery__status gallery__status--error">Could not load community themes.</p>
 					{:else}
 						<div class="gallery__grid">
-							{#each filteredCommunity as theme}
+							{#each filteredCommunity as theme, i (i)}
 								{@const isActive = activeThemeKey === theme.repo}
 								{@const isLoading = applyingTheme === theme.repo}
 								<button
@@ -641,7 +641,7 @@
 									title={theme.name}
 								>
 									<div class="card__swatches">
-										{#each theme.colors.slice(0, 6) as color}
+										{#each theme.colors.slice(0, 6) as color, i (i)}
 											<div class="swatch" style="background: {color};"></div>
 										{/each}
 									</div>
@@ -692,7 +692,7 @@
 										</div>
 										{#if isExpanded}
 											<ul class="card__edits-list">
-												{#each editedTokens as token}
+												{#each editedTokens as token (token)}
 													<li>{formatToken(token)}</li>
 												{/each}
 											</ul>

@@ -48,11 +48,9 @@ export default ts.config(
 			],
 			"@typescript-eslint/no-explicit-any": "off",
 			"no-undef": "off",
-			// Pre-existing across ~15 components; enforcing per-item keys retroactively
-			// risks subtle Svelte keyed-diffing regressions without per-site review.
-			// Ratchet to error once the backlog is cleared.
-			"svelte/require-each-key": "warn",
-			"svelte/prefer-svelte-reactivity": "warn",
+			"svelte/require-each-key": "error",
+			// Flags throwaway Map/Set/Date locals; this codebase copies and reassigns state instead of mutating it.
+			"svelte/prefer-svelte-reactivity": "off",
 			// These comments suppress Svelte compiler/svelte-check a11y diagnostics
 			// (`pnpm check`), a separate diagnostic surface this ESLint config doesn't
 			// itself lint, so ESLint can't tell they're in use.

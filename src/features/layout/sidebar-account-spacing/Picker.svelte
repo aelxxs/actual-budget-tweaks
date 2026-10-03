@@ -39,7 +39,7 @@
 <OptionPicker {options} {selected} onPick={pick}>
 	{#snippet preview({ value })}
 		<div class="sp-rows" style="gap: {PREVIEW_GAP[value] ?? '4px'}">
-			{#each { length: PREVIEW_ROWS } as _}
+			{#each { length: PREVIEW_ROWS } as _, i (i)}
 				<div class="sp-row">
 					<div class="sp-dot"></div>
 					<div class="sp-bar"></div>
