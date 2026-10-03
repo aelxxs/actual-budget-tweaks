@@ -1,4 +1,4 @@
-// MVP sidecar: reverse-proxies to Actual, injecting the ABT bundle into the
+// Sidecar: reverse-proxies to Actual, injecting the ABT bundle into the
 // served HTML. No dependencies beyond Node's stdlib.
 import fs from "node:fs";
 import http from "node:http";
@@ -23,6 +23,21 @@ try {
 
 const YAHOO_CHART_PREFIX = "/abt-api/yahoo-chart/";
 const SYMBOL_RE = /^[A-Za-z0-9.\-^=]{1,20}$/;
+// Only what ABT's stock widgets send; anything else is dropped, not relayed.
+const YAHOO_ALLOWED_PARAMS = new Set(["interval", "range", "period1", "period2"]);
+const YAHOO_TIMEOUT_MS = 10_000;
+
+// Connection-scoped headers a proxy must not forward (RFC 9110 §7.6.1).
+const HOP_BY_HOP_HEADERS = [
+	"connection",
+	"keep-alive",
+	"proxy-authenticate",
+	"proxy-authorization",
+	"te",
+	"trailer",
+	"transfer-encoding",
+	"upgrade",
+];
 
 const CONTENT_TYPES = {
 	".js": "application/javascript; charset=utf-8",
@@ -67,7 +82,8 @@ function serveStatic(req, res, urlPath) {
 			: path.join(ASSETS_DIR, rel);
 
 	const base = rel === "browser-shim.js" ? __dirname : ASSETS_DIR;
-	if (!filePath.startsWith(base)) {
+	// Trailing separator so a sibling like /assets-other can't pass the prefix check.
+	if (!filePath.startsWith(base + path.sep)) {
 		res.writeHead(400).end("bad path");
 		return;
 	}
@@ -83,6 +99,7 @@ function serveStatic(req, res, urlPath) {
 		res.writeHead(200, {
 			"Content-Type": CONTENT_TYPES[ext] || "application/octet-stream",
 			"Cache-Control": "no-store",
+			"X-Content-Type-Options": "nosniff",
 		});
 		if (rel === "browser-shim.js") {
 			res.end(data.toString("utf8").replace("__ABT_VERSION__", ABT_VERSION));
@@ -112,16 +129,20 @@ async function handleYahooChart(req, res, urlPath, search) {
 	}
 
 	const target = new URL(`https://query2.finance.yahoo.com/v8/finance/chart/${symbol}`);
-	target.search = search;
+	for (const [key, value] of new URLSearchParams(search)) {
+		if (YAHOO_ALLOWED_PARAMS.has(key)) target.searchParams.set(key, value);
+	}
 
 	try {
-		const upstream = await fetch(target);
+		const upstream = await fetch(target, { signal: AbortSignal.timeout(YAHOO_TIMEOUT_MS) });
 		const body = Buffer.from(await upstream.arrayBuffer());
 		res.writeHead(upstream.status, {
 			"Content-Type": upstream.headers.get("content-type") || "application/json",
+			"X-Content-Type-Options": "nosniff",
 		});
 		res.end(body);
-	} catch {
+	} catch (err) {
+		console.warn(`[abt-sidecar] yahoo relay failed for ${symbol}:`, err.message);
 		res.writeHead(502).end();
 	}
 }
@@ -133,6 +154,18 @@ function proxyToActual(req, res) {
 	const outHeaders = { ...req.headers, host: actualUrl.host };
 	delete outHeaders["if-none-match"];
 	delete outHeaders["if-modified-since"];
+	const connectionTokens = String(req.headers.connection || "")
+		.split(",")
+		.map((t) => t.trim().toLowerCase());
+	for (const name of [...HOP_BY_HOP_HEADERS, ...connectionTokens]) delete outHeaders[name];
+	// Actual trusts X-Forwarded-For from private peers (this container), and keys
+	// its login rate limit on it. Appending the real peer makes a client-supplied
+	// value unable to stand in for the true address.
+	const peer = req.socket.remoteAddress;
+	if (peer) {
+		const prior = req.headers["x-forwarded-for"];
+		outHeaders["x-forwarded-for"] = prior ? `${prior}, ${peer}` : peer;
+	}
 
 	const upstreamReqOpts = {
 		protocol: actualUrl.protocol,
@@ -172,7 +205,9 @@ function proxyToActual(req, res) {
 	});
 
 	upstreamReq.on("error", (err) => {
-		res.writeHead(502).end(`upstream error: ${err.message}`);
+		console.warn("[abt-sidecar] upstream error:", err.message);
+		if (!res.headersSent) res.writeHead(502);
+		res.end("Bad gateway");
 	});
 	req.pipe(upstreamReq);
 }
