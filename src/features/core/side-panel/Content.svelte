@@ -194,6 +194,10 @@
 		margin-left: auto;
 		cursor: pointer;
 		color: var(--color-pageText);
-		background: var(--color-buttonNormalBackground);
+		background: color-mix(in srgb, var(--color-pageText) 8%, var(--color-buttonNormalBackground));
+		transition: background 0.12s ease;
+	}
+	.abt-side-drawer-close-button:hover {
+		background: color-mix(in srgb, var(--color-pageText) 14%, var(--color-buttonNormalBackground));
 	}
 </style>
