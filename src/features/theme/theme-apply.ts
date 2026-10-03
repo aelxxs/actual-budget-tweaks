@@ -319,10 +319,26 @@ export const BUILTIN_CSS = `:root {
 	--color-chartQual5: var(--ctp-blue);
 	--color-chartQual6: var(--ctp-pink);
 	--color-chartQual7: var(--ctp-green);
-	--color-chartQual8: var(--ctp-gold);
+	--color-chartQual8: var(--ctp-mauve);
 	--color-chartQual9: var(--ctp-rosewater);
 
 	--border: 1px solid var(--color-tableBorder);
+}
+
+/* Lift soft pastels for charts only (chroma toward a 0.17 floor); already-vivid
+   palettes stay as they are. Gated, since an unsupported value would blank the token. */
+@supports (color: oklch(from red l c h)) {
+	:root {
+		--color-chartQual1: oklch(from var(--ctp-teal) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual2: oklch(from var(--ctp-yellow) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual3: oklch(from var(--ctp-peach) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual4: oklch(from var(--ctp-red) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual5: oklch(from var(--ctp-blue) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual6: oklch(from var(--ctp-pink) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual7: oklch(from var(--ctp-green) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual8: oklch(from var(--ctp-mauve) l max(c, min(c * 1.5, 0.17)) h);
+		--color-chartQual9: oklch(from var(--ctp-rosewater) l max(c, min(c * 1.5, 0.17)) h);
+	}
 }`;
 
 export function isCommunityTheme(value: string): boolean {
