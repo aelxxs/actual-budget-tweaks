@@ -914,7 +914,6 @@
 	.gallery {
 		max-height: 440px;
 		overflow-y: auto;
-		background: var(--color-pageBackground);
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
@@ -931,7 +930,8 @@
 		position: sticky;
 		top: 0;
 		z-index: 1;
-		background: var(--color-pageBackground);
+		/* Matches the settings section card this gallery sits in. */
+		background: var(--color-cardBackground);
 		padding: 4px 0;
 		margin: -4px 0 4px;
 	}
