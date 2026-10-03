@@ -1,4 +1,5 @@
 import { sidepanel } from "@features/core/side-panel";
+import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -40,10 +41,17 @@ function updateActiveState(): void {
 export function openCalendar(): void {
 	if (calendarContainer) return;
 
+	// The side panel's drawer is appended to this same container, so an open panel
+	// (e.g. Insights) would otherwise be taken for the content column.
+	sidepanel.close();
+
 	const target = document.querySelector(CONTENT_CONTAINER) as HTMLElement;
 	if (!target) return;
 
-	const lastChild = target.lastElementChild as HTMLElement;
+	const columns = Array.from(target.children).filter(
+		(child) => !child.hasAttribute(SIDEBAR_ATTR),
+	) as HTMLElement[];
+	const lastChild = columns[columns.length - 1];
 	if (!lastChild) return;
 
 	previousPath = window.location.pathname;
@@ -56,7 +64,7 @@ export function openCalendar(): void {
 		child.style.display = "none";
 	}
 	// Also hide siblings of lastChild (e.g. Plan button) but not the nav header
-	for (const sibling of Array.from(target.children) as HTMLElement[]) {
+	for (const sibling of columns) {
 		if (sibling === lastChild || sibling === target.firstElementChild) continue;
 		hiddenChildren.push({ el: sibling, display: sibling.style.display });
 		sibling.style.display = "none";
