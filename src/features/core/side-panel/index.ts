@@ -153,6 +153,7 @@ export const sidePanel = {
 				}),
 			);
 			body.appendChild(sidebar);
+			body.style.gridTemplateColumns = `1fr ${sidebarWidth}px`;
 		};
 
 		document.addEventListener(PANEL_OPEN_EVENT, async (event) => {
