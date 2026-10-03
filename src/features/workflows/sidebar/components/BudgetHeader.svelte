@@ -40,6 +40,7 @@
 	let editValue = $state("");
 	let files = $state<BudgetFile[]>([]);
 	let currentId = $state<string | undefined>(undefined);
+	let filesLoaded = $state(false);
 
 	let icon = $state<BudgetIcon | undefined>(undefined);
 	let iconBtnEl = $state<HTMLButtonElement | HTMLSpanElement | undefined>(undefined);
@@ -63,9 +64,12 @@
 			currentId = id;
 			console.log(loadedFiles);
 			files = loadedFiles;
+			filesLoaded = true;
 			if (id) icon = await loadBudgetIcon(id);
 		} catch (err) {
 			console.error("[ABT experimental sidebar] failed to load budget header data", err);
+		} finally {
+			filesLoaded = true;
 		}
 	});
 
@@ -181,6 +185,21 @@
 
 <svelte:window onclick={closeMenu} onkeydown={onWindowKeydown} />
 
+{#snippet fileStatus()}
+	{#if currentFile}
+		{@const StatusIcon = stateIcon(currentFile.state)}
+		<span class="budget-select-status">
+			<StatusIcon strokeWidth={1.5} />
+			{STATUS_CAPTION[currentFile.state]}
+		</span>
+	{:else if !filesLoaded}
+		<!-- Zero-width space gives the placeholder the caption's line height. -->
+		<span class="budget-select-status" aria-hidden="true"
+			><span class="skel-status"></span>&#8203;</span
+		>
+	{/if}
+{/snippet}
+
 {#snippet iconContent()}
 	{#if icon?.type === "emoji"}
 		<span class="budget-icon-emoji">{icon.value}</span>
@@ -254,13 +273,7 @@
 
 			<span class="budget-select-text">
 				<span class="budget-name">{displayName}</span>
-				{#if currentFile}
-					{@const StatusIcon = stateIcon(currentFile.state)}
-					<span class="budget-select-status">
-						<StatusIcon strokeWidth={1.5} />
-						{STATUS_CAPTION[currentFile.state]}
-					</span>
-				{/if}
+				{@render fileStatus()}
 			</span>
 			<ChevronsUpDown class="chevron-updown" />
 		</button>
@@ -292,13 +305,7 @@
 					>
 						<span class="budget-name">{displayName}</span>
 					</button>
-					{#if currentFile}
-						{@const StatusIcon = stateIcon(currentFile.state)}
-						<span class="budget-select-status">
-							<StatusIcon strokeWidth={1.5} />
-							{STATUS_CAPTION[currentFile.state]}
-						</span>
-					{/if}
+					{@render fileStatus()}
 				{/if}
 			</div>
 			<button

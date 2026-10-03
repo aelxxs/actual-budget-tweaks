@@ -1514,9 +1514,16 @@
 	flex-shrink: 0;
 	background: var(--sb-neutral-muted);
 }
+.sidebar .skel-status {
+	width: 72px;
+	height: 8px;
+	border-radius: 4px;
+	background: var(--sb-neutral-muted);
+}
 .sidebar .skel-glyph,
 .sidebar .skel-name,
-.sidebar .skel-amount {
+.sidebar .skel-amount,
+.sidebar .skel-status {
 	animation: skel-pulse 1.4s ease-in-out infinite;
 }
 @keyframes skel-pulse {
