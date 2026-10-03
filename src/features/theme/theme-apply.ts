@@ -27,10 +27,10 @@ export function setRootProperty(root: HTMLElement, name: string, value: string) 
 
 export const BUILTIN_CSS = `:root {
 	/* Budget */
-	--color-budgetCurrentMonth: var(--ctp-crust);
-	--color-budgetHeaderCurrentMonth: var(--ctp-base);
-	--color-budgetHeaderOtherMonth: var(--ctp-base);
-	--color-budgetOtherMonth: var(--ctp-mantle);
+	--color-budgetCurrentMonth: var(--ctp-mantle);
+	--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 30%);
+	--color-budgetHeaderOtherMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 30%);
+	--color-budgetOtherMonth: color-mix(in srgb, var(--ctp-crust), var(--ctp-mantle) 40%);
 	--color-budgetNumberNegative: var(--ctp-red);
 	--color-budgetNumberNeutral: var(--ctp-overlay1);
 	--color-budgetNumberPositive: var(--ctp-green);
@@ -90,7 +90,7 @@ export const BUILTIN_CSS = `:root {
 	--color-calendarText: var(--ctp-text);
 
 	/* Card */
-	--color-cardBackground: var(--ctp-crust);
+	--color-cardBackground: var(--ctp-mantle);
 	--color-cardBorder: var(--ctp-lavender);
 	--color-cardShadow: var(--ctp-crust);
 
@@ -175,7 +175,7 @@ export const BUILTIN_CSS = `:root {
 	--color-mobileTransactionSelected: var(--ctp-lavender);
 	--color-mobileViewTheme: var(--ctp-base);
 
-	--color-modalBackground: var(--ctp-crust);
+	--color-modalBackground: var(--ctp-mantle);
 	--color-modalBorder: var(--ctp-surface0);
 
 	/* Notes */
@@ -260,7 +260,7 @@ export const BUILTIN_CSS = `:root {
 	--color-tableBorderHover: var(--ctp-mauve);
 	--color-tableBorderSelected: var(--ctp-mauve);
 	--color-tableBorderSeparator: var(--ctp-overlay0);
-	--color-tableHeaderBackground: var(--ctp-crust);
+	--color-tableHeaderBackground: color-mix(in srgb, var(--ctp-base), var(--ctp-surface0) 25%);
 	--color-tableHeaderText: var(--ctp-subtext0);
 	--color-tableHeaderSubText: var(--ctp-text);
 	--color-tableRowBackgroundHighlight: var(--ctp-base);
