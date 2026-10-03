@@ -37,6 +37,15 @@ export function setValue(key: string, value: unknown) {
 	}
 }
 
+export async function removeValue(key: string): Promise<void> {
+	if (isContextInvalidated()) return;
+	try {
+		await browser.storage.local.remove("local:" + key);
+	} catch {
+		// best effort, like the other helpers
+	}
+}
+
 export function normalizeBaseUrl(input: string | null | undefined): string | null {
 	if (!input) return null;
 	try {

@@ -3,7 +3,7 @@ import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, removeValue, setValue } from "@lib/utilities/store";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
 import { getInsights, getProgressCents, invalidateCache, loadData, resetData } from "./data";
@@ -67,7 +67,7 @@ export const categoryTemplateInsights = defineSetting({
 	init: async (ctx) => {
 		const legacyBarsEnabled = await getValue<boolean | null>(LEGACY_BARS_KEY, null);
 		if (legacyBarsEnabled !== null) {
-			await browser.storage.local.remove(`local:${LEGACY_BARS_KEY}`);
+			await removeValue(LEGACY_BARS_KEY);
 			if (!legacyBarsEnabled) {
 				await setValue(ctx.key, false);
 				return;

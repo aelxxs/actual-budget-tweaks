@@ -22,6 +22,18 @@
 		}
 	}
 
+	function relayUrl(url) {
+		try {
+			const target = new URL(url);
+			const match =
+				target.hostname === "query2.finance.yahoo.com" &&
+				target.pathname.match(/^\/v8\/finance\/chart\/(.+)$/);
+			return match ? `/abt-api/yahoo-chart/${match[1]}${target.search}` : null;
+		} catch {
+			return null;
+		}
+	}
+
 	// pin user-link to server location
 	writeLocalStorage(LOCAL_PREFIX + "user-link", location.origin + "/");
 
@@ -33,25 +45,12 @@
 			getManifest: () => ({ version: "__ABT_VERSION__" }),
 			onMessage: { addListener() {}, removeListener() {} },
 			onInstalled: { addListener() {} },
-			// Try direct fetch first; only Yahoo's chart API lacks CORS.
+			// Yahoo's chart API never sends CORS headers, so it goes straight to the
+			// sidecar relay; a direct attempt would only fail and log a console error.
 			sendMessage: async (message) => {
 				if (message?.type !== "fetch") return undefined;
 				try {
-					const res = await fetch(message.url);
-					if (!res.ok) return { ok: false, status: res.status };
-					const text = await res.text();
-					const data = message.responseType === "json" ? JSON.parse(text) : text;
-					return { ok: true, data };
-				} catch {
-					// Likely a CORS block — fall through to the relay below.
-				}
-				try {
-					const target = new URL(message.url);
-					const match =
-						target.hostname === "query2.finance.yahoo.com" &&
-						target.pathname.match(/^\/v8\/finance\/chart\/(.+)$/);
-					if (!match) return { ok: false, status: 0 };
-					const res = await fetch(`/abt-api/yahoo-chart/${match[1]}${target.search}`);
+					const res = await fetch(relayUrl(message.url) ?? message.url);
 					if (!res.ok) return { ok: false, status: res.status };
 					const text = await res.text();
 					const data = message.responseType === "json" ? JSON.parse(text) : text;
@@ -82,6 +81,21 @@
 					for (const [k, v] of Object.entries(items)) {
 						changes[k] = { newValue: v };
 						writeLocalStorage(k, v);
+					}
+					for (const cb of changeListeners) {
+						try {
+							cb(changes, "local");
+						} catch {
+							// ignore listener errors
+						}
+					}
+				},
+				remove: async (keys) => {
+					const changes = {};
+					for (const key of typeof keys === "string" ? [keys] : keys) {
+						if (localStorage.getItem(key) === null) continue;
+						changes[key] = { oldValue: readLocalStorage(key), newValue: undefined };
+						localStorage.removeItem(key);
 					}
 					for (const cb of changeListeners) {
 						try {
