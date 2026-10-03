@@ -32,7 +32,7 @@
 		icons,
 		groupAccounts,
 		budgetId,
-		vscode = false,
+		split = false,
 		onToggleGroupMode,
 		onRenameAccount,
 		onCloseAccount,
@@ -41,7 +41,7 @@
 		icons: Record<string, AccountIconData>;
 		groupAccounts: boolean;
 		budgetId: string | undefined;
-		vscode?: boolean;
+		split?: boolean;
 		onToggleGroupMode: () => void;
 		onRenameAccount: (accountId: string, name: string) => void;
 		onCloseAccount: (accountId: string) => void;
@@ -337,7 +337,7 @@
 	<div
 		class="accounts"
 		use:scrollFade
-		use:overlayScrollbar={{ enabled: vscode }}
+		use:overlayScrollbar={{ enabled: split }}
 		onscroll={hideHoverCard}
 	>
 		<div class="all-accounts section-head" class:active={isAllAccountsActive()}>

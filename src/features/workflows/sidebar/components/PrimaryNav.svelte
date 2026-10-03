@@ -8,24 +8,8 @@
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { Page, matchesPage } from "@lib/utilities/pages";
 	import { getValue, setValue } from "@lib/utilities/store";
-	import {
-		Calendar,
-		CalendarDays,
-		ChartColumn,
-		ChevronDown,
-		Ellipsis,
-		LayoutGrid,
-		Settings,
-		SlidersHorizontal,
-		Tag,
-		Users,
-	} from "lucide-svelte";
-
-	const navItems = [
-		{ label: "Budget", page: Page.Budget, icon: LayoutGrid },
-		{ label: "Reports", page: Page.Reports, icon: ChartColumn },
-		{ label: "Schedules", page: Page.Schedules, icon: Calendar },
-	];
+	import { CalendarDays, ChevronDown, Ellipsis } from "lucide-svelte";
+	import { moreItems, navItems } from "../lib/nav";
 
 	// Only shown if the user has the Spending Calendar feature enabled — reads
 	// its checkbox setting directly (getValue/setValue is a flat 1:1 mapping
@@ -54,13 +38,6 @@
 		if (isCalendarOpen()) closeCalendar();
 		navigate(`/${page}`);
 	}
-
-	const moreItems = [
-		{ label: "Payees", page: Page.Payees, icon: Users },
-		{ label: "Rules", page: Page.Rules, icon: SlidersHorizontal },
-		{ label: "Tags", page: Page.Tags, icon: Tag },
-		{ label: "Settings", page: Page.Settings, icon: Settings },
-	];
 
 	const MORE_KEY = "experimental-sidebar-more-expanded";
 	let moreExpanded = $state(false);

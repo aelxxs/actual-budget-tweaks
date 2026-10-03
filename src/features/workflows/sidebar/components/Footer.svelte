@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { dispatch } from "@lib/utilities/actual-api";
-	import { Columns2, PanelLeftClose, Plus, Redo2, Undo2 } from "lucide-svelte";
+	import { PanelLeftClose, Plus, Redo2, Undo2 } from "lucide-svelte";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import { isMac } from "../lib/search";
 
-	const { onCollapse, onSwitchLayout }: { onCollapse?: () => void; onSwitchLayout?: () => void } =
-		$props();
+	const { onCollapse }: { onCollapse?: () => void } = $props();
 
 	const undoShortcut = $derived(isMac() ? "⌘Z" : "Ctrl+Z");
 	const redoShortcut = $derived(isMac() ? "⌘⇧Z" : "Ctrl+Shift+Z");
@@ -47,17 +46,6 @@
 		>
 			<Redo2 strokeWidth={1.5} />
 		</button>
-		{#if onSwitchLayout}
-			<button
-				type="button"
-				class="collapse"
-				aria-label="Switch to VS Code-style layout"
-				use:tooltip={{ text: "Switch to VS Code-style layout", placement: "top" }}
-				onclick={onSwitchLayout}
-			>
-				<Columns2 strokeWidth={1.5} />
-			</button>
-		{/if}
 		{#if onCollapse}
 			<button
 				type="button"

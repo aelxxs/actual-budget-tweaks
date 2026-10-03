@@ -126,7 +126,7 @@
 	}
 	.sidebar > .budget,
 	.sidebar > .body,
-	.sidebar .vscode-panel,
+	.sidebar .split-panel,
 	.sidebar.collapsed > .rail-avatar,
 	.sidebar.collapsed > .rail-icon,
 	.sidebar.collapsed > .rail-nav,
@@ -147,12 +147,11 @@
 	}
 }
 
-/* ===== VS Code-style layout: icon activity bar + accounts subsidebar =====
-   .activity-bar deliberately mirrors .sidebar.collapsed's own shape (same
-   align-items/gap/padding, same .rail-* classes below) — same visual weight
-   as the classic collapsed rail, just living beside a panel instead of being
-   the sidebar's only content. */
-.sidebar.vscode {
+/* ===== Split layout: icon activity bar + accounts panel =====
+   .activity-bar shares the collapsed rail's layout (see "Collapsed icon
+   rail" below) — it just lives beside a panel instead of being the
+   sidebar's only content. */
+.sidebar.split {
 	flex-direction: row;
 	align-items: stretch;
 	padding: 0;
@@ -161,19 +160,15 @@
 .sidebar .activity-bar {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	gap: 4px;
 	width: 4.25rem;
 	flex-shrink: 0;
 	height: 100%;
-	padding: 12px 0 8px;
 	border-right: 1px solid var(--sb-border);
-	background-color: color-mix(in oklab, var(--sb-bg), black 10%);
 }
 .sidebar .rail-spacer {
 	flex: 1 1 auto;
 }
-.sidebar .vscode-panel {
+.sidebar .split-panel {
 	display: flex;
 	flex-direction: column;
 	flex: 1 1 auto;
@@ -183,7 +178,8 @@
 }
 
 /* ===== Collapsed icon rail ===== */
-.sidebar.collapsed {
+.sidebar.collapsed,
+.sidebar .activity-bar {
 	align-items: center;
 	gap: 4px;
 	padding: 12px 0 8px;
@@ -205,6 +201,13 @@
 	cursor: pointer;
 	flex-shrink: 0;
 	margin-bottom: 4px;
+}
+.sidebar .rail-avatar.has-icon {
+	background: var(--sb-neutral-muted);
+	color: var(--sb-fg-default);
+}
+.sidebar .rail-avatar .budget-icon-emoji {
+	font-size: 20px;
 }
 .sidebar .rail-avatar .budget-icon-img {
 	position: absolute;
@@ -1102,7 +1105,7 @@
 }
 
 /* Accounts */
-/* Wraps .accounts (which scrolls) so vscode mode's custom scrollbar thumb
+/* Wraps .accounts (which scrolls) so split mode's custom scrollbar thumb
    (see overlay-scrollbar.ts) has a non-scrolling element to be positioned
    against — an absolutely positioned child of .accounts itself would scroll
    away with the content it's meant to represent. */
@@ -1382,14 +1385,14 @@
 .sidebar .account-list.indented .account {
 	padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
 }
-/* VS Code layout: the indent has to live inside the row (padding), not on
+/* Split layout: the indent has to live inside the row (padding), not on
    the list container, otherwise a selected nested row's background would
    stop 9px short of the panel's left edge instead of reaching it like its
    unindented siblings. */
-.sidebar.vscode .account-list.indented {
+.sidebar.split .account-list.indented {
 	padding-left: 0;
 }
-.sidebar.vscode .account-list.indented .account {
+.sidebar.split .account-list.indented .account {
 	padding-left: 22px;
 }
 .sidebar .account {
@@ -1412,15 +1415,15 @@
 .sidebar .account.selected .account-name {
 	color: var(--sb-accent);
 }
-.sidebar.vscode .account {
+.sidebar.split .account {
 	border-radius: 0;
 }
-.sidebar.vscode .all-accounts {
+.sidebar.split .all-accounts {
 	border-radius: 0;
 	margin-bottom: -0.75rem;
 	padding-left: 11px;
 }
-.sidebar.vscode .group-header {
+.sidebar.split .group-header {
 	border-radius: 0;
 }
 /* Sync-status glyphs (dot grammar) */
@@ -2040,6 +2043,13 @@
 .sidebar .ctx-item:hover svg {
 	color: var(--sb-fg-default);
 }
+.sidebar .ctx-item.active,
+.sidebar .ctx-item.active svg {
+	color: var(--sb-accent);
+}
+.sidebar .ctx-item.active {
+	background: var(--sb-accent-muted);
+}
 .sidebar .ctx-item.danger {
 	color: var(--sb-danger);
 }
@@ -2104,14 +2114,14 @@
 		height: 15px;
 	}
 }
-/* VS Code layout's accounts subpanel mirrors VS Code's own file-tree
-   selection style instead: no accent bar, just a flush-left highlight — so
+/* The split layout's accounts panel uses a flush-left highlight instead
+   of the accent bar — so
    the reserved gutter the bar lives in (see .accounts above) isn't needed
    here either. */
-.sidebar.vscode .account.selected::before {
+.sidebar.split .account.selected::before {
 	display: none;
 }
-.sidebar.vscode .accounts {
+.sidebar.split .accounts {
 	width: 100%;
 	margin-left: 0;
 	padding-left: 0;
@@ -2122,7 +2132,7 @@
 	   overlay-scrollbar.ts). */
 	scrollbar-width: none;
 }
-.sidebar.vscode .accounts::-webkit-scrollbar {
+.sidebar.split .accounts::-webkit-scrollbar {
 	display: none;
 }
 .sidebar .abt-overlay-thumb {

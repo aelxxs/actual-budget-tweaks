@@ -18,6 +18,7 @@
 	import Rail from "./components/Rail.svelte";
 	import { invalidateAccountDetail } from "./lib/account-detail";
 	import { loadCurrentBudgetId, loadCurrentBudgetName } from "./lib/budgets";
+	import { LAYOUT_KEY, toLayout, type SidebarLayout } from "./lib/layout";
 	import { applyComputedForeground } from "./lib/contrast";
 	import type { SidebarAccount } from "./lib/data";
 	import {
@@ -73,17 +74,11 @@
 		setValue(COLLAPSED_KEY, true);
 	}
 
-	// ---- layout mode: "full" (text nav + accounts, the original design) vs
-	// "vscode" (icon-only activity bar + a dedicated accounts subsidebar,
-	// mirroring VS Code's activity bar + file tree split) ----
-	const LAYOUT_MODE_KEY = "experimental-sidebar-layout-mode";
+	// ---- layout: "standard" (text nav + accounts, the original design) vs
+	// "split" (icon-only activity bar + a dedicated accounts panel). Chosen
+	// from the extension settings (see ./layout) ----
 	const ACTIVITY_BAR_WIDTH = RAIL_WIDTH;
-	let layoutMode = $state<"full" | "vscode">("full");
-
-	function toggleLayoutMode() {
-		layoutMode = layoutMode === "full" ? "vscode" : "full";
-		setValue(LAYOUT_MODE_KEY, layoutMode);
-	}
+	let layoutMode = $state<SidebarLayout>("standard");
 
 	// ---- resize ----
 	const MIN_WIDTH = 240;
@@ -92,10 +87,10 @@
 	const WIDTH_KEY = "experimental-sidebar-width";
 	let sidebarWidth = $state(DEFAULT_WIDTH);
 	// total on-screen width covers both modes: the classic single-column
-	// rail/expanded sidebar, and vscode mode's fixed activity bar plus its
+	// rail/expanded sidebar, and split mode's fixed activity bar plus its
 	// optional (collapsible) resizable accounts panel.
 	const sidebarTotalWidth = $derived(
-		layoutMode === "vscode"
+		layoutMode === "split"
 			? collapsed
 				? ACTIVITY_BAR_WIDTH
 				: `calc(${ACTIVITY_BAR_WIDTH} + ${sidebarWidth}px)`
@@ -184,6 +179,8 @@
 				shortcutsFeatureEnabled = Boolean(changes[`local:${SHORTCUTS_KEY}`].newValue);
 			if (`local:${SEARCH_KEY}` in changes)
 				searchEnabled = Boolean(changes[`local:${SEARCH_KEY}`].newValue);
+			if (`local:${LAYOUT_KEY}` in changes)
+				layoutMode = toLayout(changes[`local:${LAYOUT_KEY}`].newValue);
 		};
 		browser.storage.onChanged.addListener(onStorageChange);
 		return () => browser.storage.onChanged.removeListener(onStorageChange);
@@ -323,13 +320,13 @@
 				getValue<boolean>(COLLAPSED_KEY, false),
 				getValue<number>(WIDTH_KEY, DEFAULT_WIDTH),
 				getValue<boolean>(GROUP_MODE_KEY, true),
-				getValue<"full" | "vscode">(LAYOUT_MODE_KEY, "full"),
+				getValue<unknown>(LAYOUT_KEY, "standard"),
 				loadIconCache(),
 			]);
 		collapsed = storedCollapsed;
 		sidebarWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, storedWidth));
 		groupAccounts = storedGroupMode;
-		layoutMode = storedLayoutMode;
+		layoutMode = toLayout(storedLayoutMode);
 		icons = loadedIcons;
 		requestAnimationFrame(() => (transitionsReady = true));
 
@@ -355,12 +352,12 @@
 	class="sidebar"
 	class:resizing
 	class:transitions-ready={transitionsReady}
-	class:vscode={layoutMode === "vscode"}
-	class:collapsed={collapsed && layoutMode === "full"}
+	class:split={layoutMode === "split"}
+	class:collapsed={collapsed && layoutMode === "standard"}
 	bind:this={sidebarEl}
 	style="width: {sidebarTotalWidth}"
 >
-	{#if layoutMode === "vscode"}
+	{#if layoutMode === "split"}
 		<div class="activity-bar">
 			<Rail
 				{budgetName}
@@ -369,14 +366,13 @@
 				{icons}
 				onExpand={expandSidebar}
 				onSearch={openPalette}
-				vscode
+				split
 				panelCollapsed={collapsed}
 				onTogglePanel={() => (collapsed ? expandSidebar() : collapseSidebar())}
-				onSwitchLayout={toggleLayoutMode}
 			/>
 		</div>
 		{#if !collapsed}
-			<div class="vscode-panel">
+			<div class="split-panel">
 				<BudgetHeader
 					name={budgetName}
 					showBudgetIcon={false}
@@ -410,7 +406,7 @@
 						{icons}
 						{groupAccounts}
 						{budgetId}
-						vscode
+						split
 						onToggleGroupMode={toggleGroupMode}
 						onRenameAccount={handleRenameAccount}
 						onCloseAccount={handleCloseAccount}
@@ -462,7 +458,7 @@
 					onCloseAccount={handleCloseAccount}
 				/>
 			{/if}
-			<Footer onCollapse={collapseSidebar} onSwitchLayout={toggleLayoutMode} />
+			<Footer onCollapse={collapseSidebar} />
 		</div>
 	{/if}
 

@@ -236,6 +236,12 @@
 				"description": "Replace the native sidebar with a rebuilt one wired to live account data.",
 				"icon": null,
 				"group": "Sidebar"
+			},
+			{
+				"label": "Live sidebar layout",
+				"description": "Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
+				"icon": null,
+				"group": "Sidebar"
 			}
 		]
 	}

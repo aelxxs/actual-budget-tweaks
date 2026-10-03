@@ -11,26 +11,20 @@
 	import { Page, matchesPage } from "@lib/utilities/pages";
 	import { getValue } from "@lib/utilities/store";
 	import {
-		Banknote,
-		Calendar,
 		CalendarDays,
-		ChartColumn,
-		LayoutGrid,
-		List,
+		Ellipsis,
 		PanelLeftClose,
 		PanelLeftOpen,
 		Plus,
 		Search,
-		Settings,
-		SlidersHorizontal,
-		Tag,
-		Users,
 	} from "lucide-svelte";
+	import { portal } from "../actions/portal";
 	import { scrollFade } from "../actions/scroll-fade";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import type { BudgetIcon } from "../lib/budgets";
 	import { loadBudgetIcon, removeBudgetIcon, setBudgetIcon } from "../lib/budgets";
 	import type { SidebarAccount } from "../lib/data";
+	import { moreItems, navItems } from "../lib/nav";
 
 	// See PrimaryNav.svelte for why this watches DOM mutations rather than
 	// `watchRoute`/history — cross-world navigation isn't observable there,
@@ -70,10 +64,9 @@
 		icons,
 		onExpand,
 		onSearch,
-		vscode = false,
+		split = false,
 		panelCollapsed = false,
 		onTogglePanel,
-		onSwitchLayout,
 	}: {
 		budgetName: string;
 		budgetId?: string;
@@ -81,19 +74,19 @@
 		icons: Record<string, AccountIconData>;
 		onExpand: () => void;
 		onSearch: () => void;
-		// vscode: this rail is the always-on activity bar of the VS Code-style
-		// layout (see Sidebar.svelte) rather than the classic layout's
-		// collapsed-rail substitute — it carries the full nav (moreItems below)
-		// since no PrimaryNav exists alongside it, and only takes over showing
-		// accounts itself while its companion accounts panel is collapsed.
-		vscode?: boolean;
+		// split: this rail is the always-on activity bar of the split layout
+		// (see Sidebar.svelte) rather than the classic layout's
+		// collapsed-rail substitute — it only takes over showing accounts
+		// itself while its companion accounts panel is collapsed.
+		split?: boolean;
 		panelCollapsed?: boolean;
 		onTogglePanel?: () => void;
-		onSwitchLayout?: () => void;
 	} = $props();
 
+	// In split mode the panel's BudgetHeader hides its own icon, so this
+	// avatar is where the icon is edited; the collapsed rail's just expands.
 	let budgetIcon = $state<BudgetIcon | undefined>(undefined);
-	let iconBtnEl = $state<HTMLButtonElement | undefined>();
+	let avatarEl = $state<HTMLButtonElement | undefined>();
 	let iconPickerOpen = $state(false);
 	let iconAnchorRect = $state<DOMRect | undefined>(undefined);
 
@@ -105,9 +98,13 @@
 		loadBudgetIcon(budgetId).then((icon) => (budgetIcon = icon));
 	});
 
-	function openIconPicker(): void {
-		if (!iconBtnEl) return;
-		iconAnchorRect = iconBtnEl.getBoundingClientRect();
+	function onAvatarClick() {
+		if (!split) {
+			onExpand();
+			return;
+		}
+		if (!avatarEl) return;
+		iconAnchorRect = avatarEl.getBoundingClientRect();
 		iconPickerOpen = true;
 	}
 
@@ -123,20 +120,34 @@
 		if (budgetId) await removeBudgetIcon(budgetId);
 	}
 
-	const navItems = [
-		{ label: "Budget", page: Page.Budget, icon: LayoutGrid },
-		{ label: "Reports", page: Page.Reports, icon: ChartColumn },
-		{ label: "Schedules", page: Page.Schedules, icon: Calendar },
-	];
+	const avatarLabel = $derived(split ? "Change budget icon" : `${budgetName} — expand`);
 
-	// Only shown in vscode mode — see the `vscode` prop doc above.
-	const moreItems = [
-		{ label: "Payees", page: Page.Payees, icon: Users },
-		{ label: "Bank Sync", page: Page.BankSync, icon: Banknote },
-		{ label: "Rules", page: Page.Rules, icon: SlidersHorizontal },
-		{ label: "Tags", page: Page.Tags, icon: Tag },
-		{ label: "Settings", page: Page.Settings, icon: Settings },
-	];
+	// The rail only has room to spare when it isn't also listing accounts;
+	// otherwise the extra pages fold into a "More" menu.
+	const showAccounts = $derived(!split || panelCollapsed);
+
+	let moreOpen = $state(false);
+
+	$effect(() => {
+		if (!showAccounts) moreOpen = false;
+	});
+
+	let moreX = $state(0);
+	let moreY = $state(0);
+	const moreActive = $derived(Boolean(tick) && moreItems.some((item) => matchesPage(item.page)));
+
+	function toggleMore(e: MouseEvent) {
+		e.stopPropagation();
+		if (moreOpen) {
+			moreOpen = false;
+			return;
+		}
+		const MH = 200;
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		moreX = rect.right + 8;
+		moreY = Math.min(rect.top, window.innerHeight - MH - 8);
+		moreOpen = true;
+	}
 
 	const budgetInitials = $derived(
 		budgetName
@@ -169,18 +180,25 @@
 	}
 </script>
 
+<svelte:window
+	onclick={() => (moreOpen = false)}
+	onkeydown={(e) => {
+		if (e.key === "Escape") moreOpen = false;
+	}}
+/>
+
 <button
 	type="button"
 	class="rail-avatar"
-	class:has-icon={vscode && !!budgetIcon}
-	bind:this={iconBtnEl}
-	onclick={vscode ? openIconPicker : onExpand}
-	aria-label={vscode ? "Change budget icon" : `${budgetName} — expand`}
-	use:tooltip={vscode ? "Change budget icon" : `${budgetName} — expand`}
+	class:has-icon={!!budgetIcon}
+	bind:this={avatarEl}
+	onclick={onAvatarClick}
+	aria-label={avatarLabel}
+	use:tooltip={avatarLabel}
 >
-	{#if vscode && budgetIcon?.type === "emoji"}
+	{#if budgetIcon?.type === "emoji"}
 		<span class="budget-icon-emoji">{budgetIcon.value}</span>
-	{:else if vscode && budgetIcon}
+	{:else if budgetIcon}
 		<img class="budget-icon-img" src={budgetIcon.value} alt="" />
 	{:else}
 		{budgetInitials}
@@ -196,6 +214,7 @@
 		onClose={() => (iconPickerOpen = false)}
 	/>
 {/if}
+
 <button
 	type="button"
 	class="rail-icon"
@@ -230,8 +249,21 @@
 			<CalendarDays strokeWidth={1.5} />
 		</button>
 	{/if}
+	{#if showAccounts}
+		<button
+			type="button"
+			class="rail-icon"
+			class:active={moreActive || moreOpen}
+			aria-label="More"
+			aria-expanded={moreOpen}
+			onclick={toggleMore}
+			use:tooltip={"More"}
+		>
+			<Ellipsis strokeWidth={1.5} />
+		</button>
+	{/if}
 </div>
-{#if vscode}
+{#if !showAccounts}
 	<div class="rail-divider"></div>
 	<div class="rail-nav">
 		{#each moreItems as item (item.page)}
@@ -248,7 +280,27 @@
 		{/each}
 	</div>
 {/if}
-{#if !vscode || panelCollapsed}
+
+{#if moreOpen}
+	<div use:portal class="ctx" style="top: {moreY}px; left: {moreX}px">
+		{#each moreItems as item (item.page)}
+			<button
+				type="button"
+				class="ctx-item"
+				class:active={isActive(item.page)}
+				onclick={() => {
+					moreOpen = false;
+					go(item.page);
+				}}
+			>
+				<item.icon strokeWidth={1.5} />
+				<span>{item.label}</span>
+			</button>
+		{/each}
+	</div>
+{/if}
+
+{#if showAccounts}
 	<div class="rail-divider"></div>
 	<div class="rail-list" use:scrollFade>
 		{#each sections as section (section.label)}
@@ -286,7 +338,7 @@
 	<div class="rail-spacer"></div>
 {/if}
 <div class="rail-foot">
-	{#if vscode}
+	{#if split}
 		<button
 			type="button"
 			class="rail-icon"
@@ -299,15 +351,6 @@
 			{:else}
 				<PanelLeftClose strokeWidth={1.5} />
 			{/if}
-		</button>
-		<button
-			type="button"
-			class="rail-icon"
-			onclick={onSwitchLayout}
-			aria-label="Switch to standard layout"
-			use:tooltip={"Switch to standard layout"}
-		>
-			<List strokeWidth={1.5} />
 		</button>
 	{:else}
 		<button

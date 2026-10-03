@@ -37,7 +37,7 @@ import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/themeLoader";
 import type { Setting } from "./types";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
-import { experimentalSidebar } from "./workflows/sidebar";
+import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 import { templatePlan } from "./workflows/template-plan";
@@ -87,7 +87,7 @@ const workflows = [
 	spendingCalendar,
 ];
 
-const experimental = [experimentalSidebar];
+const experimental = [experimentalSidebar, experimentalSidebarLayout];
 
 export const coreScripts = [
 	sidePanel,

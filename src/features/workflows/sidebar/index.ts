@@ -2,6 +2,8 @@ import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
+import LayoutPicker from "./LayoutPicker.svelte";
+import { LAYOUT_KEY } from "./lib/layout";
 import Sidebar from "./Sidebar.svelte";
 
 const NATIVE_ROOT_ATTR = "data-abt-native-sidebar-root";
@@ -67,4 +69,18 @@ export const experimentalSidebar = defineSetting({
 			instance = null;
 		};
 	},
+});
+
+export const experimentalSidebarLayout = defineSetting({
+	type: "custom",
+	label: "Live sidebar layout",
+	description:
+		"Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
+	group: "Sidebar",
+	context: {
+		key: LAYOUT_KEY,
+		defaultValue: "standard",
+	},
+	component: LayoutPicker,
+	init: () => {},
 });

@@ -1,6 +1,6 @@
 // Firefox has no CSS-controllable overlay scrollbar once scrollbar-color or
 // scrollbar-width is customized (it falls back to a real, space-reserving
-// classic one — see the vscode .accounts rule in sidebar.css), so a themed,
+// classic one — see the split .accounts rule in sidebar.css), so a themed,
 // non-reserving scrollbar has to be drawn by hand instead of requested from
 // the browser. The native scrollbar is hidden entirely; this draws and
 // drives a thumb that never affects .accounts' layout width.
