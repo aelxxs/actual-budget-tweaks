@@ -1,6 +1,36 @@
 # Changelog
 
 
+## v0.1.77
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.76...v0.1.77)
+
+### 🚀 Enhancements
+
+- Goal funding in the balance menu and balance status pills ([0b8ecb8](https://github.com/aelxxs/actual-budget-tweaks/commit/0b8ecb8))
+- Default to the Midnight theme ([7c5e52a](https://github.com/aelxxs/actual-budget-tweaks/commit/7c5e52a))
+
+### 🔥 Performance
+
+- Skip the Add account scan while the live sidebar is active ([dc289b4](https://github.com/aelxxs/actual-budget-tweaks/commit/dc289b4))
+- Cut repeated full-page scans in DOM watchers ([45e3ac5](https://github.com/aelxxs/actual-budget-tweaks/commit/45e3ac5))
+
+### 🩹 Fixes
+
+- Restore chart slot 8 and lift pastel chart colors ([eda8819](https://github.com/aelxxs/actual-budget-tweaks/commit/eda8819))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.76 ([f328c18](https://github.com/aelxxs/actual-budget-tweaks/commit/f328c18))
+
+### 🎨 Styles
+
+- Side panel cards use the current-month color and tabs the panel border ([63e59e2](https://github.com/aelxxs/actual-budget-tweaks/commit/63e59e2))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.76
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.75...v0.1.76)
