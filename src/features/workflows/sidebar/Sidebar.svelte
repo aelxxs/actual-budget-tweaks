@@ -58,7 +58,7 @@
 
 	// ---- collapsed rail ----
 	const COLLAPSED_KEY = "experimental-sidebar-collapsed";
-	const RAIL_WIDTH = "4.25rem"; // matches .activity-bar's width in sidebar.css
+	const RAIL_WIDTH = "4rem"; // matches .activity-bar's width in sidebar.css
 	let collapsed = $state(false);
 
 	// Gates .sidebar.transitions-ready (sidebar.css) so hydrating a persisted
