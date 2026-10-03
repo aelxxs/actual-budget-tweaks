@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
+	import Section from "@lib/components/panel/Section.svelte";
 	import Tabs from "@lib/components/Tabs.svelte";
 	import { applyGlobalCSS } from "@lib/utilities/dom";
 	import { onMount } from "svelte";
@@ -180,25 +181,27 @@
 			</button>
 		</div>
 		<div class="creator__rows">
-			<div class="creator__group-label">Accents</div>
-			{#each ACCENT_VARS as v (v.key)}
-				<ColorRow
-					label={v.label}
-					value={colors[v.key] ?? "#000000"}
-					onHexInput={(val) => handleHexInput(v.key, val)}
-					onPickerChange={(val) => handleColorChange(v.key, val)}
-				/>
-			{/each}
+			<Section title="Accents" card={false}>
+				{#each ACCENT_VARS as v (v.key)}
+					<ColorRow
+						label={v.label}
+						value={colors[v.key] ?? "#000000"}
+						onHexInput={(val) => handleHexInput(v.key, val)}
+						onPickerChange={(val) => handleColorChange(v.key, val)}
+					/>
+				{/each}
+			</Section>
 
-			<div class="creator__group-label">Surfaces & Text</div>
-			{#each SURFACE_VARS as v (v.key)}
-				<ColorRow
-					label={v.label}
-					value={colors[v.key] ?? "#000000"}
-					onHexInput={(val) => handleHexInput(v.key, val)}
-					onPickerChange={(val) => handleColorChange(v.key, val)}
-				/>
-			{/each}
+			<Section title="Surfaces & Text" card={false}>
+				{#each SURFACE_VARS as v (v.key)}
+					<ColorRow
+						label={v.label}
+						value={colors[v.key] ?? "#000000"}
+						onHexInput={(val) => handleHexInput(v.key, val)}
+						onPickerChange={(val) => handleColorChange(v.key, val)}
+					/>
+				{/each}
+			</Section>
 		</div>
 	{:else}
 		<div class="creator__css">
@@ -258,15 +261,6 @@
 		flex: 1;
 		overflow-y: auto;
 		padding: 4px 0 16px;
-	}
-
-	.creator__group-label {
-		font-size: 9px;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--color-pageTextSubdued);
-		font-weight: 600;
-		padding: 12px 12px 4px;
 	}
 
 	.creator__css {

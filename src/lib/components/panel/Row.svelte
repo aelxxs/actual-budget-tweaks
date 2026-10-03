@@ -9,6 +9,7 @@
 		strong = false,
 		indent = false,
 		dim = false,
+		sensitive = false,
 		leading,
 		children,
 	}: {
@@ -19,6 +20,8 @@
 		strong?: boolean;
 		indent?: boolean;
 		dim?: boolean;
+		/** Blurs the name in privacy mode too, e.g. payees. */
+		sensitive?: boolean;
 		leading?: Snippet;
 		/** Extra content under the line, e.g. a progress bar. */
 		children?: Snippet;
@@ -28,7 +31,7 @@
 <div class="panel-row" class:strong class:indent class:dim>
 	<div class="line">
 		{@render leading?.()}
-		<span class="name">
+		<span class="name" class:abt-privacy-number={sensitive}>
 			{name}{#if meta}<span class="meta">{meta}</span>{/if}
 		</span>
 		{#if value !== undefined}
