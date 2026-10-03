@@ -3,16 +3,12 @@
 	import { onMount } from "svelte";
 	import { applyGlobalCSS } from "@lib/utilities/dom";
 	import { getValue, setValue } from "@lib/utilities/store";
+	import { ROW_HEIGHT_OPTIONS } from "./options";
 
 	let { ctx }: { ctx: { key: string; defaultValue: string; css: (v: string) => string } } =
 		$props();
 
-	const options = [
-		{ value: "1.75rem", label: "X-Slim", rowPx: 11 },
-		{ value: "2rem", label: "Slim", rowPx: 14 },
-		{ value: "2.25rem", label: "Normal", rowPx: 17 },
-		{ value: "2.5rem", label: "Relaxed", rowPx: 20 },
-	];
+	const options = ROW_HEIGHT_OPTIONS;
 
 	const PREVIEW_ROWS = 4;
 

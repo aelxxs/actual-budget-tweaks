@@ -37,6 +37,7 @@ import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/themeLoader";
 import type { Setting } from "./types";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
+import { budgetViewOptions } from "./workflows/budget-view-options";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
@@ -96,6 +97,7 @@ export const coreScripts = [
 	releaseNotification,
 	privacyMode,
 	sidebarSettingsMenu,
+	budgetViewOptions,
 ];
 
 export const scriptSections = [
