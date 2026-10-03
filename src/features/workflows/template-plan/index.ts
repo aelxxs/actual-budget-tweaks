@@ -1,10 +1,13 @@
 import { sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
 import { icon } from "@lib/icons";
+import type { Schedule } from "@lib/types/actual-schema";
+import { query, send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, setValue } from "@lib/utilities/store";
+import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import {
 	diffSnapshots,
 	finishSnapshots,
@@ -22,9 +25,6 @@ import {
 } from "@lib/utilities/template-plan/actual-data";
 import { previewMonthTemplateTotal } from "@lib/utilities/template-plan/next-month-coverage";
 import { createPriorityPlanner } from "@lib/utilities/template-plan/priority-plan";
-import { query, send } from "@lib/utilities/actual-api";
-import type { Schedule } from "@lib/types/actual-schema";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
 import {
 	BREAKDOWN_STORAGE_KEY,
@@ -112,10 +112,12 @@ function removeTriggerButton(): void {
 
 // ── Drawer open/close ─────────────────────────────────────────────────
 let drawerOpen = false;
+let drawerMounted = false;
 
 function openPanel(): void {
 	if (!enabled || !isBudgetPage()) return;
 	drawerOpen = true;
+	drawerMounted = false;
 	removeTriggerButton();
 	const bodyNode = ensurePanelMounted();
 	sidepanel.open({ bodyNode, persist: true, width: SIDE_PANEL_WIDTH });
@@ -562,9 +564,13 @@ function tick(): void {
 
 	// The side panel's built-in close (X) button has no notification hook,
 	// so detect it by polling isOpen() against our tracked state.
-	if (drawerOpen && !sidepanel.isOpen()) {
-		drawerOpen = false;
-		ensureTriggerButton();
+	if (drawerOpen) {
+		if (sidepanel.isOpen()) {
+			drawerMounted = true;
+		} else if (drawerMounted) {
+			drawerOpen = false;
+			ensureTriggerButton();
+		}
 	}
 }
 
