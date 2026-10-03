@@ -98,7 +98,8 @@ const CSS = `
 		max-width: ${MAX_SIDEBAR_WIDTH}px;
 		min-height: 0;
 		overflow-y: auto;
-		border-left: var(--border);
+		/* Derived, not --border: themes may omit tableBorder or set it to the page background. */
+		border-left: 1px solid var(--abt-panel-border);
 		animation: abt-side-drawer-enter 110ms cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 	.abt-side-drawer-sidebar.${SIDEBAR_CLOSING_CLASS} {

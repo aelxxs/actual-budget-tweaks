@@ -157,7 +157,7 @@
 		justify-content: space-between;
 		gap: 8px;
 		padding: 12px 12px 10px;
-		border-bottom: var(--border);
+		border-bottom: 1px solid var(--abt-panel-border);
 		background: var(--color-pageBackground);
 	}
 

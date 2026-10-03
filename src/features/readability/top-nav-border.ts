@@ -12,7 +12,7 @@ export const headerBorder = defineSetting({
 	},
 	css: () => `
 		.css-pq65pe {
-			border-bottom: var(--border);
+			border-bottom: 1px solid var(--abt-panel-border);
 		}
 		.abt-side-drawer-sidebar {
 			border-top: none;
