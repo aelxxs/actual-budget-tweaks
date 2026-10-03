@@ -2,15 +2,28 @@ import type { ActualTable, SendMethodMap, TableName } from "@lib/types/actual-sc
 
 let reqId = 0;
 
-const RETRY_INTERVAL = 1000;
-const MAX_RETRIES = 15;
+// Retries only until the main-world bridge acks receipt, so a short interval
+// can't duplicate a slow in-flight request.
+const RETRY_INTERVAL = 100;
+const MAX_RETRIES = 150;
 
 function request<T>(event: string, detail: Record<string, unknown>): Promise<T> {
 	const id = `abt-api-${++reqId}-${Date.now()}`;
 	return new Promise((resolve, reject) => {
 		let resolved = false;
+		let acked = false;
 		let retries = 0;
 		let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+		function onAck(e: Event) {
+			const raw = (e as CustomEvent).detail;
+			const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+			if (d.id !== id) return;
+			acked = true;
+			document.removeEventListener("abt:api:ack", onAck);
+			if (retryTimer) clearTimeout(retryTimer);
+			retryTimer = null;
+		}
 
 		function onResponse(e: Event) {
 			const raw = (e as CustomEvent).detail;
@@ -27,7 +40,7 @@ function request<T>(event: string, detail: Record<string, unknown>): Promise<T> 
 		}
 
 		function retry() {
-			if (resolved) return;
+			if (resolved || acked) return;
 			if (++retries >= MAX_RETRIES) {
 				cleanup();
 				reject(new Error("API bridge timeout"));
@@ -39,10 +52,12 @@ function request<T>(event: string, detail: Record<string, unknown>): Promise<T> 
 
 		function cleanup() {
 			document.removeEventListener("abt:api:response", onResponse);
+			document.removeEventListener("abt:api:ack", onAck);
 			if (retryTimer) clearTimeout(retryTimer);
 		}
 
 		document.addEventListener("abt:api:response", onResponse);
+		document.addEventListener("abt:api:ack", onAck);
 		dispatch();
 		retryTimer = setTimeout(retry, RETRY_INTERVAL);
 	});

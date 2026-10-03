@@ -1,15 +1,24 @@
 // @ts-nocheck
 export default defineUnlistedScript(async () => {
-	function waitForApi(cb, retries = 50) {
+	function waitForApi(cb, onFail, retries = 50) {
 		if (window.$q && window.$query && window.$send) return cb();
-		if (retries <= 0) return;
-		setTimeout(() => waitForApi(cb, retries - 1), 200);
+		if (retries <= 0) return onFail();
+		setTimeout(() => waitForApi(cb, onFail, retries - 1), 200);
 	}
 
-	function waitForActions(cb, retries = 50) {
+	function waitForActions(cb, onFail, retries = 50) {
 		if (window.__actionsForMenu) return cb();
-		if (retries <= 0) return;
-		setTimeout(() => waitForActions(cb, retries - 1), 200);
+		if (retries <= 0) return onFail();
+		setTimeout(() => waitForActions(cb, onFail, retries - 1), 200);
+	}
+
+	// The client re-dispatches until acked, so the same id can arrive more than once.
+	const accepted = new Set();
+	function accept(id) {
+		if (accepted.has(id)) return false;
+		accepted.add(id);
+		document.dispatchEvent(new CustomEvent("abt:api:ack", { detail: JSON.stringify({ id }) }));
+		return true;
 	}
 
 	function parseDetail(e) {
@@ -27,47 +36,56 @@ export default defineUnlistedScript(async () => {
 
 	document.addEventListener("abt:api:query", (e) => {
 		const { id, table, filter, select } = parseDetail(e);
-		if (!id || !table) return;
+		if (!id || !table || !accept(id)) return;
 
-		waitForApi(async () => {
-			try {
-				let q = window.$q(table);
-				if (filter) q = q.filter(filter);
-				q = q.select(select || "*");
-				const result = await window.$query(q);
-				respond(id, result.data || [], null);
-			} catch (err) {
-				respond(id, [], String(err));
-			}
-		});
+		waitForApi(
+			async () => {
+				try {
+					let q = window.$q(table);
+					if (filter) q = q.filter(filter);
+					q = q.select(select || "*");
+					const result = await window.$query(q);
+					respond(id, result.data || [], null);
+				} catch (err) {
+					respond(id, [], String(err));
+				}
+			},
+			() => respond(id, [], "Actual API unavailable"),
+		);
 	});
 
 	document.addEventListener("abt:api:send", (e) => {
 		const { id, method, args } = parseDetail(e);
-		if (!id || !method) return;
+		if (!id || !method || !accept(id)) return;
 
-		waitForApi(async () => {
-			try {
-				const result = await window.$send(method, args);
-				respond(id, result, null);
-			} catch (err) {
-				respond(id, null, String(err));
-			}
-		});
+		waitForApi(
+			async () => {
+				try {
+					const result = await window.$send(method, args);
+					respond(id, result, null);
+				} catch (err) {
+					respond(id, null, String(err));
+				}
+			},
+			() => respond(id, null, "Actual API unavailable"),
+		);
 	});
 
 	document.addEventListener("abt:api:dispatch", (e) => {
 		const { id, action, args } = parseDetail(e);
-		if (!id || !action) return;
+		if (!id || !action || !accept(id)) return;
 
-		waitForActions(async () => {
-			try {
-				const result = await window.__actionsForMenu[action](args);
-				respond(id, result, null);
-			} catch (err) {
-				respond(id, null, String(err));
-			}
-		});
+		waitForActions(
+			async () => {
+				try {
+					const result = await window.__actionsForMenu[action](args);
+					respond(id, result, null);
+				} catch (err) {
+					respond(id, null, String(err));
+				}
+			},
+			() => respond(id, null, "Actual actions unavailable"),
+		);
 	});
 
 	document.addEventListener("abt:api:navigate", (e) => {
