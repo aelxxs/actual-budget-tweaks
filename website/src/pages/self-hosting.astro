@@ -1,0 +1,299 @@
+---
+import Base from "../layouts/Base.astro";
+
+const compose = `services:
+  actual:
+    image: actualbudget/actual-server:latest
+    restart: unless-stopped
+    volumes:
+      - ./actual-data:/data
+
+  abt:
+    image: ghcr.io/aelxxs/abt-sidecar:latest
+    restart: unless-stopped
+    environment:
+      ACTUAL_ORIGIN: http://actual:5006
+    ports:
+      - "3005:3005"
+    depends_on:
+      - actual`;
+---
+
+<Base
+	title="Self-hosting — Actual Budget Tweaks"
+	description="Run Actual Budget Tweaks as a sidecar next to your Actual server, so every browser gets it without installing the extension."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/" class="docs__back">&larr; Back to home</a>
+			<h1>Self-hosting</h1>
+			<p class="docs__lead">
+				The sidecar is a small proxy that sits in front of your Actual server and adds Actual Budget
+				Tweaks to every browser that opens it. No extension needed.
+			</p>
+		</header>
+
+		<section class="docs__section">
+			<h2>Extension or sidecar?</h2>
+			<div class="docs__table-wrap">
+				<table>
+					<thead>
+						<tr><th></th><th>Extension</th><th>Sidecar</th></tr>
+					</thead>
+					<tbody>
+						<tr><td>Install</td><td>Once per browser</td><td>Once per server</td></tr>
+						<tr><td>Works in</td><td>Chrome and Firefox</td><td>Any browser that opens your Actual address</td></tr>
+						<tr><td>Updates</td><td>Automatic, through the browser</td><td>When you pull a new image</td></tr>
+						<tr><td>Settings saved</td><td>In the extension</td><td>In each browser's site storage</td></tr>
+					</tbody>
+				</table>
+			</div>
+			<p>
+				Use one or the other for a given Actual address. If the extension is pointed at the same
+				address as the sidecar, Actual Budget Tweaks loads twice.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Quick start</h2>
+			<p>Add the sidecar next to Actual in your <code>docker-compose.yml</code>:</p>
+			<pre><code>{compose}</code></pre>
+			<p>
+				Start it with <code>docker compose up -d</code>, then open <code>http://your-server:3005</code>.
+				The image runs on both <code>amd64</code> and <code>arm64</code>.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Adding it to an existing setup</h2>
+			<ol>
+				<li>Add the <code>abt</code> service above, with <code>ACTUAL_ORIGIN</code> set to the address your Actual container answers on.</li>
+				<li>Point your reverse proxy (Caddy, nginx, Traefik…) at <code>abt:3005</code> instead of <code>actual:5006</code>.</li>
+				<li>Stop publishing Actual's own port, so the sidecar is the only way in.</li>
+			</ol>
+			<p>
+				Your login, budgets and server settings are untouched. The sidecar only changes the page
+				Actual sends to the browser.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Configuration</h2>
+			<div class="docs__table-wrap">
+				<table>
+					<thead>
+						<tr><th>Variable</th><th>Default</th><th>What it does</th></tr>
+					</thead>
+					<tbody>
+						<tr><td><code>ACTUAL_ORIGIN</code></td><td><code>http://actual:5006</code></td><td>Where the sidecar reaches your Actual server</td></tr>
+						<tr><td><code>PORT</code></td><td><code>3005</code></td><td>Port the sidecar listens on inside the container</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="docs__section">
+			<h2>Updating</h2>
+			<p>
+				<code>latest</code> follows every release. Update with
+				<code>docker compose pull &amp;&amp; docker compose up -d</code>. To stay on a release, use its
+				version tag instead, for example <code>ghcr.io/aelxxs/abt-sidecar:0.1.75</code>.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Where your settings live</h2>
+			<ul>
+				<li>Tweaks settings are saved in each browser's storage for your Actual address. They don't sync between devices, and clearing site data resets them.</li>
+				<li>The sidecar stores nothing. Your budget data stays in Actual.</li>
+			</ul>
+		</section>
+
+		<section class="docs__section">
+			<h2>Security</h2>
+			<p>What the sidecar does to the traffic passing through it:</p>
+			<ul>
+				<li>Adds the Tweaks scripts and styles to Actual's page. Every other request and response passes through unchanged.</li>
+				<li>
+					Sends a Content-Security-Policy that only runs scripts from your own server, and only allows
+					connections to the services Tweaks uses: Yahoo Finance (stock widgets), GitHub (community
+					themes, release notes and Actual's own update check), and exchangerate-api.com (currency conversion).
+				</li>
+				<li>Adds the real client address to <code>X-Forwarded-For</code>, so Actual's login rate limit still applies per visitor.</li>
+				<li>Relays stock price lookups to Yahoo Finance, which doesn't allow direct browser requests. Only requests from your own Actual page are accepted, and the symbol and parameters are validated.</li>
+				<li>Runs as an unprivileged user inside the container.</li>
+			</ul>
+			<p>Recommended:</p>
+			<ul>
+				<li>Serve it over HTTPS through your reverse proxy.</li>
+				<li>Don't expose Actual's port directly.</li>
+				<li>
+					If you've set <code>ACTUAL_TRUSTED_PROXIES</code> on Actual, include the sidecar's Docker
+					network. Otherwise Actual sees every visitor as the sidecar's address, and one person's failed
+					logins can rate-limit everyone.
+				</li>
+			</ul>
+		</section>
+
+		<section class="docs__section">
+			<h2>Troubleshooting</h2>
+			<dl class="docs__faq">
+				<dt>Tweaks doesn't appear</dt>
+				<dd>
+					Make sure you're opening the sidecar's address, not Actual's. Opening
+					<code>/abt/browser-shim.js</code> on that address should return a script.
+				</dd>
+				<dt>Features show up twice</dt>
+				<dd>The extension is also pointed at this address. Remove the address from the extension, or disable it.</dd>
+				<dt>Actual won't load inside another page</dt>
+				<dd>The sidecar blocks embedding on other sites (for example a dashboard iframe), to prevent clickjacking.</dd>
+				<dt>An Actual feature can't reach an outside service</dt>
+				<dd>
+					The security policy only allows the services listed above. Please
+					<a href="https://github.com/aelxxs/actual-budget-tweaks/issues" target="_blank" rel="noopener">open an issue</a>
+					with the feature and the blocked address shown in the browser console.
+				</dd>
+			</dl>
+		</section>
+	</main>
+</Base>
+
+<style>
+	.docs {
+		padding-block: 3rem 5rem;
+		max-inline-size: 760px;
+	}
+
+	.docs__header h1 {
+		font-size: clamp(1.8rem, 4vw, 2.4rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+	}
+
+	.docs__lead {
+		color: var(--text-secondary);
+		font-size: 1rem;
+		max-inline-size: 60ch;
+	}
+
+	.docs__back {
+		font-size: 0.85rem;
+		color: var(--text-secondary);
+		text-decoration: none;
+	}
+
+	.docs__back:hover {
+		color: inherit;
+	}
+
+	.docs__section {
+		margin-block-start: 2.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.docs__section h2 {
+		font-size: 1.3rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+	}
+
+	.docs__section p,
+	.docs__section li,
+	.docs__faq dd {
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--text-secondary);
+	}
+
+	.docs__section ul,
+	.docs__section ol {
+		padding-inline-start: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	.docs code {
+		font-family: var(--mono);
+		font-size: 0.85em;
+		padding: 0.1em 0.35em;
+		border-radius: 4px;
+		background: var(--bg-alt);
+		color: var(--text);
+		overflow-wrap: anywhere;
+	}
+
+	.docs pre {
+		margin: 0;
+		padding: 1rem 1.1rem;
+		border-radius: var(--radius-sm);
+		background: var(--dark-bg);
+		border: 1px solid var(--dark-border);
+		overflow-x: auto;
+	}
+
+	.docs pre code {
+		padding: 0;
+		background: none;
+		color: var(--dark-text-light);
+		font-size: 0.82rem;
+		line-height: 1.6;
+		overflow-wrap: normal;
+	}
+
+	.docs__table-wrap {
+		overflow-x: auto;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+	}
+
+	table {
+		inline-size: 100%;
+		border-collapse: collapse;
+		font-size: 0.88rem;
+	}
+
+	th,
+	td {
+		text-align: start;
+		padding: 0.6rem 0.85rem;
+		vertical-align: top;
+	}
+
+	th {
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-secondary);
+		background: var(--bg-alt);
+	}
+
+	tbody tr + tr td {
+		border-block-start: 1px solid var(--border);
+	}
+
+	td:first-child {
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	.docs__faq {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.docs__faq dt {
+		font-size: 0.95rem;
+		font-weight: 600;
+		margin-block-start: 0.75rem;
+	}
+
+	.docs__faq dt:first-child {
+		margin-block-start: 0;
+	}
+</style>

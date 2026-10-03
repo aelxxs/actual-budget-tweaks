@@ -1,7 +1,10 @@
 ---
 const year = new Date().getFullYear();
 
+const base = import.meta.env.BASE_URL;
+
 const links = [
+	{ label: "Self-hosting", href: `${base}self-hosting`, internal: true },
 	{ label: "Source", href: "https://github.com/aelxxs/actual-budget-tweaks" },
 	{ label: "Chrome", href: "https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm" },
 	{ label: "Firefox", href: "https://github.com/aelxxs/actual-budget-tweaks/releases/latest" },
@@ -20,7 +23,7 @@ const links = [
 			</div>
 			<div class="cluster" style="--cluster-gap:1.25rem">
 				{links.map(l => (
-					<a href={l.href} target="_blank" rel="noopener" class="footer__link">{l.label}</a>
+					<a href={l.href} target={l.internal ? undefined : "_blank"} rel={l.internal ? undefined : "noopener"} class="footer__link">{l.label}</a>
 				))}
 			</div>
 		</div>
