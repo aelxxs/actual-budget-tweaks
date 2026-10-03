@@ -1,6 +1,47 @@
 # Changelog
 
 
+## v0.1.73
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.72...v0.1.73)
+
+### 🚀 Enhancements
+
+- Budget view options in the budget table header ([74bdae3](https://github.com/aelxxs/actual-budget-tweaks/commit/74bdae3))
+- Calendar polish ([1d20477](https://github.com/aelxxs/actual-budget-tweaks/commit/1d20477))
+- Remove Toggle Columns in favour of Actual's native column manager ([ba71c7f](https://github.com/aelxxs/actual-budget-tweaks/commit/ba71c7f))
+- Theme Actual's new sidebar, date picker and sync highlight tokens ([3cd1844](https://github.com/aelxxs/actual-budget-tweaks/commit/3cd1844))
+
+### 🩹 Fixes
+
+- Match theme gallery background to its settings card ([3da9be8](https://github.com/aelxxs/actual-budget-tweaks/commit/3da9be8))
+- Point website Firefox links to GitHub releases ([4ad541f](https://github.com/aelxxs/actual-budget-tweaks/commit/4ad541f))
+- Adapt column resizing to Actual's new transaction table ([1d64874](https://github.com/aelxxs/actual-budget-tweaks/commit/1d64874))
+
+### 💅 Refactors
+
+- Split the spending calendar into modules ([882952d](https://github.com/aelxxs/actual-budget-tweaks/commit/882952d))
+- Drive alternating transaction rows with Actual's row token ([e41448e](https://github.com/aelxxs/actual-budget-tweaks/commit/e41448e))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.72 ([d659476](https://github.com/aelxxs/actual-budget-tweaks/commit/d659476))
+
+### 🎨 Styles
+
+- Restore darker activity bar in split sidebar layout ([c2ce112](https://github.com/aelxxs/actual-budget-tweaks/commit/c2ce112))
+- Refine built-in theme surface layering ([8115243](https://github.com/aelxxs/actual-budget-tweaks/commit/8115243))
+- Put spending calendar cells on the table background ([d1ebbe9](https://github.com/aelxxs/actual-budget-tweaks/commit/d1ebbe9))
+- Brighten live sidebar account amounts ([a07b1ab](https://github.com/aelxxs/actual-budget-tweaks/commit/a07b1ab))
+- Follow app border radius in side panel cards ([235cf82](https://github.com/aelxxs/actual-budget-tweaks/commit/235cf82))
+- Follow app border radius across extension surfaces ([4a74112](https://github.com/aelxxs/actual-budget-tweaks/commit/4a74112))
+- Lighten side panel close button and add hover state ([8e0a016](https://github.com/aelxxs/actual-budget-tweaks/commit/8e0a016))
+- Shorter column resize handle with accent hover and drag states ([2759a88](https://github.com/aelxxs/actual-budget-tweaks/commit/2759a88))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.72
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.71...v0.1.72)

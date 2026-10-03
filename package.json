@@ -3,7 +3,7 @@
 	"description": "",
 	"private": true,
 	"license": "MIT",
-	"version": "0.1.72",
+	"version": "0.1.73",
 	"type": "module",
 	"scripts": {
 		"dev": "wxt",
