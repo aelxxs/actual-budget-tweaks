@@ -168,12 +168,25 @@
 		};
 	});
 
+	const SEARCH_KEY = "sidebar-search-enabled";
+	const SHORTCUTS_KEY = "sidebar-shortcuts-enabled";
+
 	let shortcutsFeatureEnabled = $state(false);
+	let searchEnabled = $state(false);
 
 	$effect(() => {
-		getValue<boolean>("sidebar-shortcuts-enabled", false).then(
-			(v) => (shortcutsFeatureEnabled = v),
-		);
+		getValue<boolean>(SHORTCUTS_KEY, false).then((v) => (shortcutsFeatureEnabled = v));
+		getValue<boolean>(SEARCH_KEY, false).then((v) => (searchEnabled = v));
+
+		const onStorageChange = (changes: Record<string, { newValue?: unknown }>, areaName: string) => {
+			if (areaName !== "local") return;
+			if (`local:${SHORTCUTS_KEY}` in changes)
+				shortcutsFeatureEnabled = Boolean(changes[`local:${SHORTCUTS_KEY}`].newValue);
+			if (`local:${SEARCH_KEY}` in changes)
+				searchEnabled = Boolean(changes[`local:${SEARCH_KEY}`].newValue);
+		};
+		browser.storage.onChanged.addListener(onStorageChange);
+		return () => browser.storage.onChanged.removeListener(onStorageChange);
 	});
 
 	// A bank sync happens server-side over time (synced → syncing → synced/
@@ -361,20 +374,24 @@
 					showBudgetIcon={false}
 					onBudgetChange={refreshBudgetContext}
 				/>
-				<div
-					style="padding-inline: 0.65rem; padding-block: 0.65rem; display: flex; gap: 0.5rem; flex-direction: column;"
-				>
-					<button type="button" class="search" onclick={openPalette}>
-						<span class="search-left">
-							<Search class="search-icon" color="var(--sb-fg-muted)" strokeWidth={1.75} />
-							<span class="search-placeholder">Search...</span>
-						</span>
-						<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
-					</button>
-					{#if shortcutsFeatureEnabled}
-						<ShortcutsBar noPadding />
-					{/if}
-				</div>
+				{#if searchEnabled || shortcutsFeatureEnabled}
+					<div
+						style="padding-inline: 0.65rem; padding-block: 0.65rem; display: flex; gap: 0.5rem; flex-direction: column;"
+					>
+						{#if searchEnabled}
+							<button type="button" class="search" onclick={openPalette}>
+								<span class="search-left">
+									<Search class="search-icon" color="var(--sb-fg-muted)" strokeWidth={1.75} />
+									<span class="search-placeholder">Search...</span>
+								</span>
+								<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
+							</button>
+						{/if}
+						{#if shortcutsFeatureEnabled}
+							<ShortcutsBar noPadding />
+						{/if}
+					</div>
+				{/if}
 				{#if loading}
 					<AccountListSkeleton />
 				{:else if failed}
@@ -408,13 +425,15 @@
 	{:else}
 		<BudgetHeader name={budgetName} onBudgetChange={refreshBudgetContext} />
 		<div class="body">
-			<button type="button" class="search" onclick={openPalette}>
-				<span class="search-left">
-					<Search class="search-icon" color="var(--sb-fg-muted)" strokeWidth={1.75} />
-					<span class="search-placeholder">Search...</span>
-				</span>
-				<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
-			</button>
+			{#if searchEnabled}
+				<button type="button" class="search" onclick={openPalette}>
+					<span class="search-left">
+						<Search class="search-icon" color="var(--sb-fg-muted)" strokeWidth={1.75} />
+						<span class="search-placeholder">Search...</span>
+					</span>
+					<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
+				</button>
+			{/if}
 			<PrimaryNav />
 			{#if shortcutsFeatureEnabled}
 				<ShortcutsBar noPadding />
