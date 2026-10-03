@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v0.1.76
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.75...v0.1.76)
+
+### 🩹 Fixes
+
+- Sidecar shim storage removal and Yahoo chart requests ([0adefa4](https://github.com/aelxxs/actual-budget-tweaks/commit/0adefa4))
+- Harden the sidecar proxy ([cb8640f](https://github.com/aelxxs/actual-budget-tweaks/commit/cb8640f))
+
+### 📖 Documentation
+
+- Add self-hosting page for the sidecar ([616f2b8](https://github.com/aelxxs/actual-budget-tweaks/commit/616f2b8))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.75 ([3be8cfa](https://github.com/aelxxs/actual-budget-tweaks/commit/3be8cfa))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.75
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.74...v0.1.75)
