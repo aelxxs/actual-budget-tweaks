@@ -1,6 +1,37 @@
 # Changelog
 
 
+## v0.1.78
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.77...v0.1.78)
+
+### 🚀 Enhancements
+
+- Experimental month header for the budget page ([48f3557](https://github.com/aelxxs/actual-budget-tweaks/commit/48f3557))
+- Experimental single-month summary and category filter ([249e733](https://github.com/aelxxs/actual-budget-tweaks/commit/249e733))
+- Compact multi-month cards and shared UI primitives ([67a95b9](https://github.com/aelxxs/actual-budget-tweaks/commit/67a95b9))
+- Template actions in Budget Actions and tidier month controls ([5a81ea1](https://github.com/aelxxs/actual-budget-tweaks/commit/5a81ea1))
+
+### 🔥 Performance
+
+- Refresh only the months whose cells changed ([392f43c](https://github.com/aelxxs/actual-budget-tweaks/commit/392f43c))
+
+### 💅 Refactors
+
+- Share the content grid selector and side panel header height ([3ba5428](https://github.com/aelxxs/actual-budget-tweaks/commit/3ba5428))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.77 ([161e153](https://github.com/aelxxs/actual-budget-tweaks/commit/161e153))
+
+### 🎨 Styles
+
+- Smaller category dots and a darker single-month table ([ac4ffa9](https://github.com/aelxxs/actual-budget-tweaks/commit/ac4ffa9))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.77
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.76...v0.1.77)
