@@ -119,6 +119,17 @@ export async function dispatch<T = unknown>(action: string, args?: unknown): Pro
 }
 
 /**
+ * Set one of Actual's per-budget local prefs so its UI follows live.
+ *
+ * @example
+ * await setLocalPref("budget.startMonth", "2026-10");
+ */
+export async function setLocalPref(name: string, value: unknown): Promise<void> {
+	await waitForBudget();
+	await request("abt:api:local-pref", { name, value });
+}
+
+/**
  * Navigate Actual Budget's own router via the API bridge (SPA navigation,
  * not a full page load).
  *

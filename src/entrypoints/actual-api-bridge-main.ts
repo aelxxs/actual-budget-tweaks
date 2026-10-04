@@ -88,6 +88,27 @@ export default defineUnlistedScript(async () => {
 		);
 	});
 
+	// Actual's useLocalPref is usehooks-ts' useLocalStorage, which re-reads on this event.
+	document.addEventListener("abt:api:local-pref", (e) => {
+		const { id, name, value } = parseDetail(e);
+		if (!id || !name || !accept(id)) return;
+
+		waitForApi(
+			async () => {
+				try {
+					const prefs = await window.$send("load-prefs");
+					const key = `${prefs.id}-${name}`;
+					localStorage.setItem(key, JSON.stringify(value));
+					window.dispatchEvent(new StorageEvent("local-storage", { key }));
+					respond(id, null, null);
+				} catch (err) {
+					respond(id, null, String(err));
+				}
+			},
+			() => respond(id, null, "Actual API unavailable"),
+		);
+	});
+
 	document.addEventListener("abt:api:navigate", (e) => {
 		const { path, options } = parseDetail(e);
 		if (path && typeof window.__navigate === "function") {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { sidepanel } from "@features/core/side-panel";
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
+	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Switch from "@lib/components/Switch.svelte";
 	import { loadCategoryColors } from "@lib/utilities/category-colors";
 	import { loadCurrency } from "@lib/utilities/currency";
@@ -14,7 +15,6 @@
 	import DayCell from "./DayCell.svelte";
 	import DayDetail from "./DayDetail.svelte";
 	import DayHeader from "./DayHeader.svelte";
-	import MonthPicker from "./MonthPicker.svelte";
 	import MonthSummary from "./MonthSummary.svelte";
 	import {
 		MAX_FUTURE_MONTHS,
@@ -302,7 +302,13 @@
 <div class="cal-page" bind:this={pageEl}>
 	<div class="cal-header">
 		<div class="cal-header__left">
-			<MonthPicker {year} {month} bind:open={pickerOpen} onpick={setMonth} />
+			<MonthPicker
+				{year}
+				{month}
+				bind:open={pickerOpen}
+				onpick={setMonth}
+				isDisabled={(y, m) => monthsFromNow(y, m) > MAX_FUTURE_MONTHS}
+			/>
 			{#if hasLoadedOnce}
 				<MonthSummary {summary} stale={loading} />
 			{/if}

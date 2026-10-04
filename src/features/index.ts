@@ -36,6 +36,7 @@ import { headerBorder } from "./readability/top-nav-border";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/themeLoader";
 import type { Setting } from "./types";
+import { budgetMonthHeader } from "./workflows/budget-month-header";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { budgetViewOptions } from "./workflows/budget-view-options";
 import { goalFunding } from "./workflows/goal-funding";
@@ -90,7 +91,7 @@ const workflows = [
 	spendingCalendar,
 ];
 
-const experimental = [experimentalSidebar, experimentalSidebarLayout];
+const experimental = [experimentalSidebar, experimentalSidebarLayout, budgetMonthHeader];
 
 export const coreScripts = [
 	sidePanel,

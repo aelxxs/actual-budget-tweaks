@@ -88,9 +88,15 @@ function teardownPanel(): void {
 
 // ── Trigger button ────────────────────────────────────────────────────
 let triggerBtn: HTMLButtonElement | null = null;
+let triggerDocked = false;
 
 function ensureTriggerButton(): void {
 	if (!enabled) return;
+	templatePlanState.triggerShown = true;
+	if (!triggerDocked) mountFloatingTrigger();
+}
+
+function mountFloatingTrigger(): void {
 	if (document.getElementById(TRIGGER_ID)) return;
 	const btn = document.createElement("button");
 	btn.id = TRIGGER_ID;
@@ -106,8 +112,24 @@ function ensureTriggerButton(): void {
 }
 
 function removeTriggerButton(): void {
+	templatePlanState.triggerShown = false;
 	triggerBtn?.remove();
 	triggerBtn = null;
+}
+
+/** Lets a page header draw the Insights trigger in place of the floating button. */
+export function dockInsightsTrigger(): () => void {
+	triggerDocked = true;
+	triggerBtn?.remove();
+	triggerBtn = null;
+	return () => {
+		triggerDocked = false;
+		if (templatePlanState.triggerShown) mountFloatingTrigger();
+	};
+}
+
+export function openInsights(): void {
+	openPanel();
 }
 
 // ── Drawer open/close ─────────────────────────────────────────────────
