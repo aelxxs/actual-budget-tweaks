@@ -133,12 +133,20 @@
 <style>
 	/* Matches the side panel header beside it, border included. */
 	.bmh {
+		/* Quieter controls than the cards' below, so the header doesn't compete with them. */
+		--abt-fill: color-mix(in srgb, var(--color-pageText) 6%, transparent);
+		--abt-fill-hover: color-mix(in srgb, var(--color-pageText) 12%, transparent);
 		flex-wrap: wrap;
 		box-sizing: border-box;
 		min-height: var(--abt-panel-header-height);
 		padding: 0 20px;
 		border-bottom: 1px solid var(--abt-panel-border);
 		color: var(--color-pageText);
+	}
+
+	.bmh .abt-tone-accent {
+		--abt-btn-bg: color-mix(in srgb, var(--abt-accent) 20%, transparent);
+		--abt-btn-bg-hover: color-mix(in srgb, var(--abt-accent) 30%, transparent);
 	}
 
 	.bmh__slot {
