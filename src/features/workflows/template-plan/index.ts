@@ -128,7 +128,12 @@ export function dockInsightsTrigger(): () => void {
 	};
 }
 
-export function openInsights(): void {
+export function openInsights(tab?: typeof templatePlanState.activeTab): void {
+	if (tab && templatePlanState.activeTab !== tab) {
+		templatePlanState.activeTab = tab;
+		setValue(TAB_STORAGE_KEY, tab);
+		if (drawerOpen) templatePlanState.onTabChange?.(tab);
+	}
 	openPanel();
 }
 
@@ -609,6 +614,7 @@ export const templatePlan = defineSetting({
 	css: () => CSS,
 	init: async () => {
 		enabled = true;
+		templatePlanState.enabled = true;
 		lifecycleVersion++;
 		loadCurrency();
 		await loadPersistedState();
@@ -647,6 +653,7 @@ export const templatePlan = defineSetting({
 
 		return () => {
 			enabled = false;
+			templatePlanState.enabled = false;
 			lifecycleVersion++;
 			runSeq++;
 			unwatch();

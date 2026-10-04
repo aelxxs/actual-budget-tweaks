@@ -23,6 +23,11 @@ const ICONS = {
 		body: '<path d="M6 4l4 4-4 4"/>',
 		strokeWidth: 2,
 	},
+	filter: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/>',
+	},
 	palette: {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.5,
@@ -149,6 +154,36 @@ const ICONS = {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.75,
 		body: '<path d="M18.36 18.36A9 9 0 0 1 5.64 5.64M8.1 3.87A9 9 0 0 1 20.13 15.9"/><path d="M15.54 15.54A5 5 0 0 1 8.46 8.46M11.3 7.05A5 5 0 0 1 16.95 12.7"/><line x1="2" y1="2" x2="22" y2="22"/>',
+	},
+	alert: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+	},
+	shield: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+	},
+	sparkles: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+	},
+	copy: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+	},
+	trendingUp: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/>',
+	},
+	rotateCcw: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/>',
 	},
 	close: {
 		viewBox: "0 0 24 24",

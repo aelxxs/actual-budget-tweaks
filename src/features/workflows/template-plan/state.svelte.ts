@@ -82,6 +82,8 @@ export interface BreakdownState {
 export const templatePlanState = $state({
 	coverageMethod: "goal-templates" as "goal-templates" | "spending-average",
 	activeTab: "overview" as "breakdown" | "priority" | "overview",
+	/** Whether the Insights feature is on, for other features that link into it. */
+	enabled: false,
 	/** Whether the Insights trigger should show, wherever it's drawn. */
 	triggerShown: false,
 	showAllRows: false,

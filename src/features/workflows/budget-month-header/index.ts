@@ -14,6 +14,7 @@ import { budgetNav } from "./state.svelte";
 
 const NATIVE_HEADER_ATTR = "data-abt-native-month-header";
 const NATIVE_COUNT_ATTR = "data-abt-native-month-count";
+const FULL_WIDTH_ATTR = "data-abt-full-width";
 
 let host: HTMLElement | null = null;
 let instance: ReturnType<typeof mount> | null = null;
@@ -29,7 +30,7 @@ function unmountHeader(): void {
 }
 
 function restoreNative(): void {
-	for (const attr of [NATIVE_HEADER_ATTR, NATIVE_COUNT_ATTR]) {
+	for (const attr of [NATIVE_HEADER_ATTR, NATIVE_COUNT_ATTR, FULL_WIDTH_ATTR]) {
 		for (const el of document.querySelectorAll(`[${attr}]`)) el.removeAttribute(attr);
 	}
 	countSelector = null;
@@ -69,6 +70,7 @@ function sync(): void {
 	);
 	if (!native) return;
 	native.setAttribute(NATIVE_HEADER_ATTR, "");
+	parent.setAttribute(FULL_WIDTH_ATTR, "");
 
 	if (!countSelector?.isConnected) {
 		countSelector = findMonthCountSelector();
@@ -105,6 +107,9 @@ export const budgetMonthHeader = defineSetting({
 	},
 	css: () => `
 		[${NATIVE_HEADER_ATTR}], [${NATIVE_COUNT_ATTR}] { display: none !important; }
+
+		/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */
+		[${FULL_WIDTH_ATTR}] { max-width: none !important; }
 	`,
 	init: () => {
 		fellBack = false;

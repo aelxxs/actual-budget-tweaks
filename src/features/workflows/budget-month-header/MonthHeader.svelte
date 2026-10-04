@@ -95,6 +95,8 @@
 		/>
 	{/if}
 	<div class="bmh__end">
+		<!-- Other features (the category filter) mount their controls here. -->
+		<div class="bmh__slot" data-abt-month-header-slot></div>
 		{#if counts.length > 1}
 			<div class="bmh__seg" role="group" aria-label="Months shown">
 				<span class="bmh__seg-label">Months</span>
@@ -115,7 +117,7 @@
 				class="bmh__insights"
 				title="Open insights"
 				aria-label="Open insights"
-				onclick={openInsights}
+				onclick={() => openInsights()}
 			>
 				<Icon name="layout" size={14} />
 				Insights
@@ -143,6 +145,10 @@
 		display: flex;
 		align-items: center;
 		gap: 2px;
+	}
+
+	.bmh__slot {
+		display: contents;
 	}
 
 	.bmh__end {

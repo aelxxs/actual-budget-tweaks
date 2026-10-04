@@ -248,6 +248,18 @@
 				"description": "Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",
 				"icon": "calendar",
 				"group": "Budget"
+			},
+			{
+				"label": "Single-month summary (experimental)",
+				"description": "When one month is shown, replace its card with a full-width row: To Budget, spending, targets, and quick budget actions.",
+				"icon": "sparkles",
+				"group": "Budget"
+			},
+			{
+				"label": "Category filter (experimental)",
+				"description": "Filter the budget table to categories that need attention (overspent or short of their target) or are funded.",
+				"icon": "filter",
+				"group": "Budget"
 			}
 		]
 	}

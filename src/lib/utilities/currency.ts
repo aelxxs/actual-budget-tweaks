@@ -33,6 +33,11 @@ export async function loadCurrency(): Promise<void> {
 	loaded = true;
 }
 
+/** The budget's currency code, or "" when none is set (call loadCurrency first). */
+export function getCurrencyCode(): string {
+	return currencyCode ?? "";
+}
+
 export function fmtMoney(cents: number, opts?: { sign?: boolean; short?: boolean }): string {
 	const n = (cents || 0) / currencyScale;
 	const abs = Math.abs(n);

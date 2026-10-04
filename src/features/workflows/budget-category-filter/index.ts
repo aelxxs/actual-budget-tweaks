@@ -1,0 +1,291 @@
+import { BALANCE_CELL_RE, fetchCells } from "@features/readability/category-progress/cells";
+import { defineSetting } from "@features/types";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
+import { unmount } from "svelte";
+import { mountToNodeWithReturn } from "@lib/utilities/svelte";
+import FilterControl from "./FilterControl.svelte";
+import { filterState, type CategoryFilter } from "./state.svelte";
+
+const SELECTED_CELL = '[data-testid="selected-budget-month"][data-month]';
+const HIDDEN_ATTR = "data-abt-filter-hidden";
+const CONTROL_ATTR = "data-abt-category-filter";
+const HEADER_SLOT = "[data-abt-month-header-slot]";
+const REFRESH_MS = 250;
+
+let control: { node: HTMLElement; instance: unknown } | null = null;
+let observed: { table: HTMLElement; observer: MutationObserver } | null = null;
+let shownKey = "";
+/**
+ * The rows the active filter shows, fixed when it's picked: funding a category under
+ * "Needs attention" shouldn't make its row vanish mid-edit.
+ */
+let visible: Set<string> | null = null;
+let runSeq = 0;
+
+interface Status {
+	attention: boolean;
+	funded: boolean;
+}
+
+function shownSheets(table: HTMLElement): string[] {
+	return [...(table.parentElement?.querySelectorAll<HTMLElement>(SELECTED_CELL) ?? [])].map(
+		(cell) => `budget${cell.dataset.month!.replace("-", "")}`,
+	);
+}
+
+/** The id of a category row, from its balance cell; null for groups, income, and headers. */
+function rowCategory(row: Element): string | null {
+	const cell = row.querySelector('[data-cellname*="!leftover-"]');
+	return cell?.getAttribute("data-cellname")?.match(BALANCE_CELL_RE)?.[2] ?? null;
+}
+
+const isExpenseGroup = (row: Element) =>
+	!!row.querySelector('[data-testid="balance"]') &&
+	!row.querySelector('[data-testid="category-name"]');
+
+/** A category matches in any shown month, so multi-month views keep the same rows. */
+async function loadStatuses(table: HTMLElement, force: boolean): Promise<Map<string, Status>> {
+	const ids = new Set<string>();
+	for (const row of table.querySelectorAll('[data-testid="row"]')) {
+		const id = rowCategory(row);
+		if (id) ids.add(id);
+	}
+	const sheets = shownSheets(table);
+	const statuses = new Map<string, Status>();
+	await Promise.all(
+		[...ids].map(async (id) => {
+			const months = await Promise.all(sheets.map((s) => fetchCells(s, id, force)));
+			const attention = months.some((c) => c.balance < 0 || c.goalShortfall > 0);
+			const funded =
+				!attention && months.some((c) => (c.hasGoal ? c.goalShortfall === 0 : c.balance > 0));
+			statuses.set(id, { attention, funded });
+		}),
+	);
+	return statuses;
+}
+
+function countStatuses(statuses: Map<string, Status>): void {
+	let attention = 0;
+	let funded = 0;
+	for (const s of statuses.values()) {
+		if (s.attention) attention++;
+		if (s.funded) funded++;
+	}
+	if (attention !== filterState.counts.attention || funded !== filterState.counts.funded) {
+		filterState.counts = { attention, funded };
+	}
+}
+
+function matching(statuses: Map<string, Status>, filter: CategoryFilter): Set<string> {
+	const ids = new Set<string>();
+	for (const [id, s] of statuses) if (filter === "funded" ? s.funded : s.attention) ids.add(id);
+	return ids;
+}
+
+function setHidden(row: Element, hidden: boolean): void {
+	// Actual wraps each row in its own box; hiding the box drops its spacing too.
+	const box = row.parentElement?.childElementCount === 1 ? row.parentElement : row;
+	if (box.hasAttribute(HIDDEN_ATTR) !== hidden) box.toggleAttribute(HIDDEN_ATTR, hidden);
+}
+
+function applyRows(table: HTMLElement): void {
+	const rows = [...table.querySelectorAll('[data-testid="row"]')];
+	if (!visible) {
+		for (const row of rows) setHidden(row, false);
+		return;
+	}
+	let group: { row: Element; children: number; shown: number } | null = null;
+	const closeGroup = () => {
+		// A collapsed group's categories aren't rendered, so it can't be ruled out.
+		if (group) setHidden(group.row, group.children > 0 && group.shown === 0);
+		group = null;
+	};
+	for (const row of rows) {
+		const id = rowCategory(row);
+		if (id) {
+			const show = visible.has(id);
+			setHidden(row, !show);
+			if (group) {
+				group.children++;
+				if (show) group.shown++;
+			}
+		} else if (isExpenseGroup(row)) {
+			closeGroup();
+			group = { row, children: 0, shown: 0 };
+		} else {
+			// Income and its headers have no balance to filter on.
+			closeGroup();
+			setHidden(row, true);
+		}
+	}
+	closeGroup();
+}
+
+async function refresh(table: HTMLElement, force: boolean, refreeze: boolean): Promise<void> {
+	const seq = ++runSeq;
+	const statuses = await loadStatuses(table, force);
+	if (seq !== runSeq) return;
+	countStatuses(statuses);
+	if (refreeze) {
+		visible = filterState.filter === "all" ? null : matching(statuses, filterState.filter);
+		// A filter that matches nothing (say, after moving to a tidy month) would blank the table.
+		if (visible?.size === 0) {
+			visible = null;
+			filterState.filter = "all";
+		}
+	}
+	applyRows(table);
+}
+
+function pick(filter: CategoryFilter): void {
+	const table = document.querySelector<HTMLElement>('[data-testid="budget-table"]');
+	filterState.filter = filter;
+	if (!table) return;
+	void refresh(table, true, true);
+}
+
+/** In the month header like the mockup when it's on, else in the category column header. */
+function mountControl(table: HTMLElement): void {
+	const slot = document.querySelector(HEADER_SLOT);
+	const bar = table.querySelector('[data-testid="budget-totals"]')?.firstElementChild;
+	const parent = slot ?? bar;
+	if (!parent || control?.node.parentElement === parent) return;
+	unmountControl();
+	const { node, instance } = mountToNodeWithReturn(FilterControl, { onpick: pick });
+	node.setAttribute(CONTROL_ATTR, "");
+	if (slot) slot.append(node);
+	// Before ABT's view options when present, else before Actual's ⋮ menu.
+	else bar!.insertBefore(node, bar!.querySelector(".abt-view-options") ?? bar!.lastElementChild);
+	control = { node, instance };
+}
+
+function unmountControl(): void {
+	if (!control) return;
+	unmount(control.instance as never);
+	control.node.remove();
+	control = null;
+}
+
+function observe(table: HTMLElement): void {
+	if (observed?.table === table) return;
+	observed?.observer.disconnect();
+	// Edits change the counts; the shown rows stay until another filter is picked.
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const observer = new MutationObserver((records) => {
+		if (records.every((r) => control?.node.contains(r.target))) return;
+		clearTimeout(timer);
+		timer = setTimeout(() => void refresh(table, true, false), REFRESH_MS);
+	});
+	observer.observe(table, { childList: true, subtree: true, characterData: true });
+	observed = { table, observer };
+}
+
+/** Drag-to-reorder would drop categories among rows the filter hides. */
+function blockDrag(e: DragEvent): void {
+	if (visible && (e.target as Element | null)?.closest?.('[data-testid="budget-table"]')) {
+		e.preventDefault();
+		e.stopPropagation();
+	}
+}
+
+const isHiddenRow = (row: Element) => !!row.closest(`[${HIDDEN_ATTR}]`);
+
+/** Actual's cells open on a press, not a click. */
+function press(el: Element): void {
+	for (const type of ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]) {
+		const Event = type.startsWith("pointer") ? PointerEvent : MouseEvent;
+		el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true, button: 0, buttons: 1 }));
+	}
+}
+
+/**
+ * Enter and Tab move through Actual's own category list, which can land in a hidden
+ * row. Editing then moves on, the same way, to the next row the filter shows.
+ */
+function skipHiddenRows(e: KeyboardEvent): void {
+	if (!visible || (e.key !== "Enter" && e.key !== "Tab")) return;
+	const table = (e.target as Element | null)?.closest?.('[data-testid="budget-table"]');
+	const origin = (e.target as Element).closest('[data-testid="row"]');
+	if (!table || !origin) return;
+	requestAnimationFrame(() =>
+		requestAnimationFrame(() => {
+			const input = table.querySelector<HTMLInputElement>('[data-testid="budget"] input');
+			const landed = input?.closest('[data-testid="row"]');
+			if (!input || !landed || !isHiddenRow(landed)) return;
+			const rows = [...table.querySelectorAll('[data-testid="row"]')].filter(rowCategory);
+			const step = rows.indexOf(landed) >= rows.indexOf(origin) ? 1 : -1;
+			const column = [...landed.querySelectorAll('[data-testid="budget"]')].indexOf(
+				input.closest('[data-testid="budget"]')!,
+			);
+			let target = origin;
+			for (let i = rows.indexOf(landed) + step; i >= 0 && i < rows.length; i += step) {
+				if (!isHiddenRow(rows[i])) {
+					target = rows[i];
+					break;
+				}
+			}
+			// Past the last shown row, pressing the row it came from closes the editor.
+			const cell = target.querySelectorAll('[data-testid="budget"]')[column];
+			if (cell) press(cell.firstElementChild ?? cell);
+		}),
+	);
+}
+
+function reset(): void {
+	runSeq++;
+	visible = null;
+	filterState.filter = "all";
+	for (const el of document.querySelectorAll(`[${HIDDEN_ATTR}]`)) el.removeAttribute(HIDDEN_ATTR);
+	observed?.observer.disconnect();
+	observed = null;
+	shownKey = "";
+}
+
+function sync(): void {
+	if (!matchesPage(Page.Budget)) {
+		unmountControl();
+		if (observed) reset();
+		return;
+	}
+	const table = document.querySelector<HTMLElement>('[data-testid="budget-table"]');
+	if (!table) return;
+	mountControl(table);
+	observe(table);
+	const key = shownSheets(table).join();
+	if (key !== shownKey) {
+		shownKey = key;
+		void refresh(table, false, true);
+	} else {
+		applyRows(table);
+	}
+}
+
+export const budgetCategoryFilter = defineSetting({
+	type: "checkbox",
+	label: "Category filter (experimental)",
+	description:
+		"Filter the budget table to categories that need attention (overspent or short of their target) or are funded.",
+	icon: "filter",
+	group: "Budget",
+	context: {
+		key: "budget-category-filter",
+		defaultValue: false,
+	},
+	css: () => `
+		[${HIDDEN_ATTR}] { display: none !important; }
+		[${CONTROL_ATTR}] { display: contents; }
+	`,
+	init: () => {
+		const unwatch = watchDom(sync);
+		document.addEventListener("dragstart", blockDrag, true);
+		document.addEventListener("keydown", skipHiddenRows, true);
+		return () => {
+			unwatch();
+			document.removeEventListener("dragstart", blockDrag, true);
+			document.removeEventListener("keydown", skipHiddenRows, true);
+			unmountControl();
+			reset();
+		};
+	},
+});
