@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.79
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.78...v0.1.79)
+
+### 🩹 Fixes
+
+- Smooth switching between the budget page and the calendar ([9181fbd](https://github.com/aelxxs/actual-budget-tweaks/commit/9181fbd))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.78 ([cad3796](https://github.com/aelxxs/actual-budget-tweaks/commit/cad3796))
+
+### 🎨 Styles
+
+- Quieter month header controls ([d37293a](https://github.com/aelxxs/actual-budget-tweaks/commit/d37293a))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.78
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.77...v0.1.78)
