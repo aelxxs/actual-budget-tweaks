@@ -55,7 +55,7 @@
 				use:portal={toBudgetCard}
 				onclick={() => openInsights("overview")}
 			>
-				<Icon name="layout" size={13} />
+				<Icon name="layout" size={17} />
 			</button>
 		{:else if toBudgetCard}
 			<!-- The breakdown lives in Insights when it's on; the hover only stands in without it. -->

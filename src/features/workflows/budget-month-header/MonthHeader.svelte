@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { dockInsightsTrigger, openInsights } from "@features/workflows/template-plan";
+	import { openInsights } from "@features/workflows/template-plan";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Icon from "@lib/components/Icon.svelte";
-	import { onMount } from "svelte";
 	import {
 		addMonths,
 		currentMonth,
@@ -27,8 +26,6 @@
 	let bounds = $state<MonthBounds>({ start: "0000-01", end: addMonths(currentMonth(), 12) });
 	// "YYYY-MM" keys compare correctly as strings.
 	const outOfBounds = (key: string) => key < bounds.start || key > bounds.end;
-
-	onMount(dockInsightsTrigger);
 
 	// Budgets for new months are created as they're reached, so the bounds can grow.
 	$effect(() => {

@@ -1,4 +1,5 @@
 import { CONTENT_GRID } from "@features/core/side-panel/api";
+import { dockInsightsTrigger } from "@features/workflows/template-plan";
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -113,13 +114,22 @@ export const budgetMonthHeader = defineSetting({
 	`,
 	init: () => {
 		fellBack = false;
+		// Claimed now, not when the header mounts: Insights would otherwise draw its floating
+		// button until the budget table renders.
+		let undock: (() => void) | null = dockInsightsTrigger();
+		const release = () => {
+			undock?.();
+			undock = null;
+		};
 		const stopFallback = onNativeFallback(() => {
 			fellBack = true;
+			release();
 			unmountHeader();
 			restoreNative();
 		});
 		const unwatch = watchDom(sync);
 		return () => {
+			release();
 			stopFallback();
 			unwatch();
 			unmountHeader();

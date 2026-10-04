@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import { icon } from "@lib/icons";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
@@ -19,6 +20,10 @@ const RESIZING_ATTR = "data-abt-month-count-changing";
 const REFRESH_MS = 250;
 /** Both modes' card height, so switching between them never moves the table. */
 const CARD_HEIGHT = 92;
+/** ABT's notes icon, drawn over Actual's notes button so the button itself stays Actual's. */
+const NOTE_MASK = `url("data:image/svg+xml,${encodeURIComponent(
+	icon("note", { size: 24 }).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '),
+)}")`;
 /**
  * Keyed to the table rather than each card: Actual renders a new month's card a frame
  * before sync() could mark it, and that frame would show the tall native card.
@@ -307,15 +312,65 @@ export const budgetSummaryRow = defineSetting({
 			transition: none !important;
 			overflow: visible !important;
 		}
-		/* Header: keep notes and the month menu, drop the title and collapse toggle. */
+		/*
+		 * Header: only Actual's notes button stays, tucked into the To Budget card's corner. The
+		 * header becomes a zero-width item right after that card (order 1), pulled back over the
+		 * row gap, so its button can sit inside the card without being moved in the DOM.
+		 */
 		${SUMMARY_CARD} > :first-child {
-			order: 2;
-			align-self: center;
-			margin: 0 !important;
+			order: 1;
+			position: relative;
+			flex: 0 0 0;
+			width: 0;
+			min-width: 0;
+			align-self: stretch;
+			margin: 0 0 0 calc(-1 * var(--abt-space-3)) !important;
 			padding: 0 !important;
 		}
 		${SUMMARY_CARD} > :first-child > :not(:last-child) { display: none !important; }
-		${SUMMARY_CARD} > :first-child > :last-child { position: static !important; }
+		/* Offsets include the card's 1px border, to line up with the Insights shortcut inside it. */
+		${SUMMARY_CARD} > :first-child > :last-child {
+			position: absolute !important;
+			top: calc(var(--abt-space-2) + 1px);
+			right: calc(var(--abt-space-2) + 1px);
+			z-index: 1;
+		}
+		/* Beside the Insights breakdown shortcut, when that's in the corner. */
+		${SUMMARY_CARD}:has([data-abt-summary-more]) > :first-child > :last-child {
+			right: calc(var(--abt-space-2) + 1px + var(--abt-control-h-sm) + var(--abt-space-1));
+		}
+		/* Actual's notes button, sized and styled like the shortcut beside it. */
+		${SUMMARY_CARD} > :first-child > :last-child button {
+			display: grid !important;
+			place-items: center;
+			box-sizing: border-box;
+			width: var(--abt-control-h-sm);
+			height: var(--abt-control-h-sm);
+			padding: 0 !important;
+			border-radius: var(--abt-radius) !important;
+		}
+		/* ABT's notes icon in place of Actual's, matching the Insights icon beside it. */
+		${SUMMARY_CARD} > :first-child > :last-child button svg,
+		${MONTH_CARD} > :first-child > :last-child button svg {
+			display: none !important;
+		}
+		${SUMMARY_CARD} > :first-child > :last-child button::before,
+		${MONTH_CARD} > :first-child > :last-child button::before {
+			content: "";
+			width: 17px;
+			height: 17px;
+			background: currentColor;
+			-webkit-mask: ${NOTE_MASK} center / contain no-repeat;
+			mask: ${NOTE_MASK} center / contain no-repeat;
+		}
+		${SUMMARY_CARD} > :first-child > :last-child button:hover {
+			background: var(--abt-fill-hover) !important;
+		}
+		/* Actual's month menu: Budget Actions covers everything in it. */
+		${SUMMARY_CARD} > :first-child > :last-child > :last-child:not(:first-child),
+		${MONTH_CARD} > :first-child > :last-child > :last-child:not(:first-child) {
+			display: none !important;
+		}
 		/* Actual's totals and ABT's flow bar: the summary cards cover them. */
 		${SUMMARY_CARD} > :not(:first-child):not(:last-child):not([${SUMMARY_STATS_ATTR}]) {
 			display: none !important;

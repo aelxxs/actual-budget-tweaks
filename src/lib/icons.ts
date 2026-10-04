@@ -43,6 +43,11 @@ const ICONS = {
 		strokeWidth: 1.5,
 		body: '<rect x="3" y="3" width="18" height="18" rx="2"/>',
 	},
+	note: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.5,
+		body: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>',
+	},
 	layout: {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.5,

@@ -7,6 +7,8 @@ export interface ActionResult {
 	message: string;
 	/** Entries it added to Actual's undo history; each handler call is one. */
 	undoSteps: number;
+	/** Actual's details for template errors or warnings, one per line. */
+	detail?: string;
 }
 
 export interface Shortfall {
@@ -86,4 +88,48 @@ export function openToBudgetMenu(toBudgetCard: Element | null | undefined): void
 	// That menu closes when focus is outside it, and the clicked card button still holds focus.
 	(document.activeElement as HTMLElement | null)?.blur();
 	(target as HTMLElement | null)?.click();
+}
+
+export type TemplateAction =
+	"apply-goal-template" | "overwrite-goal-template" | "cleanup-goal-template" | "check-templates";
+
+interface TemplateNotification {
+	message: string;
+	pre?: string;
+	count?: number;
+}
+
+// Actual's own wording for its template results, which it returns as keys.
+const TEMPLATE_MESSAGES: Record<string, (n: TemplateNotification) => string> = {
+	"templates-up-to-date": () => "Everything is up to date",
+	"template-errors": () => "Some templates couldn't be read",
+	"templates-applied": (n) =>
+		`Applied templates to ${plural(n.count ?? 0, "category", "categories")}`,
+	"templates-check-passed": () => "All templates passed",
+	"cleanup-no-funds": () => "Not enough funds for cleanup",
+	"cleanup-up-to-date": () => "All categories were up to date",
+	"cleanup-applied": () => "End of month cleanup applied",
+	"cleanup-applied-with-errors": () => "Cleanup applied, with some errors",
+};
+
+/** Actual's month-menu template actions, run the same way its menu does. */
+export async function runTemplate(sheet: string, action: TemplateAction): Promise<ActionResult> {
+	const result = await send<TemplateNotification | null>(`budget/${action}`, {
+		month: monthOf(sheet),
+	});
+	return {
+		message: (result && TEMPLATE_MESSAGES[result.message]?.(result)) ?? "Done",
+		undoSteps: action === "check-templates" ? 0 : 1,
+		detail: result?.pre,
+	};
+}
+
+let templatesFlag: Promise<boolean> | null = null;
+
+/** Whether Actual's goal templates are on, which is when its menu shows these. */
+export function templatesEnabled(): Promise<boolean> {
+	templatesFlag ??= send<Record<string, string>>("preferences/get")
+		.then((prefs) => prefs?.["flags.goalTemplatesEnabled"] === "true")
+		.catch(() => false);
+	return templatesFlag;
 }

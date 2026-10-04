@@ -2,15 +2,19 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+	import { onMount } from "svelte";
 	import {
 		coverOverspending,
 		fundTargets,
 		openToBudgetMenu,
 		runBulk,
+		runTemplate,
+		templatesEnabled,
 		undoSteps,
 		type ActionResult,
 		type BulkAction,
 		type Shortfall,
+		type TemplateAction,
 	} from "./actions";
 
 	const {
@@ -49,6 +53,43 @@
 	let busy = $state(false);
 	let toast = $state<ActionResult | null>(null);
 	let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+	let templates = $state(false);
+	onMount(() => {
+		void templatesEnabled().then((on) => (templates = on));
+	});
+
+	const TEMPLATE_ITEMS: {
+		action: TemplateAction;
+		icon: "target" | "copy" | "sparkles" | "alert";
+		title: string;
+		desc: string;
+	}[] = [
+		{
+			action: "apply-goal-template",
+			icon: "target",
+			title: "Apply budget template",
+			desc: "Fill categories that aren't budgeted yet",
+		},
+		{
+			action: "overwrite-goal-template",
+			icon: "copy",
+			title: "Overwrite with budget template",
+			desc: "Replace every templated budget",
+		},
+		{
+			action: "cleanup-goal-template",
+			icon: "sparkles",
+			title: "End of month cleanup",
+			desc: "Run the month's cleanup templates",
+		},
+		{
+			action: "check-templates",
+			icon: "alert",
+			title: "Check templates",
+			desc: "Look for templates Actual can't read",
+		},
+	];
 
 	const needs = $derived(short.reduce((t, s) => t + s.shortfall, 0));
 	const fundable = $derived(Math.min(needs, Math.max(0, toBudget)));
@@ -119,7 +160,8 @@
 	function showToast(result: ActionResult) {
 		toast = result;
 		clearTimeout(toastTimer);
-		toastTimer = setTimeout(() => (toast = null), 6000);
+		// Longer when there are details to read.
+		toastTimer = setTimeout(() => (toast = null), result.detail ? 12000 : 6000);
 	}
 
 	async function undo() {
@@ -158,6 +200,7 @@
 	<!-- The multi-month header's version: the suggestion's short name, and the menu. -->
 	<div
 		class="ac-compact abt-btn-group abt-btn-group--sm abt-btn-group--divided {toneClass}"
+		class:is-quiet={suggestion.tone === "quiet"}
 		bind:this={root}
 	>
 		<button
@@ -276,13 +319,39 @@
 			<Icon name="rotateCcw" size={15} />
 			<span class="ac-menu__title">Zero</span>
 		</button>
+		{#if templates}
+			<!-- Actual's month-menu template actions; shown when its goal templates are on, as there. -->
+			<div class="abt-menu__sep"></div>
+			<div class="abt-menu__heading">Templates</div>
+			{#each TEMPLATE_ITEMS as item (item.action)}
+				<button
+					type="button"
+					role="menuitem"
+					class="abt-menu__item"
+					onclick={() => perform(() => runTemplate(sheet, item.action))}
+				>
+					<Icon name={item.icon} size={15} />
+					<span class="abt-stack abt-gap-1">
+						<span class="ac-menu__title">{item.title}</span>
+						<span class="ac-menu__desc">{item.desc}</span>
+					</span>
+				</button>
+			{/each}
+		{/if}
 	</div>
 {/if}
 
 {#if toast}
-	<div class="ac-toast abt-popover abt-cluster abt-gap-4" role="status" use:portal>
-		<span>{toast.message}</span>
-		<button type="button" class="abt-btn abt-btn--sm abt-tone-accent" onclick={undo}>Undo</button>
+	<div class="ac-toast abt-popover abt-stack abt-gap-2" role="status" use:portal>
+		<div class="abt-cluster abt-gap-4">
+			<span>{toast.message}</span>
+			{#if toast.undoSteps}
+				<button type="button" class="abt-btn abt-btn--sm abt-tone-accent" onclick={undo}
+					>Undo</button
+				>
+			{/if}
+		</div>
+		{#if toast.detail}<pre class="ac-toast__detail">{toast.detail}</pre>{/if}
 	</div>
 {/if}
 
@@ -390,6 +459,12 @@
 		color: var(--color-pageText);
 	}
 
+	/* Darker than the header's buttons: the card's own surface, so it sits back inside the card. */
+	.ac-compact.is-quiet {
+		--abt-btn-bg: var(--abt-panel-surface);
+		--abt-btn-line: var(--abt-panel-border);
+	}
+
 	/* Narrow months (many shown at once) keep just the icon. */
 	@container (max-width: 260px) {
 		.ac-compact__short {
@@ -437,6 +512,17 @@
 
 	.ac-menu__pills {
 		margin-left: auto;
+	}
+
+	.ac-toast__detail {
+		max-width: 520px;
+		max-height: 160px;
+		margin: 0;
+		overflow: auto;
+		font: inherit;
+		font-size: var(--abt-text-sm);
+		white-space: pre-wrap;
+		color: var(--abt-muted);
 	}
 
 	.ac-toast {
