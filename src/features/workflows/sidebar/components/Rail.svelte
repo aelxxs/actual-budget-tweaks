@@ -53,7 +53,8 @@
 	});
 
 	function go(page: Page) {
-		if (isCalendarOpen()) closeCalendar();
+		// The page under the calendar is already showing; navigating again makes Actual remount it.
+		if (isCalendarOpen() && closeCalendar() === `/${page}`) return;
 		navigate(`/${page}`);
 	}
 

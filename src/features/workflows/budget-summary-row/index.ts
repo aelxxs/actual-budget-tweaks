@@ -1,6 +1,7 @@
 import { defineSetting } from "@features/types";
+import { isCalendarOpen } from "@features/workflows/spending-calendar";
 import { icon } from "@lib/icons";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
@@ -9,6 +10,7 @@ import SummaryRow from "./SummaryRow.svelte";
 import { markSheetsStale, sheetsInMutations } from "@features/readability/category-progress/cells";
 import { summaryState } from "./state.svelte";
 
+const BUDGET_TABLE = '[data-testid="budget-table"]';
 const SELECTED_CELL = '[data-testid="selected-budget-month"][data-month]';
 const SINGLE_MONTH_ATTR = "data-abt-single-month";
 const MULTI_MONTH_ATTR = "data-abt-multi-month";
@@ -107,8 +109,11 @@ function applyMode(table: HTMLElement): { months: string[]; cards: HTMLElement[]
 	if (months.length && months.length !== shownCount) {
 		const changed = shownCount > 0;
 		shownCount = months.length;
-		table.style.setProperty("--abt-months", String(months.length));
 		if (changed) holdCarousel(table);
+	}
+	// Per table: Actual replaces the table when the page comes back from the calendar.
+	if (shownCount && table.style.getPropertyValue("--abt-months") !== String(shownCount)) {
+		table.style.setProperty("--abt-months", String(shownCount));
 	}
 	table.toggleAttribute(SINGLE_MONTH_ATTR, single);
 	table.toggleAttribute(MULTI_MONTH_ATTR, months.length > 1);
@@ -190,6 +195,12 @@ function observe(table: HTMLElement): void {
 	const changed = new Set<string>();
 	let shown = shownSheets(table);
 	const observer = new MutationObserver((records) => {
+		// Actual drops the table when the page is hidden (the calendar). Its cards are never
+		// kept once detached, so syncing them would remount them forever; sync() finds the new one.
+		if (!table.isConnected) {
+			unmountAll();
+			return;
+		}
 		syncParts(table);
 		// Only the months whose cells changed re-read; our own renders change none.
 		const now = shownSheets(table);
@@ -256,14 +267,19 @@ function syncMetas(cards: HTMLElement[], multi: boolean): void {
 }
 
 function sync(): void {
+	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
+	if (isCalendarOpen()) return;
 	if (!matchesPage(Page.Budget)) {
 		unmountAll();
 		return;
 	}
-	const table = document.querySelector<HTMLElement>('[data-testid="budget-table"]');
+	const table = document.querySelector<HTMLElement>(BUDGET_TABLE);
 	if (!table?.parentElement) return;
+	const fresh = observed?.table !== table;
 	observe(table);
 	syncParts(table);
+	// A new table's carousel starts at zero width and slides into place over a few frames.
+	if (fresh) holdCarousel(table);
 }
 
 /** Marks the mode and mounts its parts; idempotent, so it's safe on every mutation. */
@@ -532,8 +548,10 @@ export const budgetSummaryRow = defineSetting({
 	`,
 	init: () => {
 		const unwatch = watchDom(sync);
+		const unwatchTable = watchElement(BUDGET_TABLE, sync);
 		return () => {
 			unwatch();
+			unwatchTable();
 			restoreNative();
 		};
 	},

@@ -1,7 +1,8 @@
 import { CONTENT_GRID } from "@features/core/side-panel/api";
 import { dockInsightsTrigger } from "@features/workflows/template-plan";
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { isCalendarOpen } from "@features/workflows/spending-calendar";
+import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mount, unmount } from "svelte";
 import MonthHeader from "./MonthHeader.svelte";
@@ -16,6 +17,7 @@ import { budgetNav } from "./state.svelte";
 const NATIVE_HEADER_ATTR = "data-abt-native-month-header";
 const NATIVE_COUNT_ATTR = "data-abt-native-month-count";
 const FULL_WIDTH_ATTR = "data-abt-full-width";
+const BUDGET_TABLE = '[data-testid="budget-table"]';
 
 let host: HTMLElement | null = null;
 let instance: ReturnType<typeof mount> | null = null;
@@ -57,12 +59,19 @@ const sameMonths = (a: string[], b: string[]) =>
 	a.length === b.length && a.every((m, i) => m === b[i]);
 
 function sync(): void {
+	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
+	if (isCalendarOpen()) return;
 	if (!matchesPage(Page.Budget)) {
 		if (host) unmountHeader();
 		return;
 	}
 	if (fellBack) return;
-	const table = document.querySelector<HTMLElement>('[data-testid="budget-table"]');
+	// Before the table check: Actual re-renders the titlebar while the table is still missing.
+	if (!countSelector?.isConnected) {
+		countSelector = findMonthCountSelector();
+		countSelector?.setAttribute(NATIVE_COUNT_ATTR, "");
+	}
+	const table = document.querySelector<HTMLElement>(BUDGET_TABLE);
 	const parent = table?.parentElement;
 	if (!table || !parent) return;
 	// Actual's own header stays mounted (hidden) as the source of truth for the shown months.
@@ -72,11 +81,6 @@ function sync(): void {
 	if (!native) return;
 	native.setAttribute(NATIVE_HEADER_ATTR, "");
 	parent.setAttribute(FULL_WIDTH_ATTR, "");
-
-	if (!countSelector?.isConnected) {
-		countSelector = findMonthCountSelector();
-		countSelector?.setAttribute(NATIVE_COUNT_ATTR, "");
-	}
 
 	const months = readShownMonths(native);
 	if (!sameMonths(months, budgetNav.months)) budgetNav.months = months;
@@ -128,10 +132,12 @@ export const budgetMonthHeader = defineSetting({
 			restoreNative();
 		});
 		const unwatch = watchDom(sync);
+		const unwatchTable = watchElement(BUDGET_TABLE, sync);
 		return () => {
 			release();
 			stopFallback();
 			unwatch();
+			unwatchTable();
 			unmountHeader();
 			restoreNative();
 		};

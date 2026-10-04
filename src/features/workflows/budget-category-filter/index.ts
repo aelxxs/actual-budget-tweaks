@@ -5,7 +5,8 @@ import {
 	sheetsInMutations,
 } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { isCalendarOpen } from "@features/workflows/spending-calendar";
+import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { unmount } from "svelte";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
@@ -268,6 +269,8 @@ function reset(): void {
 }
 
 function sync(): void {
+	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
+	if (isCalendarOpen()) return;
 	if (!matchesPage(Page.Budget)) {
 		unmountControl();
 		if (observed) reset();
@@ -305,10 +308,14 @@ export const budgetCategoryFilter = defineSetting({
 	`,
 	init: () => {
 		const unwatch = watchDom(sync);
+		const unwatchTable = watchElement('[data-testid="budget-table"]', sync);
+		const unwatchSlot = watchElement(HEADER_SLOT, sync);
 		document.addEventListener("dragstart", blockDrag, true);
 		document.addEventListener("keydown", skipHiddenRows, true);
 		return () => {
 			unwatch();
+			unwatchTable();
+			unwatchSlot();
 			document.removeEventListener("dragstart", blockDrag, true);
 			document.removeEventListener("keydown", skipHiddenRows, true);
 			unmountControl();

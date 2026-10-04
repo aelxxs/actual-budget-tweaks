@@ -14,8 +14,8 @@ const CALENDAR_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="non
 
 let calendarInstance: ReturnType<typeof mount> | null = null;
 let calendarContainer: HTMLElement | null = null;
-let hiddenChildren: { el: HTMLElement; display: string }[] = [];
-let previousPath: string | null = null;
+let hiddenChildren: { el: HTMLElement; style: string }[] = [];
+let previous: { path: string; state: unknown } | null = null;
 
 export function isCalendarOpen(): boolean {
 	return matchesPage(Page.Calendar);
@@ -52,28 +52,31 @@ export function openCalendar(): void {
 	const lastChild = columns[columns.length - 1];
 	if (!lastChild) return;
 
-	previousPath = window.location.pathname;
-	history.pushState({}, "", "/calendar");
+	// Actual's router keeps its own state on each history entry and isn't told about this
+	// one, so it carries the page's state and is swapped back for the page on close.
+	if (!isCalendarOpen()) {
+		previous = { path: window.location.pathname, state: history.state };
+		history.pushState(history.state, "", "/calendar");
+	}
 
-	// Hide the last child's content and any siblings after the first child (nav header)
+	// Hidden in place rather than display: none, which makes Actual drop the budget table and
+	// rebuild it (blank for a moment) on the way back. The calendar covers the column instead.
 	hiddenChildren = [];
 	for (const child of Array.from(lastChild.children) as HTMLElement[]) {
-		hiddenChildren.push({ el: child, display: child.style.display });
-		child.style.display = "none";
+		hiddenChildren.push({ el: child, style: child.getAttribute("style") ?? "" });
+		child.style.visibility = "hidden";
 	}
 	// Also hide siblings of lastChild (e.g. Plan button) but not the nav header
 	for (const sibling of columns) {
 		if (sibling === lastChild || sibling === target.firstElementChild) continue;
-		hiddenChildren.push({ el: sibling, display: sibling.style.display });
+		hiddenChildren.push({ el: sibling, style: sibling.getAttribute("style") ?? "" });
 		sibling.style.display = "none";
 	}
 
-	lastChild.dataset.abtOrigPadding = lastChild.style.paddingTop;
-	lastChild.style.padding = "0px";
-
 	calendarContainer = document.createElement("div");
 	calendarContainer.setAttribute(CALENDAR_ATTR, "1");
-	calendarContainer.style.cssText = "display: flex; flex: 1; position: relative; overflow: hidden;";
+	calendarContainer.style.cssText =
+		"display: flex; position: absolute; inset: 0; z-index: 1; overflow: hidden;";
 	lastChild.appendChild(calendarContainer);
 
 	calendarInstance = mount(Calendar, {
@@ -84,36 +87,31 @@ export function openCalendar(): void {
 	updateActiveState();
 }
 
-export function closeCalendar(): void {
-	if (!calendarContainer) return;
+/** Returns the path it went back to, if it went back to one. */
+export function closeCalendar(): string | null {
+	if (!calendarContainer) return null;
 
 	sidepanel.close();
-
-	const parent = calendarContainer.parentElement as HTMLElement | null;
 
 	unmount(calendarInstance!);
 	calendarInstance = null;
 	calendarContainer.remove();
 	calendarContainer = null;
 
-	for (const { el, display } of hiddenChildren) {
-		if (el.parentElement) {
-			el.style.display = display;
-		}
+	for (const { el, style } of hiddenChildren) {
+		if (el.parentElement) el.setAttribute("style", style);
 	}
 	hiddenChildren = [];
 
-	if (parent) {
-		parent.style.paddingTop = parent.dataset.abtOrigPadding || "";
-		delete parent.dataset.abtOrigPadding;
-	}
-
+	let restored: string | null = null;
 	if (isCalendarOpen()) {
-		history.pushState({}, "", previousPath || "/budget");
+		restored = previous?.path ?? "/budget";
+		history.replaceState(previous?.state ?? null, "", restored);
 	}
-	previousPath = null;
+	previous = null;
 
 	updateActiveState();
+	return restored;
 }
 
 function injectSidebarLink(): void {
