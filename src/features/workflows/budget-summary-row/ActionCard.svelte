@@ -19,18 +19,25 @@
 		short,
 		overIds,
 		overspent,
+		compact = false,
+		loading = false,
 	}: {
 		sheet: string;
 		toBudget: number;
 		short: Shortfall[];
 		overIds: string[];
 		overspent: number;
+		/** The multi-month header's version: one short button and the menu. */
+		compact?: boolean;
+		/** Drawn disabled, at full size, until the month's totals arrive. */
+		loading?: boolean;
 	} = $props();
 
 	type Suggestion = {
 		tone: "danger" | "primary" | "quiet";
 		icon: "alert" | "shield" | "target" | "sparkles";
 		title: string;
+		short: string;
 		sub: string;
 		run: (() => void) | null;
 	};
@@ -53,8 +60,10 @@
 				tone: "danger",
 				icon: "alert",
 				title: "Fix over-assigned",
+				short: "Fix",
 				sub: `${fmtMoney(-toBudget)} more than you have`,
-				run: () => openToBudgetMenu(root?.closest("[data-abt-summary-row]")?.lastElementChild),
+				run: () =>
+					openToBudgetMenu(root?.closest('[data-testid="budget-summary"]')?.lastElementChild),
 			};
 		}
 		if (coverable > 0) {
@@ -62,6 +71,7 @@
 				tone: "danger",
 				icon: "shield",
 				title: "Cover overspending",
+				short: "Cover",
 				sub: `${fmtMoney(coverable)} from To Budget`,
 				run: () => perform(() => coverOverspending(sheet, overIds)),
 			};
@@ -71,6 +81,7 @@
 				tone: "primary",
 				icon: "target",
 				title: "Fund targets",
+				short: "Fund",
 				sub: `${fmtMoney(fundable)} from To Budget`,
 				run: () => perform(() => fundTargets(sheet, short)),
 			};
@@ -79,10 +90,19 @@
 			tone: "quiet",
 			icon: "sparkles",
 			title: "Auto-assign",
+			short: "Actions",
 			sub: "Copy, average, or reset",
 			run: null,
 		};
 	});
+
+	const toneClass = $derived(
+		suggestion.tone === "danger"
+			? "abt-tone-danger"
+			: suggestion.tone === "primary"
+				? "abt-tone-accent"
+				: "",
+	);
 
 	async function perform(action: () => Promise<ActionResult | null>) {
 		if (busy) return;
@@ -134,45 +154,77 @@
 	}
 </script>
 
-<div class="ac is-{suggestion.tone}" class:is-busy={busy} bind:this={root}>
-	<button
-		type="button"
-		class="ac__main"
-		disabled={busy}
-		onclick={() => (suggestion.run ? suggestion.run() : (menuOpen = !menuOpen))}
+{#if compact}
+	<!-- The multi-month header's version: the suggestion's short name, and the menu. -->
+	<div
+		class="ac-compact abt-btn-group abt-btn-group--sm abt-btn-group--divided {toneClass}"
+		bind:this={root}
 	>
-		<span class="ac__label">{suggestion.run ? "Suggested" : "Budget actions"}</span>
-		<span class="ac__title">
-			<Icon name={suggestion.icon} size={15} />
-			{busy ? "Working…" : suggestion.title}
-		</span>
-		<span class="ac__sub abt-privacy-number">{suggestion.sub}</span>
-	</button>
-	<button
-		type="button"
-		class="ac__more"
-		aria-label="More budget actions"
-		aria-expanded={menuOpen}
-		disabled={busy}
-		bind:this={moreBtn}
-		onclick={() => (menuOpen = !menuOpen)}
-	>
-		<Icon name="chevronDown" size={14} />
-	</button>
-</div>
+		<button
+			type="button"
+			class="abt-btn abt-btn--sm"
+			disabled={busy || loading}
+			title={loading ? undefined : `${suggestion.title}: ${suggestion.sub}`}
+			onclick={() => (suggestion.run ? suggestion.run() : (menuOpen = !menuOpen))}
+		>
+			<Icon name={suggestion.icon} size={13} />
+			<span class="ac-compact__short">{busy ? "Working…" : suggestion.short}</span>
+		</button>
+		<button
+			type="button"
+			class="abt-btn abt-btn--sm abt-btn--icon"
+			aria-label="More budget actions"
+			aria-expanded={menuOpen}
+			disabled={busy || loading}
+			bind:this={moreBtn}
+			onclick={() => (menuOpen = !menuOpen)}
+		>
+			<Icon name="chevronDown" size={14} />
+		</button>
+	</div>
+{:else}
+	<div class="ac abt-card abt-repel is-{suggestion.tone}" class:is-busy={busy} bind:this={root}>
+		<!-- Its ::after covers the card, so the whole card runs the suggestion. -->
+		<button
+			type="button"
+			class="ac__main abt-stack abt-gap-3"
+			disabled={busy}
+			onclick={() => (suggestion.run ? suggestion.run() : (menuOpen = !menuOpen))}
+		>
+			<span class="abt-label">{suggestion.run ? "Suggested" : "Budget actions"}</span>
+			<span class="ac__title abt-cluster abt-gap-3">
+				<Icon name={suggestion.icon} size={15} />
+				{busy ? "Working…" : suggestion.title}
+			</span>
+			<span class="ac__sub abt-privacy-number">{suggestion.sub}</span>
+		</button>
+		<button
+			type="button"
+			class="ac__more abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+			aria-label="More budget actions"
+			aria-expanded={menuOpen}
+			disabled={busy}
+			bind:this={moreBtn}
+			onclick={() => (menuOpen = !menuOpen)}
+		>
+			<Icon name="chevronDown" size={14} />
+		</button>
+	</div>
+{/if}
 
 {#if menuOpen}
-	<div class="ac-menu" role="menu" use:portal bind:this={menu}>
-		<div class="ac-menu__heading">Fill this month</div>
+	<div class="ac-menu abt-popover abt-menu" role="menu" use:portal bind:this={menu}>
+		<div class="abt-menu__heading">Fill this month</div>
 		<button
 			type="button"
 			role="menuitem"
+			class="abt-menu__item"
 			disabled={fundable <= 0}
 			onclick={() => perform(() => fundTargets(sheet, short))}
 		>
 			<Icon name="target" size={15} />
-			<span class="ac-menu__text">
-				<span class="ac-menu__title"
+			<span class="abt-stack abt-gap-1">
+				<span class="ac-menu__title abt-repel"
 					>Fund underfunded targets
 					{#if fundable > 0}<em class="abt-privacy-number">{fmtMoney(fundable)}</em>{/if}</span
 				>
@@ -182,63 +234,64 @@
 		<button
 			type="button"
 			role="menuitem"
+			class="abt-menu__item"
 			disabled={coverable <= 0}
 			onclick={() => perform(() => coverOverspending(sheet, overIds))}
 		>
 			<Icon name="shield" size={15} />
-			<span class="ac-menu__text">
-				<span class="ac-menu__title"
+			<span class="abt-stack abt-gap-1">
+				<span class="ac-menu__title abt-repel"
 					>Cover overspending
 					{#if coverable > 0}<em class="abt-privacy-number">{fmtMoney(coverable)}</em>{/if}</span
 				>
 				<span class="ac-menu__desc">Bring every red category back to zero</span>
 			</span>
 		</button>
-		<div class="ac-menu__sep"></div>
-		<div class="ac-menu__heading">Set every budget to</div>
-		<button type="button" role="menuitem" onclick={() => bulk("copy-previous-month")}>
+		<div class="abt-menu__sep"></div>
+		<div class="abt-menu__heading">Set every budget to</div>
+		<button
+			type="button"
+			role="menuitem"
+			class="abt-menu__item"
+			onclick={() => bulk("copy-previous-month")}
+		>
 			<Icon name="copy" size={15} />
-			<span class="ac-menu__text">
-				<span class="ac-menu__title">Last month's budget</span>
-			</span>
+			<span class="ac-menu__title">Last month's budget</span>
 		</button>
-		<div class="ac-menu__row">
+		<div class="ac-menu__row abt-cluster abt-gap-3">
 			<Icon name="trendingUp" size={15} />
 			<span class="ac-menu__title">Average spent</span>
-			<span class="ac-menu__pills">
-				<button type="button" role="menuitem" onclick={() => bulk("set-3month-avg")}>3 mo</button>
-				<button type="button" role="menuitem" onclick={() => bulk("set-6month-avg")}>6 mo</button>
-				<button type="button" role="menuitem" onclick={() => bulk("set-12month-avg")}>12 mo</button>
+			<span class="ac-menu__pills abt-cluster abt-gap-2">
+				{#each [["set-3month-avg", "3 mo"], ["set-6month-avg", "6 mo"], ["set-12month-avg", "12 mo"]] as [action, label] (action)}
+					<button
+						type="button"
+						role="menuitem"
+						class="abt-btn abt-btn--sm abt-btn--pill"
+						onclick={() => bulk(action as BulkAction)}>{label}</button
+					>
+				{/each}
 			</span>
 		</div>
-		<button type="button" role="menuitem" onclick={() => bulk("set-zero")}>
+		<button type="button" role="menuitem" class="abt-menu__item" onclick={() => bulk("set-zero")}>
 			<Icon name="rotateCcw" size={15} />
-			<span class="ac-menu__text">
-				<span class="ac-menu__title">Zero</span>
-			</span>
+			<span class="ac-menu__title">Zero</span>
 		</button>
 	</div>
 {/if}
 
 {#if toast}
-	<div class="ac-toast" role="status" use:portal>
+	<div class="ac-toast abt-popover abt-cluster abt-gap-4" role="status" use:portal>
 		<span>{toast.message}</span>
-		<button type="button" onclick={undo}>Undo</button>
+		<button type="button" class="abt-btn abt-btn--sm abt-tone-accent" onclick={undo}>Undo</button>
 	</div>
 {/if}
 
 <style>
+	/* The single-month card: a tinted surface whose whole area runs the suggestion. */
 	.ac {
-		order: 1;
-		flex: 1.2 1 200px;
-		min-width: max-content;
-		display: flex;
-		border: 1px solid var(--abt-panel-border);
-		border-radius: var(--abt-radius);
-		background: var(--abt-panel-surface);
-		transition:
-			border-color 0.12s,
-			opacity 0.12s;
+		--abt-pad: var(--abt-space-3) var(--abt-space-5);
+		position: relative;
+		transition: border-color 0.12s;
 	}
 
 	.ac:hover {
@@ -256,10 +309,6 @@
 			var(--abt-panel-surface);
 	}
 
-	.ac.is-primary:hover {
-		border-color: color-mix(in srgb, var(--abt-panel-accent) 60%, transparent);
-	}
-
 	.ac.is-danger {
 		border-color: color-mix(in srgb, var(--color-errorText) 35%, transparent);
 		background:
@@ -271,56 +320,47 @@
 			var(--abt-panel-surface);
 	}
 
-	.ac.is-danger:hover {
-		border-color: color-mix(in srgb, var(--color-errorText) 60%, transparent);
-	}
-
 	.ac.is-busy {
-		opacity: 0.7;
+		opacity: 0.6;
 	}
 
-	.ac button {
+	.ac__main {
+		padding: 0;
 		border: 0;
 		background: none;
 		color: inherit;
 		font: inherit;
+		text-align: left;
 		cursor: pointer;
 	}
 
-	.ac button:disabled {
+	.ac__main::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+	}
+
+	.ac__main:disabled {
 		cursor: default;
 	}
 
-	.ac__main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		gap: 4px;
-		padding: 10px 6px 10px 14px;
-		text-align: left;
-		border-radius: var(--abt-radius) 0 0 var(--abt-radius);
+	.ac__main:focus-visible {
+		outline: none;
 	}
 
-	.ac__label {
-		line-height: 14px;
-		font-size: 10px;
-		font-weight: 500;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--color-tableHeaderText);
+	.ac__main:focus-visible::after {
+		outline: 2px solid color-mix(in srgb, var(--abt-panel-accent) 55%, transparent);
+		outline-offset: -2px;
 	}
 
+	/* Fixed line heights keep this card as tall as the others in the row. */
 	.ac__title {
-		line-height: 20px;
-		height: 20px;
-		display: flex;
-		align-items: center;
-		gap: 7px;
-		font-size: 15px;
+		flex-wrap: nowrap;
+		line-height: 22px;
+		font-size: var(--abt-text-lg);
 		font-weight: 600;
 		white-space: nowrap;
-		color: var(--color-pageText);
 	}
 
 	.ac.is-primary .ac__title {
@@ -338,66 +378,29 @@
 		white-space: nowrap;
 	}
 
+	/* Above the stretched main button, so it stays its own target; in the corner, not centred. */
 	.ac__more {
+		position: relative;
+		z-index: 1;
 		align-self: flex-start;
-		display: grid;
-		place-items: center;
-		width: 26px;
-		height: 26px;
-		margin: 6px 6px 0 0;
-		border-radius: var(--abt-radius-sm);
-		color: var(--color-pageTextSubdued);
 	}
 
-	.ac__more:hover,
 	.ac__more[aria-expanded="true"] {
-		background: var(--color-tableRowBackgroundHover);
+		background: var(--abt-fill-hover);
 		color: var(--color-pageText);
 	}
 
-	.ac__main:focus-visible,
-	.ac__more:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--abt-panel-accent) 55%, transparent);
-		outline-offset: -2px;
+	/* Narrow months (many shown at once) keep just the icon. */
+	@container (max-width: 260px) {
+		.ac-compact__short {
+			display: none;
+		}
 	}
 
 	.ac-menu {
 		position: fixed;
 		z-index: 10000;
 		width: 310px;
-		padding: 6px;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: var(--abt-radius);
-		background: var(--color-tooltipBackground, var(--color-pageBackground));
-		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
-		color: var(--color-pageText);
-	}
-
-	.ac-menu button {
-		border: 0;
-		background: none;
-		color: inherit;
-		font: inherit;
-		cursor: pointer;
-	}
-
-	.ac-menu > button {
-		display: flex;
-		align-items: flex-start;
-		gap: 10px;
-		width: 100%;
-		padding: 8px;
-		text-align: left;
-		border-radius: var(--abt-radius-sm);
-	}
-
-	.ac-menu > button:hover:not(:disabled) {
-		background: var(--color-tableRowBackgroundHover);
-	}
-
-	.ac-menu > button:disabled {
-		opacity: 0.4;
-		cursor: default;
 	}
 
 	.ac-menu :global(svg) {
@@ -406,28 +409,10 @@
 		color: var(--color-pageTextSubdued);
 	}
 
-	.ac-menu__heading {
-		margin: 6px 8px 4px;
-		font-size: 10.5px;
-		font-weight: 600;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.ac-menu__text {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		flex: 1;
-	}
-
 	.ac-menu__title {
-		display: flex;
-		justify-content: space-between;
-		gap: 8px;
 		font-size: 13px;
 		font-weight: 550;
+		white-space: nowrap;
 	}
 
 	.ac-menu__title em {
@@ -437,81 +422,30 @@
 	}
 
 	.ac-menu__desc {
-		font-size: 11.5px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 	}
 
-	.ac-menu__sep {
-		height: 1px;
-		margin: 6px 4px;
-		background: var(--color-tableBorder);
-	}
-
 	.ac-menu__row {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 4px 8px;
+		flex-wrap: nowrap;
+		padding: var(--abt-space-2) var(--abt-space-3);
 	}
 
 	.ac-menu__row :global(svg) {
 		margin-top: 0;
 	}
 
-	.ac-menu__row .ac-menu__title {
-		white-space: nowrap;
-	}
-
 	.ac-menu__pills {
-		display: flex;
-		gap: 4px;
 		margin-left: auto;
-	}
-
-	.ac-menu__pills button {
-		white-space: nowrap;
-		padding: 4px 9px;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: 999px;
-		font-size: 12px;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.ac-menu__pills button:hover {
-		color: var(--color-pageText);
-		background: var(--color-tableRowBackgroundHover);
 	}
 
 	.ac-toast {
 		position: fixed;
 		left: 50%;
-		bottom: 24px;
+		bottom: var(--abt-space-6);
 		z-index: 10000;
 		transform: translateX(-50%);
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		padding: 10px 10px 10px 16px;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: var(--abt-radius);
-		background: var(--color-tooltipBackground, var(--color-pageBackground));
-		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
-		color: var(--color-pageText);
+		padding: var(--abt-space-3) var(--abt-space-3) var(--abt-space-3) var(--abt-space-5);
 		font-size: 13px;
-	}
-
-	.ac-toast button {
-		padding: 5px 10px;
-		border: 0;
-		border-radius: var(--abt-radius-sm);
-		background: none;
-		color: var(--abt-panel-accent);
-		font: inherit;
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.ac-toast button:hover {
-		background: color-mix(in srgb, var(--abt-panel-accent) 14%, transparent);
 	}
 </style>

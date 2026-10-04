@@ -85,5 +85,5 @@ export function openToBudgetMenu(toBudgetCard: Element | null | undefined): void
 	const target = toBudgetCard?.querySelector<HTMLElement>("[data-cellname]") ?? toBudgetCard;
 	// That menu closes when focus is outside it, and the clicked card button still holds focus.
 	(document.activeElement as HTMLElement | null)?.blur();
-	requestAnimationFrame(() => (target as HTMLElement | null)?.click());
+	(target as HTMLElement | null)?.click();
 }

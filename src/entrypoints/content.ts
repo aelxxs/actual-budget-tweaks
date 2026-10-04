@@ -1,3 +1,4 @@
+import "@lib/styles/ui.css";
 import { getBaseUrl } from "@lib/utilities/store";
 import type { PublicPath } from "wxt/browser";
 

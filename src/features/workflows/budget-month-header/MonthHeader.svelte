@@ -7,12 +7,14 @@
 	import {
 		addMonths,
 		currentMonth,
-		latestStart,
+		loadBounds,
 		loadMonthMarks,
 		monthKey,
 		parseMonth,
 		setMonthCount,
 		showMonth,
+		validStart,
+		type MonthBounds,
 	} from "./native";
 	import { budgetNav } from "./state.svelte";
 
@@ -22,99 +24,104 @@
 	const parsed = $derived(start ? parseMonth(start) : null);
 	const span = $derived(budgetNav.months.length);
 	const counts = $derived(Array.from({ length: budgetNav.displayMax }, (_, i) => i + 1));
-	const maxStart = latestStart();
+	let bounds = $state<MonthBounds>({ start: "0000-01", end: addMonths(currentMonth(), 12) });
 	// "YYYY-MM" keys compare correctly as strings.
-	const pastCap = (key: string) => key > maxStart;
+	const outOfBounds = (key: string) => key < bounds.start || key > bounds.end;
 
 	onMount(dockInsightsTrigger);
 
-	function shift(delta: number) {
+	// Budgets for new months are created as they're reached, so the bounds can grow.
+	$effect(() => {
 		if (!start) return;
-		const next = addMonths(start, delta);
-		if (!pastCap(next)) void showMonth(next);
+		let stale = false;
+		void loadBounds().then((b) => {
+			if (!stale) bounds = b;
+		});
+		return () => {
+			stale = true;
+		};
+	});
+
+	// Showing more months near the budget's end would run past it; start earlier instead.
+	async function setCount(count: number) {
+		const from = start;
+		await setMonthCount(count);
+		if (!from) return;
+		const next = validStart(from, count, bounds);
+		if (next !== from) void showMonth(next);
+	}
+
+	function go(key: string) {
+		const next = validStart(key, span, bounds);
+		if (next !== start) void showMonth(next);
 	}
 </script>
 
-<div class="bmh">
-	{#if parsed}
-		<button
-			type="button"
-			class="bmh__chip"
-			disabled={start === currentMonth()}
-			onclick={() => showMonth(currentMonth())}>Today</button
-		>
-		<!-- Arrows sit together ahead of the title so its changing width never moves them. -->
-		<div class="bmh__arrows">
+<div class="bmh abt-repel">
+	<div class="abt-cluster abt-gap-4">
+		{#if parsed}
 			<button
 				type="button"
-				class="bmh__icon"
-				title="Previous month"
-				aria-label="Previous month"
-				onclick={() => shift(-1)}
+				class="bmh__today abt-btn abt-btn--pill"
+				disabled={start === currentMonth()}
+				onclick={() => go(currentMonth())}>Today</button
 			>
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg
+			<!-- Arrows sit together ahead of the title so its changing width never moves them. -->
+			<div class="abt-btn-group">
+				<button
+					type="button"
+					class="abt-btn abt-btn--icon"
+					title="Previous month"
+					aria-label="Previous month"
+					disabled={!start || validStart(addMonths(start, -1), span, bounds) === start}
+					onclick={() => start && go(addMonths(start, -1))}
 				>
-			</button>
-			<button
-				type="button"
-				class="bmh__icon"
-				title="Next month"
-				aria-label="Next month"
-				disabled={!start || pastCap(addMonths(start, 1))}
-				onclick={() => shift(1)}
-			>
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg
+					<Icon name="chevronLeft" size={16} />
+				</button>
+				<button
+					type="button"
+					class="abt-btn abt-btn--icon"
+					title="Next month"
+					aria-label="Next month"
+					disabled={!start || validStart(addMonths(start, 1), span, bounds) === start}
+					onclick={() => start && go(addMonths(start, 1))}
 				>
-			</button>
-		</div>
-		<MonthPicker
-			year={parsed.year}
-			month={parsed.month}
-			{span}
-			variant="compact"
-			bind:open={pickerOpen}
-			onpick={(y, m) => showMonth(monthKey(y, m))}
-			loadMarks={loadMonthMarks}
-			isDisabled={(y, m) => pastCap(monthKey(y, m))}
-		/>
-	{/if}
-	<div class="bmh__end">
+					<Icon name="chevronRight" size={16} />
+				</button>
+			</div>
+			<MonthPicker
+				year={parsed.year}
+				month={parsed.month}
+				{span}
+				variant="compact"
+				bind:open={pickerOpen}
+				onpick={(y, m) => go(monthKey(y, m))}
+				loadMarks={loadMonthMarks}
+				isDisabled={(y, m) => outOfBounds(monthKey(y, m))}
+			/>
+		{/if}
+	</div>
+	<div class="abt-cluster abt-gap-4">
 		<!-- Other features (the category filter) mount their controls here. -->
 		<div class="bmh__slot" data-abt-month-header-slot></div>
 		{#if counts.length > 1}
-			<div class="bmh__seg" role="group" aria-label="Months shown">
-				<span class="bmh__seg-label">Months</span>
+			<div class="abt-seg" role="group" aria-label="Months shown">
+				<span class="abt-seg__label">Months</span>
 				{#each counts as n (n)}
 					<button
 						type="button"
-						class:is-active={n === span}
 						aria-pressed={n === span}
 						title={n === 1 ? "Show 1 month" : `Show ${n} months`}
-						onclick={() => setMonthCount(n)}>{n}</button
+						onclick={() => setCount(n)}>{n}</button
 					>
 				{/each}
 			</div>
 		{/if}
 		{#if templatePlanState.triggerShown}
+			<!-- The header's one action that opens something, so it carries the accent. -->
 			<button
 				type="button"
-				class="bmh__insights"
+				class="abt-btn abt-tone-accent"
 				title="Open insights"
 				aria-label="Open insights"
 				onclick={() => openInsights()}
@@ -127,13 +134,9 @@
 </div>
 
 <style>
+	/* Matches the side panel header beside it, border included. */
 	.bmh {
-		--bmh-radius: var(--border-radius, 6px);
-		--bmh-inner-radius: max(0px, calc(var(--bmh-radius) - 3px));
-		display: flex;
-		align-items: center;
 		flex-wrap: wrap;
-		gap: 12px;
 		box-sizing: border-box;
 		min-height: var(--abt-panel-header-height);
 		padding: 0 20px;
@@ -141,137 +144,15 @@
 		color: var(--color-pageText);
 	}
 
-	.bmh__arrows {
-		display: flex;
-		align-items: center;
-		gap: 2px;
-	}
-
 	.bmh__slot {
 		display: contents;
 	}
 
-	.bmh__end {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		margin-left: auto;
-	}
-
-	.bmh__icon {
-		width: 30px;
-		height: 30px;
-		border: none;
-		border-radius: var(--bmh-radius);
+	/* Already on this month: plain text, so it doesn't read as a live button. */
+	.bmh__today:disabled {
+		opacity: 1;
+		border-color: transparent;
 		background: none;
 		color: var(--color-pageTextSubdued);
-		cursor: pointer;
-		display: grid;
-		place-items: center;
-		transition:
-			background 0.1s,
-			color 0.1s;
-	}
-
-	.bmh__icon:disabled {
-		opacity: 0.3;
-		cursor: default;
-	}
-
-	.bmh__icon:hover:not(:disabled) {
-		background: var(--color-tableRowBackgroundHover);
-		color: var(--color-pageText);
-	}
-
-	.bmh__chip {
-		height: 30px;
-		padding: 0 12px;
-		border: 1px solid color-mix(in srgb, var(--color-pageText) 22%, transparent);
-		border-radius: 999px;
-		background: none;
-		color: var(--color-pageText);
-		font: inherit;
-		font-size: 12px;
-		font-weight: 550;
-		white-space: nowrap;
-		cursor: pointer;
-		transition:
-			background 0.1s,
-			border-color 0.1s;
-	}
-
-	.bmh__chip:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--color-pageText) 8%, transparent);
-		border-color: color-mix(in srgb, var(--color-pageText) 35%, transparent);
-	}
-
-	.bmh__chip:disabled {
-		opacity: 0.4;
-		cursor: default;
-	}
-
-	.bmh__insights {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		height: 30px;
-		padding: 0 12px 0 10px;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: var(--bmh-radius);
-		background: none;
-		color: var(--color-pageText);
-		font: inherit;
-		font-size: 12.5px;
-		font-weight: 550;
-		white-space: nowrap;
-		cursor: pointer;
-		transition: background 0.1s;
-	}
-
-	.bmh__insights:hover {
-		background: var(--color-tableRowBackgroundHover);
-	}
-
-	.bmh__seg {
-		display: inline-flex;
-		align-items: center;
-		box-sizing: border-box;
-		height: 30px;
-		padding: 2px;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: var(--bmh-radius);
-	}
-
-	.bmh__seg-label {
-		padding: 0 8px 0 6px;
-		font-size: 11.5px;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.bmh__seg button {
-		height: 100%;
-		padding: 0 11px;
-		border: none;
-		border-radius: var(--bmh-inner-radius);
-		background: none;
-		color: var(--color-pageTextSubdued);
-		font: inherit;
-		font-size: 12.5px;
-		font-weight: 550;
-		font-variant-numeric: tabular-nums;
-		cursor: pointer;
-		transition:
-			background 0.1s,
-			color 0.1s;
-	}
-
-	.bmh__seg button:hover:not(.is-active) {
-		color: var(--color-pageText);
-	}
-
-	.bmh__seg button.is-active {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 24%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
-		font-weight: 650;
 	}
 </style>

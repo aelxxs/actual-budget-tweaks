@@ -22,6 +22,7 @@ let shownKey = "";
  */
 let visible: Set<string> | null = null;
 let runSeq = 0;
+let pendingEdit: MutationObserver | null = null;
 
 interface Status {
 	attention: boolean;
@@ -152,7 +153,10 @@ function mountControl(table: HTMLElement): void {
 	const parent = slot ?? bar;
 	if (!parent || control?.node.parentElement === parent) return;
 	unmountControl();
-	const { node, instance } = mountToNodeWithReturn(FilterControl, { onpick: pick });
+	const { node, instance } = mountToNodeWithReturn(FilterControl, {
+		onpick: pick,
+		size: slot ? "md" : "sm",
+	});
 	node.setAttribute(CONTROL_ATTR, "");
 	if (slot) slot.append(node);
 	// Before ABT's view options when present, else before Actual's ⋮ menu.
@@ -208,32 +212,41 @@ function skipHiddenRows(e: KeyboardEvent): void {
 	const table = (e.target as Element | null)?.closest?.('[data-testid="budget-table"]');
 	const origin = (e.target as Element).closest('[data-testid="row"]');
 	if (!table || !origin) return;
-	requestAnimationFrame(() =>
-		requestAnimationFrame(() => {
-			const input = table.querySelector<HTMLInputElement>('[data-testid="budget"] input');
-			const landed = input?.closest('[data-testid="row"]');
-			if (!input || !landed || !isHiddenRow(landed)) return;
-			const rows = [...table.querySelectorAll('[data-testid="row"]')].filter(rowCategory);
-			const step = rows.indexOf(landed) >= rows.indexOf(origin) ? 1 : -1;
-			const column = [...landed.querySelectorAll('[data-testid="budget"]')].indexOf(
-				input.closest('[data-testid="budget"]')!,
-			);
-			let target = origin;
-			for (let i = rows.indexOf(landed) + step; i >= 0 && i < rows.length; i += step) {
-				if (!isHiddenRow(rows[i])) {
-					target = rows[i];
-					break;
-				}
-			}
-			// Past the last shown row, pressing the row it came from closes the editor.
-			const cell = target.querySelectorAll('[data-testid="budget"]')[column];
-			if (cell) press(cell.firstElementChild ?? cell);
-		}),
+	// Waits for Actual to render the next editor, then moves it on if it landed in a hidden row.
+	pendingEdit?.disconnect();
+	pendingEdit = new MutationObserver(() => {
+		const input = table.querySelector<HTMLInputElement>('[data-testid="budget"] input');
+		if (!input || input === e.target) return;
+		pendingEdit?.disconnect();
+		pendingEdit = null;
+		const landed = input.closest('[data-testid="row"]');
+		if (landed && isHiddenRow(landed)) moveEditor(table, origin, landed, input);
+	});
+	pendingEdit.observe(table, { childList: true, subtree: true });
+}
+
+function moveEditor(table: Element, origin: Element, landed: Element, input: Element): void {
+	const rows = [...table.querySelectorAll('[data-testid="row"]')].filter(rowCategory);
+	const step = rows.indexOf(landed) >= rows.indexOf(origin) ? 1 : -1;
+	const column = [...landed.querySelectorAll('[data-testid="budget"]')].indexOf(
+		input.closest('[data-testid="budget"]')!,
 	);
+	let target = origin;
+	for (let i = rows.indexOf(landed) + step; i >= 0 && i < rows.length; i += step) {
+		if (!isHiddenRow(rows[i])) {
+			target = rows[i];
+			break;
+		}
+	}
+	// Past the last shown row, pressing the row it came from closes the editor.
+	const cell = target.querySelectorAll('[data-testid="budget"]')[column];
+	if (cell) press(cell.firstElementChild ?? cell);
 }
 
 function reset(): void {
 	runSeq++;
+	pendingEdit?.disconnect();
+	pendingEdit = null;
 	visible = null;
 	filterState.filter = "all";
 	for (const el of document.querySelectorAll(`[${HIDDEN_ATTR}]`)) el.removeAttribute(HIDDEN_ATTR);
@@ -275,6 +288,8 @@ export const budgetCategoryFilter = defineSetting({
 	css: () => `
 		[${HIDDEN_ATTR}] { display: none !important; }
 		[${CONTROL_ATTR}] { display: contents; }
+		/* Actual's category header row has no gap, so the control spaces itself from its icons. */
+		[data-testid="budget-totals"] [${CONTROL_ATTR}] > * { margin-right: var(--abt-space-2); }
 	`,
 	init: () => {
 		const unwatch = watchDom(sync);

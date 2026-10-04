@@ -250,8 +250,8 @@
 				"group": "Budget"
 			},
 			{
-				"label": "Single-month summary (experimental)",
-				"description": "When one month is shown, replace its card with a full-width row: To Budget, spending, targets, and quick budget actions.",
+				"label": "Month cards (experimental)",
+				"description": "Compact month headers when several months are shown; with one, a full-width row of To Budget, spending, targets, and quick budget actions.",
 				"icon": "sparkles",
 				"group": "Budget"
 			},

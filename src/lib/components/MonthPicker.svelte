@@ -366,8 +366,10 @@
 			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 55%, transparent);
 	}
 	.title.is-compact .title__chevron {
-		width: 12px;
-		height: 12px;
+		width: 16px;
+		height: 16px;
+		stroke-width: 2.5;
+		opacity: 0.7;
 	}
 	.picker.is-compact {
 		width: 264px;

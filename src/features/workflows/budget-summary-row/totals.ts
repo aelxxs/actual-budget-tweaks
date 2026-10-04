@@ -1,0 +1,78 @@
+import {
+	BALANCE_CELL_RE,
+	cellValue,
+	fetchCells,
+} from "@features/readability/category-progress/cells";
+import { loadCurrency } from "@lib/utilities/currency";
+import type { Shortfall } from "./actions";
+
+export interface MonthTotals {
+	toBudget: number;
+	available: number;
+	budgeted: number;
+	overspent: number;
+	nextMonth: number;
+	spent: number;
+	goals: number;
+	funded: number;
+	short: Shortfall[];
+	/** This month's overspending, which comes out of next month's To Budget. */
+	overspentNow: number;
+	overIds: string[];
+}
+
+/** The last totals per month, in memory only, so switching views can draw them at once. */
+const latest = new Map<string, MonthTotals>();
+
+export const cachedTotals = (sheet: string): MonthTotals | null => latest.get(sheet) ?? null;
+
+/**
+ * The categories the table shows, from any month's balance cells: every month lists the
+ * same ones, and the carousel's off-screen months have no cells of their own.
+ */
+function categoryIds(): string[] {
+	const ids = new Set<string>();
+	for (const el of document.querySelectorAll('[data-cellname*="!leftover-"]')) {
+		const match = el.getAttribute("data-cellname")?.match(BALANCE_CELL_RE);
+		if (match) ids.add(match[2]);
+	}
+	return [...ids];
+}
+
+export async function loadMonthTotals(sheet: string, force: boolean): Promise<MonthTotals> {
+	await loadCurrency();
+	const [toBudget, available, budgeted, overspent, nextMonth, spent] = await Promise.all(
+		[
+			"to-budget",
+			"available-funds",
+			"total-budgeted",
+			"last-month-overspent",
+			"buffered-selected",
+			"total-spent",
+		].map((name) => cellValue(sheet, name)),
+	);
+	const ids = categoryIds();
+	const cats = (await Promise.all(ids.map((id) => fetchCells(sheet, id, force)))).map(
+		(cells, i) => ({ ...cells, id: ids[i] }),
+	);
+	const withGoal = cats.filter((c) => c.hasGoal);
+	const over = cats.filter((c) => c.balance < 0);
+	// Actual stores these as negative outflows.
+	const totals: MonthTotals = {
+		toBudget,
+		available,
+		budgeted: Math.abs(budgeted),
+		overspent: Math.abs(overspent),
+		nextMonth: Math.abs(nextMonth),
+		spent: Math.abs(spent),
+		goals: withGoal.length,
+		funded: withGoal.filter((c) => c.goalShortfall === 0).length,
+		short: withGoal
+			.filter((c) => c.goalShortfall > 0)
+			.map((c) => ({ id: c.id, shortfall: c.goalShortfall })),
+		overspentNow: over.reduce((sum, c) => sum - c.balance, 0),
+		overIds: over.map((c) => c.id),
+	};
+	latest.set(sheet, totals);
+	return totals;
+}

@@ -1,0 +1,328 @@
+/*
+ * ABT's shared UI: tokens, layout utilities, and controls. Components compose these and keep
+ * their own CSS only for what's genuinely theirs. Everything is prefixed `abt-` because it
+ * shares the page with Actual. Colours mix in pageText (not white) to work in any theme.
+ */
+
+:root {
+	/* Spacing scale. */
+	--abt-space-1: 2px;
+	--abt-space-2: 4px;
+	--abt-space-3: 8px;
+	--abt-space-4: 12px;
+	--abt-space-5: 16px;
+	--abt-space-6: 24px;
+
+	/* Type scale. */
+	--abt-text-xs: 10px;
+	--abt-text-sm: 11.5px;
+	--abt-text-md: 12.5px;
+	--abt-text-lg: 15px;
+	--abt-text-xl: 17px;
+
+	/* Controls. */
+	--abt-control-h: 30px;
+	--abt-control-h-sm: 26px;
+	--abt-fill: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+	--abt-fill-hover: color-mix(in srgb, var(--color-pageText) 17%, transparent);
+	--abt-line: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+	/* Secondary text that stays legible on fills, where pageTextSubdued is faint. */
+	--abt-muted: color-mix(in srgb, var(--color-pageText) 72%, transparent);
+	--abt-accent: var(--color-sidebarItemAccentSelected);
+	--abt-accent-text: color-mix(in srgb, var(--abt-accent) 75%, var(--color-pageText));
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+/* Spacing belongs to the parent: children never carry outer margins. */
+.abt-stack {
+	display: flex;
+	flex-direction: column;
+	gap: var(--abt-gap, var(--abt-space-3));
+}
+
+.abt-cluster {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--abt-gap, var(--abt-space-3));
+}
+
+/* Two groups pushed to either end. */
+.abt-repel {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--abt-gap, var(--abt-space-3));
+}
+
+.abt-gap-1 {
+	--abt-gap: var(--abt-space-1);
+}
+.abt-gap-2 {
+	--abt-gap: var(--abt-space-2);
+}
+.abt-gap-3 {
+	--abt-gap: var(--abt-space-3);
+}
+.abt-gap-4 {
+	--abt-gap: var(--abt-space-4);
+}
+.abt-gap-5 {
+	--abt-gap: var(--abt-space-5);
+}
+
+/* ── Text ───────────────────────────────────────────────────────────────── */
+
+/* Matches the budget table's column labels. */
+.abt-label {
+	font-size: var(--abt-text-xs);
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--color-tableHeaderText);
+	white-space: nowrap;
+}
+
+.abt-num {
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* ── Surfaces ───────────────────────────────────────────────────────────── */
+
+.abt-card {
+	padding: var(--abt-pad, var(--abt-space-4) var(--abt-space-5));
+	border: 1px solid var(--abt-panel-border);
+	border-radius: var(--abt-radius);
+	background: var(--abt-panel-surface);
+}
+
+/* Floating surfaces: tooltips, menus, toasts. */
+.abt-popover {
+	border: 1px solid var(--color-tableBorder);
+	border-radius: var(--abt-radius);
+	background: var(--color-tooltipBackground, var(--color-pageBackground));
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+	color: var(--color-pageText);
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+
+/* Tones only set these variables, so every control picks them up the same way. */
+.abt-tone-accent {
+	--abt-btn-bg: color-mix(in srgb, var(--abt-accent) 30%, transparent);
+	--abt-btn-bg-hover: color-mix(in srgb, var(--abt-accent) 40%, transparent);
+	--abt-btn-line: color-mix(in srgb, var(--abt-accent) 35%, transparent);
+	--abt-btn-fg: var(--abt-accent-text);
+}
+
+.abt-tone-danger {
+	--abt-btn-bg: color-mix(in srgb, var(--color-errorText) 16%, transparent);
+	--abt-btn-bg-hover: color-mix(in srgb, var(--color-errorText) 26%, transparent);
+	--abt-btn-line: color-mix(in srgb, var(--color-errorText) 35%, transparent);
+	--abt-btn-fg: var(--color-errorText);
+}
+
+.abt-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--abt-space-2);
+	box-sizing: border-box;
+	height: var(--abt-btn-h, var(--abt-control-h));
+	padding: 0 var(--abt-space-4);
+	border: 1px solid var(--abt-btn-line, var(--abt-line));
+	border-radius: var(--abt-radius);
+	background: var(--abt-btn-bg, var(--abt-fill));
+	color: var(--abt-btn-fg, var(--color-pageText));
+	font: inherit;
+	font-size: var(--abt-text-md);
+	font-weight: 550;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background 0.1s,
+		color 0.1s;
+}
+
+.abt-btn:hover:not(:disabled) {
+	background: var(--abt-btn-bg-hover, var(--abt-fill-hover));
+}
+
+.abt-btn:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--abt-accent) 55%, transparent);
+	outline-offset: 1px;
+}
+
+.abt-btn:disabled {
+	cursor: default;
+	opacity: 0.4;
+}
+
+.abt-btn--sm {
+	--abt-btn-h: var(--abt-control-h-sm);
+	padding: 0 var(--abt-space-3);
+	font-size: var(--abt-text-sm);
+}
+
+.abt-btn--pill {
+	border-radius: 999px;
+}
+
+.abt-btn--icon {
+	width: var(--abt-btn-h, var(--abt-control-h));
+	padding: 0;
+	color: var(--abt-btn-fg, var(--abt-muted));
+}
+
+.abt-btn--icon:hover:not(:disabled) {
+	color: var(--color-pageText);
+}
+
+/* No box until hovered: for icon buttons sitting inside a card. */
+.abt-btn--ghost {
+	--abt-btn-bg: transparent;
+	--abt-btn-line: transparent;
+	--abt-btn-bg-hover: var(--abt-fill-hover);
+}
+
+/*
+ * Buttons joined into one control (arrow pairs, split buttons). The group carries the fill
+ * and hairline; its buttons are transparent, divided by the same hairline.
+ */
+.abt-btn-group {
+	display: inline-flex;
+	align-items: stretch;
+	border: 1px solid var(--abt-btn-line, var(--abt-line));
+	border-radius: var(--abt-radius);
+	background: var(--abt-btn-bg, var(--abt-fill));
+	overflow: hidden;
+}
+
+.abt-btn-group--sm {
+	--abt-btn-h: var(--abt-control-h-sm);
+}
+
+.abt-btn-group > .abt-btn {
+	height: calc(var(--abt-btn-h, var(--abt-control-h)) - 2px);
+	border: 0;
+	border-radius: 0;
+	background: none;
+}
+
+.abt-btn-group > .abt-btn:hover:not(:disabled) {
+	background: var(--abt-fill);
+}
+
+.abt-btn-group--divided > .abt-btn + .abt-btn {
+	border-left: 1px solid var(--abt-btn-line, var(--abt-line));
+}
+
+/* Pick one of a few options; the chosen one is aria-pressed. */
+.abt-seg {
+	display: inline-flex;
+	align-items: center;
+	box-sizing: border-box;
+	height: var(--abt-btn-h, var(--abt-control-h));
+	padding: var(--abt-space-1);
+	border: 1px solid var(--abt-line);
+	border-radius: var(--abt-radius);
+	background: var(--abt-fill);
+}
+
+.abt-seg--sm {
+	--abt-btn-h: 24px;
+}
+
+.abt-seg__label {
+	padding: 0 var(--abt-space-3) 0 var(--abt-space-2);
+	font-size: var(--abt-text-sm);
+	color: var(--abt-muted);
+}
+
+.abt-seg > button {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--abt-space-2);
+	height: 100%;
+	padding: 0 var(--abt-space-3);
+	border: 0;
+	border-radius: max(0px, calc(var(--abt-radius) - 3px));
+	background: none;
+	color: var(--abt-muted);
+	font: inherit;
+	font-size: var(--abt-text-md);
+	font-weight: 550;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background 0.1s,
+		color 0.1s;
+}
+
+.abt-seg--sm > button {
+	font-size: var(--abt-text-sm);
+}
+
+.abt-seg > button:hover:not([aria-pressed="true"], :disabled) {
+	color: var(--color-pageText);
+}
+
+.abt-seg > button[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--abt-accent) 32%, transparent);
+	color: var(--abt-accent-text);
+	font-weight: 650;
+}
+
+.abt-seg > button:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+
+/* Menus: a popover of full-width rows. */
+.abt-menu {
+	display: flex;
+	flex-direction: column;
+	padding: var(--abt-space-2);
+}
+
+.abt-menu__heading {
+	padding: var(--abt-space-3) var(--abt-space-3) var(--abt-space-2);
+	font-size: 10.5px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--color-pageTextSubdued);
+}
+
+.abt-menu__item {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--abt-space-3);
+	width: 100%;
+	padding: var(--abt-space-3);
+	border: 0;
+	border-radius: var(--abt-radius-sm);
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.abt-menu__item:hover:not(:disabled) {
+	background: var(--abt-fill);
+}
+
+.abt-menu__item:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.abt-menu__sep {
+	height: 1px;
+	margin: var(--abt-space-2);
+	background: var(--color-tableBorder);
+}

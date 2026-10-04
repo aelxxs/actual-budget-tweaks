@@ -24,11 +24,31 @@ export function addMonths(key: string, n: number): string {
 	return monthKey(d.getFullYear(), d.getMonth());
 }
 
-/** How far ahead the start month can go, matching Actual's own limit. */
-export const MAX_FUTURE_MONTHS = 12;
+export interface MonthBounds {
+	start: string;
+	end: string;
+}
 
-export function latestStart(): string {
-	return addMonths(currentMonth(), MAX_FUTURE_MONTHS);
+/** The months the budget has, which is what Actual keeps navigation within. */
+export async function loadBounds(): Promise<MonthBounds> {
+	try {
+		const bounds = await send<MonthBounds | null>("get-budget-bounds");
+		if (bounds?.start && bounds.end) return bounds;
+	} catch {
+		// Falls through to Actual's usual range.
+	}
+	return { start: "0000-01", end: addMonths(currentMonth(), 12) };
+}
+
+/**
+ * Where a start month can go: Actual keeps every shown month inside the budget, so near
+ * the end the start stops early instead of showing fewer months.
+ */
+export function validStart(key: string, span: number, bounds: MonthBounds): string {
+	const latest = addMonths(bounds.end, -(Math.max(span, 1) - 1));
+	if (key > latest) return latest;
+	if (key < bounds.start) return bounds.start;
+	return key;
 }
 
 export function currentMonth(): string {
@@ -86,15 +106,28 @@ function giveUp(reason: string): void {
 const shownStart = () => document.querySelector<HTMLElement>(SELECTED_CELL)?.dataset.month ?? null;
 const shownCount = () => document.querySelectorAll(SELECTED_CELL).length;
 
+/**
+ * Resolves once Actual's month picker shows the change. The deadline isn't polling: it's how
+ * a change Actual ignored is noticed, so the header can fall back to Actual's own controls.
+ */
 function waitFor(done: () => boolean): Promise<boolean> {
-	const deadline = Date.now() + SETTLE_MS;
+	if (done()) return Promise.resolve(true);
 	return new Promise((resolve) => {
-		const check = () => {
-			if (done()) resolve(true);
-			else if (Date.now() > deadline) resolve(false);
-			else setTimeout(check, 50);
+		const finish = (ok: boolean) => {
+			observer.disconnect();
+			clearTimeout(deadline);
+			resolve(ok);
 		};
-		check();
+		const observer = new MutationObserver(() => {
+			if (done()) finish(true);
+		});
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: ["data-testid", "data-month"],
+		});
+		const deadline = setTimeout(() => finish(done()), SETTLE_MS);
 	});
 }
 
