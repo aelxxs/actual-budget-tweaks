@@ -6,6 +6,7 @@ import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
 import MonthMeta from "./MonthMeta.svelte";
 import SummaryRow from "./SummaryRow.svelte";
+import { markSheetsStale, sheetsInMutations } from "@features/readability/category-progress/cells";
 import { summaryState } from "./state.svelte";
 
 const SELECTED_CELL = '[data-testid="selected-budget-month"][data-month]';
@@ -84,6 +85,9 @@ function restoreNative(): void {
 		for (const el of document.querySelectorAll(`[${attr}]`)) el.removeAttribute(attr);
 	}
 }
+
+const shownSheets = (table: HTMLElement) =>
+	shownMonths(table).map((month) => `budget${month.replace("-", "")}`);
 
 function shownMonths(table: HTMLElement): string[] {
 	// Actual's month header (hidden by the month header feature, but still mounted).
@@ -183,18 +187,25 @@ function observe(table: HTMLElement): void {
 	if (observed?.table === table) return;
 	observed?.observer.disconnect();
 	let timer: ReturnType<typeof setTimeout> | undefined;
-	const ours = `[${SUMMARY_STATS_ATTR}], [${MONTH_META_ATTR}]`;
+	const changed = new Set<string>();
+	let shown = shownSheets(table);
 	const observer = new MutationObserver((records) => {
 		syncParts(table);
-		// Any edit or new transaction rewrites cell text in the table; our own renders don't count.
-		if (
-			records.every(
-				(r) => (r.target as Element).closest?.(ours) ?? r.target.parentElement?.closest(ours),
-			)
-		)
-			return;
+		// Only the months whose cells changed re-read; our own renders change none.
+		const now = shownSheets(table);
+		const moved = now.join() !== shown.join();
+		const sheets = sheetsInMutations(records, moved ? shown : undefined);
+		shown = now;
+		if (!sheets.size) return;
+		markSheetsStale(sheets);
+		for (const sheet of sheets) changed.add(sheet);
 		clearTimeout(timer);
-		timer = setTimeout(() => summaryState.version++, REFRESH_MS);
+		timer = setTimeout(() => {
+			for (const sheet of changed) {
+				summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
+			}
+			changed.clear();
+		}, REFRESH_MS);
 	});
 	observer.observe(table.parentElement ?? table, {
 		childList: true,

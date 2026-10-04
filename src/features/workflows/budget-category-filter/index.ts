@@ -1,4 +1,9 @@
-import { BALANCE_CELL_RE, fetchCells } from "@features/readability/category-progress/cells";
+import {
+	BALANCE_CELL_RE,
+	fetchCells,
+	markSheetsStale,
+	sheetsInMutations,
+} from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -46,7 +51,7 @@ const isExpenseGroup = (row: Element) =>
 	!row.querySelector('[data-testid="category-name"]');
 
 /** A category matches in any shown month, so multi-month views keep the same rows. */
-async function loadStatuses(table: HTMLElement, force: boolean): Promise<Map<string, Status>> {
+async function loadStatuses(table: HTMLElement): Promise<Map<string, Status>> {
 	const ids = new Set<string>();
 	for (const row of table.querySelectorAll('[data-testid="row"]')) {
 		const id = rowCategory(row);
@@ -56,7 +61,7 @@ async function loadStatuses(table: HTMLElement, force: boolean): Promise<Map<str
 	const statuses = new Map<string, Status>();
 	await Promise.all(
 		[...ids].map(async (id) => {
-			const months = await Promise.all(sheets.map((s) => fetchCells(s, id, force)));
+			const months = await Promise.all(sheets.map((s) => fetchCells(s, id)));
 			const attention = months.some((c) => c.balance < 0 || c.goalShortfall > 0);
 			const funded =
 				!attention && months.some((c) => (c.hasGoal ? c.goalShortfall === 0 : c.balance > 0));
@@ -123,9 +128,9 @@ function applyRows(table: HTMLElement): void {
 	closeGroup();
 }
 
-async function refresh(table: HTMLElement, force: boolean, refreeze: boolean): Promise<void> {
+async function refresh(table: HTMLElement, refreeze: boolean): Promise<void> {
 	const seq = ++runSeq;
-	const statuses = await loadStatuses(table, force);
+	const statuses = await loadStatuses(table);
 	if (seq !== runSeq) return;
 	countStatuses(statuses);
 	if (refreeze) {
@@ -143,7 +148,7 @@ function pick(filter: CategoryFilter): void {
 	const table = document.querySelector<HTMLElement>('[data-testid="budget-table"]');
 	filterState.filter = filter;
 	if (!table) return;
-	void refresh(table, true, true);
+	void refresh(table, true);
 }
 
 /** In the month header like the mockup when it's on, else in the category column header. */
@@ -176,10 +181,17 @@ function observe(table: HTMLElement): void {
 	observed?.observer.disconnect();
 	// Edits change the counts; the shown rows stay until another filter is picked.
 	let timer: ReturnType<typeof setTimeout> | undefined;
+	let before = shownSheets(table);
 	const observer = new MutationObserver((records) => {
-		if (records.every((r) => control?.node.contains(r.target))) return;
+		// Only edits to a shown month change the counts; navigating is handled by sync().
+		const shown = shownSheets(table);
+		const moved = shown.join() !== before.join();
+		const sheets = sheetsInMutations(records, moved ? before : undefined);
+		before = shown;
+		markSheetsStale(sheets);
+		if (![...sheets].some((sheet) => shown.includes(sheet))) return;
 		clearTimeout(timer);
-		timer = setTimeout(() => void refresh(table, true, false), REFRESH_MS);
+		timer = setTimeout(() => void refresh(table, false), REFRESH_MS);
 	});
 	observer.observe(table, { childList: true, subtree: true, characterData: true });
 	observed = { table, observer };
@@ -268,7 +280,7 @@ function sync(): void {
 	const key = shownSheets(table).join();
 	if (key !== shownKey) {
 		shownKey = key;
-		void refresh(table, false, true);
+		void refresh(table, true);
 	} else {
 		applyRows(table);
 	}

@@ -28,7 +28,46 @@ export interface CatCells {
 }
 
 const cellCache = new Map<string, CatCells>();
-const inflight = new Map<string, Promise<CatCells>>();
+const inflight = new Map<string, { promise: Promise<CatCells>; startedAt: number }>();
+/** When each month's cells last changed; anything fetched before then is out of date. */
+const staleSince = new Map<string, number>();
+
+const SHEET_RE = /^(budget\d{6})!/;
+
+/** Marks months whose cells changed, so the next read of them fetches fresh values. */
+export function markSheetsStale(sheets: Iterable<string>): void {
+	const now = Date.now();
+	for (const sheet of sheets) staleSince.set(sheet, now);
+}
+
+/**
+ * The months a batch of table mutations touched, from the cells' names (`budget202609!...`):
+ * an edit rewrites its own and later months' balances; navigating adds the new month's cells.
+ */
+export function sheetsInMutations(
+	records: MutationRecord[],
+	/** The months shown before this batch, when navigation changed them. */
+	movedFrom?: string[],
+): Set<string> {
+	const sheets = new Set<string>();
+	const add = (el: Element | null | undefined) => {
+		const match = el?.closest("[data-cellname]")?.getAttribute("data-cellname")?.match(SHEET_RE);
+		if (match) sheets.add(match[1]);
+	};
+	for (const record of records) {
+		const target = record.target;
+		add(target instanceof Element ? target : target.parentElement);
+		for (const node of record.addedNodes) {
+			if (!(node instanceof Element)) continue;
+			add(node);
+			for (const cell of node.querySelectorAll("[data-cellname]")) add(cell);
+		}
+	}
+	// Navigating reuses Actual's columns, rewriting months that stay on screen without
+	// changing their values; only the months coming into view are new.
+	if (movedFrom) for (const sheet of movedFrom) sheets.delete(sheet);
+	return sheets;
+}
 
 export async function cellValue(sheet: string, name: string): Promise<number> {
 	try {
@@ -41,12 +80,17 @@ export async function cellValue(sheet: string, name: string): Promise<number> {
 
 export function fetchCells(sheet: string, catId: string, force?: boolean): Promise<CatCells> {
 	const key = `${sheet}:${catId}`;
+	const since = staleSince.get(sheet) ?? 0;
 	const cached = cellCache.get(key);
-	if (!force && cached && Date.now() - cached.fetchedAt < CACHE_MS) return Promise.resolve(cached);
+	if (!force && cached && cached.fetchedAt >= since && Date.now() - cached.fetchedAt < CACHE_MS) {
+		return Promise.resolve(cached);
+	}
 	const pending = inflight.get(key);
-	if (!force && pending) return pending;
+	if (!force && pending && pending.startedAt >= since) return pending.promise;
 
-	const promise = (async () => {
+	const entry = { startedAt: Date.now() } as { startedAt: number; promise: Promise<CatCells> };
+	const { startedAt } = entry;
+	entry.promise = (async () => {
 		const [budgeted, sumAmount, balance, goal, longGoal] = await Promise.all([
 			cellValue(sheet, `budget-${catId}`),
 			cellValue(sheet, `sum-amount-${catId}`),
@@ -62,14 +106,16 @@ export function fetchCells(sheet: string, catId: string, force?: boolean): Promi
 			balance,
 			hasGoal: goal > 0,
 			goalShortfall: goal > 0 ? Math.max(0, goal - funded) : 0,
-			fetchedAt: Date.now(),
+			// When it was requested, so a change during the request still counts as newer.
+			fetchedAt: startedAt,
 		};
 		cellCache.set(key, data);
-		inflight.delete(key);
+		// A forced fetch may have replaced this one; only clear our own entry.
+		if (inflight.get(key) === entry) inflight.delete(key);
 		return data;
 	})();
-	inflight.set(key, promise);
-	return promise;
+	inflight.set(key, entry);
+	return entry.promise;
 }
 
 export function clearCellCache(): void {

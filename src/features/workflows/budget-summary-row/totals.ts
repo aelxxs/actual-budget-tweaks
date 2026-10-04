@@ -39,7 +39,7 @@ function categoryIds(): string[] {
 	return [...ids];
 }
 
-export async function loadMonthTotals(sheet: string, force: boolean): Promise<MonthTotals> {
+export async function loadMonthTotals(sheet: string): Promise<MonthTotals> {
 	await loadCurrency();
 	const [toBudget, available, budgeted, overspent, nextMonth, spent] = await Promise.all(
 		[
@@ -52,9 +52,10 @@ export async function loadMonthTotals(sheet: string, force: boolean): Promise<Mo
 		].map((name) => cellValue(sheet, name)),
 	);
 	const ids = categoryIds();
-	const cats = (await Promise.all(ids.map((id) => fetchCells(sheet, id, force)))).map(
-		(cells, i) => ({ ...cells, id: ids[i] }),
-	);
+	const cats = (await Promise.all(ids.map((id) => fetchCells(sheet, id)))).map((cells, i) => ({
+		...cells,
+		id: ids[i],
+	}));
 	const withGoal = cats.filter((c) => c.hasGoal);
 	const over = cats.filter((c) => c.balance < 0);
 	// Actual stores these as negative outflows.

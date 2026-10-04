@@ -30,9 +30,9 @@
 	}
 
 	$effect(() => {
-		const force = summaryState.version > 0;
+		void summaryState.versions[sheet];
 		let stale = false;
-		loadMonthTotals(sheet, force)
+		loadMonthTotals(sheet)
 			.then((t) => {
 				if (!stale) totals = t;
 			})
