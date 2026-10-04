@@ -295,6 +295,13 @@ export const budgetSummaryRow = defineSetting({
 		/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */
 		[${FULL_WIDTH_ATTR}] { max-width: none !important; }
 
+		/*
+		 * One month shown: its column uses Actual's other-month colour even when it's the current
+		 * month, for contrast. ABT's surfaces are defined from the current-month colour at the
+		 * root, so the summary cards keep theirs.
+		 */
+		[${SINGLE_MONTH_ATTR}] { --color-budgetCurrentMonth: var(--color-budgetOtherMonth); }
+
 		/* Drop the category-column spacer so the card spans the table. */
 		[${SINGLE_MONTH_ATTR}] > :first-child > :first-child { display: none !important; }
 

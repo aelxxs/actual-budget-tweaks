@@ -32,8 +32,8 @@ async function loadCategoryMap() {
 
 const CSS = `
 	.abt-cat-dot {
-		width: 8.5px;
-		height: 8.5px;
+		width: 7px;
+		height: 7px;
 		border-radius: 50%;
 		border: none;
 		padding: 0;
