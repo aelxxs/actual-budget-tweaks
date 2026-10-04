@@ -6,6 +6,8 @@
 	--abt-panel-accent: var(--color-sidebarItemAccentSelected);
 	--abt-panel-accent-secondary: var(--color-pageTextLink);
 	--abt-panel-accent-muted: color-mix(in srgb, var(--abt-panel-accent) 10%, transparent);
+	/* Side panel header, matched by page headers beside it (border included). */
+	--abt-panel-header-height: 51px;
 	--abt-panel-surface: var(--color-budgetCurrentMonth, var(--color-tableBackground));
 	--abt-panel-surface-hover: color-mix(in srgb, var(--color-pageText) 4%, var(--abt-panel-surface));
 	--abt-panel-border: color-mix(in srgb, var(--color-pageText) 9%, transparent);

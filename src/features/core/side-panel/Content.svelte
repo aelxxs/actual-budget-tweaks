@@ -156,7 +156,9 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 8px;
-		padding: 12px 12px 10px;
+		box-sizing: border-box;
+		min-height: var(--abt-panel-header-height);
+		padding: 0 12px;
 		border-bottom: 1px solid var(--abt-panel-border);
 		background: var(--color-pageBackground);
 	}

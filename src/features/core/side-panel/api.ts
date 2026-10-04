@@ -1,5 +1,8 @@
 export const SIDEBAR_ATTR = "data-abt-side-drawer-sidebar";
 
+/** The app's main grid: nav sidebar, content column, and the side panel once opened. */
+export const CONTENT_GRID = `div:has(> div:nth-child(4)):has([data-testid='budget-table'], [role='main'], [data-testid='account-name'])`;
+
 export const PANEL_OPEN_EVENT = "abt:sidepanel:open";
 export const PANEL_CLOSE_EVENT = "abt:sidepanel:close";
 export const PANEL_DISMISS_EVENT = "abt:sidepanel:dismiss";

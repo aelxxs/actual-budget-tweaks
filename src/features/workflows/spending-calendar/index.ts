@@ -1,5 +1,5 @@
 import { sidepanel } from "@features/core/side-panel";
-import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
+import { CONTENT_GRID, SIDEBAR_ATTR } from "@features/core/side-panel/api";
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -16,8 +16,6 @@ let calendarInstance: ReturnType<typeof mount> | null = null;
 let calendarContainer: HTMLElement | null = null;
 let hiddenChildren: { el: HTMLElement; display: string }[] = [];
 let previousPath: string | null = null;
-
-const CONTENT_CONTAINER = `div:has(> div:nth-child(4)):has([data-testid='budget-table'], [role='main'], [data-testid='account-name'])`;
 
 export function isCalendarOpen(): boolean {
 	return matchesPage(Page.Calendar);
@@ -45,7 +43,7 @@ export function openCalendar(): void {
 	// (e.g. Insights) would otherwise be taken for the content column.
 	sidepanel.close();
 
-	const target = document.querySelector(CONTENT_CONTAINER) as HTMLElement;
+	const target = document.querySelector(CONTENT_GRID) as HTMLElement;
 	if (!target) return;
 
 	const columns = Array.from(target.children).filter(

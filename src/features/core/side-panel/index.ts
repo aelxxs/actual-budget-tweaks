@@ -4,6 +4,7 @@ import { clamp } from "@lib/utilities/math";
 import { getValue, hasValue, setValue } from "@lib/utilities/store";
 import { mountToPanelBody } from "@lib/utilities/svelte";
 import {
+	CONTENT_GRID,
 	PANEL_CLOSE_EVENT,
 	PANEL_DISMISS_EVENT,
 	PANEL_OPEN_EVENT,
@@ -18,8 +19,6 @@ const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
 const DEFAULT_SIDEBAR_WIDTH = 350;
 const MIN_SIDEBAR_WIDTH = 0;
 const MAX_SIDEBAR_WIDTH = 640;
-
-const GRID_CONTAINER = `div:has(> div:nth-child(4)):has([data-testid='budget-table'], [role='main'], [data-testid='account-name'])`;
 
 function getSafeTitle(title: unknown, fallback: string = "") {
 	if (typeof title !== "string") {
@@ -40,7 +39,7 @@ function isDomNodeLike(value: unknown): value is Node {
 }
 
 function getBodyElement() {
-	return document.querySelector(GRID_CONTAINER) as HTMLElement | null;
+	return document.querySelector(CONTENT_GRID) as HTMLElement | null;
 }
 
 function removeSideDrawerLayout() {
@@ -60,35 +59,35 @@ const CSS = `
 		from { opacity: 1; transform: translateX(0); }
 		to { opacity: 0; transform: translateX(14px); }
 	}
-	${GRID_CONTAINER}:has([${SIDEBAR_ATTR}]) {
+	${CONTENT_GRID}:has([${SIDEBAR_ATTR}]) {
 		display: grid;
 		height: 100vh;
 		grid-template-rows: auto 1fr;
 		grid-template-columns: 1fr ${DEFAULT_SIDEBAR_WIDTH}px;
 		grid-template-areas: "header header" "body sidebar";
 	}
-	${GRID_CONTAINER}:has([${SIDEBAR_ATTR}]) > div:nth-child(1) {
+	${CONTENT_GRID}:has([${SIDEBAR_ATTR}]) > div:nth-child(1) {
 		grid-area: header;
 	}
-	${GRID_CONTAINER}:has([${SIDEBAR_ATTR}]) > div:nth-child(2) {
+	${CONTENT_GRID}:has([${SIDEBAR_ATTR}]) > div:nth-child(2) {
 		position: absolute;
 		bottom: 1rem;
 		right: 1rem;
 		z-index: 1000;
 	}
-	${GRID_CONTAINER}:has([${SIDEBAR_ATTR}]) > div:nth-child(3) {
+	${CONTENT_GRID}:has([${SIDEBAR_ATTR}]) > div:nth-child(3) {
 		position: absolute;
 		top: 0;
 		left: 0;
 		right: 0;
 		z-index: 1000;
 	}
-	${GRID_CONTAINER}:has([${SIDEBAR_ATTR}]) > div:nth-child(4) {
+	${CONTENT_GRID}:has([${SIDEBAR_ATTR}]) > div:nth-child(4) {
 		grid-area: body;
 		overflow-y: auto;
 		min-height: 0;
 	}
-	${GRID_CONTAINER}:has([${SIDEBAR_ATTR}]) > div:nth-child(5) {
+	${CONTENT_GRID}:has([${SIDEBAR_ATTR}]) > div:nth-child(5) {
 		grid-area: sidebar;
 	}
 	.abt-side-drawer-sidebar {
