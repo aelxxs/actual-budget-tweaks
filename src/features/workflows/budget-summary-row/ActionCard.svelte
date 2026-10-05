@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
+	import { bulkEdit } from "@lib/utilities/bulk-edit";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 	import { onMount } from "svelte";
@@ -150,7 +151,7 @@
 		menuOpen = false;
 		busy = true;
 		try {
-			const result = await action();
+			const result = await bulkEdit(action);
 			if (result) showToast(result);
 		} finally {
 			busy = false;
@@ -360,6 +361,7 @@
 	.ac {
 		--abt-pad: var(--abt-space-3) var(--abt-space-5);
 		position: relative;
+		min-width: 0;
 		transition: border-color 0.12s;
 	}
 
@@ -394,6 +396,7 @@
 	}
 
 	.ac__main {
+		min-width: 0;
 		padding: 0;
 		border: 0;
 		background: none;
@@ -445,6 +448,8 @@
 		font-size: 12px;
 		color: var(--color-pageTextSubdued);
 		white-space: nowrap;
+			overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	/* Above the stretched main button, so it stays its own target; in the corner, not centred. */

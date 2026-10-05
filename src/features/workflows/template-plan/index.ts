@@ -1,9 +1,11 @@
 import { isPanelPersistedOpen, sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
+import { sheetsInMutations } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { icon } from "@lib/icons";
 import type { Schedule } from "@lib/types/actual-schema";
 import { query, send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
+import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
 import { createDebouncedObserver } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -211,10 +213,11 @@ function saveBreakdown(): void {
 let overviewSeq = 0;
 let prioritySeq = 0;
 
-async function refreshOverview(): Promise<void> {
+/** `quiet` keeps the current numbers undimmed, for live updates while the user edits. */
+async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Promise<void> {
 	if (!isBudgetPage()) return;
 	const seq = ++overviewSeq;
-	templatePlanState.overviewLoading = true;
+	if (!quiet) templatePlanState.overviewLoading = true;
 	try {
 		const sheet = getCurrentSheet();
 		if (!sheet) {
@@ -601,11 +604,76 @@ function refreshOpenTab(): void {
 	else if (templatePlanState.activeTab === "overview") refreshOverview();
 }
 
+// ── Live edits ────────────────────────────────────────────────────────
+// Long enough to fold one edit's burst of cell updates into a single re-read.
+const LIVE_REFRESH_MS = 50;
+const BUDGET_TABLE = '[data-testid="budget-table"]';
+let cellWatch: { table: Element; observer: MutationObserver } | null = null;
+let liveSheet: string | null = null;
+let liveRefresh: ReturnType<typeof setTimeout> | undefined;
+let heldRefresh = false;
+let stopBulkWatch: (() => void) | null = null;
+
+function refreshLive(): void {
+	// A bulk edit's steps are re-read once, when it finishes.
+	if (isBulkEditing()) {
+		heldRefresh = true;
+		return;
+	}
+	refreshOverview({ quiet: true });
+}
+
+/**
+ * Re-reads the Overview when the shown month's cells change (assigning, a synced
+ * transaction), so it stays current without a refresh. Month changes are left to
+ * checkSheetChange.
+ */
+function watchCells(): void {
+	const table = document.querySelector(BUDGET_TABLE);
+	if (!table || cellWatch?.table === table) return;
+	cellWatch?.observer.disconnect();
+	const observer = new MutationObserver((records) => {
+		if (!drawerOpen || templatePlanState.activeTab !== "overview") return;
+		const sheet = getCurrentSheet();
+		if (!sheet) return;
+		if (sheet !== liveSheet) {
+			liveSheet = sheet;
+			return;
+		}
+		if (!sheetsInMutations(records).has(sheet)) return;
+		clearTimeout(liveRefresh);
+		liveRefresh = setTimeout(refreshLive, LIVE_REFRESH_MS);
+	});
+	stopBulkWatch?.();
+	stopBulkWatch = onBulkEditEnd(() => {
+		if (!heldRefresh) return;
+		heldRefresh = false;
+		refreshLive();
+	});
+	observer.observe(table.parentElement ?? table, {
+		childList: true,
+		subtree: true,
+		characterData: true,
+	});
+	cellWatch = { table, observer };
+	liveSheet = getCurrentSheet();
+}
+
+function stopWatchingCells(): void {
+	cellWatch?.observer.disconnect();
+	cellWatch = null;
+	clearTimeout(liveRefresh);
+	stopBulkWatch?.();
+	stopBulkWatch = null;
+	heldRefresh = false;
+}
+
 // ── Page gating ────────────────────────────────────────────────────────
 let wasOnBudgetPage = false;
 
 function tick(): void {
 	if (!matchesPage(Page.Budget)) {
+		stopWatchingCells();
 		if (wasOnBudgetPage) {
 			wasOnBudgetPage = false;
 			drawerOpen = false;
@@ -615,6 +683,8 @@ function tick(): void {
 		}
 		return;
 	}
+
+	watchCells();
 
 	if (!wasOnBudgetPage) {
 		wasOnBudgetPage = true;
@@ -708,6 +778,7 @@ export const templatePlan = defineSetting({
 			stopClickListener();
 			stopKeyboard();
 			monthWatch.disconnect();
+			stopWatchingCells();
 			clearTimeout(monthRefresh);
 			removeTriggerButton();
 			if (drawerOpen) {

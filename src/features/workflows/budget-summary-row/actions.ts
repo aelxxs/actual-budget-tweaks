@@ -49,16 +49,22 @@ export async function coverOverspending(
 		: null;
 }
 
-/** Moves each target's shortfall from To Budget into its category. */
+/**
+ * Funds the underfunded targets by applying just those categories' templates, which is where
+ * targets come from: one call and one undo step however many there are, and when To Budget
+ * runs short Actual funds them in template priority order.
+ */
 export async function fundTargets(sheet: string, short: Shortfall[]): Promise<ActionResult | null> {
-	const month = monthOf(sheet);
-	const amounts = new Map(short.map((s) => [s.id, s.shortfall]));
-	const steps = await whileFunds(sheet, [...amounts.keys()], (category) =>
-		send("budget/transfer-available", { month, amount: amounts.get(category), category }),
-	);
-	return steps
-		? { message: `Funded ${plural(steps, "target", "targets")}`, undoSteps: steps }
-		: null;
+	if (!short.length) return null;
+	const result = await send<TemplateNotification | null>("budget/apply-multiple-templates", {
+		month: monthOf(sheet),
+		categoryIds: short.map((s) => s.id),
+	});
+	const message =
+		result?.message === "template-errors" || result?.message === "templates-up-to-date"
+			? TEMPLATE_MESSAGES[result.message](result)
+			: `Funded ${plural(result?.count ?? short.length, "target", "targets")}`;
+	return { message, undoSteps: 1, detail: result?.pre };
 }
 
 export const BULK_ACTIONS = {
