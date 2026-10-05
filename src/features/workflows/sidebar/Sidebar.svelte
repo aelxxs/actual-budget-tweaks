@@ -84,7 +84,7 @@
 	// "split" (icon-only activity bar + a dedicated accounts panel). Chosen
 	// from the extension settings (see ./layout) ----
 	const ACTIVITY_BAR_WIDTH = RAIL_WIDTH;
-	let layoutMode = $state<SidebarLayout>("standard");
+	let layoutMode = $state<SidebarLayout>("split");
 
 	// ---- resize ----
 	const MIN_WIDTH = 240;
@@ -326,7 +326,7 @@
 				getValue<boolean>(COLLAPSED_KEY, false),
 				getValue<number>(WIDTH_KEY, DEFAULT_WIDTH),
 				getValue<boolean>(GROUP_MODE_KEY, true),
-				getValue<unknown>(LAYOUT_KEY, "standard"),
+				getValue<unknown>(LAYOUT_KEY, "split"),
 				loadIconCache(),
 			]);
 		collapsed = storedCollapsed;

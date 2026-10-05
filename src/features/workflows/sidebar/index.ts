@@ -84,7 +84,7 @@ export const experimentalSidebarLayout = defineSetting({
 	group: "Sidebar",
 	context: {
 		key: LAYOUT_KEY,
-		defaultValue: "standard",
+		defaultValue: "split",
 	},
 	component: LayoutPicker,
 	init: () => {},
