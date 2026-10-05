@@ -328,9 +328,95 @@
 	color: var(--abt-selected-fg);
 }
 
+.abt-seg > button:focus {
+	outline: none;
+}
+
+.abt-seg > button:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--abt-accent) 55%, transparent);
+	outline-offset: -1px;
+}
+
 .abt-seg > button:disabled {
 	opacity: 0.45;
 	cursor: default;
+}
+
+/* Text fields, as tall as the buttons beside them. */
+.abt-input {
+	box-sizing: border-box;
+	height: var(--abt-btn-h, var(--abt-control-h));
+	min-width: 0;
+	padding: 0 var(--abt-space-3);
+	border: 1px solid var(--abt-line);
+	border-radius: var(--abt-radius);
+	background: var(--abt-fill);
+	color: var(--color-pageText);
+	font: inherit;
+	font-size: var(--abt-text-md);
+	outline: none;
+	transition: border-color 0.1s;
+}
+
+.abt-input::placeholder {
+	color: var(--color-pageTextSubdued);
+}
+
+.abt-input:focus {
+	border-color: color-mix(in srgb, var(--abt-accent) 60%, transparent);
+}
+
+/* Modal dialogs: pair `abt-dialog` with `abt-popover` for the surface. */
+.abt-dialog-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--abt-space-5);
+	background: rgb(0 0 0 / 0.5);
+}
+
+.abt-dialog {
+	display: flex;
+	flex-direction: column;
+	width: min(var(--abt-dialog-w, 440px), 100%);
+	max-height: 80vh;
+	outline: none;
+}
+
+.abt-dialog__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--abt-space-3);
+	flex-shrink: 0;
+	padding: var(--abt-space-4) var(--abt-space-4) var(--abt-space-4) var(--abt-space-5);
+	border-bottom: 1px solid var(--abt-line);
+}
+
+.abt-dialog__title {
+	margin: 0;
+	font-size: var(--abt-text-lg);
+	font-weight: 600;
+}
+
+.abt-dialog__body {
+	flex: 1;
+	min-height: 0;
+	padding: var(--abt-space-5);
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+
+.abt-dialog__footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--abt-space-3);
+	flex-shrink: 0;
+	padding: var(--abt-space-4) var(--abt-space-5);
+	border-top: 1px solid var(--abt-line);
 }
 
 /* Menus: a popover of full-width rows. */
