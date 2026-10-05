@@ -1,6 +1,7 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
+import { privacyStyle } from "./appearance/privacy-dots";
 import { sidebarIcons } from "./appearance/sidebar-icons";
 import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
@@ -20,10 +21,10 @@ import { reportWidgetBackgroundColor } from "./layout/report-widget-background-c
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
 import { sidebarAccountSpacing } from "./layout/sidebar-account-spacing";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
+import { balancePills } from "./readability/balance-pills";
 import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetPageBorders } from "./readability/budget-page-borders";
 import { budgetTotalsLabelStyling } from "./readability/budget-totals-label-styling";
-import { balancePills } from "./readability/balance-pills";
 import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
@@ -40,13 +41,13 @@ import type { Setting } from "./types";
 import { budgetCategoryFilter } from "./workflows/budget-category-filter";
 import { budgetMonthHeader } from "./workflows/budget-month-header";
 import { budgetSummaryRow } from "./workflows/budget-summary-row";
-import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { budgetViewOptions } from "./workflows/budget-view-options";
+import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { goalFunding } from "./workflows/goal-funding";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { spendingCalendar } from "./workflows/spending-calendar";
-import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 import { templatePlan } from "./workflows/template-plan";
+import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 
 const layoutAndDensity = [
 	backgroundPattern,
@@ -77,6 +78,7 @@ const readability = [
 
 const appearance = [
 	modernTitlebar,
+	privacyStyle,
 	sidebarRedesign,
 	sidebarIcons,
 	sidebarSearch,
