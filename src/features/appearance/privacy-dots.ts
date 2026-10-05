@@ -87,7 +87,7 @@ export const privacyStyle = defineSetting({
 	icon: "eyeOff",
 	context: {
 		key: "privacy-style",
-		defaultValue: "dots",
+		defaultValue: "script",
 	},
 	options: [
 		{ value: "dots", label: "Dots per digit" },

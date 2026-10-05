@@ -19,7 +19,15 @@
 		// Mid bulk edit the amount changes once per step; it rolls once, to the final value.
 		if (isBulkEditing()) return;
 		text = source.textContent?.trim() ?? "";
-		box = { left: source.offsetLeft, top: source.offsetTop };
+		const parent = source.parentElement;
+		if (parent) {
+			const sourceRect = source.getBoundingClientRect();
+			const parentRect = parent.getBoundingClientRect();
+			box = {
+				left: sourceRect.left - parentRect.left - parent.clientLeft + parent.scrollLeft,
+				top: sourceRect.top - parentRect.top - parent.clientTop + parent.scrollTop,
+			};
+		}
 		// Copied each time, since Actual recolours it as the amount turns negative or positive.
 		const cs = getComputedStyle(source);
 		look = `font: ${cs.font}; letter-spacing: ${cs.letterSpacing}; color: ${cs.color}`;
@@ -80,11 +88,19 @@
 	 * Under Actual's privacy filter the amount sits in a layer that's invisible until hovered,
 	 * beside a redacted copy; that copy is what should show, so the rolling copy steps aside.
 	 */
-	:global(.abt-privacy-enabled div:has(> div:first-child + div[aria-hidden="true"]:last-child) .native-roll) {
+	:global(
+		.abt-privacy-enabled
+			div:has(> div:first-child + div[aria-hidden="true"]:last-child)
+			.native-roll
+	) {
 		display: none;
 	}
 
-	:global(.abt-privacy-enabled div:has(> div:first-child + div[aria-hidden="true"]:last-child) [data-abt-rolling]) {
+	:global(
+		.abt-privacy-enabled
+			div:has(> div:first-child + div[aria-hidden="true"]:last-child)
+			[data-abt-rolling]
+	) {
 		-webkit-text-fill-color: inherit;
 	}
 </style>
