@@ -58,6 +58,8 @@
 			? `${short(month)} – ${short(end.getMonth())} ${year}`
 			: `${short(month)} ${year} – ${short(end.getMonth())} ${endYear}`;
 	});
+	/** Ranges already use short names; only a single month has a longer form. */
+	const shortLabel = $derived(span <= 1 ? `${short(month)} ${year}` : label);
 
 	$effect(() => {
 		if (!open || !menu || !button) return;
@@ -94,7 +96,11 @@
 		open = !open;
 	}}
 >
-	{label}
+	{#if shortLabel === label}
+		{label}
+	{:else}
+		<span class="title__long">{label}</span><span class="title__short">{shortLabel}</span>
+	{/if}
 	<svg
 		class="title__chevron"
 		width="14"
@@ -364,6 +370,18 @@
 	.title.is-compact:focus-visible {
 		box-shadow: 0 0 0 2px
 			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 55%, transparent);
+	}
+	.title__short {
+		display: none;
+	}
+	/* Short month names when the month header (budget-month-header) runs out of room. */
+	@container bmh (max-width: 820px) {
+		.title__long {
+			display: none;
+		}
+		.title__short {
+			display: inline;
+		}
 	}
 	.title.is-compact .title__chevron {
 		width: 16px;

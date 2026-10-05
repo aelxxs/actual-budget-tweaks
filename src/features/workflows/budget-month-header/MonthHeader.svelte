@@ -98,7 +98,7 @@
 			/>
 		{/if}
 	</div>
-	<div class="abt-cluster abt-gap-4">
+	<div class="bmh__end abt-cluster abt-gap-4">
 		<!-- Other features (the category filter) mount their controls here. -->
 		<div class="bmh__slot" data-abt-month-header-slot></div>
 		{#if counts.length > 1}
@@ -133,16 +133,31 @@
 <style>
 	/* Matches the side panel header beside it, border included. */
 	.bmh {
+		/* Sized by its own width (the side panel narrows it), for the compact rules below. */
+		container: bmh / inline-size;
 		flex-wrap: wrap;
+		row-gap: var(--abt-space-3);
 		box-sizing: border-box;
 		min-height: var(--abt-panel-header-height);
-		padding: 0 20px;
+		/* Room above and below a second line, when the controls don't fit on one. */
+		padding: var(--abt-space-3) 13px;
 		border-bottom: 1px solid var(--abt-panel-border);
 		color: var(--color-pageText);
 	}
 
 	.bmh__slot {
 		display: contents;
+	}
+
+	/* Stays right-aligned when it wraps onto its own line. */
+	.bmh__end {
+		margin-left: auto;
+	}
+
+	@container bmh (max-width: 820px) {
+		.bmh .abt-seg__label {
+			display: none;
+		}
 	}
 
 	/* Already on this month: plain text, so it doesn't read as a live button. */
