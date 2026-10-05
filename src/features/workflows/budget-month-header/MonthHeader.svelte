@@ -154,7 +154,7 @@
 		margin-left: auto;
 	}
 
-	@container bmh (max-width: 820px) {
+	@container bmh (max-width: 700px) {
 		.bmh .abt-seg__label {
 			display: none;
 		}

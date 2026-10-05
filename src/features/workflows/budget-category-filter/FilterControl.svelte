@@ -58,7 +58,7 @@
 	}
 
 	/* Shorter labels when the month header runs out of room; full ones elsewhere. */
-	@container bmh (max-width: 820px) {
+	@container bmh (max-width: 700px) {
 		.cf__long {
 			display: none;
 		}

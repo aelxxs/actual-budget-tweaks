@@ -375,7 +375,7 @@
 		display: none;
 	}
 	/* Short month names when the month header (budget-month-header) runs out of room. */
-	@container bmh (max-width: 820px) {
+	@container bmh (max-width: 700px) {
 		.title__long {
 			display: none;
 		}
