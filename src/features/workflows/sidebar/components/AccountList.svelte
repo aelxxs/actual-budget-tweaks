@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { closeCalendar, isCalendarOpen } from "@features/workflows/spending-calendar";
-	import { navigate } from "@lib/utilities/actual-api";
+	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { getValue, setValue } from "@lib/utilities/store";
@@ -344,6 +344,16 @@
 			<button type="button" class="section-nav" onclick={() => go("/accounts")}>
 				<span class="group-label">Accounts</span>
 				<span class="group-total abt-privacy-number">{fmtMoney(grandTotal)}</span>
+			</button>
+			<!-- Adding accounts is occasional, so it's revealed here on hover rather than kept in the footer. -->
+			<button
+				type="button"
+				class="header-add"
+				aria-label="Add account"
+				use:tooltip={{ text: "Add account", placement: "right" }}
+				onclick={() => dispatch("pushModal", { modal: { name: "add-account", options: {} } })}
+			>
+				<Plus strokeWidth={1.5} />
 			</button>
 			<button
 				type="button"

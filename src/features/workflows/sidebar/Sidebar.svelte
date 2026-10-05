@@ -412,9 +412,7 @@
 						onCloseAccount={handleCloseAccount}
 					/>
 				{/if}
-				<div style="padding-bottom: 0.65rem">
-					<Footer />
-				</div>
+				<Footer {accounts} />
 			</div>
 		{/if}
 	{:else if collapsed}
@@ -458,7 +456,7 @@
 					onCloseAccount={handleCloseAccount}
 				/>
 			{/if}
-			<Footer onCollapse={collapseSidebar} />
+			<Footer {accounts} onCollapse={collapseSidebar} />
 		</div>
 	{/if}
 

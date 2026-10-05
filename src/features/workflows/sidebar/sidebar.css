@@ -187,7 +187,7 @@
 .sidebar .activity-bar {
 	align-items: center;
 	gap: 4px;
-	padding: 12px 0 8px;
+	padding: 12px 0 4px;
 }
 .sidebar .rail-avatar {
 	position: relative;
@@ -1235,9 +1235,38 @@
 		background 0.12s ease,
 		color 0.12s ease;
 }
-.sidebar .all-accounts:hover .group-toggle {
+.sidebar .all-accounts:hover .group-toggle,
+.sidebar .all-accounts:hover .header-add {
 	opacity: 1;
 	pointer-events: auto;
+}
+.sidebar .header-add {
+	position: absolute;
+	right: 28px;
+	top: 50%;
+	padding: 0px !important;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 5px;
+	color: var(--sb-fg-muted);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 0.12s ease,
+		background 0.12s ease,
+		color 0.12s ease;
+}
+.sidebar .header-add:hover {
+	background: var(--sb-hover-4);
+	color: var(--sb-fg);
+}
+.sidebar .header-add svg {
+	width: 15px;
+	height: 15px;
 }
 .sidebar .group-toggle:hover {
 	background: var(--sb-hover-4);
@@ -1631,51 +1660,98 @@
 }
 
 /* Footer */
+/* The panel's base: same shade as the rail beside it, so the two read as one footing. */
 .sidebar .footer {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 0.65rem 0.65rem 0;
-	/* same border token as .budget-select, just on top instead of bottom
-	   since this sits at the opposite end of the sidebar */
+	/* 9px below centres the 26px controls on the rail's bottom icon (4px rail padding + half
+	   its 36px slot); the same above keeps it balanced. */
+	padding: 9px 0.65rem;
 	border-top: 1px solid var(--sb-border);
 	flex-shrink: 0;
+}
+/* In the single-panel layout the body's own bottom padding would add to the footer's. */
+.sidebar > .body > .footer {
+	margin-bottom: -0.75rem;
 }
 .sidebar .footer-actions {
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: 6px;
 }
-.sidebar .add-account {
+/* Undo and redo joined into one control, so they read as a pair. */
+.sidebar .undo-group {
+	display: inline-flex;
+	border: 1px solid var(--sb-border);
+	border-radius: 7px;
+	background: var(--sb-surface);
+	overflow: hidden;
+}
+.sidebar .undo-group button {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding: 5.5px 9px;
-	background: var(--sb-surface);
-	border: 1px solid var(--sb-border);
-	border-radius: 9px;
-	font-size: 13.5px;
-	font-weight: 500;
-	color: var(--sb-fg);
-	white-space: nowrap;
+	justify-content: center;
+	width: 32px;
+	height: 24px;
+	color: var(--sb-fg-muted);
 	transition:
-		background 0.12s ease,
-		border-color 0.12s ease;
+		color 0.12s ease,
+		background 0.12s ease;
 }
-.sidebar .add-account:hover {
-	background: var(--sb-surface-hover);
-	border-color: var(--sb-border-strong);
+.sidebar .undo-group button + button {
+	border-left: 1px solid var(--sb-border);
 }
-.sidebar .add-account span {
-	margin-bottom: 1px;
+.sidebar .undo-group button:hover {
+	color: var(--sb-fg-default);
+	background: var(--sb-hover-1);
 }
-.sidebar .plus {
+.sidebar .undo-group svg {
 	width: 15px;
 	height: 15px;
-	flex-shrink: 0;
+}
+/* Syncs every linked account, so it carries a label; spins while any is syncing. */
+.sidebar .sync-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 26px;
+	padding: 0 10px 0 9px;
+	border: 1px solid var(--sb-border);
+	border-radius: 7px;
+	background: var(--sb-surface);
+	font-size: 12.5px;
+	font-weight: 500;
+	/* Muted like the undo/redo icons, so the footer recedes until it's needed. */
 	color: var(--sb-fg-muted);
+	transition:
+		background 0.12s ease,
+		border-color 0.12s ease,
+		color 0.12s ease;
+}
+.sidebar .sync-btn:hover:not(:disabled) {
+	background: var(--sb-surface-hover);
+	border-color: var(--sb-border-strong);
+	color: var(--sb-fg-default);
+}
+.sidebar .sync-btn:disabled {
+	cursor: default;
+	color: var(--sb-fg-muted);
+}
+.sidebar .sync-btn svg {
+	width: 14px;
+	height: 14px;
+}
+.sidebar .sync-btn.is-syncing svg {
+	color: var(--sb-attention);
+	animation: abt-orbit 0.95s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.sidebar .sync-btn.is-syncing svg {
+		animation: none;
+	}
 }
 .sidebar .theme-toggle {
 	display: flex;
@@ -2255,6 +2331,8 @@
 /* ===== category (sub-group) management ===== */
 /* hover "+" on a section header — swapped with the total, so no layout shift */
 .sidebar .section-add {
+	/* Firefox's default button padding would squeeze the icon below its size. */
+	padding: 0;
 	position: absolute;
 	right: 4px;
 	top: 50%;
