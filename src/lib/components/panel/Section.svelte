@@ -85,12 +85,9 @@
 </section>
 
 <style>
-	.section {
-		border-top: 1px solid var(--abt-panel-border);
-	}
-	/* The tab bar above already draws a border. */
-	.section:first-child {
-		border-top: none;
+	/* Spaced, not ruled: the cards already separate sections, and each title sits nearer its own card. */
+	:global(.section) + .section {
+		margin-top: 10px;
 	}
 
 	.head {
@@ -98,7 +95,7 @@
 		align-items: center;
 		gap: 6px;
 		width: 100%;
-		padding: 7px 12px;
+		padding: 6px 12px;
 		background: transparent;
 		border: none;
 		font: inherit;
@@ -153,8 +150,12 @@
 		}
 	}
 
+	.section:last-child {
+		padding-bottom: 12px;
+	}
+
 	.card {
-		margin: 0 10px 10px;
+		margin: 2px 12px 0;
 		padding: 10px;
 		border-radius: var(--abt-radius);
 		border: 1px solid var(--abt-panel-border);

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { sidepanel } from "@features/core/side-panel";
+	import Tabs from "@lib/components/Tabs.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { monthLabelForHeader } from "@lib/utilities/template-plan/actual-data";
 	import { setValue } from "@lib/utilities/store";
@@ -41,19 +42,6 @@
 		return monthLabel ?? "Insights";
 	});
 
-	const TABS = [
-		{ value: "overview", label: "Overview" },
-		{ value: "breakdown", label: "Breakdown" },
-		{ value: "priority", label: "Priority plan" },
-	] as const;
-
-	function selectTab(tab: (typeof TABS)[number]["value"]) {
-		if (tab === templatePlanState.activeTab) return;
-		templatePlanState.activeTab = tab;
-		setValue(TAB_STORAGE_KEY, tab);
-		templatePlanState.onTabChange?.(tab);
-	}
-
 	$effect(() => {
 		sidepanel.setTitle(title);
 	});
@@ -72,17 +60,18 @@
 	);
 </script>
 
-<div class="ip-tabs">
-	<div class="abt-seg" role="group" aria-label="Insights view">
-		{#each TABS as tab (tab.value)}
-			<button
-				type="button"
-				aria-pressed={templatePlanState.activeTab === tab.value}
-				onclick={() => selectTab(tab.value)}>{tab.label}</button
-			>
-		{/each}
-	</div>
-</div>
+<Tabs
+	tabs={[
+		{ value: "overview", label: "Overview" },
+		{ value: "breakdown", label: "Breakdown" },
+		{ value: "priority", label: "Priority plan" },
+	]}
+	bind:value={templatePlanState.activeTab}
+	onChange={(tab) => {
+		setValue(TAB_STORAGE_KEY, tab);
+		templatePlanState.onTabChange?.(tab);
+	}}
+/>
 
 <div class="abt-tab-body" data-updating={updating || undefined} aria-busy={updating}>
 	{#if templatePlanState.activeTab === "overview"}
@@ -110,21 +99,3 @@
 		{templatePlanState.showAllRows ? "Show only changed" : "Show unchanged categories"}
 	</button>
 {/if}
-
-<style>
-	.ip-tabs {
-		flex-shrink: 0;
-		padding: 10px 12px 6px;
-	}
-
-	/* Full width: the panel's views, not a compact option picker. */
-	.ip-tabs .abt-seg {
-		display: flex;
-		width: 100%;
-	}
-
-	.ip-tabs .abt-seg > button {
-		flex: 1;
-		justify-content: center;
-	}
-</style>

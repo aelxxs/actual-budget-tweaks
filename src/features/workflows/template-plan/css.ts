@@ -1,7 +1,12 @@
 export const CSS = `
 	/* ── Overview tab ──────────────────────────────────────────────── */
+	/* A slim card of its own above the sections, like the cards below it. */
 	.abt-tab-overview-toolbar {
-		padding: 4px 12px 12px;
+		margin: 6px 12px 10px;
+		padding: 6px 6px 6px 12px;
+		border: 1px solid var(--abt-panel-border);
+		border-radius: var(--abt-radius);
+		background: var(--abt-panel-surface);
 	}
 
 	.abt-tab-overview-toolbar-status {
