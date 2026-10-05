@@ -1,52 +1,19 @@
 export const CSS = `
 	/* ── Overview tab ──────────────────────────────────────────────── */
-	.abt-tab-overview-actions {
-		display: flex;
-		gap: 6px;
-		padding: 8px 12px 6px;
-		padding-top: 0px;
+	.abt-tab-overview-toolbar {
+		padding: 4px 12px 12px;
 	}
 
-	.abt-tab-overview-apply-btn {
-		flex: 1;
-		height: 30px;
-		border-radius: var(--abt-radius);
-		border: none;
-		cursor: pointer;
-		font-size: 11px;
-		font-weight: 600;
-		font-family: inherit;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 5px;
-		/* Fixed on purpose: saturated enough for white text on any theme. */
-		background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
-		color: #fff;
-		letter-spacing: 0.2px;
-		transition: opacity 0.12s;
+	.abt-tab-overview-toolbar-status {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
 	}
-	.abt-tab-overview-apply-btn:hover { opacity: 0.85; }
-	.abt-tab-overview-apply-btn:active { opacity: 0.70; }
-
-	.abt-tab-overview-refresh-btn {
-		width: 30px;
-		height: 30px;
-		flex-shrink: 0;
-		border-radius: var(--abt-radius);
-		border: 1px solid var(--abt-panel-border);
-		background: transparent;
-		color: inherit;
-		font-size: 14px;
-		cursor: pointer;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		opacity: 0.65;
-		transition: opacity 0.12s;
-	}
-	.abt-tab-overview-refresh-btn:hover { opacity: 1; }
-	.abt-tab-overview-refresh-btn:disabled { opacity: 0.35; cursor: default; }
+	.abt-tab-overview-toolbar-status[data-tone="warn"] { color: var(--color-warningText); }
+	.abt-tab-overview-toolbar-status[data-tone="ok"] { color: var(--color-noticeTextLight); }
 
 	.abt-tab-overview-load-btn {
 		appearance: none;

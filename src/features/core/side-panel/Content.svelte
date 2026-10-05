@@ -107,14 +107,14 @@
 </script>
 
 <div class="abt-side-drawer-resize-handle" use:resizeHandle></div>
-<div class="abt-side-drawer-content">
+<div class="abt-side-drawer-content abt-controls-quiet">
 	<div class="abt-side-drawer-header">
 		<div class="abt-side-drawer-header-slot" bind:this={headerSlotEl}></div>
 		{#if !panelState.headerNode}
 			<h2 class="abt-side-drawer-title">{panelState.title}</h2>
 		{/if}
 		<button
-			class="abt-side-drawer-close-button"
+			class="abt-side-drawer-close-button abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 			type="button"
 			title="Close side drawer"
 			aria-label="Close side drawer"
@@ -183,23 +183,7 @@
 	}
 
 	.abt-side-drawer-close-button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 2px;
-		width: 28px;
-		height: 28px;
-		border: 0;
-		padding: 0;
-		border-radius: 999px;
 		flex-shrink: 0;
 		margin-left: auto;
-		cursor: pointer;
-		color: var(--color-pageText);
-		background: color-mix(in srgb, var(--color-pageText) 8%, var(--color-buttonNormalBackground));
-		transition: background 0.12s ease;
-	}
-	.abt-side-drawer-close-button:hover {
-		background: color-mix(in srgb, var(--color-pageText) 14%, var(--color-buttonNormalBackground));
 	}
 </style>

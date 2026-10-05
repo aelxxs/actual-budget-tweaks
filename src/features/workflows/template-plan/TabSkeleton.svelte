@@ -16,8 +16,10 @@
 <div class="sk" role="status" aria-busy="true" aria-label={label}>
 	{#if tab === "overview"}
 		<div class="sk__actions">
-			<span class="abt-skeleton" style:flex="1" style:height="30px"></span>
-			<span class="abt-skeleton" style:width="30px" style:height="30px"></span>
+			<span class="abt-skeleton" style:width="45%" style:height="9px"></span>
+			<span class="abt-skeleton" style:width="64px" style:height="26px" style:margin-left="auto"
+			></span>
+			<span class="abt-skeleton" style:width="26px" style:height="26px"></span>
 		</div>
 		<Section title="Month Breakdown" collapsible={false}>
 			<div class="sk__hero">
@@ -80,8 +82,9 @@
 	/* Spacing matches the tabs' own cards (css.ts), so nothing shifts when they load. */
 	.sk__actions {
 		display: flex;
-		gap: 6px;
-		padding: 0 12px 6px;
+		align-items: center;
+		gap: 4px;
+		padding: 4px 12px 12px;
 	}
 
 	.sk__hero {

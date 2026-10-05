@@ -41,6 +41,9 @@ export interface OverviewData {
 	nextMonthKey: string;
 	nextMonthToBudget: number;
 	nextMonthGoalTotal: number | null;
+	/** Template funding still missing this month (what Apply would add); null if unknown. */
+	templateRemaining: number | null;
+	hasTemplates: boolean;
 	recentAvgSpending: number;
 }
 

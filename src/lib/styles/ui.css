@@ -30,6 +30,9 @@
 	--abt-muted: color-mix(in srgb, var(--color-pageText) 72%, transparent);
 	--abt-accent: var(--color-sidebarItemAccentSelected);
 	--abt-accent-text: color-mix(in srgb, var(--abt-accent) 75%, var(--color-pageText));
+	/* The chosen option, as the Live sidebar marks its active item. */
+	--abt-selected-bg: color-mix(in srgb, var(--abt-accent) 15%, transparent);
+	--abt-selected-fg: var(--abt-accent);
 }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
@@ -159,6 +162,20 @@
 	--abt-btn-fg: var(--color-errorText);
 }
 
+/*
+ * Quieter fills for controls in page chrome (the month header, the side panel), so they
+ * don't compete with the content beside them.
+ */
+.abt-controls-quiet {
+	--abt-fill: color-mix(in srgb, var(--color-pageText) 6%, transparent);
+	--abt-fill-hover: color-mix(in srgb, var(--color-pageText) 12%, transparent);
+}
+
+.abt-controls-quiet .abt-tone-accent {
+	--abt-btn-bg: color-mix(in srgb, var(--abt-accent) 20%, transparent);
+	--abt-btn-bg-hover: color-mix(in srgb, var(--abt-accent) 30%, transparent);
+}
+
 .abt-btn {
 	display: inline-flex;
 	align-items: center;
@@ -173,7 +190,7 @@
 	color: var(--abt-btn-fg, var(--color-pageText));
 	font: inherit;
 	font-size: var(--abt-text-md);
-	font-weight: 550;
+	font-weight: 500;
 	white-space: nowrap;
 	cursor: pointer;
 	transition:
@@ -288,7 +305,7 @@
 	color: var(--abt-muted);
 	font: inherit;
 	font-size: var(--abt-text-md);
-	font-weight: 550;
+	font-weight: 500;
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 	cursor: pointer;
@@ -305,10 +322,10 @@
 	color: var(--color-pageText);
 }
 
+/* Same weight as the others, so choosing one doesn't shift the row. */
 .abt-seg > button[aria-pressed="true"] {
-	background: color-mix(in srgb, var(--abt-accent) 32%, transparent);
-	color: var(--abt-accent-text);
-	font-weight: 650;
+	background: var(--abt-selected-bg);
+	color: var(--abt-selected-fg);
 }
 
 .abt-seg > button:disabled {

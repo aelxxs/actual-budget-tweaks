@@ -3,6 +3,7 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
+	import Icon from "@lib/components/Icon.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { onMount } from "svelte";
 	import { templatePlanState } from "./state.svelte";
@@ -80,26 +81,45 @@
 	{@const maxOver =
 		data.overspentCategories.length > 0 ? Math.abs(data.overspentCategories[0].leftover) : 1}
 
-	<!-- Quick Actions -->
-	<div class="abt-tab-overview-actions">
-		<button type="button" class="abt-tab-overview-apply-btn" onclick={applyTemplates}>
-			✦ Apply Templates
-		</button>
-		<button
-			type="button"
-			class="abt-tab-overview-refresh-btn"
-			onclick={triggerRefresh}
-			disabled={loading}
-			title="Refresh overview"
-			aria-label="Refresh overview"
+	{@const remaining = data.hasTemplates ? data.templateRemaining : null}
+	{@const toApply = remaining !== null && remaining > 0}
+	<!-- What applying would do, beside the button that does it. -->
+	<div class="abt-tab-overview-toolbar abt-repel">
+		<span
+			class="abt-tab-overview-toolbar-status"
+			data-tone={remaining === null ? null : toApply ? "warn" : "ok"}
 		>
-			{#if loading}
-				<span class="abt-tab-spinner" style="width:9px;height:9px;border-width:1.5px;margin:0"
-				></span>
+			{#if !data.hasTemplates}
+				No templates
+			{:else if remaining === null}
+				Templates
+			{:else if toApply}
+				Templates · <span class="abt-privacy-number">{fmtMoney(remaining)}</span> to apply
 			{:else}
-				↻
+				Templates · all applied
 			{/if}
-		</button>
+		</span>
+		<div class="abt-cluster abt-gap-2">
+			<button
+				type="button"
+				class="abt-btn abt-btn--sm"
+				class:abt-tone-accent={toApply}
+				onclick={applyTemplates}
+			>
+				<Icon name="sparkles" size={13} />
+				Apply
+			</button>
+			<button
+				type="button"
+				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+				onclick={triggerRefresh}
+				disabled={loading}
+				title="Refresh overview"
+				aria-label="Refresh overview"
+			>
+				<Icon name="rotateCcw" size={13} />
+			</button>
+		</div>
 	</div>
 
 	<!-- ── Month Breakdown ─────────────────────────────────────────── -->

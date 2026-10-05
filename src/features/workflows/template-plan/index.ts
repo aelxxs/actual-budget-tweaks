@@ -325,11 +325,15 @@ async function refreshOverview(): Promise<void> {
 			...visibleCats.map((c) => `sum-amount-${c.id}`),
 		];
 
-		const [pastResults, nextResult, nextMonthGoalTotal] = await Promise.all([
-			Promise.all(pastKeys.map((k) => getCells(keyToSheet(k), trendNames))),
-			getCells(keyToSheet(nextMonthKey), ["to-budget"]),
-			previewMonthTemplateTotal(nextMonthKey, visibleCats),
-		]);
+		const [pastResults, nextResult, nextMonthGoalTotal, templateRemaining, templates] =
+			await Promise.all([
+				Promise.all(pastKeys.map((k) => getCells(keyToSheet(k), trendNames))),
+				getCells(keyToSheet(nextMonthKey), ["to-budget"]),
+				previewMonthTemplateTotal(nextMonthKey, visibleCats),
+				// What Apply would still assign this month; goal cells only fill once it has run.
+				previewMonthTemplateTotal(currentMonthKey, visibleCats),
+				loadTemplatesByCategoryId(),
+			]);
 
 		const trend: MonthTrend[] = pastKeys.map((key, i) => {
 			const mc = i === 5 ? cells : pastResults[i]; // reuse current-month cells
@@ -379,6 +383,8 @@ async function refreshOverview(): Promise<void> {
 			nextMonthToBudget,
 			nextMonthGoalTotal,
 			recentAvgSpending,
+			templateRemaining,
+			hasTemplates: visibleCats.some((c) => templates.has(c.id)),
 		};
 	} catch (e) {
 		console.warn("[ABT] overview refresh failed", e);
