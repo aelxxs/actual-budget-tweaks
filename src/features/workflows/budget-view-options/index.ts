@@ -5,13 +5,10 @@ import { icon } from "@lib/icons";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
-import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 import { getValue } from "@lib/utilities/store";
-import { mount, unmount } from "svelte";
-import ViewOptions from "./ViewOptions.svelte";
+import { openBudgetSettings } from "./settings";
 
 const GROUP_CLASS = "abt-view-options";
-const POPOVER_CLASS = "abt-view-options-popover";
 
 const CSS = `
 	.${GROUP_CLASS} {
@@ -32,14 +29,13 @@ const CSS = `
 		border-radius: var(--abt-radius-sm);
 		transition: opacity 0.12s ease, background 0.12s ease;
 	}
-	.${GROUP_CLASS} > button:hover,
-	.${GROUP_CLASS} > button[aria-expanded="true"] {
+	.${GROUP_CLASS} > button:hover {
 		opacity: 1;
 		background: color-mix(in srgb, currentColor 12%, transparent);
 	}
-	.${POPOVER_CLASS} {
-		position: fixed;
-		z-index: 10000;
+	/* The month header carries the settings button when it's on. */
+	body:has([data-abt-native-month-header]) .${GROUP_CLASS} > .${GROUP_CLASS}__settings {
+		display: none;
 	}
 `;
 
@@ -48,12 +44,9 @@ const INSIGHTS_KEY = insightsSetting.context.key;
 
 let group: HTMLElement | null = null;
 let toggleBtn: HTMLButtonElement | null = null;
-let moreBtn: HTMLButtonElement | null = null;
 let insightsOn = categoryTemplateInsights.context.defaultValue;
-let popover: { el: HTMLElement; instance: ReturnType<typeof mount>; stop: () => void } | null =
-	null;
 
-/** Bullseye toggles insight bars in one click; the sliders button opens View options. */
+/** Bullseye toggles insight bars in one click; the sliders button opens Budget settings. */
 function injectControl(): void {
 	const bar = document.querySelector<HTMLElement>('[data-testid="budget-totals"]')
 		?.firstElementChild as HTMLElement | null;
@@ -71,23 +64,18 @@ function injectControl(): void {
 		applySettingChange(insightsSetting, !insightsOn);
 	});
 
-	const more = document.createElement("button");
-	more.type = "button";
-	more.title = "View options";
-	more.setAttribute("aria-label", "View options");
-	more.setAttribute("aria-expanded", "false");
-	more.innerHTML = icon("sliders", { size: 15 });
-	more.addEventListener("click", (e) => {
-		e.stopPropagation();
-		if (popover) closePopover();
-		else openPopover();
-	});
+	const settings = document.createElement("button");
+	settings.type = "button";
+	settings.className = `${GROUP_CLASS}__settings`;
+	settings.title = "Budget settings";
+	settings.setAttribute("aria-label", "Budget settings");
+	settings.innerHTML = icon("sliders", { size: 15 });
+	settings.addEventListener("click", openBudgetSettings);
 
-	wrap.append(toggle, more);
+	wrap.append(toggle, settings);
 	bar.insertBefore(wrap, menuBtn);
 	group = wrap;
 	toggleBtn = toggle;
-	moreBtn = more;
 	renderToggle();
 }
 
@@ -100,57 +88,22 @@ function renderToggle(): void {
 	toggleBtn.innerHTML = icon(insightsOn ? "target" : "targetOff", { size: 15 });
 }
 
-function openPopover(): void {
-	if (!group || !moreBtn) return;
-	const el = document.createElement("div");
-	el.className = POPOVER_CLASS;
-	document.body.appendChild(el);
-	const instance = mount(ViewOptions, { target: el });
-	positionPopover(el, group, { align: "right" });
-
-	const onKey = (e: KeyboardEvent) => {
-		if (e.key === "Escape") closePopover();
-	};
-	document.addEventListener("keydown", onKey);
-	const stopOutside = onOutsideClick([el, moreBtn], closePopover);
-
-	moreBtn.setAttribute("aria-expanded", "true");
-	popover = {
-		el,
-		instance,
-		stop: () => {
-			stopOutside();
-			document.removeEventListener("keydown", onKey);
-		},
-	};
-}
-
-function closePopover(): void {
-	if (!popover) return;
-	popover.stop();
-	unmount(popover.instance);
-	popover.el.remove();
-	popover = null;
-	moreBtn?.setAttribute("aria-expanded", "false");
-}
-
 function sync(): void {
 	if (!matchesPage(Page.Budget)) {
-		closePopover();
 		group?.remove();
-		group = toggleBtn = moreBtn = null;
+		group = toggleBtn = null;
 		return;
 	}
 	injectControl();
 }
 
-/** Budget table header control: one-click insight bars toggle plus a View options popover. */
+/** Budget table header control: one-click insight bars toggle plus a Budget settings button. */
 export const budgetViewOptions = {
 	type: "core" as const,
 	init: async () => {
 		applyGlobalCSS(CSS, "budget-view-options");
 		insightsOn = Boolean(await getValue(INSIGHTS_KEY, insightsOn));
-		// Follows changes from the popover and the settings page too.
+		// Follows changes from the settings dialog and page too.
 		browser.storage.onChanged.addListener((changes, area) => {
 			if (area !== "local" || !(`local:${INSIGHTS_KEY}` in changes)) return;
 			insightsOn = Boolean(changes[`local:${INSIGHTS_KEY}`].newValue);

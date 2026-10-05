@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { openBudgetSettings } from "@features/workflows/budget-view-options/settings";
 	import { openInsights } from "@features/workflows/template-plan";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Icon from "@lib/components/Icon.svelte";
+	import { SlidersHorizontal } from "lucide-svelte";
 	import {
 		addMonths,
 		currentMonth,
@@ -114,6 +116,15 @@
 				{/each}
 			</div>
 		{/if}
+		<button
+			type="button"
+			class="abt-btn abt-btn--icon"
+			title="Budget settings"
+			aria-label="Budget settings"
+			onclick={openBudgetSettings}
+		>
+			<SlidersHorizontal size={15} strokeWidth={1.75} />
+		</button>
 		{#if templatePlanState.triggerShown}
 			<!-- The header's one action that opens something, so it carries the accent. -->
 			<button
