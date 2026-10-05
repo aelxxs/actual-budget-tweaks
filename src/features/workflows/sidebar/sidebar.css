@@ -174,6 +174,9 @@
 	flex: 1 1 auto;
 }
 .sidebar .split-panel {
+	/* Extra right-side room on top of each row's own padding; rows stay full-bleed so their
+	   highlight still reaches the edges. */
+	--sb-inset: 4px;
 	display: flex;
 	flex-direction: column;
 	flex: 1 1 auto;
@@ -545,6 +548,10 @@
 	box-sizing: border-box;
 	padding: 0.75rem;
 	border-bottom: 1px solid var(--sb-border);
+}
+.sidebar .split-panel .budget-select,
+.sidebar .split-panel .budget-header {
+	padding-right: calc(0.75rem + var(--sb-inset));
 }
 
 /* Budget icon (default: initials, matches .rail-avatar; customizable via the
@@ -1484,16 +1491,27 @@
 .sidebar .account.selected .account-name {
 	color: var(--sb-accent);
 }
-.sidebar.split .account {
+.sidebar.split .account,
+.sidebar.split .skel-row {
 	border-radius: 0;
+	padding-right: calc(8px + var(--sb-inset));
 }
 .sidebar.split .all-accounts {
 	border-radius: 0;
 	margin-bottom: -0.75rem;
 	padding-left: 11px;
+	padding-right: calc(8px + var(--sb-inset));
 }
 .sidebar.split .group-header {
 	border-radius: 0;
+	padding-right: calc(8px + var(--sb-inset));
+}
+.sidebar.split .group-toggle,
+.sidebar.split .section-add {
+	right: calc(4px + var(--sb-inset));
+}
+.sidebar.split .header-add {
+	right: calc(28px + var(--sb-inset));
 }
 /* Sync-status glyphs (dot grammar) */
 .sidebar .status {
