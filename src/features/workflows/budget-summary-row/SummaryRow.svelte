@@ -2,9 +2,12 @@
 	import { openInsights } from "@features/workflows/template-plan";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import Icon from "@lib/components/Icon.svelte";
+	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import ActionCard from "./ActionCard.svelte";
 	import Breakdown from "./Breakdown.svelte";
+	import NativeRoll from "./NativeRoll.svelte";
+	import { smoothRow } from "./smooth-row";
 	import { summaryState } from "./state.svelte";
 	import { cachedTotals, loadMonthTotals, type MonthTotals } from "./totals";
 
@@ -23,6 +26,23 @@
 	});
 
 	const toBudgetCard = $derived(root?.closest("[data-abt-summary-row]")?.lastElementChild ?? null);
+
+	// The To Budget card and ours, eased between widths when content outgrows their floors.
+	$effect(() => {
+		const card = toBudgetCard as HTMLElement | null;
+		const ours = root;
+		if (!card || !ours) return;
+		return smoothRow(() => [
+			card,
+			...ours.querySelectorAll<HTMLElement>(":scope > .sr__card, :scope > .ac"),
+		]);
+	});
+	// Re-found when the totals change, in case Actual re-rendered the amount as a new element.
+	const toBudgetAmount = $derived(
+		totals && toBudgetCard
+			? toBudgetCard.querySelector<HTMLElement>("[data-cellname] > span")
+			: null,
+	);
 
 	function portal(node: HTMLElement, target: Element = document.body) {
 		target.appendChild(node);
@@ -44,6 +64,11 @@
 </script>
 
 {#if totals}
+	{#if toBudgetAmount}
+		{#key toBudgetAmount}
+			<NativeRoll source={toBudgetAmount} resetKey={sheet} />
+		{/key}
+	{/if}
 	<div class="sr" bind:this={root}>
 		{#if templatePlanState.enabled && toBudgetCard}
 			<button
@@ -63,22 +88,28 @@
 		{/if}
 		<div class="sr__card abt-card abt-stack">
 			<span class="sr__label abt-label">Spent</span>
-			<span class="sr__value abt-num abt-privacy-number">{fmtMoney(totals.spent)}</span>
+			<RollingNumber value={totals.spent} resetKey={sheet} class="sr__value abt-num abt-privacy-number" />
 			{#if totals.overIds.length}
 				<span
 					class="sr__sub abt-cluster abt-gap-2 is-bad"
 					title="Overspending comes out of next month's To Budget unless you cover it"
 				>
-					<i class="sr__dot"></i><span class="abt-privacy-number"
-						>{fmtMoney(totals.overspentNow)}</span
-					>
+					<i class="sr__dot"></i><RollingNumber
+						value={totals.overspentNow}
+						resetKey={sheet}
+						class="abt-privacy-number"
+					/>
 					overspent · {totals.overIds.length}
 					{totals.overIds.length === 1 ? "category" : "categories"}
 				</span>
 			{:else}
 				<span class="sr__sub abt-cluster abt-gap-2">
 					{#if totals.budgeted > 0}
-						of <span class="abt-privacy-number">{fmtMoney(totals.budgeted)}</span> budgeted
+						of <RollingNumber
+							value={totals.budgeted}
+							resetKey={sheet}
+							class="abt-privacy-number"
+						/> budgeted
 					{:else}
 						Nothing budgeted yet
 					{/if}
@@ -93,13 +124,21 @@
 				<span class="sr__label abt-label">Targets funded</span>
 				<span class="sr__targets-row abt-cluster">
 					<span class="sr__bar"><i style:width="{(totals.funded / totals.goals) * 100}%"></i></span>
-					<span class="sr__count abt-num">{totals.funded}/{totals.goals}</span>
+					<span class="sr__count abt-num"
+						><RollingNumber value={totals.funded} format={String} resetKey={sheet} />/<RollingNumber
+							value={totals.goals}
+							format={String}
+							resetKey={sheet}
+						/></span
+					>
 				</span>
 				<span class="sr__sub abt-cluster abt-gap-2">
 					{#if totals.short.length}
-						Needs <span class="abt-privacy-number"
-							>{fmtMoney(totals.short.reduce((t, c) => t + c.shortfall, 0))}</span
-						>
+						Needs <RollingNumber
+							value={totals.short.reduce((t, c) => t + c.shortfall, 0)}
+							resetKey={sheet}
+							class="abt-privacy-number"
+						/>
 					{:else}
 						All targets met
 					{/if}
@@ -133,11 +172,35 @@
 		display: contents;
 	}
 
+	/*
+	 * Cards size to their content; the Targets card, whose bar can stretch or shrink, takes the
+	 * slack. So a longer suggestion only resizes that bar, nothing moves the To Budget or Spent
+	 * cards, and secondary lines truncate only once the bar is at its minimum.
+	 */
 	.sr > :global(*) {
 		order: 1;
-		flex: 1 1 auto;
-		/* Never narrower than the figures; the row wraps instead of clipping them. */
-		min-width: max-content;
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+
+	/* Narrowest that still fits its label, a short bar, the count and "Needs …". */
+	.sr > .sr__targets {
+		flex: 1 1 0;
+		min-width: 150px;
+	}
+
+	/* Without targets, the suggestion card takes the slack instead. */
+	.sr:not(:has(> .sr__targets)) > :global(.ac) {
+		flex-grow: 1;
+	}
+
+	/* Floors that cover their usual content, so ordinary changes don't resize them. */
+	.sr > :global(.ac) {
+		min-width: 210px;
+	}
+
+	.sr > .sr__card:not(.sr__targets) {
+		min-width: 160px;
 	}
 
 	.sr__card {
@@ -150,15 +213,19 @@
 		line-height: 14px;
 	}
 
-	.sr__value {
+	/* Rendered by RollingNumber, so outside this component's scope. */
+	.sr :global(.sr__value) {
 		line-height: 22px;
 		font-size: var(--abt-text-xl);
 		font-weight: 600;
 		color: var(--color-pageText);
 	}
 
-	.sr__sub {
-		flex-wrap: nowrap;
+	/* A plain line, not a flex row, so it can end in an ellipsis when the card is tight. */
+	.sr .sr__sub {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		height: 16px;
 		line-height: 16px;
 		font-size: 12px;
@@ -175,6 +242,9 @@
 		height: 6px;
 		border-radius: 50%;
 		background: currentColor;
+			display: inline-block;
+		margin-right: var(--abt-space-2);
+		vertical-align: 1px;
 	}
 
 	.sr__card.is-skeleton {
@@ -227,5 +297,13 @@
 		height: 100%;
 		border-radius: inherit;
 		background: var(--color-noticeTextLight);
+		/* Same easing and length as the rolling numbers, so the card moves as one. */
+		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.sr__bar i {
+			transition: none;
+		}
 	}
 </style>

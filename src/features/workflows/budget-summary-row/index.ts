@@ -2,6 +2,7 @@ import { defineSetting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
 import { icon } from "@lib/icons";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
+import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
@@ -42,6 +43,7 @@ interface Mounted {
 let summary: (Mounted & { card: HTMLElement }) | null = null;
 const metas = new Map<HTMLElement, Mounted>();
 let observed: { table: HTMLElement; observer: MutationObserver } | null = null;
+let stopBulkFlush: (() => void) | null = null;
 
 function drop(mounted: Mounted): void {
 	unmount(mounted.instance as never);
@@ -211,13 +213,18 @@ function observe(table: HTMLElement): void {
 		markSheetsStale(sheets);
 		for (const sheet of sheets) changed.add(sheet);
 		clearTimeout(timer);
-		timer = setTimeout(() => {
-			for (const sheet of changed) {
-				summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
-			}
-			changed.clear();
-		}, REFRESH_MS);
+		timer = setTimeout(flush, REFRESH_MS);
 	});
+	function flush() {
+		// A bulk edit's steps are re-read once, when it finishes.
+		if (isBulkEditing()) return;
+		for (const sheet of changed) {
+			summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
+		}
+		changed.clear();
+	}
+	stopBulkFlush?.();
+	stopBulkFlush = onBulkEditEnd(flush);
 	observer.observe(table.parentElement ?? table, {
 		childList: true,
 		subtree: true,
@@ -332,10 +339,17 @@ export const budgetSummaryRow = defineSetting({
 		/* Drop the category-column spacer so the card spans the table. */
 		[${SINGLE_MONTH_ATTR}] > :first-child > :first-child { display: none !important; }
 
-		/* Actual's card becomes a transparent row of separate cards. */
+		/*
+		 * Actual's card becomes a transparent row of separate cards. One line: wrapping is decided
+		 * on the cards' content widths before they shrink, so it would wrap even when shrinking to
+		 * their floors fits. It wraps only once the row is narrower than those floors.
+		 */
+		[${SINGLE_MONTH_ATTR}] :has(> [data-testid="budget-summary"]) {
+			container: abt-month-cards / inline-size;
+		}
 		${SUMMARY_CARD} {
 			flex-direction: row !important;
-			flex-wrap: wrap;
+			flex-wrap: nowrap;
 			align-items: stretch !important;
 			gap: var(--abt-space-3);
 			background: none !important;
@@ -345,6 +359,11 @@ export const budgetSummaryRow = defineSetting({
 			border-radius: 0 !important;
 			transition: none !important;
 			overflow: visible !important;
+		}
+		@container abt-month-cards (max-width: 760px) {
+			${SUMMARY_CARD} {
+				flex-wrap: wrap;
+			}
 		}
 		/*
 		 * Header: only Actual's notes button stays, tucked into the To Budget card's corner. The
@@ -416,12 +435,14 @@ export const budgetSummaryRow = defineSetting({
 		${SUMMARY_CARD} > :last-child {
 			position: relative;
 			order: 0;
-			flex: 1.4 1 auto;
+			/* Its content's width, from a floor that keeps a small amount from looking cramped and
+			   covers the To Budget/Overbudgeted switch; the Targets card absorbs the row's slack. */
+			flex: 0 0 auto;
 			/* The cards' height, held before they mount. */
 			box-sizing: border-box;
 			min-height: ${CARD_HEIGHT}px;
 			align-items: flex-start !important;
-			min-width: 150px;
+			min-width: 200px;
 			margin: 0 !important;
 			padding: var(--abt-space-3) var(--abt-space-5) !important;
 			justify-content: center;
