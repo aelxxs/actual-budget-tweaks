@@ -4,6 +4,7 @@ import { icon } from "@lib/icons";
 import type { Schedule } from "@lib/types/actual-schema";
 import { query, send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
+import { createDebouncedObserver } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, setValue } from "@lib/utilities/store";
@@ -206,8 +207,13 @@ function saveBreakdown(): void {
 }
 
 // ── Overview refresh ──────────────────────────────────────────────────
+/** The latest refresh of each tab; an older one finishing late (another month) is dropped. */
+let overviewSeq = 0;
+let prioritySeq = 0;
+
 async function refreshOverview(): Promise<void> {
 	if (!isBudgetPage()) return;
+	const seq = ++overviewSeq;
 	templatePlanState.overviewLoading = true;
 	try {
 		const sheet = getCurrentSheet();
@@ -353,6 +359,7 @@ async function refreshOverview(): Promise<void> {
 
 		const nextMonthToBudget = nextResult.get("to-budget") ?? 0;
 
+		if (seq !== overviewSeq) return;
 		templatePlanState.overviewData = {
 			sheet,
 			monthKey: currentMonthKey,
@@ -376,13 +383,14 @@ async function refreshOverview(): Promise<void> {
 	} catch (e) {
 		console.warn("[ABT] overview refresh failed", e);
 	} finally {
-		templatePlanState.overviewLoading = false;
+		if (seq === overviewSeq) templatePlanState.overviewLoading = false;
 	}
 }
 
 // ── Priority refresh ──────────────────────────────────────────────────
 async function refreshPriorityIfNeeded(): Promise<void> {
 	if (!isBudgetPage()) return;
+	const seq = ++prioritySeq;
 	templatePlanState.priorityLoading = true;
 	try {
 		// Use the direct result rather than getPriorityCache() — early-exit
@@ -390,16 +398,18 @@ async function refreshPriorityIfNeeded(): Promise<void> {
 		// { ok: false } status without ever populating the module-level cache,
 		// which previously left priorityData stuck at null (endless spinner)
 		// until something else happened to populate the cache.
-		templatePlanState.priorityData = await computePriorityStatus(false);
+		const data = await computePriorityStatus(false);
+		if (seq === prioritySeq) templatePlanState.priorityData = data;
 	} catch (e) {
 		console.warn("[ABT] template plan priority compute failed", e);
+		if (seq !== prioritySeq) return;
 		templatePlanState.priorityData = {
 			ok: false,
 			reason: "failed to compute",
 			computedAt: Date.now(),
 		};
 	} finally {
-		templatePlanState.priorityLoading = false;
+		if (seq === prioritySeq) templatePlanState.priorityLoading = false;
 	}
 }
 
@@ -549,22 +559,40 @@ function installKeyboard(): () => void {
 	return () => document.removeEventListener("keydown", handler);
 }
 
-// ── Sheet-change polling (horizontal scroll between months doesn't
-// always fire a DOM mutation, so this can't ride on watchDom alone) ──
+// ── Month changes ─────────────────────────────────────────────────────
+const MONTH_REFRESH_MS = 250;
 let lastSheetKey: string | null = null;
+let monthRefresh: ReturnType<typeof setTimeout> | undefined;
 
-function pollSheetChange(): void {
+/** Refreshes the open tab once the shown month settles, so clicking through months fetches once. */
+function checkSheetChange(): void {
 	if (!matchesPage(Page.Budget)) return;
 	const sheet = getCurrentSheet();
 	const key = sheet ? sheetToMonthKey(sheet) : null;
 	if (key === lastSheetKey) return;
 	lastSheetKey = key;
 	invalidatePriorityStatus();
-	templatePlanState.overviewData = null;
-	if (drawerOpen) {
-		if (templatePlanState.activeTab === "priority") refreshPriorityIfNeeded();
-		else if (templatePlanState.activeTab === "overview") refreshOverview();
+	// The last month's numbers stay up, dimmed, until the new ones replace them; the
+	// skeleton is only for a tab with nothing to show yet.
+	if (drawerOpen && templatePlanState.activeTab === "overview") {
+		templatePlanState.overviewLoading = true;
+	} else if (drawerOpen && templatePlanState.activeTab === "priority") {
+		templatePlanState.priorityLoading = true;
 	}
+	clearTimeout(monthRefresh);
+	monthRefresh = setTimeout(refreshOpenTab, MONTH_REFRESH_MS);
+}
+
+function refreshOpenTab(): void {
+	if (!drawerOpen || !isBudgetPage()) {
+		overviewSeq++;
+		prioritySeq++;
+		templatePlanState.overviewLoading = false;
+		templatePlanState.priorityLoading = false;
+		return;
+	}
+	if (templatePlanState.activeTab === "priority") refreshPriorityIfNeeded();
+	else if (templatePlanState.activeTab === "overview") refreshOverview();
 }
 
 // ── Page gating ────────────────────────────────────────────────────────
@@ -651,7 +679,14 @@ export const templatePlan = defineSetting({
 		const stopClickListener = installClickListener();
 		const stopKeyboard = installKeyboard();
 		const unwatch = watchDom(tick);
-		const pollInterval = setInterval(pollSheetChange, 1500);
+		// Navigating rewrites the cells' data-testid in place, which a childList watcher misses.
+		const monthWatch = createDebouncedObserver(checkSheetChange, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: ["data-testid"],
+		});
+		monthWatch.observe(document.body);
 
 		if (matchesPage(Page.Budget)) {
 			wasOnBudgetPage = true;
@@ -666,7 +701,8 @@ export const templatePlan = defineSetting({
 			unwatch();
 			stopClickListener();
 			stopKeyboard();
-			clearInterval(pollInterval);
+			monthWatch.disconnect();
+			clearTimeout(monthRefresh);
 			removeTriggerButton();
 			if (drawerOpen) {
 				sidepanel.close();

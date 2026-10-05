@@ -10,6 +10,7 @@
 	import { PRIO_COLLAPSE_STORAGE_KEY } from "./constants";
 	import { statusBadge, statusTone } from "./status";
 	import { templatePlanState } from "./state.svelte";
+	import TabSkeleton from "./TabSkeleton.svelte";
 
 	const data = $derived(templatePlanState.priorityData);
 
@@ -42,10 +43,7 @@
 </script>
 
 {#if !data}
-	<div class="abt-tab-loading">
-		<span class="abt-tab-spinner"></span>
-		Computing template plan…
-	</div>
+	<TabSkeleton tab="priority" />
 {:else if !data.ok}
 	<div class="abt-tab-empty">{data.reason || "Unavailable"}</div>
 {:else}

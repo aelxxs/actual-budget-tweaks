@@ -8,6 +8,7 @@
 	import type { BreakdownSummary } from "@lib/utilities/template-plan/priority-plan";
 	import { statusBadge, statusTone } from "./status";
 	import { templatePlanState } from "./state.svelte";
+	import TabSkeleton from "./TabSkeleton.svelte";
 
 	const breakdownState = $derived(templatePlanState.breakdownState);
 
@@ -38,10 +39,7 @@
 </script>
 
 {#if templatePlanState.breakdownLoading}
-	<div class="abt-tab-loading">
-		<span class="abt-tab-spinner"></span>
-		Computing breakdown…
-	</div>
+	<TabSkeleton tab="breakdown" />
 {:else if !breakdownState}
 	<div class="abt-tab-empty">Apply or overwrite a template to see a breakdown here.</div>
 {:else}

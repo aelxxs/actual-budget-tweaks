@@ -6,6 +6,7 @@
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { onMount } from "svelte";
 	import { templatePlanState } from "./state.svelte";
+	import TabSkeleton from "./TabSkeleton.svelte";
 	import TrendChart from "./TrendChart.svelte";
 
 	const data = $derived(templatePlanState.overviewData);
@@ -45,10 +46,7 @@
 </script>
 
 {#if !data && loading}
-	<div class="abt-tab-loading">
-		<span class="abt-tab-spinner"></span>
-		Loading overview…
-	</div>
+	<TabSkeleton tab="overview" />
 {:else if !data}
 	<div class="abt-tab-empty">
 		<button type="button" class="abt-tab-overview-load-btn" onclick={triggerRefresh}

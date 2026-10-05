@@ -46,6 +46,15 @@
 		sidepanel.setTitle(title);
 	});
 
+	// Refreshing data that's already on screen: dimmed until the new numbers arrive.
+	const updating = $derived(
+		templatePlanState.activeTab === "overview"
+			? templatePlanState.overviewLoading && !!templatePlanState.overviewData
+			: templatePlanState.activeTab === "priority"
+				? templatePlanState.priorityLoading && !!templatePlanState.priorityData
+				: false,
+	);
+
 	const showFooter = $derived(
 		templatePlanState.activeTab === "breakdown" && !!templatePlanState.breakdownState,
 	);
@@ -64,7 +73,7 @@
 	}}
 />
 
-<div class="abt-tab-body">
+<div class="abt-tab-body" data-updating={updating || undefined} aria-busy={updating}>
 	{#if templatePlanState.activeTab === "overview"}
 		<OverviewTab />
 	{:else if templatePlanState.activeTab === "breakdown"}

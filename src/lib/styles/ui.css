@@ -107,6 +107,41 @@
 	color: var(--color-pageText);
 }
 
+/* Placeholder for content that's loading; size it with width and height. */
+.abt-skeleton {
+	display: block;
+	border-radius: var(--abt-radius-sm);
+	background:
+		linear-gradient(
+				90deg,
+				transparent,
+				color-mix(in srgb, var(--color-pageText) 6%, transparent),
+				transparent
+			)
+			0 0 / 200% 100% no-repeat,
+		var(--abt-panel-track);
+	animation: abt-skeleton 1.4s ease-in-out infinite;
+}
+
+@keyframes abt-skeleton {
+	from {
+		background-position:
+			150% 0,
+			0 0;
+	}
+	to {
+		background-position:
+			-50% 0,
+			0 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.abt-skeleton {
+		animation: none;
+	}
+}
+
 /* ── Controls ───────────────────────────────────────────────────────────── */
 
 /* Tones only set these variables, so every control picks them up the same way. */

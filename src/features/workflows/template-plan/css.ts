@@ -403,6 +403,13 @@ export const CSS = `
 		flex: 1 1 auto;
 		min-height: 0;
 		padding: 6px 0;
+		transition: opacity 0.15s;
+	}
+
+	/* Delayed, so a quick refresh swaps the numbers without a flicker. */
+	.abt-tab-body[data-updating] {
+		opacity: 0.55;
+		transition: opacity 0.2s 0.15s;
 	}
 
 	.abt-tab-pad {
@@ -456,13 +463,6 @@ export const CSS = `
 	.abt-tab-toggle:hover {
 		opacity: 1;
 		background: var(--abt-panel-surface-hover);
-	}
-
-	.abt-tab-loading {
-		padding: 16px;
-		text-align: center;
-		opacity: 0.6;
-		font-size: 11px;
 	}
 
 	.abt-tab-spinner {
