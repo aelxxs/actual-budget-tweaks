@@ -31,6 +31,11 @@ const CSS = `
 		height: 100%;
 		flex-shrink: 0;
 	}
+	/* Actual's sidebar wrapper clips at the sidebar's edge; let the resize grip straddle it.
+	   Its own z-index (above the titlebar) already keeps the grip over the page. */
+	:has(> [${MOUNT_ATTR}]) {
+		overflow: visible !important;
+	}
 `;
 
 export const experimentalSidebar = defineSetting({

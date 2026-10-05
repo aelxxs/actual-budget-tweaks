@@ -101,7 +101,10 @@
 	font-feature-settings:
 		"lnum" 1,
 		"tnum" 1;
-	overflow: hidden;
+	/* Clips panel content while the width animates, with room for the resize grip to
+	   straddle the border (Safari ignores the margin and just clips it). */
+	overflow: clip;
+	overflow-clip-margin: 6px;
 }
 
 .sidebar > .body {
@@ -400,20 +403,55 @@
 	z-index: 10;
 	touch-action: none;
 }
+/* Same grip as the side panel's, centred on the border, shown only on hover. */
 .sidebar .resize-handle::after {
 	content: "";
 	position: absolute;
 	top: 0;
-	right: 0;
-	width: 4px;
+	right: -2px;
+	width: 3px;
 	height: 100%;
-	background: transparent;
-	transition: background 0.12s ease;
+	background: var(--sb-accent);
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+.sidebar .resize-grip {
+	position: absolute;
+	top: 50%;
+	right: -5px;
+	box-sizing: border-box;
+	width: 9px;
+	height: 26px;
+	border: 1px solid color-mix(in srgb, var(--sb-accent) 60%, transparent);
+	border-radius: 999px;
+	/* Three dots placed by proportion, so they spread apart as the pill grows. */
+	background:
+		radial-gradient(circle, var(--sb-accent) 1.2px, transparent 1.7px) 50% 18% / 6px 6px no-repeat,
+		radial-gradient(circle, var(--sb-accent) 1.2px, transparent 1.7px) 50% 50% / 6px 6px no-repeat,
+		radial-gradient(circle, var(--sb-accent) 1.2px, transparent 1.7px) 50% 82% / 6px 6px no-repeat,
+		var(--sb-bg);
+	opacity: 0;
+	transform: translateY(-50%);
+	/* Above the hover line. */
+	z-index: 1;
+	transition:
+		opacity 0.15s,
+		height 0.15s;
 }
 .sidebar .resize-handle:hover::after,
 .sidebar .resize-handle.active::after {
-	background: var(--sb-accent);
-	opacity: 0.5;
+	opacity: 0.45;
+}
+.sidebar .resize-handle:hover .resize-grip,
+.sidebar .resize-handle.active .resize-grip {
+	height: 32px;
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	.sidebar .resize-handle::after,
+	.sidebar .resize-grip {
+		transition: none;
+	}
 }
 
 .sidebar button {

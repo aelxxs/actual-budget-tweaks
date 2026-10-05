@@ -8,7 +8,7 @@
 	import { onMount } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
 	import { portal, syncPortalColors } from "./actions/portal";
-	import { tipState, tooltip } from "./actions/tooltip.svelte";
+	import { tipState } from "./actions/tooltip.svelte";
 	import AccountList from "./components/AccountList.svelte";
 	import AccountListSkeleton from "./components/AccountListSkeleton.svelte";
 	import BudgetHeader from "./components/BudgetHeader.svelte";
@@ -468,14 +468,15 @@
 			class:active={resizing}
 			role="separator"
 			aria-orientation="vertical"
-			aria-label="Resize sidebar"
-			use:tooltip={{ text: "Drag to resize · double-click to reset", placement: "left" }}
+			aria-label="Resize sidebar (double-click to reset)"
 			onpointerdown={startResize}
 			onpointermove={onResizeMove}
 			onpointerup={endResize}
 			onpointercancel={endResize}
 			ondblclick={resetWidth}
-		></div>
+		>
+			<span class="resize-grip"></span>
+		</div>
 	{/if}
 
 	<CommandPalette bind:this={paletteRef} {accounts} {icons} />

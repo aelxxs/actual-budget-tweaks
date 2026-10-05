@@ -8,11 +8,14 @@
 	let {
 		onClose,
 		initialWidth,
+		defaultWidth,
 		onResize,
 		onResizeEnd,
 	}: {
 		onClose: () => void;
 		initialWidth: number;
+		/** What a double-click on the resize handle goes back to. */
+		defaultWidth: () => number;
 		onResize: (width: number) => void;
 		onResizeEnd: (width: number) => void;
 	} = $props();
@@ -67,6 +70,13 @@
 		if (node) bodyEl.appendChild(node);
 	});
 
+	let dragging = $state(false);
+
+	function resetWidth() {
+		onResize(defaultWidth());
+		onResizeEnd(defaultWidth());
+	}
+
 	function resizeHandle(el: HTMLElement) {
 		function clampWidth(w: number) {
 			return clamp(Math.round(w), 240, 640);
@@ -90,8 +100,10 @@
 				document.removeEventListener("pointermove", onPointerMove);
 				document.removeEventListener("pointerup", onPointerUp);
 				document.body.style.userSelect = "";
+				dragging = false;
 			}
 
+			dragging = true;
 			document.body.style.userSelect = "none";
 			document.addEventListener("pointermove", onPointerMove);
 			document.addEventListener("pointerup", onPointerUp);
@@ -106,7 +118,17 @@
 	}
 </script>
 
-<div class="abt-side-drawer-resize-handle" use:resizeHandle></div>
+<div
+	class="abt-side-drawer-resize-handle"
+	class:is-dragging={dragging}
+	role="separator"
+	aria-orientation="vertical"
+	aria-label="Resize panel (double-click to reset)"
+	use:resizeHandle
+	ondblclick={resetWidth}
+>
+	<span class="abt-side-drawer-grip"></span>
+</div>
 <div class="abt-side-drawer-content abt-controls-quiet">
 	<div class="abt-side-drawer-header">
 		<div class="abt-side-drawer-header-slot" bind:this={headerSlotEl}></div>
@@ -129,14 +151,69 @@
 </div>
 
 <style>
+	/* Centred on the panel's border; the grip and a full-height accent line show what it does. */
 	.abt-side-drawer-resize-handle {
 		position: absolute;
 		top: 0;
-		left: -4px;
-		width: 8px;
+		left: -6px;
+		width: 11px;
 		height: 100%;
 		cursor: col-resize;
+		z-index: 2;
+	}
+
+	.abt-side-drawer-resize-handle::before {
+		content: "";
+		position: absolute;
+		inset: 0 auto 0 4px;
+		width: 3px;
+		background: var(--abt-accent);
+		opacity: 0;
+		transition: opacity 0.15s;
+	}
+
+	/* A pill with a column of dots, the usual "drag me" mark. */
+	.abt-side-drawer-grip {
+		--grip-dot: var(--abt-muted);
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		box-sizing: border-box;
+		width: 9px;
+		height: 26px;
+		border: 1px solid var(--abt-panel-border);
+		border-radius: 999px;
+		/* Three dots placed by proportion, so they spread apart as the pill grows. */
+		background:
+			radial-gradient(circle, var(--grip-dot) 1.2px, transparent 1.7px) 50% 18% / 6px 6px no-repeat,
+			radial-gradient(circle, var(--grip-dot) 1.2px, transparent 1.7px) 50% 50% / 6px 6px no-repeat,
+			radial-gradient(circle, var(--grip-dot) 1.2px, transparent 1.7px) 50% 82% / 6px 6px no-repeat,
+			var(--color-pageBackground);
+		transform: translate(-50%, -50%);
+		/* Above the hover line. */
 		z-index: 1;
+		transition:
+			border-color 0.15s,
+			height 0.15s;
+	}
+
+	.abt-side-drawer-resize-handle:hover::before,
+	.abt-side-drawer-resize-handle.is-dragging::before {
+		opacity: 0.45;
+	}
+
+	.abt-side-drawer-resize-handle:hover .abt-side-drawer-grip,
+	.abt-side-drawer-resize-handle.is-dragging .abt-side-drawer-grip {
+		--grip-dot: var(--abt-accent);
+		height: 32px;
+		border-color: color-mix(in srgb, var(--abt-accent) 60%, transparent);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.abt-side-drawer-resize-handle::before,
+		.abt-side-drawer-grip {
+			transition: none;
+		}
 	}
 
 	.abt-side-drawer-content {

@@ -115,7 +115,8 @@ const CSS = `
 		min-width: ${MIN_SIDEBAR_WIDTH}px;
 		max-width: ${MAX_SIDEBAR_WIDTH}px;
 		min-height: 0;
-		overflow-y: auto;
+		/* Visible so the resize grip can straddle the border; the body scrolls itself. */
+		overflow: visible;
 		/* Derived, not --border: themes may omit tableBorder or set it to the page background. */
 		border-left: 1px solid var(--abt-panel-border);
 		animation: abt-side-drawer-enter 110ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -145,6 +146,7 @@ export const sidePanel = {
 			showingPersisted = false;
 		};
 		let animateNext = true;
+		let requestedWidth = DEFAULT_SIDEBAR_WIDTH;
 		let sidebarWidth = clamp(Math.round(storedWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
 
 		const sync = () => {
@@ -174,6 +176,7 @@ export const sidePanel = {
 						sync();
 					},
 					initialWidth: sidebarWidth,
+					defaultWidth: () => requestedWidth,
 					onResize: (width: number) => {
 						body.style.gridTemplateColumns = `1fr ${width}px`;
 					},
@@ -202,6 +205,9 @@ export const sidePanel = {
 			animateNext = detail.animate !== false;
 			if (detail.persist) {
 				setPersistedRoute(location.pathname);
+			}
+			if (typeof detail.width === "number") {
+				requestedWidth = clamp(Math.round(detail.width), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
 			}
 			if (typeof detail.width === "number" && !widthStored) {
 				sidebarWidth = clamp(Math.round(detail.width), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
