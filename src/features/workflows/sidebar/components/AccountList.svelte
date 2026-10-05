@@ -21,6 +21,8 @@
 		renameGroup,
 		saveAssignments,
 		saveGroups,
+		watchAssignments,
+		watchGroups,
 	} from "../lib/groups";
 	import { applyOrder, loadAccountOrder, saveAccountOrder } from "../lib/order";
 	import AccountHoverCard from "./AccountHoverCard.svelte";
@@ -78,9 +80,11 @@
 	});
 	$effect(() => {
 		loadGroups(budgetId).then((stored) => (groups = stored));
+		return watchGroups(budgetId, (stored) => (groups = stored));
 	});
 	$effect(() => {
 		loadAssignments(budgetId).then((stored) => (assignments = stored));
+		return watchAssignments(budgetId, (stored) => (assignments = stored));
 	});
 
 	function toggle(label: string) {

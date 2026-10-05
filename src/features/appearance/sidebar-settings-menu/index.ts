@@ -2,15 +2,12 @@ import { icon } from "@lib/icons";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { createLogger } from "@lib/utilities/logger";
-import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 import { NATIVE_ROOT_ATTR } from "@features/workflows/sidebar/lib/data";
-import { mountToNode } from "@lib/utilities/svelte";
-import SidebarSettingsMenu from "./SidebarSettingsMenu.svelte";
+import { openSidebarSettings } from "./settings";
 
 const log = createLogger("sidebar-settings-menu");
 
 const COG_ATTR = "data-abt-sidebar-settings-btn";
-const MENU_WRAP_CLASS = "abt-sidebar-settings-menu-wrap";
 
 const CSS = `
 	.${COG_ATTR.slice(5)} {
@@ -26,17 +23,6 @@ const CSS = `
 	}
 	.${COG_ATTR.slice(5)}:hover {
 		background: color-mix(in srgb, currentColor 12%, transparent);
-	}
-
-	.${MENU_WRAP_CLASS} {
-		position: fixed;
-		z-index: 10000;
-		background: var(--color-menuBackground);
-		color: var(--color-menuItemText);
-		border: 1px solid var(--color-menuBorder);
-		border-radius: var(--abt-radius);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-		font-family: inherit;
 	}
 `;
 
@@ -88,41 +74,10 @@ function injectCogButton(): void {
 	cogBtn.innerHTML = icon("cog", { size: 14 });
 	cogBtn.addEventListener("click", (e) => {
 		e.stopPropagation();
-		log.debug("cog button clicked");
-		toggleMenu(cogBtn);
+		openSidebarSettings();
 	});
 	footer.appendChild(cogBtn);
 	log.info("cog button injected", cogBtn);
-}
-
-let menuWrap: HTMLElement | null = null;
-let stopOutsideClick: (() => void) | null = null;
-
-function closeMenu(): void {
-	if (!menuWrap) return;
-	log.debug("closing menu");
-	menuWrap.remove();
-	menuWrap = null;
-	stopOutsideClick?.();
-	stopOutsideClick = null;
-}
-
-function toggleMenu(anchor: HTMLElement): void {
-	if (menuWrap) {
-		closeMenu();
-		return;
-	}
-
-	log.debug("opening menu", anchor);
-	const wrap = mountToNode(SidebarSettingsMenu);
-	wrap.className = MENU_WRAP_CLASS;
-	wrap.style.display = "block";
-	document.body.appendChild(wrap);
-	menuWrap = wrap;
-
-	positionPopover(wrap, anchor, { gap: 6 });
-	stopOutsideClick = onOutsideClick([wrap, anchor], closeMenu);
-	log.debug("menu positioned", wrap.getBoundingClientRect());
 }
 
 export const sidebarSettingsMenu = {
@@ -135,7 +90,6 @@ export const sidebarSettingsMenu = {
 		return () => {
 			log.info("cleanup");
 			unwatch();
-			closeMenu();
 			document.querySelector(`[${COG_ATTR}]`)?.remove();
 		};
 	},

@@ -1,41 +1,37 @@
 <script lang="ts">
-	import { getValue, setValue } from "@lib/utilities/store";
-	import { mount, unmount } from "svelte";
-	import ShortcutsModal from "./components/Modal.svelte";
+	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
+	import { getValue, watchValue } from "@lib/utilities/store";
+	import { mount, onMount, unmount } from "svelte";
+	import { sidebarShortcutsAddTile } from ".";
 	import Tiles from "./components/Tiles.svelte";
 	import ToolPopover from "./components/ToolPopover.svelte";
-	import type { BuiltinTool, BuiltinWidget, Shortcut, ToolId } from "./types";
+	import { loadShortcuts, saveShortcuts, watchShortcuts } from "./store";
+	import type { Shortcut, ToolId } from "./types";
 
 	const { noPadding }: { noPadding: boolean } = $props();
 
-	const STORAGE_KEY = "abt-sidebar-shortcuts";
-	const BUILTIN_TOOLS: BuiltinTool[] = [
-		{ id: "calculator", label: "Calculator", icon: "svg:calc" },
-		{ id: "currency-converter", label: "Currency Converter", icon: "svg:convert" },
-		{ id: "interest-calculator", label: "Interest Calculator", icon: "svg:interest" },
-	];
-
-	const BUILTIN_WIDGETS: BuiltinWidget[] = [
-		{ id: "stock-tracker", label: "Stock Tracker", icon: "svg:stock" },
-		{ id: "upcoming-schedules", label: "Upcoming Bills", icon: "svg:calendar" },
-		{ id: "rsu-tracker", label: "RSU Tracker", icon: "svg:rsu" },
-	];
+	const ADD_TILE_KEY = sidebarShortcutsAddTile.context.key;
 
 	let shortcuts = $state<Shortcut[]>([]);
-	let barWidth = $state(0);
+	let showAddTile = $state(true);
+
+	onMount(() => {
+		loadShortcuts().then((stored) => (shortcuts = stored));
+		getValue(ADD_TILE_KEY, true).then((v) => (showAddTile = Boolean(v)));
+		const stopShortcuts = watchShortcuts((stored) => (shortcuts = stored));
+		const stopAddTile = watchValue<boolean>(ADD_TILE_KEY, (v) => (showAddTile = v ?? true));
+		return () => {
+			stopShortcuts();
+			stopAddTile();
+		};
+	});
+
+	function save(items: Shortcut[]) {
+		shortcuts = items;
+		saveShortcuts(items);
+	}
+
 	let activePopover: { instance: any; container: HTMLElement } | null = null;
-
-	async function load() {
-		shortcuts = (await getValue<Shortcut[]>(STORAGE_KEY, [])) ?? [];
-	}
-
-	async function save(items: Shortcut[]) {
-		const plain = JSON.parse(JSON.stringify(items)) as Shortcut[];
-		shortcuts = plain;
-		await setValue(STORAGE_KEY, plain);
-	}
-
-	load();
 
 	function closePopover() {
 		if (activePopover) {
@@ -76,40 +72,9 @@
 			window.open(shortcut.url, "_blank", "noopener");
 		}
 	}
-
-	function openModal() {
-		document.querySelectorAll("[data-abt-modal='shortcuts']").forEach((el) => el.remove());
-
-		const container = document.createElement("div");
-		container.dataset.abtModal = "shortcuts";
-		let done = false;
-
-		const cleanup = () => {
-			if (done) return;
-			done = true;
-			unmount(instance);
-			container.remove();
-		};
-
-		const instance = mount(ShortcutsModal, {
-			target: container,
-			props: {
-				shortcuts: [...shortcuts],
-				builtinTools: BUILTIN_TOOLS,
-				builtinWidgets: BUILTIN_WIDGETS,
-				previewWidth: barWidth - (noPadding ? 0 : 24),
-				onSave: async (items: Shortcut[]) => {
-					await save(items);
-					cleanup();
-				},
-				onClose: cleanup,
-			},
-		});
-		document.body.appendChild(container);
-	}
 </script>
 
-<div bind:clientWidth={barWidth}>
+<div data-abt-shortcuts-tiles>
 	<Tiles
 		items={shortcuts}
 		mode="bar"
@@ -118,10 +83,11 @@
 		onActivate={handleClick}
 	>
 		{#snippet trailing()}
+			{#if showAddTile || shortcuts.length === 0}
 			<button
 				class="edit-btn"
 				class:is-empty={shortcuts.length === 0}
-				onclick={openModal}
+				onclick={() => openSidebarSettings({ tab: "shortcuts" })}
 				title="Edit shortcuts"
 			>
 				<svg
@@ -136,6 +102,7 @@
 					><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg
 				>
 			</button>
+			{/if}
 		{/snippet}
 	</Tiles>
 </div>

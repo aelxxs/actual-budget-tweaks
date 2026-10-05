@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { loadIconCache } from "@features/appearance/account-icon-picker";
+	import { setLiveSidebarBudget } from "@features/appearance/sidebar-settings-menu/settings";
 	import { loadCurrency } from "@lib/utilities/currency";
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { getValue, setValue } from "@lib/utilities/store";
@@ -44,6 +45,11 @@
 	let failed = $state(false);
 	let budgetName = $state("Budget");
 	let budgetId = $state<string | undefined>(undefined);
+
+	$effect(() => {
+		setLiveSidebarBudget(budgetId);
+		return () => setLiveSidebarBudget(undefined);
+	});
 	let accounts = $state<SidebarAccount[]>([]);
 	let icons = $state<Record<string, AccountIconData>>({});
 

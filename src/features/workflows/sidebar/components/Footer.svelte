@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Account } from "@lib/types/actual-schema";
 	import { dispatch, query } from "@lib/utilities/actual-api";
-	import { PanelLeftClose, Redo2, RefreshCw, Undo2 } from "lucide-svelte";
+	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
+	import { PanelLeftClose, Redo2, RefreshCw, SlidersHorizontal, Undo2 } from "lucide-svelte";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import { syncAllAccounts, type SidebarAccount } from "../lib/data";
 	import { isMac } from "../lib/search";
@@ -94,6 +95,15 @@
 		</button>
 	</div>
 	<div class="footer-actions">
+		<button
+			type="button"
+			class="footer-settings"
+			aria-label="Sidebar settings"
+			use:tooltip={{ text: "Sidebar settings", placement: "top" }}
+			onclick={() => openSidebarSettings()}
+		>
+			<SlidersHorizontal strokeWidth={1.8} />
+		</button>
 		{#if linked.length}
 			<button
 				type="button"

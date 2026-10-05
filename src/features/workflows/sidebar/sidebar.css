@@ -1730,6 +1730,32 @@
 	width: 15px;
 	height: 15px;
 }
+/* Sidebar settings: an icon-only box matching the Sync button beside it. */
+.sidebar .footer-settings {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 1px solid var(--sb-border);
+	border-radius: 7px;
+	background: var(--sb-surface);
+	color: var(--sb-fg-muted);
+	transition:
+		background 0.12s ease,
+		border-color 0.12s ease,
+		color 0.12s ease;
+}
+.sidebar .footer-settings:hover {
+	background: var(--sb-surface-hover);
+	border-color: var(--sb-border-strong);
+	color: var(--sb-fg-default);
+}
+.sidebar .footer-settings svg {
+	width: 15px;
+	height: 15px;
+}
 /* Syncs every linked account, so it carries a label; spins while any is syncing. */
 .sidebar .sync-btn {
 	display: inline-flex;

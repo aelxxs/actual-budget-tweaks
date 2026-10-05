@@ -71,3 +71,15 @@ export const sidebarShortcuts = defineSetting({
 		};
 	},
 });
+
+/** Shown only in the sidebar settings dialog; the bar reads it directly. */
+export const sidebarShortcutsAddTile = defineSetting({
+	type: "checkbox",
+	label: "Show add tile",
+	description: "Keep a + tile at the end of the bar for adding shortcuts.",
+	icon: "square",
+	context: {
+		key: "sidebar-shortcuts-add-tile",
+		defaultValue: true,
+	},
+});

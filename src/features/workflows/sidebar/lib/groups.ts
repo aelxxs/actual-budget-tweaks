@@ -1,4 +1,4 @@
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue, watchValue } from "@lib/utilities/store";
 
 // Sub-category grouping is entirely extension-local — Actual only has
 // On/Off Budget/Closed natively.
@@ -30,6 +30,25 @@ export function saveGroups(
 	groups: Record<string, AccountGroup>,
 ): void {
 	setValue(scopedKey(GROUPS_KEY, budgetId), groups);
+}
+
+/** Follows group edits made elsewhere, such as the sidebar settings dialog. */
+export function watchGroups(
+	budgetId: string | undefined,
+	callback: (groups: Record<string, AccountGroup>) => void,
+): () => void {
+	return watchValue<Record<string, AccountGroup>>(scopedKey(GROUPS_KEY, budgetId), (v) =>
+		callback(v ?? {}),
+	);
+}
+
+export function watchAssignments(
+	budgetId: string | undefined,
+	callback: (assignments: Record<string, string>) => void,
+): () => void {
+	return watchValue<Record<string, string>>(scopedKey(ASSIGNMENTS_KEY, budgetId), (v) =>
+		callback(v ?? {}),
+	);
 }
 
 export async function loadAssignments(
