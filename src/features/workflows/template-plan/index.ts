@@ -1,4 +1,4 @@
-import { sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
+import { isPanelPersistedOpen, sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
 import { icon } from "@lib/icons";
 import type { Schedule } from "@lib/types/actual-schema";
@@ -141,13 +141,13 @@ export function openInsights(tab?: typeof templatePlanState.activeTab): void {
 let drawerOpen = false;
 let drawerMounted = false;
 
-function openPanel(): void {
+function openPanel(animate = true): void {
 	if (!enabled || !isBudgetPage()) return;
 	drawerOpen = true;
 	drawerMounted = false;
 	removeTriggerButton();
 	const bodyNode = ensurePanelMounted();
-	sidepanel.open({ bodyNode, persist: true, width: SIDE_PANEL_WIDTH });
+	sidepanel.open({ bodyNode, persist: true, width: SIDE_PANEL_WIDTH, animate });
 	if (
 		templatePlanState.activeTab === "overview" &&
 		!templatePlanState.overviewLoading &&
@@ -171,7 +171,7 @@ function reopenIfPersisted(): void {
 	wasPanelPersistedOpen().then((persisted) => {
 		if (!enabled || version !== lifecycleVersion || !isBudgetPage()) return;
 		if (persisted) {
-			if (!drawerOpen) openPanel();
+			if (!drawerOpen) openPanel(false);
 		} else if (!drawerOpen) {
 			ensureTriggerButton();
 		}
@@ -576,7 +576,8 @@ function tick(): void {
 			wasOnBudgetPage = false;
 			drawerOpen = false;
 			removeTriggerButton();
-			sidepanel.close();
+			// Hidden, not closed: it reopens when the budget page comes back.
+			sidepanel.dismiss();
 		}
 		return;
 	}
@@ -586,7 +587,13 @@ function tick(): void {
 		invalidateCategoriesCache();
 		// Panel may already be persisted open from a previous session on this
 		// route — repopulate it with our content instead of assuming closed.
-		reopenIfPersisted();
+		// Synchronously once known, so it's back before the page paints.
+		const persisted = isPanelPersistedOpen();
+		if (persisted === undefined) reopenIfPersisted();
+		else if (!drawerOpen) {
+			if (persisted) openPanel(false);
+			else ensureTriggerButton();
+		}
 	}
 
 	// The side panel's built-in close (X) button has no notification hook,

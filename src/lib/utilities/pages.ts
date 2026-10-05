@@ -14,6 +14,22 @@ export enum Page {
 	Calendar = "calendar",
 }
 
+/**
+ * A view ABT draws over Actual's page (the calendar), which counts as the page while open.
+ * Only while its element is mounted on the same route, so a navigation or teardown nobody
+ * reported (Actual's own route changes aren't visible to content scripts) can't leave it stuck.
+ */
+let overlay: { page: Page; el: Element; path: string } | null = null;
+
+export function setOverlayPage(page: Page, el: Element): void {
+	overlay = { page, el, path: getCurrentPath() };
+}
+
+export function clearOverlayPage(): void {
+	overlay = null;
+}
+
 export function matchesPage(page: Page): boolean {
+	if (overlay?.el.isConnected && overlay.path === getCurrentPath()) return page === overlay.page;
 	return getCurrentPath().includes(page);
 }

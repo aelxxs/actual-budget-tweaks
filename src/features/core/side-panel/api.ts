@@ -13,6 +13,8 @@ export type OpenOptions = {
 	bodyNode?: unknown;
 	headerNode?: Node | null;
 	persist?: boolean;
+	/** False to show it without the slide-in, for a panel coming back rather than opening. */
+	animate?: boolean;
 	/** Suggested initial width in px. Only applied the first time the panel is ever opened — ignored once the user has manually resized it. */
 	width?: number;
 };

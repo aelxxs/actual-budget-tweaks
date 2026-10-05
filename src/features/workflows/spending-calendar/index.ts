@@ -2,7 +2,7 @@ import { sidepanel } from "@features/core/side-panel";
 import { CONTENT_GRID, SIDEBAR_ATTR } from "@features/core/side-panel/api";
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { Page, clearOverlayPage, matchesPage, setOverlayPage } from "@lib/utilities/pages";
 import { watchRoute } from "@lib/utilities/route-watcher";
 import { mount, unmount } from "svelte";
 import Calendar from "./Calendar.svelte";
@@ -15,7 +15,6 @@ const CALENDAR_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="non
 let calendarInstance: ReturnType<typeof mount> | null = null;
 let calendarContainer: HTMLElement | null = null;
 let hiddenChildren: { el: HTMLElement; style: string }[] = [];
-let previous: { path: string; state: unknown } | null = null;
 
 export function isCalendarOpen(): boolean {
 	return matchesPage(Page.Calendar);
@@ -39,10 +38,6 @@ function updateActiveState(): void {
 export function openCalendar(): void {
 	if (calendarContainer) return;
 
-	// The side panel's drawer is appended to this same container, so an open panel
-	// (e.g. Insights) would otherwise be taken for the content column.
-	sidepanel.close();
-
 	const target = document.querySelector(CONTENT_GRID) as HTMLElement;
 	if (!target) return;
 
@@ -52,20 +47,22 @@ export function openCalendar(): void {
 	const lastChild = columns[columns.length - 1];
 	if (!lastChild) return;
 
-	// Actual's router keeps its own state on each history entry and isn't told about this
-	// one, so it carries the page's state and is swapped back for the page on close.
-	if (!isCalendarOpen()) {
-		previous = { path: window.location.pathname, state: history.state };
-		history.pushState(history.state, "", "/calendar");
-	}
-
 	// Hidden in place rather than display: none, which makes Actual drop the budget table and
 	// rebuild it (blank for a moment) on the way back. The calendar covers the column instead.
+	// Widths are held from before the side panel goes, so its return doesn't reflow the page.
+	const children = Array.from(lastChild.children) as HTMLElement[];
+	const widths = children.map((child) => child.getBoundingClientRect().width);
+	// Dismissed, not closed, so a panel left open on the page comes back with it.
+	sidepanel.dismiss();
 	hiddenChildren = [];
-	for (const child of Array.from(lastChild.children) as HTMLElement[]) {
+	children.forEach((child, i) => {
 		hiddenChildren.push({ el: child, style: child.getAttribute("style") ?? "" });
-		child.style.visibility = "hidden";
-	}
+		Object.assign(child.style, {
+			visibility: "hidden",
+			boxSizing: "border-box",
+			width: `${widths[i]}px`,
+		});
+	});
 	// Also hide siblings of lastChild (e.g. Plan button) but not the nav header
 	for (const sibling of columns) {
 		if (sibling === lastChild || sibling === target.firstElementChild) continue;
@@ -78,6 +75,9 @@ export function openCalendar(): void {
 	calendarContainer.style.cssText =
 		"display: flex; position: absolute; inset: 0; z-index: 1; overflow: hidden;";
 	lastChild.appendChild(calendarContainer);
+	// No URL of its own: Actual's router would redirect it, and history entries it doesn't
+	// know about confuse its back navigation. ABT's page checks see the calendar instead.
+	setOverlayPage(Page.Calendar, calendarContainer);
 
 	calendarInstance = mount(Calendar, {
 		target: calendarContainer,
@@ -87,11 +87,10 @@ export function openCalendar(): void {
 	updateActiveState();
 }
 
-/** Returns the path it went back to, if it went back to one. */
-export function closeCalendar(): string | null {
-	if (!calendarContainer) return null;
+export function closeCalendar(): void {
+	if (!calendarContainer) return;
 
-	sidepanel.close();
+	sidepanel.dismiss();
 
 	unmount(calendarInstance!);
 	calendarInstance = null;
@@ -103,15 +102,9 @@ export function closeCalendar(): string | null {
 	}
 	hiddenChildren = [];
 
-	let restored: string | null = null;
-	if (isCalendarOpen()) {
-		restored = previous?.path ?? "/budget";
-		history.replaceState(previous?.state ?? null, "", restored);
-	}
-	previous = null;
+	clearOverlayPage();
 
 	updateActiveState();
-	return restored;
 }
 
 function injectSidebarLink(): void {
@@ -209,21 +202,19 @@ export const spendingCalendar = defineSetting({
 				if (!injectedOnce) {
 					injectedOnce = true;
 					injectSidebarLink();
-					if (isCalendarOpen()) {
-						openCalendar();
-					}
 				} else {
 					requestAnimationFrame(() => injectSidebarLink());
 				}
 			}
+			// Actual changed the route without telling this world (a shortcut, say).
+			if (calendarContainer && !isCalendarOpen()) closeCalendar();
 			attachCloseListeners();
 			updateActiveState();
 		});
 
+		// The calendar has no route, so any route change means Actual moved to another page.
 		const stopWatchingRoute = watchRoute(() => {
-			if (calendarContainer && !isCalendarOpen()) {
-				closeCalendar();
-			}
+			if (calendarContainer) closeCalendar();
 			updateActiveState();
 		});
 

@@ -53,8 +53,10 @@
 	});
 
 	function go(page: Page) {
+		const covered = isCalendarOpen();
+		if (covered) closeCalendar();
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
-		if (isCalendarOpen() && closeCalendar() === `/${page}`) return;
+		if (covered && matchesPage(page)) return;
 		navigate(`/${page}`);
 	}
 

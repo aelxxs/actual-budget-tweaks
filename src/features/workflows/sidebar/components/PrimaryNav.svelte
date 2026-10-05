@@ -29,14 +29,16 @@
 	}
 
 	// Mirrors spending-calendar's own attachCloseListeners(): its overlay only
-	// auto-closes on route changes it can detect itself (its own pushState
-	// call, or real browser back/forward) — a real Actual navigation
+	// auto-closes on route changes it can detect itself (real browser
+	// back/forward) — a real Actual navigation
 	// triggered through the bridge's window.__navigate happens in the main
 	// world and isn't visible to that check, so anything in this nav that
 	// navigates elsewhere has to close the overlay itself first.
 	function go(page: Page) {
+		const covered = isCalendarOpen();
+		if (covered) closeCalendar();
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
-		if (isCalendarOpen() && closeCalendar() === `/${page}`) return;
+		if (covered && matchesPage(page)) return;
 		navigate(`/${page}`);
 	}
 
