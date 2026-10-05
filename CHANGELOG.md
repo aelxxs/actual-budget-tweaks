@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.82
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.81...v0.1.82)
+
+### 🩹 Fixes
+
+- Resolve issue with to budget being misaligned ([47946f1](https://github.com/aelxxs/actual-budget-tweaks/commit/47946f1))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.81 ([1cadba4](https://github.com/aelxxs/actual-budget-tweaks/commit/1cadba4))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.81
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.80...v0.1.81)
