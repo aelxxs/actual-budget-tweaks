@@ -30,7 +30,17 @@
 		}
 		// Copied each time, since Actual recolours it as the amount turns negative or positive.
 		const cs = getComputedStyle(source);
-		look = `font: ${cs.font}; letter-spacing: ${cs.letterSpacing}; color: ${cs.color}`;
+		look = [
+			`font-family: ${cs.fontFamily}`,
+			`font-size: ${cs.fontSize}`,
+			`font-weight: ${cs.fontWeight}`,
+			`font-style: ${cs.fontStyle}`,
+			`font-variant: ${cs.fontVariant}`,
+			`line-height: ${cs.lineHeight}`,
+			`font-variant-numeric: ${cs.fontVariantNumeric}`,
+			`letter-spacing: ${cs.letterSpacing}`,
+			`color: ${cs.color}`,
+		].join("; ");
 	}
 
 	$effect(() => {

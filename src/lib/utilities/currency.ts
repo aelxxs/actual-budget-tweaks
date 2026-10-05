@@ -3,13 +3,21 @@ import { query } from "./actual-api";
 let currencyCode: string | null = null;
 let currencyScale = 100;
 let loaded = false;
+let loadGeneration = 0;
 
-export async function loadCurrency(): Promise<void> {
-	if (loaded) return;
+export async function loadCurrency(force = false): Promise<void> {
+	if (loaded && !force) return;
+	if (force) {
+		currencyCode = null;
+		currencyScale = 100;
+		loaded = false;
+	}
+	const generation = ++loadGeneration;
 	try {
 		const rows = await query<{ id: string; value: string }[]>("preferences", {
 			filter: { id: "defaultCurrencyCode" },
 		});
+		if (generation !== loadGeneration) return;
 		const code = rows?.[0]?.value;
 		if (code && typeof code === "string") {
 			currencyCode = code;
@@ -30,7 +38,7 @@ export async function loadCurrency(): Promise<void> {
 	} catch {
 		// fallback to USD
 	}
-	loaded = true;
+	if (generation === loadGeneration) loaded = true;
 }
 
 /** The budget's currency code, or "" when none is set (call loadCurrency first). */

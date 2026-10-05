@@ -281,7 +281,11 @@
 	// switching budgets kept showing the previous budget's categories, now
 	// empty since none of the new budget's accounts are assigned to them.
 	async function refreshBudgetContext() {
-		const [name, id] = await Promise.all([loadCurrentBudgetName(), loadCurrentBudgetId()]);
+		const [, name, id] = await Promise.all([
+			loadCurrency(true),
+			loadCurrentBudgetName(),
+			loadCurrentBudgetId(),
+		]);
 		budgetName = name;
 		budgetId = id;
 	}
