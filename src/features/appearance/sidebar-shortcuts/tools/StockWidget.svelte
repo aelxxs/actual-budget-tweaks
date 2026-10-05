@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { onMount } from "svelte";
 
 	const { symbol = "SPY" } = $props<{ symbol?: string }>();
@@ -67,15 +68,19 @@
 		<span class="stk__err">—</span>
 	{:else}
 		<span class="stk__sym">{symbol}</span>
-		<span class="stk__price abt-privacy-number">{price?.toFixed(2)}</span>
+		<RollingNumber
+			value={price ?? 0}
+			format={(n) => n.toFixed(2)}
+			resetKey={symbol}
+			class="stk__price abt-privacy-number"
+		/>
 		{#if changePercent != null}
-			<span
-				class="stk__pct abt-privacy-number"
-				class:is-pos={changePercent >= 0}
-				class:is-neg={changePercent < 0}
-			>
-				{changePercent >= 0 ? "+" : ""}{changePercent.toFixed(1)}%
-			</span>
+			<RollingNumber
+				value={changePercent}
+				format={(n) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`}
+				resetKey={symbol}
+				class="stk__pct abt-privacy-number {changePercent >= 0 ? 'is-pos' : 'is-neg'}"
+			/>
 		{/if}
 	{/if}
 </div>
@@ -100,14 +105,15 @@
 		flex-shrink: 0;
 	}
 
-	.stk__price {
+	/* Rendered by RollingNumber, so outside this component's scope. */
+	.stk :global(.stk__price) {
 		font-variant-numeric: tabular-nums;
 		font-weight: 500;
 		font-size: 11px;
 		flex-shrink: 0;
 	}
 
-	.stk__pct {
+	.stk :global(.stk__pct) {
 		font-size: 10px;
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
@@ -115,10 +121,10 @@
 		flex-shrink: 0;
 	}
 
-	.stk__pct.is-pos {
+	.stk :global(.stk__pct.is-pos) {
 		color: var(--color-noticeTextLight);
 	}
-	.stk__pct.is-neg {
+	.stk :global(.stk__pct.is-neg) {
 		color: var(--color-errorText);
 	}
 

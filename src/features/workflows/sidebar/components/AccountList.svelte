@@ -2,7 +2,7 @@
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { closeCalendar, isCalendarOpen } from "@features/workflows/spending-calendar";
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { getValue, setValue } from "@lib/utilities/store";
 	import { ChevronDown, List, ListTree, Plus } from "lucide-svelte";
@@ -347,7 +347,11 @@
 		<div class="all-accounts section-head" class:active={isAllAccountsActive()}>
 			<button type="button" class="section-nav" onclick={() => go("/accounts")}>
 				<span class="group-label">Accounts</span>
-				<span class="group-total abt-privacy-number">{fmtMoney(grandTotal)}</span>
+				<RollingNumber
+					value={grandTotal}
+					resetKey={budgetId}
+					class="group-total abt-privacy-number"
+				/>
 			</button>
 			<!-- Adding accounts is occasional, so it's revealed here on hover rather than kept in the footer. -->
 			<button
@@ -400,17 +404,21 @@
 						<button type="button" class="section-nav" onclick={() => go(`/accounts/${kind}`)}>
 							<span class="group-label" class:dim={section.muted}>{section.label}</span>
 							<span class="group-count">{section.items.length}</span>
-							<span class="group-total abt-privacy-number">
-								{fmtMoney(section.items.reduce((sum, a) => sum + a.balance, 0))}
-							</span>
+							<RollingNumber
+								value={section.items.reduce((sum, a) => sum + a.balance, 0)}
+								resetKey={budgetId}
+								class="group-total abt-privacy-number"
+							/>
 						</button>
 					{:else}
 						<span class="section-nav">
 							<span class="group-label" class:dim={section.muted}>{section.label}</span>
 							<span class="group-count">{section.items.length}</span>
-							<span class="group-total abt-privacy-number">
-								{fmtMoney(section.items.reduce((sum, a) => sum + a.balance, 0))}
-							</span>
+							<RollingNumber
+								value={section.items.reduce((sum, a) => sum + a.balance, 0)}
+								resetKey={budgetId}
+								class="group-total abt-privacy-number"
+							/>
 						</span>
 					{/if}
 					{#if kind}

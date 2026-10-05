@@ -51,6 +51,8 @@ export function sheetsInMutations(
 ): Set<string> {
 	const sheets = new Set<string>();
 	const add = (el: Element | null | undefined) => {
+		// ABT's own overlays inside Actual's cells (the rolling To Budget) aren't data changes.
+		if (el?.closest("[data-abt-owned]")) return;
 		const match = el?.closest("[data-cellname]")?.getAttribute("data-cellname")?.match(SHEET_RE);
 		if (match) sheets.add(match[1]);
 	};

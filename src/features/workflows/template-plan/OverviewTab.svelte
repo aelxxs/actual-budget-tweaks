@@ -3,6 +3,7 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
+	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 	import { onMount } from "svelte";
@@ -110,11 +111,12 @@
 			</div>
 			<div class="abt-tab-overview-card-hero-info">
 				<span class="abt-tab-overview-hero-label">Available to budget</span>
-				<span
+				<RollingNumber
+					value={data.toBudget}
+					resetKey={data.monthKey}
 					class="abt-tab-overview-hero-amount abt-privacy-number"
 					data-sign={data.toBudget < 0 ? "neg" : data.toBudget > 0 ? "pos" : null}
-					>{fmtMoney(data.toBudget)}</span
-				>
+				/>
 			</div>
 		</div>
 		{#if data.totalBudgeted > 0}
@@ -130,35 +132,43 @@
 			<div class="abt-tab-overview-bdr">
 				<span class="abt-tab-overview-bdr-op">→</span>
 				<span class="abt-tab-overview-bdr-label">Available funds</span>
-				<span class="abt-tab-overview-bdr-val abt-privacy-number"
-					>{fmtMoney(data.availableFunds)}</span
-				>
+				<RollingNumber
+					value={data.availableFunds}
+					resetKey={data.monthKey}
+					class="abt-tab-overview-bdr-val abt-privacy-number"
+				/>
 			</div>
 			<div class="abt-tab-overview-bdr">
 				<span class="abt-tab-overview-bdr-op">−</span>
 				<span class="abt-tab-overview-bdr-label">Assigned to categories</span>
-				<span class="abt-tab-overview-bdr-val abt-privacy-number"
-					>{fmtMoney(data.totalBudgeted)}</span
-				>
+				<RollingNumber
+					value={data.totalBudgeted}
+					resetKey={data.monthKey}
+					class="abt-tab-overview-bdr-val abt-privacy-number"
+				/>
 			</div>
 			{#if data.lastMonthOverspent !== 0}
 				<div class="abt-tab-overview-bdr">
 					<span class="abt-tab-overview-bdr-op" style="color:var(--color-errorText,#e57373)">−</span
 					>
 					<span class="abt-tab-overview-bdr-label">Last month overspent</span>
-					<span class="abt-tab-overview-bdr-val abt-privacy-number" data-sign="neg"
-						>{fmtMoney(Math.abs(data.lastMonthOverspent))}</span
-					>
+					<RollingNumber
+						value={Math.abs(data.lastMonthOverspent)}
+						resetKey={data.monthKey}
+						class="abt-tab-overview-bdr-val abt-privacy-number"
+						data-sign="neg"
+					/>
 				</div>
 			{/if}
 			<div class="abt-tab-overview-bdr abt-tab-overview-bdr--total">
 				<span class="abt-tab-overview-bdr-op">=</span>
 				<span class="abt-tab-overview-bdr-label" style="font-weight:600">Available</span>
-				<span
+				<RollingNumber
+					value={data.toBudget}
+					resetKey={data.monthKey}
 					class="abt-tab-overview-bdr-val abt-tab-overview-bdr-avail abt-privacy-number"
 					data-sign={data.toBudget < 0 ? "neg" : data.toBudget > 0 ? "pos" : null}
-					>{fmtMoney(data.toBudget)}</span
-				>
+				/>
 			</div>
 		</div>
 		{#if data.bufferedSelected !== 0}
@@ -182,10 +192,13 @@
 			{/snippet}
 			<div class="abt-tab-overview-pace-row">
 				<span class="abt-tab-overview-pace-label">Spent</span>
-				<span
+				<RollingNumber
+					value={spentPctCapped}
+					format={(n) => `${n}%`}
+					resetKey={data.monthKey}
 					class="abt-tab-overview-pace-pct abt-privacy-number"
-					data-sign={spentPct >= 100 ? "neg" : spentAhead ? "warn" : null}>{spentPctCapped}%</span
-				>
+					data-sign={spentPct >= 100 ? "neg" : spentAhead ? "warn" : null}
+				/>
 			</div>
 			<div class="abt-tab-overview-mini-bar-wrap">
 				<div
@@ -227,10 +240,13 @@
 			</div>
 
 			<div class="abt-tab-overview-next-hero">
-				<span
+				<RollingNumber
+					value={nextCoveragePct}
+					format={(n) => `${n}%`}
+					resetKey={data.monthKey}
 					class="abt-tab-overview-next-pct abt-privacy-number"
-					data-sign={nextOver >= 0 ? "pos" : "warn"}>{nextCoveragePct}%</span
-				>
+					data-sign={nextOver >= 0 ? "pos" : "warn"}
+				/>
 				<span class="abt-tab-overview-next-sub">prepared</span>
 			</div>
 
@@ -273,9 +289,11 @@
 				<span class="abt-tab-overview-next-breakdown-label"
 					>Ready to assign in {longMonth(data.nextMonthKey)}</span
 				>
-				<span class="abt-tab-overview-next-breakdown-val abt-privacy-number"
-					>{fmtMoney(data.nextMonthToBudget)}</span
-				>
+				<RollingNumber
+					value={data.nextMonthToBudget}
+					resetKey={data.monthKey}
+					class="abt-tab-overview-next-breakdown-val abt-privacy-number"
+				/>
 			</div>
 		</Section>
 	{:else}

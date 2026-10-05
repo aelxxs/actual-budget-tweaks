@@ -48,6 +48,17 @@ export const CSS = `
 		height: 48px;
 		flex-shrink: 0;
 	}
+	/* Bars and the ring ease like the rolling numbers beside them. */
+	.abt-tab-overview-ring-wrap circle {
+		transition: stroke-dashoffset 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.abt-tab-overview-card-bar,
+		.abt-tab-overview-mini-bar,
+		.abt-tab-overview-ring-wrap circle {
+			transition: none;
+		}
+	}
 
 	.abt-tab-overview-ring-label {
 		position: absolute;
@@ -97,6 +108,7 @@ export const CSS = `
 		height: 100%;
 		border-radius: 2.5px;
 		min-width: 2px;
+		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 	.abt-tab-overview-card-bar[data-status="ok"]   { background: var(--abt-panel-accent); }
 	.abt-tab-overview-card-bar[data-status="warn"] { background: var(--color-warningText, #e0c590); }
@@ -196,6 +208,7 @@ export const CSS = `
 		height: 100%;
 		border-radius: 2px;
 		min-width: 2px;
+		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 	.abt-tab-overview-mini-bar[data-status="ok"]      { background: var(--abt-panel-accent); }
 	.abt-tab-overview-mini-bar[data-status="warn"]    { background: var(--color-warningText, #e0c590); }
