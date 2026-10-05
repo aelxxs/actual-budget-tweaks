@@ -1,6 +1,39 @@
 # Changelog
 
 
+## v0.1.80
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.79...v0.1.80)
+
+### 🚀 Enhancements
+
+- Insights follows month changes without polling, with skeletons ([0837d5e](https://github.com/aelxxs/actual-budget-tweaks/commit/0837d5e))
+- Resize grips for the side panel and Live sidebar ([2ab6da5](https://github.com/aelxxs/actual-budget-tweaks/commit/2ab6da5))
+- Sync button and a reworked Live sidebar footer ([b7624e5](https://github.com/aelxxs/actual-budget-tweaks/commit/b7624e5))
+- Modern Titlebar setting ([2ada94e](https://github.com/aelxxs/actual-budget-tweaks/commit/2ada94e))
+- Live shortcuts editor ([6de15cb](https://github.com/aelxxs/actual-budget-tweaks/commit/6de15cb))
+
+### 🩹 Fixes
+
+- Keep Insights open across pages and drop the calendar's URL ([c92343f](https://github.com/aelxxs/actual-budget-tweaks/commit/c92343f))
+- Month header shortens its labels only when it's narrow ([421da13](https://github.com/aelxxs/actual-budget-tweaks/commit/421da13))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.79 ([a56c72e](https://github.com/aelxxs/actual-budget-tweaks/commit/a56c72e))
+
+### 🎨 Styles
+
+- Quieter Insights header, tabs and template toolbar ([0c60a02](https://github.com/aelxxs/actual-budget-tweaks/commit/0c60a02))
+- Built-in tabs and spaced sections in the side panel ([7f883b3](https://github.com/aelxxs/actual-budget-tweaks/commit/7f883b3))
+- Month header fits narrower widths ([30d1880](https://github.com/aelxxs/actual-budget-tweaks/commit/30d1880))
+- More room on the right of the Live sidebar's rows ([3b8f6b0](https://github.com/aelxxs/actual-budget-tweaks/commit/3b8f6b0))
+- Text field and dialog primitives ([c397372](https://github.com/aelxxs/actual-budget-tweaks/commit/c397372))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.79
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.78...v0.1.79)
