@@ -4,6 +4,7 @@
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
+	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 	import { onMount } from "svelte";
 	import { templatePlanState } from "./state.svelte";
 	import OverviewToolbar from "./OverviewToolbar.svelte";
@@ -21,11 +22,6 @@
 		if (!loading) templatePlanState.onTabChange?.("overview");
 	}
 
-	function formatDate(isoDate: string): string {
-		const parts = isoDate.split("-").map(Number);
-		const d = new Date(parts[0], parts[1] - 1, parts[2]);
-		return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-	}
 
 	function longMonth(monthKey: string): string {
 		const [y, m] = monthKey.split("-").map(Number);
@@ -33,6 +29,7 @@
 	}
 
 	onMount(() => {
+		loadDatePrefs();
 		if (!templatePlanState.overviewData && !templatePlanState.overviewLoading) {
 			templatePlanState.onTabChange?.("overview");
 		}
@@ -378,7 +375,7 @@
 				<Row name={s.name}>
 					{#snippet leading()}
 						<span class="abt-tab-overview-sched-dot" aria-hidden="true"></span>
-						<span class="abt-tab-overview-sched-date">{formatDate(s.nextDate)}</span>
+						<span class="abt-tab-overview-sched-date">{formatDayMonth(s.nextDate)}</span>
 					{/snippet}
 				</Row>
 			{/each}

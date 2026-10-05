@@ -5,6 +5,12 @@
 	import Switch from "@lib/components/Switch.svelte";
 	import { loadCategoryColors } from "@lib/utilities/category-colors";
 	import { loadCurrency } from "@lib/utilities/currency";
+	import {
+		formatDate,
+		formatDayMonth,
+		loadDatePrefs,
+		weekdayNames,
+	} from "@lib/utilities/date-format.svelte";
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 	import { getValue, setValue } from "@lib/utilities/store";
@@ -18,7 +24,6 @@
 	import MonthSummary from "./MonthSummary.svelte";
 	import {
 		MAX_FUTURE_MONTHS,
-		MONTH_NAMES,
 		cellCorner,
 		createMonthLoader,
 		hasTransactions,
@@ -31,7 +36,6 @@
 	const { onClose } = $props<{ onClose: () => void }>();
 
 	const HIDE_OFFBUDGET_KEY = "spending-calendar-hide-offbudget";
-	const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 	const ARROW_STEPS: Record<string, number> = {
 		ArrowLeft: -1,
 		ArrowRight: 1,
@@ -40,6 +44,10 @@
 	};
 	const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 	const loader = createMonthLoader();
+
+	// Set with each loaded grid, so the header row always matches the grid's columns.
+	let firstDayOfWeek = $state(0);
+	const dayNames = $derived(weekdayNames(firstDayOfWeek));
 
 	let year = $state(new Date().getFullYear());
 	let month = $state(new Date().getMonth());
@@ -102,9 +110,14 @@
 		const seq = ++loadSeq;
 		loading = true;
 		try {
-			const grid = await loader.load(year, month, { hideOffBudget });
+			const prefs = await loadDatePrefs();
+			const grid = await loader.load(year, month, {
+				hideOffBudget,
+				firstDayOfWeek: prefs.firstDayOfWeek,
+			});
 			// A slower, older request must not overwrite the month paged to since.
 			if (seq !== loadSeq) return;
+			firstDayOfWeek = prefs.firstDayOfWeek;
 			days = grid;
 			gridVersion++;
 			if (pendingFocus && focusIso) {
@@ -223,11 +236,7 @@
 		headerInstance = mount(DayHeader, {
 			target: headerContainer,
 			props: {
-				dateStr: date.toLocaleDateString(undefined, {
-					month: "numeric",
-					day: "numeric",
-					year: "numeric",
-				}),
+				dateStr: formatDate(date),
 				total: day.total,
 			},
 		});
@@ -242,7 +251,7 @@
 		});
 
 		sidepanel.open({
-			title: `${MONTH_NAMES[month]} ${day.date}`,
+			title: formatDayMonth(date, "long"),
 			bodyNode: detailContainer,
 			headerNode: headerContainer,
 		});
@@ -294,7 +303,7 @@
 </script>
 
 {#snippet weekdays()}
-	{#each DAY_NAMES as name (name)}
+	{#each dayNames as name (name)}
 		<div class="cal-day-name">{name}</div>
 	{/each}
 {/snippet}

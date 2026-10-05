@@ -131,7 +131,7 @@ export function createMonthLoader() {
 	async function load(
 		year: number,
 		month: number,
-		{ hideOffBudget }: { hideOffBudget: boolean },
+		{ hideOffBudget, firstDayOfWeek = 0 }: { hideOffBudget: boolean; firstDayOfWeek?: number },
 	): Promise<DayData[]> {
 		const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
 		const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -279,26 +279,30 @@ export function createMonthLoader() {
 			}
 		}
 
-		return buildGrid(year, month, byDay, todayIso);
+		return buildGrid(year, month, byDay, todayIso, firstDayOfWeek);
 	}
 
 	return { load, categoryNames, incomeCategoryIds };
 }
 
-/** Lays a month's days out in full Sunday-first weeks, padded with neighbouring days. */
+/**
+ * Lays a month's days out in full weeks starting on `firstDayOfWeek` (0 = Sunday), padded
+ * with neighbouring days.
+ */
 export function buildGrid(
 	year: number,
 	month: number,
 	byDay: Map<number, DayTransaction[]>,
 	todayIso: string,
+	firstDayOfWeek = 0,
 ): DayData[] {
 	const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
-	const firstDayOfWeek = new Date(year, month, 1).getDay();
+	const leading = (new Date(year, month, 1).getDay() - firstDayOfWeek + 7) % 7;
 	const daysInMonth = new Date(year, month + 1, 0).getDate();
 	const daysInPrevMonth = new Date(year, month, 0).getDate();
 	const grid: DayData[] = [];
 
-	for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+	for (let i = leading - 1; i >= 0; i--) {
 		grid.push(paddingDay(new Date(year, month - 1, daysInPrevMonth - i)));
 	}
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { navigate } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
+	import { formatDate, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 	import { getCategoryName, parseScheduleAmount } from "./data";
 	import type { CategoryInsight, LinkedSchedule, ProgressInfo } from "./types";
 
@@ -44,10 +45,10 @@
 		return `${-diff} days ago`;
 	}
 
+	loadDatePrefs();
+
 	function fmtDateShort(iso: string): string {
-		if (!iso) return "—";
-		const [y, m, d] = iso.split("-");
-		return `${m}/${d}/${y.slice(2)}`;
+		return iso ? formatDate(iso) : "—";
 	}
 
 	function pluralize(n: number, unit: string): string {

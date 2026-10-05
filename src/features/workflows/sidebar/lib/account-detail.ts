@@ -1,5 +1,6 @@
 import type { Account, Payee, Schedule, Transaction } from "@lib/types/actual-schema";
 import { query, send } from "@lib/utilities/actual-api";
+import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 import type { SyncStatus } from "./data";
 
 export interface UpcomingItem {
@@ -93,7 +94,8 @@ async function computeAccountDetail(
 	status: SyncStatus,
 	currentBalance: number,
 ): Promise<AccountDetail> {
-	const [accounts, recentTxs, clearedCell, unclearedCell, schedules] = await Promise.all([
+	const [, accounts, recentTxs, clearedCell, unclearedCell, schedules] = await Promise.all([
+		loadDatePrefs(),
 		query<Pick<Account, "id" | "type" | "bankName" | "last_sync">[]>("accounts", {
 			filter: { id: accountId },
 		}),
@@ -162,7 +164,7 @@ async function computeAccountDetail(
 
 	const upcoming: UpcomingItem[] = upcomingRaw.map((s) => ({
 		id: s.id,
-		date: new Date(s.next_date!).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+		date: formatDayMonth(s.next_date!),
 		payee: (s._payee && payeeName.get(s._payee)) || s.name || "Scheduled",
 		amount: scheduleAmount(s._amount),
 	}));
