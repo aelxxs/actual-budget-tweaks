@@ -1,6 +1,31 @@
 # Changelog
 
 
+## v0.1.81
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.80...v0.1.81)
+
+### 🚀 Enhancements
+
+- Follow Actual's date format and first day of week ([d71c852](https://github.com/aelxxs/actual-budget-tweaks/commit/d71c852))
+- Shared settings dialog pieces ([7c555b3](https://github.com/aelxxs/actual-budget-tweaks/commit/7c555b3))
+- Budget settings dialog ([c66d2cd](https://github.com/aelxxs/actual-budget-tweaks/commit/c66d2cd))
+- Sidebar settings dialog ([197ab1e](https://github.com/aelxxs/actual-budget-tweaks/commit/197ab1e))
+- Split layout by default for the Live sidebar ([ee2a1c2](https://github.com/aelxxs/actual-budget-tweaks/commit/ee2a1c2))
+- Rolling numbers ([f82103f](https://github.com/aelxxs/actual-budget-tweaks/commit/f82103f))
+- Live Insights overview and one-step Fund targets ([7537546](https://github.com/aelxxs/actual-budget-tweaks/commit/7537546))
+- Steadier month cards with a rolling To Budget ([8b7af88](https://github.com/aelxxs/actual-budget-tweaks/commit/8b7af88))
+- Add privacy style feature ([3834db0](https://github.com/aelxxs/actual-budget-tweaks/commit/3834db0))
+- Add rolling number animation ([a24ee92](https://github.com/aelxxs/actual-budget-tweaks/commit/a24ee92))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.80 ([3388b37](https://github.com/aelxxs/actual-budget-tweaks/commit/3388b37))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.80
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.79...v0.1.80)
