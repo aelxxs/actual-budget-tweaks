@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { scriptSections, scripts } from "../features";
-	import CheckboxOption from "./components/Checkbox.svelte";
 	import Icon from "./components/Icon.svelte";
-	import SelectOption from "./components/Select.svelte";
+	import SettingRow from "./components/SettingRow.svelte";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
 	const version = browser.runtime.getManifest().version;
@@ -251,34 +250,7 @@
 								{/if}
 								<div class="stack" style="--space: 0;">
 									{#each group.items as item (item.context.key)}
-										{#if item.type === "select"}
-											<SelectOption
-												labelText={item.label}
-												options={item.options}
-												setting={item}
-												icon={item.icon}
-											/>
-										{:else if item.type === "custom"}
-											{#if item.component}
-												{@const C = item.component}
-												{@const description = (item as { description?: string }).description}
-												<div class="custom-setting" data-testid={item.context.key}>
-													{#if item.label}
-														<span class="setting-label-group">
-															<span class="setting-label">{item.label}</span>
-															{#if description}
-																<span class="setting-desc">{description}</span>
-															{/if}
-														</span>
-													{/if}
-													<C ctx={item.context} />
-												</div>
-											{:else}
-												<div data-testid={item.context.key}></div>
-											{/if}
-										{:else if item.type === "checkbox"}
-											<CheckboxOption labelText={item.label} setting={item} icon={item.icon} />
-										{/if}
+										<SettingRow setting={item} />
 									{/each}
 								</div>
 							</div>
@@ -504,37 +476,6 @@
 			letter-spacing: 0.06em;
 			color: var(--color-pageTextSubdued);
 			margin-bottom: 0.1rem;
-		}
-
-		.custom-setting {
-			display: flex;
-			flex-direction: column;
-			gap: 0.4rem;
-			padding: 8px;
-			margin: 0 -8px;
-			border-radius: var(--abt-radius);
-			border-top: 1px solid color-mix(in srgb, var(--color-pageText) 7%, transparent);
-		}
-
-		.custom-setting:first-child {
-			border-top: none;
-		}
-
-		.setting-label-group {
-			display: flex;
-			flex-direction: column;
-			gap: 2px;
-		}
-
-		.setting-label {
-			font-size: 13px;
-			font-weight: 500;
-		}
-
-		.setting-desc {
-			font-size: 11px;
-			font-weight: 400;
-			color: var(--color-pageTextSubdued);
 		}
 
 		.header-actions {

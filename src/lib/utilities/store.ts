@@ -37,6 +37,26 @@ export function setValue(key: string, value: unknown) {
 	}
 }
 
+/** Calls back with each new value stored under `key`, from any tab or view; returns an unsubscribe. */
+export function watchValue<T>(key: string, callback: (value: T | undefined) => void): () => void {
+	const storageKey = "local:" + key;
+	const listener = (changes: Record<string, { newValue?: unknown }>, area: string) => {
+		if (area === "local" && storageKey in changes) callback(changes[storageKey].newValue as T);
+	};
+	try {
+		browser.storage.onChanged.addListener(listener);
+	} catch {
+		return () => {};
+	}
+	return () => {
+		try {
+			browser.storage.onChanged.removeListener(listener);
+		} catch {
+			// the extension context may already be gone
+		}
+	};
+}
+
 export async function removeValue(key: string): Promise<void> {
 	if (isContextInvalidated()) return;
 	try {
