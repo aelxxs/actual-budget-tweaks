@@ -104,7 +104,9 @@
 	.rn__column {
 		display: flex;
 		flex-direction: column;
-		transform: translateY(calc(var(--d) * -1 * var(--rn-h)));
+		/* A tenth of the column per digit, not line heights: a font swap (privacy mode) changes
+		   the line height, and a length-based offset would then animate as if the digit changed. */
+		transform: translateY(calc(var(--d) * -10%));
 		/* The ones digit moves first, the rest follow a beat apart, like a board settling. */
 		transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 30ms);
 	}

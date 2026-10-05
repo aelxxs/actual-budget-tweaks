@@ -43,6 +43,8 @@
 		icon: "alert" | "shield" | "target" | "sparkles";
 		title: string;
 		short: string;
+		/** Leads the subtitle; only this part is private, not the words after it. */
+		amount?: number;
 		sub: string;
 		run: (() => void) | null;
 	};
@@ -103,7 +105,8 @@
 				icon: "alert",
 				title: "Fix over-assigned",
 				short: "Fix",
-				sub: `${fmtMoney(-toBudget)} more than you have`,
+				amount: -toBudget,
+				sub: "more than you have",
 				run: () =>
 					openToBudgetMenu(root?.closest('[data-testid="budget-summary"]')?.lastElementChild),
 			};
@@ -114,7 +117,8 @@
 				icon: "shield",
 				title: "Cover overspending",
 				short: "Cover",
-				sub: `${fmtMoney(coverable)} from To Budget`,
+				amount: coverable,
+				sub: "from To Budget",
 				run: () => perform(() => coverOverspending(sheet, overIds)),
 			};
 		}
@@ -124,7 +128,8 @@
 				icon: "target",
 				title: "Fund targets",
 				short: "Fund",
-				sub: `${fmtMoney(fundable)} from To Budget`,
+				amount: fundable,
+				sub: "from To Budget",
 				run: () => perform(() => fundTargets(sheet, short)),
 			};
 		}
@@ -208,7 +213,9 @@
 			type="button"
 			class="abt-btn abt-btn--sm"
 			disabled={busy || loading}
-			title={loading ? undefined : `${suggestion.title}: ${suggestion.sub}`}
+			title={loading
+				? undefined
+				: `${suggestion.title}: ${suggestion.amount != null ? `${fmtMoney(suggestion.amount)} ` : ""}${suggestion.sub}`}
 			onclick={() => (suggestion.run ? suggestion.run() : (menuOpen = !menuOpen))}
 		>
 			<Icon name={suggestion.icon} size={13} />
@@ -240,7 +247,11 @@
 				<Icon name={suggestion.icon} size={15} />
 				{busy ? "Working…" : suggestion.title}
 			</span>
-			<span class="ac__sub abt-privacy-number">{suggestion.sub}</span>
+			<span class="ac__sub"
+				>{#if suggestion.amount != null}<span class="abt-privacy-number"
+						>{fmtMoney(suggestion.amount)}</span
+					>{" "}{/if}{suggestion.sub}</span
+			>
 		</button>
 		<button
 			type="button"

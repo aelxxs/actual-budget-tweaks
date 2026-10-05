@@ -37,12 +37,22 @@
 			...ours.querySelectorAll<HTMLElement>(":scope > .sr__card, :scope > .ac"),
 		]);
 	});
-	// Re-found when the totals change, in case Actual re-rendered the amount as a new element.
-	const toBudgetAmount = $derived(
-		totals && toBudgetCard
-			? toBudgetCard.querySelector<HTMLElement>("[data-cellname] > span")
-			: null,
-	);
+	// Re-found whenever Actual re-renders the card (privacy mode rebuilds the amount), so the
+	// rolling copy never stays on a detached element.
+	let toBudgetAmount = $state<HTMLElement | null>(null);
+	$effect(() => {
+		const card = toBudgetCard;
+		if (!card || !totals) return;
+		let current: HTMLElement | null = null;
+		const find = () => {
+			const el = card.querySelector<HTMLElement>("[data-cellname] > span");
+			if (el !== current) toBudgetAmount = current = el;
+		};
+		find();
+		const watch = new MutationObserver(find);
+		watch.observe(card, { childList: true, subtree: true });
+		return () => watch.disconnect();
+	});
 
 	function portal(node: HTMLElement, target: Element = document.body) {
 		target.appendChild(node);

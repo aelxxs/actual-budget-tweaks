@@ -10,6 +10,7 @@ const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 export function smoothRow(getItems: () => HTMLElement[]): () => void {
 	const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 	let widths = new Map<HTMLElement, number>();
+	let texts = new Map<HTMLElement, string>();
 	let animating = false;
 	let frame = 0;
 	let done: ReturnType<typeof setTimeout> | undefined;
@@ -38,13 +39,17 @@ export function smoothRow(getItems: () => HTMLElement[]): () => void {
 		if (animating) return;
 
 		const next = measure(items);
+		const nextTexts = new Map(items.map((el) => [el, el.textContent ?? ""]));
 		const moved = items.some((el) => {
 			const before = widths.get(el);
 			return before !== undefined && Math.abs(before - next.get(el)!) > 0.5;
 		});
+		// Only content changes ease; a font swap (privacy mode, hover-to-reveal) just resizes.
+		const contentChanged = items.some((el) => texts.has(el) && texts.get(el) !== nextTexts.get(el));
 		const prev = widths;
 		widths = next;
-		if (!moved || reducedMotion.matches) return;
+		texts = nextTexts;
+		if (!moved || !contentChanged || reducedMotion.matches) return;
 
 		animating = true;
 		for (const el of items) {
@@ -68,6 +73,7 @@ export function smoothRow(getItems: () => HTMLElement[]): () => void {
 		resize.observe(el);
 	}
 	widths = measure(getItems());
+	texts = new Map(getItems().map((el) => [el, el.textContent ?? ""]));
 
 	return () => {
 		resize.disconnect();

@@ -75,4 +75,16 @@
 	:global([data-abt-rolling]) {
 		-webkit-text-fill-color: transparent;
 	}
+
+	/*
+	 * Under Actual's privacy filter the amount sits in a layer that's invisible until hovered,
+	 * beside a redacted copy; that copy is what should show, so the rolling copy steps aside.
+	 */
+	:global(.abt-privacy-enabled div:has(> div:first-child + div[aria-hidden="true"]:last-child) .native-roll) {
+		display: none;
+	}
+
+	:global(.abt-privacy-enabled div:has(> div:first-child + div[aria-hidden="true"]:last-child) [data-abt-rolling]) {
+		-webkit-text-fill-color: inherit;
+	}
 </style>
