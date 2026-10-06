@@ -111,6 +111,9 @@ const CSS = `
 	}
 	.abt-side-drawer-sidebar {
 		position: relative;
+		/* Over the content's sticky table headers (200), so the resize handle straddling the
+		   border isn't clipped; under the page's banners and toasts (1000). */
+		z-index: 300;
 		display: flex;
 		min-width: ${MIN_SIDEBAR_WIDTH}px;
 		max-width: ${MAX_SIDEBAR_WIDTH}px;
