@@ -1,15 +1,15 @@
+import { markSheetsStale, sheetsInMutations } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
 import { icon } from "@lib/icons";
-import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
+import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
 import MonthMeta from "./MonthMeta.svelte";
-import SummaryRow from "./SummaryRow.svelte";
-import { markSheetsStale, sheetsInMutations } from "@features/readability/category-progress/cells";
 import { summaryState } from "./state.svelte";
+import SummaryRow from "./SummaryRow.svelte";
 
 const BUDGET_TABLE = '[data-testid="budget-table"]';
 const SELECTED_CELL = '[data-testid="selected-budget-month"][data-month]';
@@ -329,12 +329,6 @@ export const budgetSummaryRow = defineSetting({
 		/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */
 		[${FULL_WIDTH_ATTR}] { max-width: none !important; }
 
-		/*
-		 * One month shown: its column uses Actual's other-month colour even when it's the current
-		 * month, for contrast. ABT's surfaces are defined from the current-month colour at the
-		 * root, so the summary cards keep theirs.
-		 */
-		[${SINGLE_MONTH_ATTR}] { --color-budgetCurrentMonth: var(--color-budgetOtherMonth); }
 
 		/* Drop the category-column spacer so the card spans the table. */
 		[${SINGLE_MONTH_ATTR}] > :first-child > :first-child { display: none !important; }
