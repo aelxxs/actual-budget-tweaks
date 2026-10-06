@@ -448,11 +448,19 @@ export const budgetSummaryRow = defineSetting({
 			background:
 				linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) var(--abt-wash), transparent), transparent 70%) padding-box,
 				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
-				linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) 45%, transparent), var(--abt-panel-border) 40%) border-box,
+				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-card-tone) 45%, transparent), var(--abt-panel-border) 40%) border-box,
 				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box !important;
 		}
 		${SUMMARY_CARD}[data-abt-to-budget-negative] > :last-child {
 			--abt-card-tone: var(--color-errorText);
+		}
+		${SUMMARY_CARD} > :last-child,
+		${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
+			transition: --abt-glow-angle var(--abt-glow-duration) ease;
+		}
+		${SUMMARY_CARD} > :last-child:hover,
+		${MONTH_CARD}[${CURRENT_MONTH_ATTR}]:hover {
+			--abt-glow-angle: 225deg;
 		}
 		${SUMMARY_CARD} > :last-child > * { margin: 0 !important; }
 		/* Same label colour as the summary cards; the subdued default is faint on the tint. */
@@ -486,16 +494,15 @@ export const budgetSummaryRow = defineSetting({
 			container-type: inline-size;
 			overflow: visible !important;
 		}
-		/* The current month, tinted like its Now tag. */
+		/* The current month, tinted like its Now tag, its border glowing like To Budget's. */
 		${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
-			border-color: color-mix(in srgb, var(--abt-accent) 40%, transparent) !important;
+			--abt-card-surface: var(--color-budgetCurrentMonth, var(--abt-panel-surface));
+			border-color: transparent !important;
 			background:
-				linear-gradient(
-					135deg,
-					color-mix(in srgb, var(--abt-accent) var(--abt-wash), transparent),
-					transparent 70%
-				),
-				var(--color-budgetCurrentMonth, var(--abt-panel-surface)) !important;
+				linear-gradient(135deg, color-mix(in srgb, var(--abt-accent) var(--abt-wash), transparent), transparent 70%) padding-box,
+				linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) padding-box,
+				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-accent) 45%, transparent), var(--abt-panel-border) 40%) border-box,
+				linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) border-box !important;
 		}
 		/* Header: its title and notes/menu join the row; the collapse toggle has nothing to collapse. */
 		${MONTH_CARD} > :first-child { display: contents !important; }

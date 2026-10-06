@@ -364,26 +364,45 @@
 		border-color: color-mix(in srgb, var(--color-pageText) 20%, transparent);
 	}
 
-	.ac.is-primary {
-		border-color: color-mix(in srgb, var(--abt-panel-accent) 35%, transparent);
+	/* Washed in the suggestion's colour, the border glowing from the corner like To Budget's. */
+	.ac.is-primary,
+	.ac.is-danger {
+		border-color: transparent;
 		background:
 			linear-gradient(
-				135deg,
-				color-mix(in srgb, var(--abt-panel-accent) var(--abt-wash), transparent),
-				transparent 70%
-			),
-			var(--abt-panel-surface);
+					135deg,
+					color-mix(in srgb, var(--ac-tone) var(--abt-wash), transparent),
+					transparent 70%
+				)
+				padding-box,
+			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
+			linear-gradient(
+					var(--abt-glow-angle),
+					color-mix(in srgb, var(--ac-tone) 45%, transparent),
+					var(--abt-panel-border) 40%
+				)
+				border-box,
+			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box;
+	}
+
+	.ac.is-primary,
+	.ac.is-danger {
+		transition:
+			border-color 0.12s,
+			--abt-glow-angle var(--abt-glow-duration) ease;
+	}
+
+	.ac.is-primary:hover,
+	.ac.is-danger:hover {
+		--abt-glow-angle: 225deg;
+	}
+
+	.ac.is-primary {
+		--ac-tone: var(--abt-panel-accent);
 	}
 
 	.ac.is-danger {
-		border-color: color-mix(in srgb, var(--color-errorText) 35%, transparent);
-		background:
-			linear-gradient(
-				135deg,
-				color-mix(in srgb, var(--color-errorText) var(--abt-wash), transparent),
-				transparent 70%
-			),
-			var(--abt-panel-surface);
+		--ac-tone: var(--color-errorText);
 	}
 
 	.ac.is-busy {

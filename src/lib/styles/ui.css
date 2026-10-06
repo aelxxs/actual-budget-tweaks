@@ -35,6 +35,20 @@
 	--abt-selected-fg: var(--abt-accent-text);
 	/* How strongly accent cards (To Budget, current month, suggestions) wash in their colour. */
 	--abt-wash: 14%;
+	--abt-glow-duration: 450ms;
+}
+
+/* An accent card's glowing border angle; registered so hovering can sweep it along the top. */
+@property --abt-glow-angle {
+	syntax: "<angle>";
+	inherits: false;
+	initial-value: 135deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--abt-glow-duration: 0ms;
+	}
 }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
