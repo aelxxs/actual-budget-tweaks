@@ -1,4 +1,5 @@
 import { cyberpunk } from "./palettes/cyberpunk";
+import { daylight } from "./palettes/daylight";
 import { dusk } from "./palettes/dusk";
 import { frappe } from "./palettes/frappe";
 import { ghibliTwilight } from "./palettes/ghibli-twilight";
@@ -19,6 +20,7 @@ export const defaultTheme = mocha;
 
 export const themes: Record<string, Theme> = {
 	cyberpunk,
+	daylight,
 	dusk,
 	frappe,
 	ghibliTwilight,

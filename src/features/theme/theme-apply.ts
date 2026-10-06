@@ -341,6 +341,11 @@ export const BUILTIN_CSS = `:root {
 	}
 }
 
+/* Actual's sidebar colours negative balances with the page's errorText; follow the sidebar's. */
+a[href^="/accounts"] {
+	--color-errorText: var(--color-sidebarTextFailed);
+}
+
 /* A bank sync provider's "Configured" uses noticeTextDark, meant for text on solid notice pills;
    here that's the page colour. Configured cards are the ones with a menu button. */
 [data-testid^="bank-sync-provider-"]:has(> div:first-child > button) > div:first-child > div:first-child > span {
@@ -392,7 +397,7 @@ export function applyPalette(name: string) {
 	for (const [varName, val] of Object.entries(palette.keys)) {
 		setRootProperty(root, varName, val);
 	}
-	applyGlobalCSS(BUILTIN_CSS, TOKENS_STYLE_ID);
+	applyGlobalCSS(BUILTIN_CSS + (palette.css ?? ""), TOKENS_STYLE_ID);
 	editorState.activeTheme = name;
 	applyOverrides(name);
 }
