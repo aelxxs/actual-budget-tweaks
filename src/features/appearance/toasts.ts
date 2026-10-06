@@ -46,6 +46,17 @@ const CSS = `
 		font-size: inherit !important;
 	}
 
+	/* The message row: text and action button share a centre line, button or not. */
+	${CONTENT} > div:has(> div:first-child > div) {
+		min-height: 26px;
+		align-items: center !important;
+	}
+
+	/* Actual centres the message in its column, which floats short ones mid-card. */
+	${CONTENT} > div > div:first-child > div {
+		align-items: flex-start !important;
+	}
+
 	/* The title is the only text-only row; it keeps the kind's colour. */
 	${CONTENT} > div:first-child:not(:has(div)) {
 		color: inherit;
@@ -53,7 +64,7 @@ const CSS = `
 	}
 
 	${CLOSE} {
-		top: var(--abt-space-3) !important;
+		top: 10px !important;
 		right: var(--abt-space-3) !important;
 		width: 24px;
 		height: 24px;
@@ -64,6 +75,11 @@ const CSS = `
 		border-radius: var(--abt-radius);
 		color: var(--abt-muted) !important;
 		opacity: 1 !important;
+	}
+
+	/* Without a title, centred on the message row. */
+	${CARD}:has(> div > div:first-child > div:first-child > div) > button:first-child {
+		top: 13px !important;
 	}
 
 	${CLOSE}:hover {
