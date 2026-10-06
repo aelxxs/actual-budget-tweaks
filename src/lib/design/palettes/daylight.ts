@@ -34,7 +34,7 @@ export const daylight = {
 	},
 	css: `
 		:root {
-			/* Single-month view paints the month in this; keep it a white card on the grey page. */
+			/* Other months in multi-month view: near-white, a step off the current month's white. */
 			--color-budgetOtherMonth: #fbfbfc;
 			/* Deep accents wash out at the dark themes' strength. */
 			--abt-wash: 22%;
