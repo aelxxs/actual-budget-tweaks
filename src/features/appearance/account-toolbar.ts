@@ -1,0 +1,163 @@
+import { defineSetting } from "@features/types";
+import { type IconName, icon } from "@lib/icons";
+
+/*
+ * Adapter CSS for the account page's toolbar (Bank Sync, Import, Add New, Filter, search, then
+ * reconcile, split toggle and the account menu). Its labels are translated, so it's read by
+ * structure: the header holding the account name ends with the toolbar, whose empty flex spacer
+ * splits the actions from search and the icon buttons. Some buttons sit in tooltip wrappers.
+ * Actual's glyphs are told apart by the start of their path.
+ */
+const HEADER = 'div:has(> div:first-child [data-testid="account-name"])';
+const BAR = `${HEADER} > div:last-child:has(> div:empty):has(> div > input)`;
+const ACTIONS = `${BAR} > button:has(~ div:empty), ${BAR} > div:has(~ div:empty) button`;
+// The account menu's dots; an overflow menu reads last, after ABT's column reset.
+const MENU = `${BAR} > div:has(path[d^="M10 12a2 2 0 1 1"])`;
+const SEARCH = `${BAR} > div:empty ~ div:has(> input)`;
+const ICONS = `${BAR} > div:empty ~ button, ${BAR} > div:empty ~ div button`;
+
+const GLYPHS: [string, IconName][] = [
+	['path[d^="M10 3v2a5 5"]', "refreshCw"],
+	['path[d^="M8.616 1.741"]', "download"],
+	['path[d^="M23 11.5"]', "plus"],
+	['path[d^="m12 12 8-8V0H0"]', "filter"],
+	['path[d^="m23.384 21.619"]', "search"],
+	['path[d^="M4 8V6a6 6"]', "lock"],
+	['path[d^="M14.143 1.714"]', "minimize"],
+	['path[d^="M19.611 2.571"]', "maximize"],
+	['path[d^="M10 12a2 2 0 1 1"]', "moreHorizontal"],
+];
+
+function mask(name: IconName): string {
+	const svg = icon(name, { size: 24 }).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ');
+	return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+// Swaps a native glyph for ours by masking the svg itself, so React keeps owning its nodes.
+const swaps = GLYPHS.map(
+	([path, name]) => `
+	${BAR} svg:has(${path}) {
+		background: currentColor;
+		mask: ${mask(name)} center / contain no-repeat;
+	}
+	${BAR} svg:has(${path}) > * {
+		display: none;
+	}`,
+).join("");
+
+const CSS = `
+	${BAR} {
+		align-items: center !important;
+		gap: var(--abt-space-2) !important;
+	}
+
+	:is(${ACTIONS}),
+	:is(${ICONS}) {
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		box-sizing: border-box;
+		height: var(--abt-control-h);
+		border: 1px solid transparent !important;
+		border-radius: var(--abt-radius) !important;
+		color: var(--abt-muted) !important;
+		font-size: var(--abt-text-md) !important;
+		font-weight: 400 !important;
+		transition:
+			background 0.1s,
+			color 0.1s,
+			border-color 0.1s;
+	}
+
+	:is(${ACTIONS}) {
+		padding: 0 var(--abt-space-4) 0 var(--abt-space-3) !important;
+	}
+
+	/* Icon buttons, and the selected-transactions button that joins them with a label. */
+	:is(${ICONS}) {
+		min-width: var(--abt-control-h);
+		padding: 0 var(--abt-space-2) !important;
+	}
+
+	:is(${ACTIONS}):hover:not(:disabled),
+	:is(${ICONS}):hover:not(:disabled),
+	:is(${ICONS})[aria-expanded="true"] {
+		background: var(--abt-fill-hover) !important;
+		color: var(--color-pageText) !important;
+	}
+
+	${MENU} {
+		order: 1;
+	}
+
+	${BAR} svg:has(path) {
+		width: 15px !important;
+		height: 15px !important;
+		margin: 0 !important;
+		flex-shrink: 0;
+	}
+
+	${swaps}
+
+	/* Actual turns its dots upright; ours already read across. Only these, so Bank Sync still spins. */
+	${BAR} svg:has(path[d^="M10 12a2 2 0 1 1"]) {
+		transform: none !important;
+	}
+
+	${SEARCH} {
+		box-sizing: border-box;
+		width: 260px;
+		height: var(--abt-control-h);
+		padding: 0 var(--abt-space-3) !important;
+		gap: var(--abt-space-3);
+		border: 1px solid var(--abt-line) !important;
+		border-radius: var(--abt-radius) !important;
+		background: var(--abt-fill) !important;
+		box-shadow: none !important;
+		color: var(--abt-muted);
+		transition:
+			border-color 0.1s,
+			box-shadow 0.1s;
+	}
+
+	${SEARCH}:focus-within {
+		border-color: color-mix(in srgb, var(--abt-accent) 55%, transparent) !important;
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--abt-accent) 15%, transparent) !important;
+	}
+
+	${SEARCH} input {
+		padding: 0 !important;
+		background: transparent !important;
+		font-size: var(--abt-text-md) !important;
+	}
+
+	/* The icon buttons sit behind a hairline after search, drawn by search since what follows can be hidden. */
+	${SEARCH} {
+		position: relative;
+		margin-right: var(--abt-space-4) !important;
+	}
+
+	${SEARCH}::after {
+		content: "";
+		position: absolute;
+		top: 6px;
+		right: calc(-1 * var(--abt-space-3) - 1px);
+		bottom: 6px;
+		width: 1px;
+		background: var(--abt-line);
+	}
+`;
+
+export const modernAccountToolbar = defineSetting({
+	type: "checkbox",
+	label: "Modern Account Toolbar",
+	description: "Restyles the account page's actions, search and icon buttons with matching icons.",
+	group: "General",
+	icon: "layout",
+	context: {
+		key: "modern-account-toolbar",
+		defaultValue: true,
+	},
+	css: () => CSS,
+});

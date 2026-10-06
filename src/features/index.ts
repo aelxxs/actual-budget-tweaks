@@ -8,6 +8,7 @@ import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarSettingsMenu } from "./appearance/sidebar-settings-menu";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
 import { modernTitlebar } from "./appearance/titlebar";
+import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { modernToasts } from "./appearance/toasts";
 import { privacyMode } from "./core/privacy-mode";
 import { releaseNotification } from "./core/release-notification";
@@ -77,6 +78,7 @@ const readability = [
 
 const appearance = [
 	modernTitlebar,
+	modernAccountToolbar,
 	modernToasts,
 	privacyStyle,
 	sidebarRedesign,
