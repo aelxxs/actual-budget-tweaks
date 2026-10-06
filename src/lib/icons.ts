@@ -245,6 +245,16 @@ const ICONS = {
 		strokeWidth: 2,
 		body: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
 	},
+	listChecks: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/>',
+	},
+	checkCircle: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 1.75,
+		body: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+	},
 	bug: {
 		viewBox: "0 0 24 24",
 		strokeWidth: 2.25,

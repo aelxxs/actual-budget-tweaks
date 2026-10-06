@@ -1,6 +1,8 @@
 import { query } from "./actual-api";
 
 let currencyCode: string | null = null;
+// Actual's own number format, e.g. "comma-dot" (1,234.56) or "dot-comma" (1.234,56).
+let numberFormat = "comma-dot";
 let currencyScale = 100;
 let loaded = false;
 let loadGeneration = 0;
@@ -15,10 +17,12 @@ export async function loadCurrency(force = false): Promise<void> {
 	const generation = ++loadGeneration;
 	try {
 		const rows = await query<{ id: string; value: string }[]>("preferences", {
-			filter: { id: "defaultCurrencyCode" },
+			filter: { id: { $oneof: ["defaultCurrencyCode", "numberFormat"] } },
 		});
 		if (generation !== loadGeneration) return;
-		const code = rows?.[0]?.value;
+		const format = rows?.find((r) => r.id === "numberFormat")?.value;
+		if (format) numberFormat = format;
+		const code = rows?.find((r) => r.id === "defaultCurrencyCode")?.value;
 		if (code && typeof code === "string") {
 			currencyCode = code;
 			try {
@@ -76,6 +80,24 @@ export function fmtMoney(cents: number, opts?: { sign?: boolean; short?: boolean
 	if (opts?.sign && cents > 0) return "+" + str;
 	if (n < 0) return "-" + str;
 	return str;
+}
+
+/** An amount as plain editable text in Actual's number format: no grouping, its decimal mark. */
+export function formatMoneyInput(cents: number): string {
+	const digits = Math.round(Math.log10(currencyScale));
+	const text = (cents / currencyScale).toFixed(digits);
+	return numberFormat.endsWith("-comma") ? text.replace(".", ",") : text;
+}
+
+/** Parses an amount typed in Actual's number format to minor units, or null if it isn't one. */
+export function parseMoney(text: string): number | null {
+	const decimal = numberFormat.endsWith("-comma") ? "," : ".";
+	const negative = /^\s*[-−(]/.test(text);
+	const cleaned = text.replace(new RegExp(`[^0-9${decimal === "," ? "," : "."}]`, "g"), "");
+	const normalized = decimal === "," ? cleaned.replace(",", ".") : cleaned;
+	if (!/^\d*\.?\d*$/.test(normalized) || !/\d/.test(normalized)) return null;
+	const cents = amountToCents(parseFloat(normalized));
+	return negative ? -cents : cents;
 }
 
 export function amountToCents(amount: number): number {

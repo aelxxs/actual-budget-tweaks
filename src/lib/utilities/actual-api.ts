@@ -75,18 +75,38 @@ function request<T>(event: string, detail: Record<string, unknown>): Promise<T> 
  */
 export async function query<K extends TableName>(
 	table: K,
-	options?: { filter?: Record<string, unknown>; select?: string[] },
+	options?: {
+		filter?: Record<string, unknown>;
+		/** Field names, or `{ alias: "payee.name" }` for joined fields. */
+		select?: (string | Record<string, string>)[];
+		options?: Record<string, unknown>;
+	},
 ): Promise<ActualTable[K][]>;
 export async function query<T>(
 	table: string,
-	options?: { filter?: Record<string, unknown>; select?: string[] },
+	options?: {
+		filter?: Record<string, unknown>;
+		/** Field names, or `{ alias: "payee.name" }` for joined fields. */
+		select?: (string | Record<string, string>)[];
+		options?: Record<string, unknown>;
+	},
 ): Promise<T>;
 export async function query(
 	table: string,
-	options?: { filter?: Record<string, unknown>; select?: string[] },
+	options?: {
+		filter?: Record<string, unknown>;
+		/** Field names, or `{ alias: "payee.name" }` for joined fields. */
+		select?: (string | Record<string, string>)[];
+		options?: Record<string, unknown>;
+	},
 ): Promise<unknown> {
 	await waitForBudget();
-	return request("abt:api:query", { table, filter: options?.filter, select: options?.select });
+	return request("abt:api:query", {
+		table,
+		filter: options?.filter,
+		select: options?.select,
+		options: options?.options,
+	});
 }
 
 /**
@@ -160,6 +180,29 @@ export async function notify(
 }
 
 /**
+ * Run an aggregate over an Actual table via the API bridge.
+ *
+ * @example
+ * const cleared = await calculate<number>("transactions", { $sum: "$amount" }, {
+ *   filter: { account: id, cleared: true },
+ *   options: { splits: "none" },
+ * });
+ */
+export async function calculate<T = number>(
+	table: string,
+	expression: Record<string, unknown>,
+	opts?: { filter?: Record<string, unknown>; options?: Record<string, unknown> },
+): Promise<T> {
+	await waitForBudget();
+	return request("abt:api:query", {
+		table,
+		filter: opts?.filter,
+		options: opts?.options,
+		calculate: expression,
+	});
+}
+
+/**
  * Set one of Actual's per-budget local prefs so its UI follows live.
  *
  * @example
@@ -177,7 +220,8 @@ export async function setLocalPref(name: string, value: unknown): Promise<void> 
  * @example
  * navigate("/accounts/" + accountId);
  */
-export function navigate(path: string, options?: Record<string, unknown>): void {
+/** `path` may also be a history step, like -1 to go back. */
+export function navigate(path: string | number, options?: Record<string, unknown>): void {
 	document.dispatchEvent(
 		new CustomEvent("abt:api:navigate", { detail: JSON.stringify({ path, options }) }),
 	);

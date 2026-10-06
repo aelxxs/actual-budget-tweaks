@@ -35,7 +35,7 @@ export default defineUnlistedScript(async () => {
 	}
 
 	document.addEventListener("abt:api:query", (e) => {
-		const { id, table, filter, select } = parseDetail(e);
+		const { id, table, filter, select, calculate, options } = parseDetail(e);
 		if (!id || !table || !accept(id)) return;
 
 		waitForApi(
@@ -43,9 +43,10 @@ export default defineUnlistedScript(async () => {
 				try {
 					let q = window.$q(table);
 					if (filter) q = q.filter(filter);
-					q = q.select(select || "*");
+					if (options) q = q.options(options);
+					q = calculate ? q.calculate(calculate) : q.select(select || "*");
 					const result = await window.$query(q);
-					respond(id, result.data || [], null);
+					respond(id, calculate ? result.data : result.data || [], null);
 				} catch (err) {
 					respond(id, [], String(err));
 				}
