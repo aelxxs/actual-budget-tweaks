@@ -369,7 +369,7 @@
 		background:
 			linear-gradient(
 				135deg,
-				color-mix(in srgb, var(--abt-panel-accent) 14%, transparent),
+				color-mix(in srgb, var(--abt-panel-accent) var(--abt-wash), transparent),
 				transparent 70%
 			),
 			var(--abt-panel-surface);
@@ -380,7 +380,7 @@
 		background:
 			linear-gradient(
 				135deg,
-				color-mix(in srgb, var(--color-errorText) 12%, transparent),
+				color-mix(in srgb, var(--color-errorText) var(--abt-wash), transparent),
 				transparent 70%
 			),
 			var(--abt-panel-surface);

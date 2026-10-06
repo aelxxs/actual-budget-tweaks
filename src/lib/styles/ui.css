@@ -32,7 +32,9 @@
 	--abt-accent-text: color-mix(in srgb, var(--abt-accent) 75%, var(--color-pageText));
 	/* The chosen option, as the Live sidebar marks its active item. */
 	--abt-selected-bg: color-mix(in srgb, var(--abt-accent) 15%, transparent);
-	--abt-selected-fg: var(--abt-accent);
+	--abt-selected-fg: var(--abt-accent-text);
+	/* How strongly accent cards (To Budget, current month, suggestions) wash in their colour. */
+	--abt-wash: 14%;
 }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */

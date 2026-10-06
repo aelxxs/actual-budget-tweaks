@@ -446,16 +446,19 @@ export const budgetSummaryRow = defineSetting({
 			margin: 0 !important;
 			padding: var(--abt-space-3) var(--abt-space-5) !important;
 			justify-content: center;
-			border: 1px solid var(--abt-panel-border) !important;
+			/* The border is drawn by the background's border-box layers: the panel border, glowing
+			   in the card's colour from the top-left corner. */
+			--abt-card-tone: var(--color-noticeTextLight);
+			border: 1px solid transparent !important;
 			border-radius: var(--abt-radius);
 			background:
-				linear-gradient(135deg, color-mix(in srgb, var(--color-noticeTextLight) 14%, transparent), transparent 70%),
-				var(--abt-panel-surface) !important;
+				linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) var(--abt-wash), transparent), transparent 70%) padding-box,
+				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
+				linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) 45%, transparent), var(--abt-panel-border) 40%) border-box,
+				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box !important;
 		}
 		${SUMMARY_CARD}[data-abt-to-budget-negative] > :last-child {
-			background:
-				linear-gradient(135deg, color-mix(in srgb, var(--color-errorText) 14%, transparent), transparent 70%),
-				var(--abt-panel-surface) !important;
+			--abt-card-tone: var(--color-errorText);
 		}
 		${SUMMARY_CARD} > :last-child > * { margin: 0 !important; }
 		/* Same label colour as the summary cards; the subdued default is faint on the tint. */
@@ -491,11 +494,11 @@ export const budgetSummaryRow = defineSetting({
 		}
 		/* The current month, tinted like its Now tag. */
 		${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
-			border-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 40%, transparent) !important;
+			border-color: color-mix(in srgb, var(--abt-accent) 40%, transparent) !important;
 			background:
 				linear-gradient(
 					135deg,
-					color-mix(in srgb, var(--color-sidebarItemAccentSelected) 14%, transparent),
+					color-mix(in srgb, var(--abt-accent) var(--abt-wash), transparent),
 					transparent 70%
 				),
 				var(--color-budgetCurrentMonth, var(--abt-panel-surface)) !important;
