@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { loadIconCache } from "@features/appearance/account-icon-picker";
+	import { sidebarSearch } from "@features/appearance/sidebar-search";
+	import { sidebarShortcuts } from "@features/appearance/sidebar-shortcuts";
 	import { setLiveSidebarBudget } from "@features/appearance/sidebar-settings-menu/settings";
 	import { loadCurrency } from "@lib/utilities/currency";
 	import { watchDom } from "@lib/utilities/dom-watcher";
@@ -135,23 +137,25 @@
 
 	let sidebarEl: HTMLDivElement | undefined = $state();
 
+	// The features' own keys and defaults, so a changed default reaches the Live sidebar too.
+	const { key: SEARCH_KEY, defaultValue: SEARCH_DEFAULT } = sidebarSearch.context;
+	const { key: SHORTCUTS_KEY, defaultValue: SHORTCUTS_DEFAULT } = sidebarShortcuts.context;
 
-	const SEARCH_KEY = "sidebar-search-enabled";
-	const SHORTCUTS_KEY = "sidebar-shortcuts-enabled";
-
-	let shortcutsFeatureEnabled = $state(false);
-	let searchEnabled = $state(false);
+	let shortcutsFeatureEnabled = $state(SHORTCUTS_DEFAULT);
+	let searchEnabled = $state(SEARCH_DEFAULT);
 
 	$effect(() => {
-		getValue<boolean>(SHORTCUTS_KEY, false).then((v) => (shortcutsFeatureEnabled = v));
-		getValue<boolean>(SEARCH_KEY, false).then((v) => (searchEnabled = v));
+		getValue<boolean>(SHORTCUTS_KEY, SHORTCUTS_DEFAULT).then((v) => (shortcutsFeatureEnabled = v));
+		getValue<boolean>(SEARCH_KEY, SEARCH_DEFAULT).then((v) => (searchEnabled = v));
 
 		const onStorageChange = (changes: Record<string, { newValue?: unknown }>, areaName: string) => {
 			if (areaName !== "local") return;
 			if (`local:${SHORTCUTS_KEY}` in changes)
-				shortcutsFeatureEnabled = Boolean(changes[`local:${SHORTCUTS_KEY}`].newValue);
+				shortcutsFeatureEnabled = Boolean(
+					changes[`local:${SHORTCUTS_KEY}`].newValue ?? SHORTCUTS_DEFAULT,
+				);
 			if (`local:${SEARCH_KEY}` in changes)
-				searchEnabled = Boolean(changes[`local:${SEARCH_KEY}`].newValue);
+				searchEnabled = Boolean(changes[`local:${SEARCH_KEY}`].newValue ?? SEARCH_DEFAULT);
 			if (`local:${LAYOUT_KEY}` in changes)
 				layoutMode = toLayout(changes[`local:${LAYOUT_KEY}`].newValue);
 		};
