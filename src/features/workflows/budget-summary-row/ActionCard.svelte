@@ -378,8 +378,8 @@
 			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
 			linear-gradient(
 					var(--abt-glow-angle),
-					color-mix(in srgb, var(--ac-tone) 45%, transparent),
-					var(--abt-panel-border) 40%
+					color-mix(in srgb, var(--ac-tone) var(--abt-glow-strength), transparent),
+					var(--abt-panel-border) var(--abt-glow-reach)
 				)
 				border-box,
 			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box;
@@ -389,12 +389,16 @@
 	.ac.is-danger {
 		transition:
 			border-color 0.12s,
-			--abt-glow-angle var(--abt-glow-duration) ease;
+			--abt-glow-angle var(--abt-glow-duration) ease,
+			--abt-glow-reach var(--abt-glow-duration) ease,
+			--abt-glow-strength var(--abt-glow-duration) ease;
 	}
 
 	.ac.is-primary:hover,
 	.ac.is-danger:hover {
 		--abt-glow-angle: 225deg;
+		--abt-glow-reach: 100%;
+		--abt-glow-strength: 75%;
 	}
 
 	.ac.is-primary {

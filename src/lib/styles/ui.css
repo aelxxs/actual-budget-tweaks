@@ -38,11 +38,24 @@
 	--abt-glow-duration: 450ms;
 }
 
-/* An accent card's glowing border angle; registered so hovering can sweep it along the top. */
+/* An accent card's glowing border: its angle, reach and brightness. Registered so hovering can
+   move and grow it. */
 @property --abt-glow-angle {
 	syntax: "<angle>";
 	inherits: false;
 	initial-value: 135deg;
+}
+
+@property --abt-glow-reach {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 40%;
+}
+
+@property --abt-glow-strength {
+	syntax: "<percentage>";
+	inherits: false;
+	initial-value: 45%;
 }
 
 @media (prefers-reduced-motion: reduce) {

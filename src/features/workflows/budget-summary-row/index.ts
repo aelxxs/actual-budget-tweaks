@@ -448,7 +448,7 @@ export const budgetSummaryRow = defineSetting({
 			background:
 				linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) var(--abt-wash), transparent), transparent 70%) padding-box,
 				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
-				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-card-tone) 45%, transparent), var(--abt-panel-border) 40%) border-box,
+				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-card-tone) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
 				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box !important;
 		}
 		${SUMMARY_CARD}[data-abt-to-budget-negative] > :last-child {
@@ -456,11 +456,16 @@ export const budgetSummaryRow = defineSetting({
 		}
 		${SUMMARY_CARD} > :last-child,
 		${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
-			transition: --abt-glow-angle var(--abt-glow-duration) ease;
+			transition:
+				--abt-glow-angle var(--abt-glow-duration) ease,
+				--abt-glow-reach var(--abt-glow-duration) ease,
+				--abt-glow-strength var(--abt-glow-duration) ease;
 		}
 		${SUMMARY_CARD} > :last-child:hover,
 		${MONTH_CARD}[${CURRENT_MONTH_ATTR}]:hover {
 			--abt-glow-angle: 225deg;
+			--abt-glow-reach: 100%;
+			--abt-glow-strength: 75%;
 		}
 		${SUMMARY_CARD} > :last-child > * { margin: 0 !important; }
 		/* Same label colour as the summary cards; the subdued default is faint on the tint. */
@@ -501,7 +506,7 @@ export const budgetSummaryRow = defineSetting({
 			background:
 				linear-gradient(135deg, color-mix(in srgb, var(--abt-accent) var(--abt-wash), transparent), transparent 70%) padding-box,
 				linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) padding-box,
-				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-accent) 45%, transparent), var(--abt-panel-border) 40%) border-box,
+				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-accent) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
 				linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) border-box !important;
 		}
 		/* Header: its title and notes/menu join the row; the collapse toggle has nothing to collapse. */
