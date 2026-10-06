@@ -29,7 +29,7 @@ export const CSS = `
 		cursor: pointer;
 		font: inherit;
 		font-size: 11px;
-		opacity: 0.7;
+		color: var(--abt-muted);
 		padding: 4px 12px;
 	}
 	.abt-tab-overview-load-btn:hover { opacity: 1; }
@@ -83,7 +83,7 @@ export const CSS = `
 		font-size: 10px;
 		text-transform: uppercase;
 		letter-spacing: 0.6px;
-		opacity: 0.45;
+		color: var(--abt-muted);
 		font-weight: 600;
 	}
 
@@ -131,7 +131,7 @@ export const CSS = `
 	.abt-tab-overview-bdr-op {
 		width: 12px;
 		text-align: center;
-		opacity: 0.45;
+		color: var(--abt-muted);
 		flex-shrink: 0;
 		font-family: monospace;
 		font-size: 12px;
@@ -140,7 +140,7 @@ export const CSS = `
 	.abt-tab-overview-bdr-label {
 		flex: 1;
 		min-width: 0;
-		opacity: 0.7;
+		color: var(--abt-muted);
 	}
 
 	.abt-tab-overview-bdr-val {
@@ -157,7 +157,7 @@ export const CSS = `
 		border-top: 1px solid var(--abt-panel-border);
 		font-size: 12px;
 	}
-	.abt-tab-overview-bdr--total .abt-tab-overview-bdr-op { opacity: 0.6; }
+	.abt-tab-overview-bdr--total .abt-tab-overview-bdr-op { color: var(--abt-muted); }
 
 	.abt-tab-overview-bdr-avail {
 		font-size: 14px;
@@ -177,7 +177,7 @@ export const CSS = `
 
 	.abt-tab-overview-pace-label {
 		flex: 1;
-		opacity: 0.65;
+		color: var(--abt-muted);
 	}
 
 	.abt-tab-overview-pace-pct {
@@ -192,7 +192,7 @@ export const CSS = `
 		justify-content: space-between;
 		align-items: baseline;
 		font-size: 10px;
-		opacity: 0.5;
+		color: var(--abt-muted);
 		margin-top: 8px;
 		font-variant-numeric: tabular-nums;
 	}
@@ -235,7 +235,7 @@ export const CSS = `
 	.abt-tab-overview-next-pct[data-sign="warn"] { color: var(--color-warningText, #e0c590); }
 
 	.abt-tab-overview-next-sub {
-		opacity: 0.55;
+		color: var(--abt-muted);
 		font-size: 12px;
 	}
 
@@ -273,7 +273,7 @@ export const CSS = `
 
 	.abt-tab-overview-next-month-sub {
 		font-size: 10px;
-		opacity: 0.45;
+		color: var(--abt-muted);
 		text-transform: uppercase;
 		letter-spacing: 0.6px;
 		font-weight: 600;
@@ -282,14 +282,14 @@ export const CSS = `
 	.abt-tab-overview-next-amounts {
 		font-size: 10.5px;
 		font-variant-numeric: tabular-nums;
-		opacity: 0.6;
+		color: var(--abt-muted);
 		margin-top: 6px;
 		font-weight: 500;
 	}
 
 	.abt-tab-overview-next-summary {
 		font-size: 10.5px;
-		opacity: 0.7;
+		color: var(--abt-muted);
 		margin-top: 8px;
 		line-height: 1.45;
 		font-style: italic;
@@ -307,7 +307,7 @@ export const CSS = `
 	}
 
 	.abt-tab-overview-next-breakdown-label {
-		opacity: 0.6;
+		color: var(--abt-muted);
 		flex: 1;
 		min-width: 0;
 	}
@@ -356,7 +356,7 @@ export const CSS = `
 	.abt-tab-overview-chart-avg {
 		margin-left: auto;
 		font-size: 10px;
-		opacity: 0.45;
+		color: var(--abt-muted);
 		white-space: nowrap;
 	}
 
@@ -372,7 +372,7 @@ export const CSS = `
 
 	.abt-tab-overview-sched-date {
 		font-variant-numeric: tabular-nums;
-		opacity: 0.5;
+		color: var(--abt-muted);
 		flex-shrink: 0;
 		width: 44px;
 		font-size: 10.5px;
@@ -380,7 +380,7 @@ export const CSS = `
 
 	.abt-tab-overview-empty-row {
 		font-size: 11px;
-		opacity: 0.4;
+		color: var(--abt-muted);
 	}
 
 	.abt-tab-body {
@@ -404,7 +404,7 @@ export const CSS = `
 	.abt-tab-empty {
 		padding: 16px 14px;
 		text-align: center;
-		opacity: 0.6;
+		color: var(--abt-muted);
 	}
 
 	.abt-tab-footer {
@@ -419,7 +419,7 @@ export const CSS = `
 	}
 
 	.abt-tab-footer-label {
-		opacity: 0.7;
+		color: var(--abt-muted);
 	}
 	.abt-tab-footer-value {
 		text-align: right;

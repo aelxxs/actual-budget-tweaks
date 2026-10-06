@@ -24,11 +24,11 @@
 		color: var(--color-budgetNumberPositive, #4caf50);
 	}
 	.badge[data-tone="warning"] {
-		background: color-mix(in srgb, var(--color-warningText, #e0c590) 18%, transparent);
+		background: color-mix(in srgb, var(--color-warningText, #e0c590) 15%, transparent);
 		color: var(--color-warningText, #e0c590);
 	}
 	.badge[data-tone="negative"] {
-		background: color-mix(in srgb, var(--color-errorText, #e57373) 18%, transparent);
+		background: color-mix(in srgb, var(--color-errorText, #e57373) 15%, transparent);
 		color: var(--color-errorText, #e57373);
 	}
 </style>

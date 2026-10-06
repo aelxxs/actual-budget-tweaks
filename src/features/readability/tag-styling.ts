@@ -48,11 +48,9 @@ function parseRgb(color: string): [number, number, number] | null {
 	return [+m[1], +m[2], +m[3]];
 }
 
-function lighten(r: number, g: number, b: number, amount: number): string {
-	const lr = Math.min(255, r + (255 - r) * amount);
-	const lg = Math.min(255, g + (255 - g) * amount);
-	const lb = Math.min(255, b + (255 - b) * amount);
-	return `rgb(${Math.round(lr)}, ${Math.round(lg)}, ${Math.round(lb)})`;
+// Toward the page's text colour, so it reads in light themes (darker) and dark ones (lighter).
+function tagText(r: number, g: number, b: number): string {
+	return `color-mix(in srgb, rgb(${r}, ${g}, ${b}) 50%, var(--color-pageText))`;
 }
 
 function readNativeBg(el: HTMLElement): string {
@@ -69,7 +67,7 @@ function applyTagColors(el: HTMLElement) {
 		const [r, g, b] = rgb;
 		el.dataset.abtTagBg = `${r},${g},${b}`;
 		el.style.setProperty("background-color", `rgba(${r}, ${g}, ${b}, 0.15)`, "important");
-		el.style.setProperty("color", lighten(r, g, b, 0.3), "important");
+		el.style.setProperty("color", tagText(r, g, b), "important");
 	}
 }
 
@@ -91,7 +89,7 @@ function refreshTagColors(el: HTMLElement) {
 	}
 	el.dataset.abtTagBg = key;
 	el.style.setProperty("background-color", `rgba(${r}, ${g}, ${b}, 0.15)`, "important");
-	el.style.setProperty("color", lighten(r, g, b, 0.3), "important");
+	el.style.setProperty("color", tagText(r, g, b), "important");
 }
 
 function splitHash(el: HTMLElement) {

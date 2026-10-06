@@ -125,7 +125,7 @@
 	.count {
 		font-size: 10px;
 		font-variant-numeric: tabular-nums;
-		opacity: 0.65;
+		color: color-mix(in srgb, currentColor 65%, var(--color-pageText));
 	}
 
 	.trailing {

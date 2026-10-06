@@ -70,11 +70,9 @@
 
 	.cf__count {
 		font-variant-numeric: tabular-nums;
-		opacity: 0.8;
 	}
 
 	.cf__count.is-alert {
 		color: var(--color-warningText);
-		opacity: 1;
 	}
 </style>

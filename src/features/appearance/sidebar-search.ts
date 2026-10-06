@@ -22,22 +22,20 @@ const CSS = /* css */ `
 	}
 
 	[${BAR_ATTR}] .search-icon {
-		opacity: 0.4;
+		color: color-mix(in srgb, var(--color-sidebarItemText) 65%, transparent);
 		flex-shrink: 0;
 	}
 
 	[${BAR_ATTR}] .search-text {
 		font-size: 12px;
-		color: var(--color-sidebarItemText);
-		opacity: 0.4;
+		color: color-mix(in srgb, var(--color-sidebarItemText) 65%, transparent);
 		flex: 1;
 	}
 
 	[${BAR_ATTR}] .search-kbd {
 		font-size: 9px;
 		font-family: inherit;
-		color: var(--color-sidebarItemText);
-		opacity: 0.3;
+		color: color-mix(in srgb, var(--color-sidebarItemText) 60%, transparent);
 		border: 1px solid color-mix(in srgb, var(--color-sidebarItemText) 15%, transparent);
 		border-radius: 4px;
 		padding: 1px 5px;
