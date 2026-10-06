@@ -339,6 +339,12 @@ export const BUILTIN_CSS = `:root {
 		--color-chartQual8: oklch(from var(--ctp-mauve) l max(c, min(c * 1.5, 0.17)) h);
 		--color-chartQual9: oklch(from var(--ctp-rosewater) l max(c, min(c * 1.5, 0.17)) h);
 	}
+}
+
+/* A bank sync provider's "Configured" uses noticeTextDark, meant for text on solid notice pills;
+   here that's the page colour. Configured cards are the ones with a menu button. */
+[data-testid^="bank-sync-provider-"]:has(> div:first-child > button) > div:first-child > div:first-child > span {
+	color: var(--color-noticeTextLight) !important;
 }`;
 
 export function isCommunityTheme(value: string): boolean {
