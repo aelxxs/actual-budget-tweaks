@@ -30,7 +30,6 @@ import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
 import { dimReconciled } from "./readability/dim-reconciled";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
-import { notificationContrast } from "./readability/notification-contrast";
 import { reportCardBorders } from "./readability/report-card-borders";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
@@ -66,7 +65,6 @@ const readability = [
 	colorNegativeBalances,
 	colorTransactions,
 	dimReconciled,
-	notificationContrast,
 	showDailyAvailable,
 	highlightUncategorized,
 	tagStyling,
