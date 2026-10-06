@@ -98,7 +98,7 @@ export const sidebarSearch = defineSetting({
 	icon: "search",
 	context: {
 		key: "sidebar-search-enabled",
-		defaultValue: false,
+		defaultValue: true,
 	},
 	css: () => CSS,
 	init: () => {
