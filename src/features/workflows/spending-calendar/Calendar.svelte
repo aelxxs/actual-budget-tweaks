@@ -325,7 +325,7 @@
 		<div class="cal-header__right">
 			<button
 				type="button"
-				class="cal-nav"
+				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 				class:is-active={filtersOpen}
 				title="Filters"
 				aria-label="Filters"
@@ -347,7 +347,7 @@
 			</button>
 			<span class="cal-header__sep"></span>
 			<button
-				class="cal-nav"
+				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 				title="Previous month"
 				aria-label="Previous month"
 				onclick={() => shiftMonth(-1)}
@@ -363,9 +363,9 @@
 					stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg
 				>
 			</button>
-			<button class="cal-today" onclick={goToday} disabled={isAtCurrentMonth}>Today</button>
+			<button class="abt-btn abt-btn--sm" onclick={goToday} disabled={isAtCurrentMonth}>Today</button>
 			<button
-				class="cal-nav"
+				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 				title="Next month"
 				aria-label="Next month"
 				onclick={() => shiftMonth(1)}
@@ -464,31 +464,9 @@
 		gap: 6px;
 	}
 
-	.cal-nav {
-		width: 32px;
-		height: 32px;
-		border: none;
-		border-radius: var(--abt-radius-sm);
-		background: none;
+	.is-active {
+		background: var(--abt-fill-hover);
 		color: var(--color-pageText);
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		opacity: 0.6;
-		transition:
-			opacity 0.1s,
-			background 0.1s;
-	}
-
-	.cal-nav:hover:not(:disabled) {
-		opacity: 1;
-		background: var(--color-tableRowBackgroundHover);
-	}
-
-	.cal-nav.is-active {
-		opacity: 1;
-		background: var(--color-tableRowBackgroundHover);
 	}
 
 	.cal-header__sep {
@@ -518,25 +496,9 @@
 	}
 
 	.cal-filters__row:hover {
-		background: var(--color-tableRowBackgroundHover);
+		background: var(--abt-fill-hover);
 	}
 
-	.cal-today {
-		padding: 5px 14px;
-		font-size: 12px;
-		font-weight: 500;
-		font-family: inherit;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: var(--abt-radius-sm);
-		background: none;
-		color: var(--color-pageText);
-		cursor: pointer;
-		transition: background 0.1s;
-	}
-
-	.cal-today:hover:not(:disabled) {
-		background: var(--color-tableRowBackgroundHover);
-	}
 
 	.cal-grid {
 		flex: 1;
@@ -582,9 +544,4 @@
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 	}
 
-	.cal-nav:disabled,
-	.cal-today:disabled {
-		opacity: 0.2;
-		cursor: default;
-	}
 </style>

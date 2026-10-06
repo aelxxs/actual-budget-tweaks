@@ -126,7 +126,7 @@
 		<div class="picker__head">
 			<button
 				type="button"
-				class="picker__step"
+				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 				aria-label="Previous year"
 				onclick={() => pickerYear--}
 			>
@@ -144,7 +144,7 @@
 			<span class="picker__year">{pickerYear}</span>
 			<button
 				type="button"
-				class="picker__step"
+				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 				aria-label="Next year"
 				disabled={isDisabled(pickerYear + 1, 0)}
 				onclick={() => pickerYear++}
@@ -214,9 +214,10 @@
 		cursor: pointer;
 		transition: background 0.1s;
 	}
+	/* The same hover as ABT's ghost buttons (the panel's close button), not a table row's. */
 	.title:hover,
 	.title[aria-expanded="true"] {
-		background: var(--color-tableRowBackgroundHover);
+		background: var(--abt-fill-hover);
 	}
 	.title__chevron {
 		opacity: 0.45;
@@ -247,30 +248,6 @@
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 	}
-	.picker__step {
-		width: 26px;
-		height: 26px;
-		border: none;
-		border-radius: var(--abt-radius-sm);
-		background: none;
-		color: var(--color-pageText);
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		opacity: 0.6;
-		transition:
-			opacity 0.1s,
-			background 0.1s;
-	}
-	.picker__step:hover:not(:disabled) {
-		opacity: 1;
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
-	}
-	.picker__step:disabled {
-		opacity: 0.2;
-		cursor: default;
-	}
 	.picker__months {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
@@ -289,7 +266,7 @@
 	}
 	/* Row hover is too close to the popover's own background to read here. */
 	.picker__month:hover:not(:disabled):not(.is-active) {
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		background: var(--abt-fill-hover);
 	}
 	.picker__month.is-current:not(.is-active) {
 		box-shadow: inset 0 0 0 1px var(--color-tableBorder);

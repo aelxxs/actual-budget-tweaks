@@ -424,7 +424,7 @@
 		}
 
 		.section-toggle:hover {
-			background: var(--color-tableRowBackgroundHover);
+			background: var(--abt-fill-hover);
 		}
 
 		.section-header {
@@ -653,7 +653,7 @@
 		}
 
 		.bug-cancel:hover {
-			background: var(--color-tableRowBackgroundHover);
+			background: var(--abt-fill-hover);
 		}
 
 		.bug-submit {
