@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
+	import { notify } from "@lib/utilities/actual-api";
 	import { bulkEdit } from "@lib/utilities/bulk-edit";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
@@ -54,8 +55,6 @@
 	let menu = $state<HTMLElement | null>(null);
 	let menuOpen = $state(false);
 	let busy = $state(false);
-	let toast = $state<ActionResult | null>(null);
-	let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
 	let templates = $state(false);
 	onMount(() => {
@@ -164,17 +163,16 @@
 	}
 
 	function showToast(result: ActionResult) {
-		toast = result;
-		clearTimeout(toastTimer);
-		// Longer when there are details to read.
-		toastTimer = setTimeout(() => (toast = null), result.detail ? 12000 : 6000);
-	}
-
-	async function undo() {
-		const steps = toast?.undoSteps ?? 0;
-		toast = null;
-		clearTimeout(toastTimer);
-		await undoSteps(steps);
+		void notify(
+			// Longer when there are details to read.
+			{
+				type: result.detail ? "warning" : "message",
+				message: result.message,
+				pre: result.detail,
+				timeout: result.detail ? 12000 : 6000,
+			},
+			result.undoSteps ? { title: "Undo", action: () => undoSteps(result.undoSteps) } : undefined,
+		);
 	}
 
 	function bulk(action: BulkAction) {
@@ -353,20 +351,6 @@
 	</div>
 {/if}
 
-{#if toast}
-	<div class="ac-toast abt-popover abt-stack abt-gap-2" role="status" use:portal>
-		<div class="abt-cluster abt-gap-4">
-			<span>{toast.message}</span>
-			{#if toast.undoSteps}
-				<button type="button" class="abt-btn abt-btn--sm abt-tone-accent" onclick={undo}
-					>Undo</button
-				>
-			{/if}
-		</div>
-		{#if toast.detail}<pre class="ac-toast__detail">{toast.detail}</pre>{/if}
-	</div>
-{/if}
-
 <style>
 	/* The single-month card: a tinted surface whose whole area runs the suggestion. */
 	.ac {
@@ -459,7 +443,7 @@
 		font-size: 12px;
 		color: var(--color-pageTextSubdued);
 		white-space: nowrap;
-			overflow: hidden;
+		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
@@ -528,26 +512,5 @@
 
 	.ac-menu__pills {
 		margin-left: auto;
-	}
-
-	.ac-toast__detail {
-		max-width: 520px;
-		max-height: 160px;
-		margin: 0;
-		overflow: auto;
-		font: inherit;
-		font-size: var(--abt-text-sm);
-		white-space: pre-wrap;
-		color: var(--abt-muted);
-	}
-
-	.ac-toast {
-		position: fixed;
-		left: 50%;
-		bottom: var(--abt-space-6);
-		z-index: 10000;
-		transform: translateX(-50%);
-		padding: var(--abt-space-3) var(--abt-space-3) var(--abt-space-3) var(--abt-space-5);
-		font-size: 13px;
 	}
 </style>

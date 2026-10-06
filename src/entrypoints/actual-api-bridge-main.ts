@@ -88,6 +88,35 @@ export default defineUnlistedScript(async () => {
 		);
 	});
 
+	// Functions can't cross the bridge, so the toast's button and close report back by event.
+	document.addEventListener("abt:api:notify", (e) => {
+		const { id, key, notification, button } = parseDetail(e);
+		if (!id || !key || !notification || !accept(id)) return;
+		const report = (kind) =>
+			document.dispatchEvent(
+				new CustomEvent("abt:api:notify-event", { detail: JSON.stringify({ key, kind }) }),
+			);
+
+		waitForActions(
+			async () => {
+				try {
+					await window.__actionsForMenu.addNotification({
+						notification: {
+							...notification,
+							id: key,
+							onClose: () => report("close"),
+							...(button && { button: { title: button, action: () => report("press") } }),
+						},
+					});
+					respond(id, null, null);
+				} catch (err) {
+					respond(id, null, String(err));
+				}
+			},
+			() => respond(id, null, "Actual actions unavailable"),
+		);
+	});
+
 	// Actual's useLocalPref is usehooks-ts' useLocalStorage, which re-reads on this event.
 	document.addEventListener("abt:api:local-pref", (e) => {
 		const { id, name, value } = parseDetail(e);

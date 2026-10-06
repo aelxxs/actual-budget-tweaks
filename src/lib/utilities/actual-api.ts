@@ -118,6 +118,47 @@ export async function dispatch<T = unknown>(action: string, args?: unknown): Pro
 	return request("abt:api:dispatch", { action, args });
 }
 
+export interface Toast {
+	type?: "message" | "error" | "warning";
+	title?: string;
+	message: string;
+	/** Preformatted details shown under the message. */
+	pre?: string;
+	sticky?: boolean;
+	/** Milliseconds; Actual's default is 6500. */
+	timeout?: number;
+}
+
+const toastActions = new Map<string, () => unknown>();
+
+function onToastEvent(e: Event) {
+	const { key, kind } = JSON.parse((e as CustomEvent).detail);
+	const action = toastActions.get(key);
+	toastActions.delete(key);
+	if (kind === "press") action?.();
+}
+
+/**
+ * Show one of Actual's own notification toasts, optionally with a button.
+ *
+ * @example
+ * await notify({ message: "Budget copied" }, { title: "Undo", action: () => send("undo") });
+ */
+export async function notify(
+	toast: Toast,
+	button?: { title: string; action: () => unknown },
+): Promise<void> {
+	await waitForBudget();
+	const key = `abt-toast-${++reqId}-${Date.now()}`;
+	if (button) {
+		if (!toastActions.size) document.addEventListener("abt:api:notify-event", onToastEvent);
+		toastActions.set(key, button.action);
+		// Actual only reports manual closes, so forget actions once the toast times out.
+		if (!toast.sticky) setTimeout(() => toastActions.delete(key), (toast.timeout ?? 6500) + 1000);
+	}
+	await request("abt:api:notify", { key, notification: toast, button: button?.title });
+}
+
 /**
  * Set one of Actual's per-budget local prefs so its UI follows live.
  *
