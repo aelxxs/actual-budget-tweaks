@@ -1,8 +1,7 @@
 /* Plain, unscoped CSS imported by Sidebar.svelte. Svelte only scopes styles
    declared inline in a component's own <style> block, so every selector
    here is manually prefixed with `.sidebar` to keep it from leaking onto
-   Actual's own page. Keep that prefix on any new rule. Theme is real here
-   (`.sidebar.light` toggled from Actual's actual `data-theme`). */
+   Actual's own page. Keep that prefix on any new rule. */
 
 .sidebar,
 .sidebar *,
@@ -19,12 +18,7 @@
 }
 
 .sidebar {
-	/* Only background and accent are trusted theme tokens (hue isn't
-	   derivable from lightness). Everything else derives from
-	   --sb-computed-fg, which Sidebar.svelte sets at runtime via WCAG
-	   luminance (contrast.ts) rather than individual theme tokens — some
-	   of those are mismapped in this extension's own Catppuccin theme.
-	   The value below is just the pre-JS fallback. */
+	/* Only tokens Actual's own sidebar uses: every theme is checked against it. */
 	--sb-computed-fg: var(--color-sidebarItemText);
 	--sb-bg: var(--color-sidebarBackground);
 	--sb-canvas: color-mix(in srgb, var(--sb-computed-fg) 5%, var(--sb-bg));
@@ -48,17 +42,12 @@
 	--sb-accent-subtle2: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 8%, transparent);
 	--sb-accent-faint: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, transparent);
 	--sb-accent-a60: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 60%, transparent);
-	/* Fixed (not theme-derived) — see contrast.ts's applyComputedForeground()
-	   for why: status meaning has to survive any theme, including this
-	   extension's own, which we found can silently mismap these. These
-	   dark-mode values are just the pre-JS fallback; JS sets the real
-	   dark/light pair as an inline style once mounted. */
-	--sb-success: #3fb950;
+	--sb-success: var(--color-sidebarItemBackgroundPositive);
 	--sb-success-muted: color-mix(in srgb, var(--sb-success) 18%, transparent);
-	--sb-danger: #f85149;
+	--sb-danger: var(--color-sidebarItemBackgroundFailed);
 	--sb-danger-muted: color-mix(in srgb, var(--sb-danger) 12%, transparent);
 	--sb-danger-subtle: color-mix(in srgb, var(--sb-danger) 10%, transparent);
-	--sb-attention: #d29922;
+	--sb-attention: var(--color-sidebarItemBackgroundPending);
 	--sb-attention-muted: color-mix(in srgb, var(--sb-attention) 18%, transparent);
 	--sb-hover-0: color-mix(in srgb, var(--sb-computed-fg) 6%, transparent);
 	--sb-hover-1: color-mix(in srgb, var(--sb-computed-fg) 9%, transparent);
