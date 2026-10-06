@@ -877,13 +877,13 @@ export const resizableTransactionColumns = defineSetting({
 			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}:hover::before {
 				width: 3px;
 				height: 70%;
-				background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 70%, transparent);
+				background: color-mix(in srgb, var(--abt-accent) 70%, transparent);
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}[data-dragging="true"]::before {
 				width: 3px;
 				height: 100%;
-				background: var(--color-sidebarItemAccentSelected);
-				box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-sidebarItemAccentSelected) 22%, transparent);
+				background: var(--abt-accent);
+				box-shadow: 0 0 0 3px color-mix(in srgb, var(--abt-accent) 22%, transparent);
 				transition: none;
 			}
 		`,

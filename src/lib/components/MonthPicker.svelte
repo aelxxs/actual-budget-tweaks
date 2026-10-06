@@ -272,11 +272,11 @@
 		box-shadow: inset 0 0 0 1px var(--color-tableBorder);
 	}
 	.picker__month.is-in-range {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 10%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 10%, transparent);
 	}
 	.picker__month.is-active {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 20%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
+		background: color-mix(in srgb, var(--abt-accent) 20%, transparent);
+		color: var(--abt-accent);
 		font-weight: 600;
 	}
 	.picker__month.is-muted {
@@ -346,7 +346,7 @@
 	}
 	.title.is-compact:focus-visible {
 		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 55%, transparent);
+			color-mix(in srgb, var(--abt-accent) 55%, transparent);
 	}
 	.title__short {
 		display: none;
@@ -386,13 +386,13 @@
 	/* Every shown month reads the same: a quiet tint with accent text. */
 	.picker.is-compact .picker__month.is-active,
 	.picker.is-compact .picker__month.is-in-range {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 14%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
+		background: color-mix(in srgb, var(--abt-accent) 14%, transparent);
+		color: var(--abt-accent);
 		font-weight: 650;
 	}
 	.picker.is-compact .picker__month.is-active:hover,
 	.picker.is-compact .picker__month.is-in-range:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 24%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 24%, transparent);
 	}
 	.picker.is-compact .picker__month.is-current:not(.is-active):not(.is-in-range) {
 		box-shadow: none;

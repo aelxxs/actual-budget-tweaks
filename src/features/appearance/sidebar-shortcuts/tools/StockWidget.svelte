@@ -122,10 +122,10 @@
 	}
 
 	.stk :global(.stk__pct.is-pos) {
-		color: var(--color-noticeTextLight);
+		color: var(--color-sidebarTextPositive, var(--color-noticeTextLight));
 	}
 	.stk :global(.stk__pct.is-neg) {
-		color: var(--color-errorText);
+		color: var(--color-sidebarTextFailed, var(--color-errorText));
 	}
 
 	.stk__dots,

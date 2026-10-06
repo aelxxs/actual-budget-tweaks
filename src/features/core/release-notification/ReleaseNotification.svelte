@@ -89,8 +89,8 @@
 		height: 3px;
 		background: linear-gradient(
 			90deg,
-			var(--color-sidebarItemAccentSelected),
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 40%, transparent)
+			var(--abt-accent),
+			color-mix(in srgb, var(--abt-accent) 40%, transparent)
 		);
 	}
 
@@ -158,7 +158,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 		margin: 12px 0 6px;
 	}
 
@@ -191,7 +191,7 @@
 		border-radius: 50%;
 		background: color-mix(
 			in srgb,
-			var(--color-sidebarItemAccentSelected) 70%,
+			var(--abt-accent) 70%,
 			var(--color-pageTextSubdued)
 		);
 	}
@@ -223,7 +223,7 @@
 	.toast__release-link {
 		font-size: 11px;
 		font-weight: 600;
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 		text-decoration: none;
 		white-space: nowrap;
 		flex-shrink: 0;
@@ -254,10 +254,10 @@
 	}
 
 	.toast__checkbox:checked {
-		border-color: var(--color-checkboxBorderSelected, var(--color-sidebarItemAccentSelected));
+		border-color: var(--color-checkboxBorderSelected, var(--abt-accent));
 		background-color: var(
 			--color-checkboxBackgroundSelected,
-			var(--color-sidebarItemAccentSelected)
+			var(--abt-accent)
 		);
 	}
 
@@ -266,7 +266,7 @@
 		width: 8px;
 		height: 8px;
 		content: " ";
-		background: var(--color-checkboxBackgroundSelected, var(--color-sidebarItemAccentSelected))
+		background: var(--color-checkboxBackgroundSelected, var(--abt-accent))
 			url('data:image/svg+xml; utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="white" d="M0 11l2-2 5 5L18 3l2 2L7 18z"/></svg>')
 			8px 8px;
 	}

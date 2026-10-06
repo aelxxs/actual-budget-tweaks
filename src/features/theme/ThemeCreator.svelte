@@ -243,9 +243,9 @@
 		text-transform: uppercase;
 		padding: 8px 12px;
 		border-radius: var(--abt-radius-sm);
-		border: 1px dashed color-mix(in srgb, var(--color-sidebarItemAccentSelected) 40%, transparent);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
+		border: 1px dashed color-mix(in srgb, var(--abt-accent) 40%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 5%, transparent);
+		color: var(--abt-accent);
 		cursor: pointer;
 		transition:
 			border-color 0.15s,
@@ -253,8 +253,8 @@
 	}
 
 	.creator__randomize:hover {
-		border-color: var(--color-sidebarItemAccentSelected);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+		border-color: var(--abt-accent);
+		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
 	}
 
 	.creator__rows {

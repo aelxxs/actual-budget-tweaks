@@ -446,8 +446,8 @@
 		color: var(--color-pageText);
 	}
 	.tab.active {
-		color: var(--color-sidebarItemAccentSelected);
-		border-bottom-color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
+		border-bottom-color: var(--abt-accent);
 	}
 
 	.tab-close {
@@ -515,7 +515,7 @@
 	}
 	.eg-tab.active {
 		opacity: 1;
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 15%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 15%, transparent);
 	}
 
 	.eg-grid-wrap {
@@ -586,11 +586,11 @@
 
 	.logo-preview.loaded {
 		cursor: pointer;
-		border-color: var(--color-sidebarItemAccentSelected);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, transparent);
+		border-color: var(--abt-accent);
+		background: color-mix(in srgb, var(--abt-accent) 6%, transparent);
 	}
 	.logo-preview.loaded:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
 	}
 	.logo-preview img {
 		width: 48px;
@@ -600,7 +600,7 @@
 	}
 	.logo-preview__hint {
 		font-size: 10px;
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 		font-weight: 500;
 	}
 	.logo-preview__err {
@@ -627,8 +627,8 @@
 
 	.dropzone:hover,
 	.dropzone.over {
-		border-color: var(--color-sidebarItemAccentSelected);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
+		border-color: var(--abt-accent);
+		background: color-mix(in srgb, var(--abt-accent) 5%, transparent);
 	}
 	.dropzone__label {
 		font-size: 11px;
@@ -675,9 +675,9 @@
 	}
 
 	.inp:focus {
-		border-color: var(--color-sidebarItemAccentSelected);
+		border-color: var(--abt-accent);
 		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+			color-mix(in srgb, var(--abt-accent) 12%, transparent);
 	}
 	.inp::placeholder {
 		color: var(--color-pageTextSubdued);

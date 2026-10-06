@@ -725,7 +725,7 @@
 .sidebar .budget-menu-divider {
 	height: 1px;
 	margin: 4px 6px;
-	background: var(--color-tableBorder);
+	background: var(--sb-border);
 }
 .sidebar .budget-exit {
 	display: flex;

@@ -772,7 +772,7 @@
 	}
 
 	.auto-switch__pill.is-on {
-		background: var(--color-sidebarItemAccentSelected);
+		background: var(--abt-accent);
 	}
 
 	.auto-switch__knob {
@@ -816,7 +816,7 @@
 	}
 
 	.auto-switch__mode.is-active {
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 	}
 
 	.auto-switch__mode svg {
@@ -852,9 +852,9 @@
 		text-transform: uppercase;
 		padding: 7px 12px;
 		border-radius: var(--abt-radius-sm);
-		border: 1px dashed color-mix(in srgb, var(--color-sidebarItemAccentSelected) 50%, transparent);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 5%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
+		border: 1px dashed color-mix(in srgb, var(--abt-accent) 50%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 5%, transparent);
+		color: var(--abt-accent);
 		cursor: pointer;
 		transition:
 			background 0.15s,
@@ -862,8 +862,8 @@
 	}
 
 	.create-theme-btn:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
-		border-color: var(--color-sidebarItemAccentSelected);
+		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		border-color: var(--abt-accent);
 	}
 
 	.create-theme-btn svg {
@@ -975,15 +975,15 @@
 	}
 
 	.card:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 60%, transparent);
+		border-color: color-mix(in srgb, var(--abt-accent) 60%, transparent);
 		box-shadow: 0 2px 8px
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 15%, transparent);
+			color-mix(in srgb, var(--abt-accent) 15%, transparent);
 	}
 
 	.card--active {
-		border-color: var(--color-sidebarItemAccentSelected);
+		border-color: var(--abt-accent);
 		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 25%, transparent);
+			color-mix(in srgb, var(--abt-accent) 25%, transparent);
 	}
 
 	.card--loading {
@@ -1038,21 +1038,21 @@
 	/* Mode badges use fixed hues so they're readable regardless of active theme */
 	.badge--dark {
 		background: rgba(100, 80, 180, 0.15);
-		color: #7c68d4;
+		color: color-mix(in srgb, rgb(100, 80, 180) 60%, var(--color-pageText));
 		border-color: rgba(100, 80, 180, 0.25);
 	}
 
 	.badge--light {
 		background: rgba(180, 130, 30, 0.15);
-		color: #b08020;
+		color: color-mix(in srgb, rgb(180, 130, 30) 55%, var(--color-pageText));
 		border-color: rgba(180, 130, 30, 0.25);
 	}
 
 	/* Creator badge uses the theme's own accent so it stays on-brand */
 	.badge--creator {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
-		border-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 30%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		color: var(--abt-accent);
+		border-color: color-mix(in srgb, var(--abt-accent) 30%, transparent);
 	}
 
 	/* ── Card details ─────────────────────────────────────────────────── */
@@ -1081,7 +1081,7 @@
 		width: 17px;
 		height: 17px;
 		border-radius: 50%;
-		background: var(--color-sidebarItemAccentSelected);
+		background: var(--abt-accent);
 		color: var(--color-pageBackground);
 		font-size: 10px;
 		display: flex;
@@ -1101,9 +1101,9 @@
 		padding: 5px 10px;
 		border: none;
 		border-top: 1px solid
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 20%, transparent);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
+			color-mix(in srgb, var(--abt-accent) 20%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 6%, transparent);
+		color: var(--abt-accent);
 		font-family: inherit;
 		font-size: 9px;
 		letter-spacing: 0.04em;
@@ -1113,7 +1113,7 @@
 	}
 
 	.card__edits-toggle:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
 	}
 
 	.card__edits-chevron {
@@ -1130,8 +1130,8 @@
 		margin: 0;
 		padding: 4px 10px 6px;
 		border-top: 1px solid
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 15%, transparent);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 4%, transparent);
+			color-mix(in srgb, var(--abt-accent) 15%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 4%, transparent);
 		max-height: 88px;
 		overflow-y: auto;
 		scrollbar-width: thin;
@@ -1148,7 +1148,7 @@
 
 	.card__edits-list li::before {
 		content: "·  ";
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 	}
 
 	.card__spinner {
@@ -1158,8 +1158,8 @@
 		width: 15px;
 		height: 15px;
 		border-radius: 50%;
-		border: 2px solid color-mix(in srgb, var(--color-sidebarItemAccentSelected) 30%, transparent);
-		border-top-color: var(--color-sidebarItemAccentSelected);
+		border: 2px solid color-mix(in srgb, var(--abt-accent) 30%, transparent);
+		border-top-color: var(--abt-accent);
 		animation: spin 0.6s linear infinite;
 	}
 
@@ -1194,8 +1194,8 @@
 	}
 
 	.card__edit-btn:hover {
-		color: var(--color-sidebarItemAccentSelected);
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
+		color: var(--abt-accent);
+		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
 	}
 
 	.card__edit-btn svg {

@@ -149,7 +149,7 @@
 	}
 
 	.bd__dot.is-budgeted {
-		background: var(--color-sidebarItemAccentSelected);
+		background: var(--abt-accent);
 	}
 
 	.bd__dot.is-overspent {

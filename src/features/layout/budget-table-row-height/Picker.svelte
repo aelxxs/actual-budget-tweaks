@@ -48,7 +48,7 @@
 		flex-shrink: 0;
 		background: color-mix(
 			in srgb,
-			var(--color-sidebarItemAccentSelected) 18%,
+			var(--abt-accent) 18%,
 			var(--color-tableHeaderBackground)
 		);
 		border-bottom: 1px solid var(--color-tableBorder);
@@ -87,6 +87,6 @@
 		height: 2.5px;
 		border-radius: 2px;
 		flex-shrink: 0;
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 45%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 45%, transparent);
 	}
 </style>

@@ -391,9 +391,9 @@
 			font-size: 0.7rem;
 			font-weight: 700;
 			letter-spacing: 0.02em;
-			color: var(--color-sidebarItemAccentSelected);
-			background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, transparent);
-			border: 1px solid color-mix(in srgb, var(--color-sidebarItemAccentSelected) 30%, transparent);
+			color: var(--abt-accent);
+			background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+			border: 1px solid color-mix(in srgb, var(--abt-accent) 30%, transparent);
 			border-radius: 4px;
 			padding: 1px 6px;
 			margin-left: 2px;

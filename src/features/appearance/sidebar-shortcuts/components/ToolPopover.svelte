@@ -49,6 +49,11 @@
 		border-radius: var(--abt-radius);
 		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 		overflow: hidden;
+		/* Sidebar-coloured, so the tools' page colours follow the sidebar's (a theme may differ). */
+		--color-pageText: var(--color-sidebarItemText);
+		--color-pageTextSubdued: var(--color-sidebarTextSubdued);
+		--color-tableBorder: color-mix(in srgb, var(--color-sidebarItemText) 12%, transparent);
+		--color-cardBackground: color-mix(in srgb, var(--color-sidebarItemText) 6%, var(--color-sidebarBackground));
 	}
 
 	.popover__hd {

@@ -26,7 +26,7 @@
 		items.push({
 			label: "Budgeted",
 			value: budgeted,
-			color: "var(--color-sidebarItemAccentSelected)",
+			color: "var(--abt-accent)",
 		});
 		items.push({ label: "Overspent", value: overspent, color: "var(--color-errorText)" });
 		items.push({ label: "For next month", value: forNext, color: "var(--color-warningText)" });
@@ -125,7 +125,7 @@
 	}
 
 	.flow__seg--budgeted {
-		background: var(--color-sidebarItemAccentSelected);
+		background: var(--abt-accent);
 	}
 
 	.flow__seg--overspent {

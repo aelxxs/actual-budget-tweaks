@@ -60,13 +60,13 @@
 	}
 
 	.bpp-option:hover:not(.is-active) {
-		border-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 40%, transparent);
+		border-color: color-mix(in srgb, var(--abt-accent) 40%, transparent);
 	}
 
 	.bpp-option.is-active {
-		border-color: var(--color-sidebarItemAccentSelected);
+		border-color: var(--abt-accent);
 		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 20%, transparent);
+			color-mix(in srgb, var(--abt-accent) 20%, transparent);
 	}
 
 	.bpp-swatch {
@@ -90,12 +90,12 @@
 	}
 
 	.bpp-option.is-active .bpp-label {
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 		background: color-mix(
 			in srgb,
-			var(--color-sidebarItemAccentSelected) 6%,
+			var(--abt-accent) 6%,
 			var(--color-cardBackground)
 		);
-		border-top-color: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 30%, transparent);
+		border-top-color: color-mix(in srgb, var(--abt-accent) 30%, transparent);
 	}
 </style>

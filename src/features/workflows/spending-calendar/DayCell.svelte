@@ -161,23 +161,23 @@
 
 	.cal-cell.is-clickable:hover,
 	.cal-cell.is-today {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, var(--cell-bg));
+		background: color-mix(in srgb, var(--abt-accent) 6%, var(--cell-bg));
 	}
 
 	.cal-cell.is-selected,
 	.cal-cell.is-selected:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 12%, var(--cell-bg));
-		box-shadow: inset 0 0 0 1.5px var(--color-sidebarItemAccentSelected);
+		background: color-mix(in srgb, var(--abt-accent) 12%, var(--cell-bg));
+		box-shadow: inset 0 0 0 1.5px var(--abt-accent);
 	}
 
 	.cal-cell:focus-visible {
 		outline: none;
 		box-shadow: inset 0 0 0 1.5px
-			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 60%, transparent);
+			color-mix(in srgb, var(--abt-accent) 60%, transparent);
 	}
 
 	.cal-cell.is-selected .cal-cell__date:not(.is-today) {
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 		font-weight: 700;
 		opacity: 1;
 	}
@@ -221,8 +221,8 @@
 	}
 
 	.cal-cell__date.is-today {
-		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 25%, transparent);
-		color: var(--color-sidebarItemAccentSelected);
+		background: color-mix(in srgb, var(--abt-accent) 25%, transparent);
+		color: var(--abt-accent);
 		width: 22px;
 		height: 22px;
 		border-radius: 50%;
@@ -232,7 +232,7 @@
 		font-size: 11px;
 		font-weight: 700;
 		opacity: 1;
-		color: color-contrast(var(--color-sidebarItemAccentSelected)) !important;
+		color: color-contrast(var(--abt-accent)) !important;
 	}
 
 	.cal-cell__total {

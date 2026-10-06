@@ -58,7 +58,7 @@
 
 	.editor__icon {
 		font-size: 18px;
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 		line-height: 1;
 	}
 
@@ -90,7 +90,7 @@
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-buttonNormalBackground);
-		color: var(--color-sidebarItemAccentSelected);
+		color: var(--abt-accent);
 		cursor: pointer;
 		transition:
 			border-color 0.15s,
@@ -98,7 +98,7 @@
 	}
 
 	.editor__export:hover {
-		border-color: var(--color-sidebarItemAccentSelected);
+		border-color: var(--abt-accent);
 	}
 
 	.editor__reset {

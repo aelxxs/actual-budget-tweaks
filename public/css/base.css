@@ -3,7 +3,7 @@
 
 	/* Side panel surfaces. Cards match the budget's current-month column, the same kind of surface
 	   on the same page background; tints mix in pageText (not white) to stay visible in any theme. */
-	--abt-panel-accent: var(--color-sidebarItemAccentSelected);
+	--abt-panel-accent: var(--abt-accent);
 	--abt-panel-accent-secondary: var(--color-pageTextLink);
 	--abt-panel-accent-muted: color-mix(in srgb, var(--abt-panel-accent) 10%, transparent);
 	/* Side panel header, matched by page headers beside it (border included). */
