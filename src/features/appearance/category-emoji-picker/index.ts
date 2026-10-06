@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
-import { send } from "@lib/utilities/actual-api";
+import { notify, send } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, setValue } from "@lib/utilities/store";
@@ -113,6 +113,11 @@ async function updateCategoryName(catId: string, newName: string) {
 		await send("category-update", { id: catId, name: newName });
 	} catch (err) {
 		console.warn("[ABT Emoji] Failed to update category:", err);
+		void notify({
+			type: "error",
+			message: "Couldn't update the category's emoji",
+			pre: String(err),
+		});
 	}
 }
 

@@ -3,7 +3,7 @@ import { sheetsInMutations } from "@features/readability/category-progress/cells
 import { defineSetting } from "@features/types";
 import { icon } from "@lib/icons";
 import type { Schedule } from "@lib/types/actual-schema";
-import { query, send } from "@lib/utilities/actual-api";
+import { notify, query, send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
 import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
 import { createDebouncedObserver } from "@lib/utilities/dom";
@@ -461,6 +461,7 @@ async function handleTrigger(
 			await doWork();
 		} catch (e) {
 			console.warn("[ABT] template plan apply failed", e);
+			void notify({ type: "error", message: "Couldn't apply templates", pre: String(e) });
 			templatePlanState.breakdownLoading = false;
 			return;
 		}

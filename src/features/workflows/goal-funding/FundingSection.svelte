@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { send } from "@lib/utilities/actual-api";
+	import { notify, send } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { formatMonthLabel, sheetToMonthKey } from "@lib/utilities/template-plan/actual-data";
 	import { loadGoalState, type GoalState } from "./goal-state";
@@ -42,9 +42,19 @@
 			});
 			assigned = amount;
 			info = await load();
+			// No amount: toasts sit outside privacy mode, and the section already shows it.
+			void notify({ message: "Assigned to the goal" }, { title: "Undo", action: undoAssign });
+		} catch (err) {
+			void notify({ type: "error", message: "Couldn't assign to the goal", pre: String(err) });
 		} finally {
 			assigning = false;
 		}
+	}
+
+	async function undoAssign() {
+		await send("undo");
+		assigned = null;
+		info = await load();
 	}
 </script>
 
