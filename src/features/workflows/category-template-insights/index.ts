@@ -57,7 +57,7 @@ const CSS = `
 export const categoryTemplateInsights = defineSetting({
 	type: "checkbox",
 	label: "Category Template Insights",
-	description: "Progress bars showing how funded each category's #template is.",
+	description: "Progress bars showing how funded each category's template is.",
 	icon: "interest",
 	context: {
 		key: "actual-category-template-insights",

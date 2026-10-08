@@ -66,7 +66,7 @@
 		/>
 
 		{#if !data.tiers || data.tiers.length === 0}
-			<Callout tone="positive">No templates found.</Callout>
+			<Callout tone="positive">No categories have a budget template.</Callout>
 		{:else if data.watermark == null}
 			<Callout tone="positive">
 				All {data.tiers.length} tier{data.tiers.length === 1 ? "" : "s"} funded by the overwrite plan.
@@ -104,9 +104,7 @@
 		</Callout>
 	</Section>
 
-	{#if !data.tiers || data.tiers.length === 0}
-		<div class="abt-tab-empty">No #template lines detected in category notes.</div>
-	{:else}
+	{#if data.tiers && data.tiers.length > 0}
 		{#each data.tiers as tier (priorityKey(tier.priority))}
 			{@const badge = statusBadge(tier.status)}
 			<Section
