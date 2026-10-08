@@ -54,12 +54,12 @@
 	}
 
 	.op-option:hover:not(.is-active) {
-		border-color: color-mix(in srgb, var(--abt-accent) 40%, transparent);
+		border-color: var(--abt-accent-3);
 	}
 
 	.op-option.is-active {
 		border-color: var(--abt-accent);
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--abt-accent) 20%, transparent);
+		box-shadow: 0 0 0 2px var(--abt-accent-2);
 	}
 
 	.op-preview {
@@ -73,7 +73,7 @@
 	}
 
 	.op-option.is-active .op-preview {
-		border-color: color-mix(in srgb, var(--abt-accent) 40%, transparent);
+		border-color: var(--abt-accent-3);
 	}
 
 	.op-label {

@@ -419,7 +419,7 @@
 		display: flex;
 		align-items: center;
 		padding: 0 4px;
-		border-bottom: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-bottom: 1px solid var(--abt-ink-2);
 		flex-shrink: 0;
 	}
 
@@ -470,7 +470,7 @@
 	}
 
 	.tab-close:hover {
-		background: color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		background: var(--abt-ink-2);
 		color: var(--color-pageText);
 	}
 
@@ -489,7 +489,7 @@
 		display: flex;
 		gap: 1px;
 		padding-bottom: 4px;
-		border-bottom: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-bottom: 1px solid var(--abt-ink-2);
 	}
 
 	.eg-tab {
@@ -511,11 +511,11 @@
 
 	.eg-tab:hover {
 		opacity: 0.8;
-		background: color-mix(in srgb, var(--color-pageText) 6%, transparent);
+		background: var(--abt-ink-2);
 	}
 	.eg-tab.active {
 		opacity: 1;
-		background: color-mix(in srgb, var(--abt-accent) 15%, transparent);
+		background: var(--abt-accent-2);
 	}
 
 	.eg-grid-wrap {
@@ -562,7 +562,7 @@
 	}
 
 	.eg-btn:hover {
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		background: var(--abt-ink-3);
 	}
 
 	/* ── Logo ── */
@@ -575,7 +575,7 @@
 		padding: 12px;
 		border-radius: 8px;
 		border: 1px solid var(--color-tableBorder);
-		background: color-mix(in srgb, var(--color-pageText) 3%, transparent);
+		background: var(--abt-ink-1);
 		cursor: default;
 		min-height: 80px;
 		transition:
@@ -587,10 +587,10 @@
 	.logo-preview.loaded {
 		cursor: pointer;
 		border-color: var(--abt-accent);
-		background: color-mix(in srgb, var(--abt-accent) 6%, transparent);
+		background: var(--abt-accent-1);
 	}
 	.logo-preview.loaded:hover {
-		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		background: var(--abt-accent-2);
 	}
 	.logo-preview img {
 		width: 48px;
@@ -628,7 +628,7 @@
 	.dropzone:hover,
 	.dropzone.over {
 		border-color: var(--abt-accent);
-		background: color-mix(in srgb, var(--abt-accent) 5%, transparent);
+		background: var(--abt-accent-1);
 	}
 	.dropzone__label {
 		font-size: 11px;
@@ -649,7 +649,7 @@
 	/* ── Footer ── */
 	.footer {
 		padding: 6px 10px 8px;
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-top: 1px solid var(--abt-ink-2);
 	}
 
 	/* ── Shared ── */
@@ -668,7 +668,7 @@
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius-sm);
-		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
+		background: var(--abt-ink-1);
 		color: var(--color-pageText);
 		outline: none;
 		box-sizing: border-box;
@@ -676,7 +676,7 @@
 
 	.inp:focus {
 		border-color: var(--abt-accent);
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		box-shadow: 0 0 0 2px var(--abt-accent-2);
 	}
 	.inp::placeholder {
 		color: var(--color-pageTextSubdued);

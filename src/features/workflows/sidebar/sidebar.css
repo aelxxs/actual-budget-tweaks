@@ -11,70 +11,24 @@
 }
 
 /* Portal root for fixed-position overlays — see portal.ts. Carries the
-   `.sidebar` class so the --sb-* tokens below still resolve; `display:
+   `.sidebar` class so the sidebar's tokens still resolve; `display:
    contents` strips its own box so it can't clip its children. */
 .sidebar.sb-portal-root {
 	display: contents;
 }
 
 .sidebar {
-	/* Only tokens Actual's own sidebar uses: every theme is checked against it. */
-	--sb-computed-fg: var(--color-sidebarItemText);
+	/* Sidebar-only colours; tints come from ui.css, which re-derives them from the sidebar's ink. */
 	--sb-bg: var(--color-sidebarBackground);
-	--sb-canvas: color-mix(in srgb, var(--sb-computed-fg) 5%, var(--sb-bg));
-	--sb-inset: color-mix(in srgb, var(--sb-computed-fg) 5%, var(--sb-bg));
-	--sb-surface: color-mix(in srgb, var(--sb-computed-fg) 6%, var(--sb-bg));
-	--sb-surface-hover: color-mix(in srgb, var(--sb-computed-fg) 10%, var(--sb-bg));
-	--sb-neutral-muted: color-mix(in srgb, var(--sb-computed-fg) 12%, transparent);
-	--sb-border: color-mix(in srgb, var(--sb-computed-fg) 9%, transparent);
-	--sb-border-muted: color-mix(in srgb, var(--sb-computed-fg) 11%, transparent);
-	--sb-border-strong: color-mix(in srgb, var(--sb-computed-fg) 26%, transparent);
-	--sb-fg: var(--sb-computed-fg);
-	--sb-fg-default: var(--sb-computed-fg);
-	--sb-fg-muted: color-mix(in srgb, var(--sb-computed-fg) 65%, transparent);
-	--sb-fg-subtle: color-mix(in srgb, var(--sb-computed-fg) 55%, transparent);
-	--sb-fg-faint: color-mix(in srgb, var(--sb-computed-fg) 45%, transparent);
-	--sb-accent: var(--color-sidebarItemAccentSelected);
-	--sb-accent-emphasis: var(--color-sidebarItemAccentSelected);
-	--sb-accent-muted: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 15%, transparent);
-	--sb-accent-wash: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 14%, transparent);
-	--sb-accent-subtle: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 10%, transparent);
-	--sb-accent-subtle2: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 8%, transparent);
-	--sb-accent-faint: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 6%, transparent);
-	--sb-accent-a60: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 60%, transparent);
+	--sb-canvas: color-mix(in srgb, var(--abt-ink) 5%, var(--sb-bg));
+	--sb-surface: color-mix(in srgb, var(--abt-ink) 6%, var(--sb-bg));
+	--sb-surface-hover: color-mix(in srgb, var(--abt-ink) 10%, var(--sb-bg));
 	--sb-success: var(--color-sidebarItemBackgroundPositive);
 	--sb-success-muted: color-mix(in srgb, var(--sb-success) 18%, transparent);
 	--sb-danger: var(--color-sidebarItemBackgroundFailed);
 	--sb-danger-muted: color-mix(in srgb, var(--sb-danger) 12%, transparent);
-	--sb-danger-subtle: color-mix(in srgb, var(--sb-danger) 10%, transparent);
 	--sb-attention: var(--color-sidebarItemBackgroundPending);
 	--sb-attention-muted: color-mix(in srgb, var(--sb-attention) 18%, transparent);
-	--sb-hover-0: color-mix(in srgb, var(--sb-computed-fg) 6%, transparent);
-	--sb-hover-1: color-mix(in srgb, var(--sb-computed-fg) 9%, transparent);
-	--sb-hover-2: color-mix(in srgb, var(--sb-computed-fg) 12%, transparent);
-	--sb-hover-3: color-mix(in srgb, var(--sb-computed-fg) 15%, transparent);
-	--sb-hover-4: color-mix(in srgb, var(--sb-computed-fg) 18%, transparent);
-	--sb-hover-5: color-mix(in srgb, var(--sb-computed-fg) 21%, transparent);
-	--sb-hover-6: color-mix(in srgb, var(--sb-computed-fg) 24%, transparent);
-	--sb-fg-a95: color-mix(in srgb, var(--sb-computed-fg) 95%, transparent);
-	--sb-fg-a50: color-mix(in srgb, var(--sb-computed-fg) 50%, transparent);
-	--sb-fg-a40: color-mix(in srgb, var(--sb-computed-fg) 40%, transparent);
-	--sb-fg-a32: color-mix(in srgb, var(--sb-computed-fg) 32%, transparent);
-	--sb-fg-a22: color-mix(in srgb, var(--sb-computed-fg) 22%, transparent);
-	--sb-fg-a18: color-mix(in srgb, var(--sb-computed-fg) 18%, transparent);
-	--sb-fgd-a85: color-mix(in srgb, var(--sb-computed-fg) 85%, transparent);
-	/* This "fgm" scale is a muted-gray family, dimmer at every stop than the
-	   plain --sb-fg-aXX scale above — each percentage applies the same aXX
-	   stop on top of the 65% base, so the relative proportions between
-	   stops stay the same. */
-	--sb-fgm-a100: color-mix(in srgb, var(--sb-computed-fg) 65%, transparent);
-	--sb-fgm-a80: color-mix(in srgb, var(--sb-computed-fg) 52%, transparent);
-	--sb-fgm-a75: color-mix(in srgb, var(--sb-computed-fg) 49%, transparent);
-	--sb-fgm-a60: color-mix(in srgb, var(--sb-computed-fg) 39%, transparent);
-	--sb-fgm-a55: color-mix(in srgb, var(--sb-computed-fg) 36%, transparent);
-	--sb-fgm-a50: color-mix(in srgb, var(--sb-computed-fg) 33%, transparent);
-	--sb-fgm-a45: color-mix(in srgb, var(--sb-computed-fg) 29%, transparent);
-	--sb-fgm-a16: color-mix(in srgb, var(--sb-computed-fg) 10%, transparent);
 	--sb-shadow: rgba(1, 4, 9, 0.6);
 	--sb-shadow-2: rgba(1, 4, 9, 0.55);
 	position: relative;
@@ -83,7 +37,7 @@
 	width: 340px;
 	height: 100vh;
 	background: var(--sb-bg);
-	border-right: 1px solid var(--sb-border);
+	border-right: 1px solid var(--abt-ink-2);
 	/* explicit so the widget's row heights don't depend on the host page's
 		   inherited line-height */
 	line-height: 1.4 !important;
@@ -155,7 +109,7 @@
 	width: 4rem;
 	flex-shrink: 0;
 	height: 100%;
-	border-right: 1px solid var(--sb-border);
+	border-right: 1px solid var(--abt-ink-2);
 	/* Darker than the accounts panel beside it, so the two read as separate. */
 	background-color: color-mix(in oklab, var(--sb-bg), black 10%);
 }
@@ -189,7 +143,7 @@
 	width: 34px;
 	height: 34px;
 	border-radius: 9px;
-	background: linear-gradient(135deg, var(--sb-accent-emphasis), var(--sb-accent));
+	background: linear-gradient(135deg, var(--abt-accent), var(--abt-accent));
 	color: #fff;
 	font-size: 12px;
 	font-weight: 800;
@@ -200,8 +154,8 @@
 	margin-bottom: 4px;
 }
 .sidebar .rail-avatar.has-icon {
-	background: var(--sb-neutral-muted);
-	color: var(--sb-fg-default);
+	background: var(--abt-ink-3);
+	color: var(--abt-ink);
 }
 .sidebar .rail-avatar .budget-icon-emoji {
 	font-size: 20px;
@@ -224,7 +178,7 @@
 	height: 1px;
 	flex-shrink: 0;
 	margin: 6px 0;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 }
 .sidebar .rail-list {
 	flex: 1 1 auto;
@@ -258,13 +212,13 @@
 	letter-spacing: 0.3px;
 	text-transform: uppercase;
 	text-align: center;
-	color: var(--sb-fg-subtle);
+	color: var(--abt-soft);
 }
 .sidebar .rail-section small {
 	display: block;
 	font-size: 8px;
 	font-weight: 700;
-	color: var(--sb-fg-faint);
+	color: var(--abt-subtle);
 }
 .sidebar .rtile-wrap {
 	position: relative;
@@ -280,8 +234,8 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 9px;
-	background: var(--sb-neutral-muted);
-	color: var(--sb-fg-default);
+	background: var(--abt-ink-3);
+	color: var(--abt-ink);
 	font-size: 11px;
 	font-weight: 700;
 	letter-spacing: 0.2px;
@@ -306,7 +260,7 @@
 	color: #fff;
 	box-shadow:
 		0 0 0 2px var(--sb-bg),
-		0 0 0 4px var(--sb-accent);
+		0 0 0 4px var(--abt-accent);
 }
 /* Same discord-style accent pill as .account.selected — see "active
    indicator" further down — just anchored to the tile's own wrapper since
@@ -320,7 +274,7 @@
 	width: 3px;
 	height: 15px;
 	border-radius: 3px;
-	background: var(--sb-accent);
+	background: var(--abt-accent);
 }
 @media (prefers-reduced-motion: no-preference) {
 	.sidebar .rtile-wrap.selected::before {
@@ -342,7 +296,7 @@
 	width: 36px;
 	height: 36px;
 	border-radius: 9px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	cursor: pointer;
 	flex-shrink: 0;
 	transition:
@@ -350,12 +304,12 @@
 		color 0.12s ease;
 }
 .sidebar .rail-icon:hover {
-	background: var(--sb-hover-1);
-	color: var(--sb-fg);
+	background: var(--abt-ink-2);
+	color: var(--abt-ink);
 }
 .sidebar .rail-icon.active {
-	background: var(--sb-accent-muted);
-	color: var(--sb-accent);
+	background: var(--abt-accent-2);
+	color: var(--abt-accent);
 }
 .sidebar .rail-icon svg {
 	width: 18px;
@@ -381,7 +335,7 @@
 	right: -2px;
 	width: 3px;
 	height: 100%;
-	background: var(--sb-accent);
+	background: var(--abt-accent);
 	opacity: 0;
 	transition: opacity 0.15s;
 }
@@ -392,13 +346,13 @@
 	box-sizing: border-box;
 	width: 9px;
 	height: 26px;
-	border: 1px solid color-mix(in srgb, var(--sb-accent) 60%, transparent);
+	border: 1px solid var(--abt-accent-4);
 	border-radius: 999px;
 	/* Three dots placed by proportion, so they spread apart as the pill grows. */
 	background:
-		radial-gradient(circle, var(--sb-accent) 1.2px, transparent 1.7px) 50% 18% / 6px 6px no-repeat,
-		radial-gradient(circle, var(--sb-accent) 1.2px, transparent 1.7px) 50% 50% / 6px 6px no-repeat,
-		radial-gradient(circle, var(--sb-accent) 1.2px, transparent 1.7px) 50% 82% / 6px 6px no-repeat,
+		radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 18% / 6px 6px no-repeat,
+		radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 50% / 6px 6px no-repeat,
+		radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 82% / 6px 6px no-repeat,
 		var(--sb-bg);
 	opacity: 0;
 	transform: translateY(-50%);
@@ -447,7 +401,7 @@
 	box-sizing: border-box;
 	padding: 0.75rem;
 	/* transparent border matches the expanded header exactly → no layout shift */
-	border-bottom: 1px solid var(--sb-border);
+	border-bottom: 1px solid var(--abt-ink-2);
 	text-align: left;
 	transition:
 		background 0.12s ease,
@@ -455,7 +409,7 @@
 }
 .sidebar .budget-select:hover {
 	background: var(--sb-surface);
-	border-color: var(--sb-border);
+	border-color: var(--abt-ink-2);
 }
 .sidebar .budget-select-text {
 	display: flex;
@@ -470,7 +424,7 @@
 	gap: 4px;
 	font-size: 11px;
 	font-weight: 500;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -486,7 +440,7 @@
 	letter-spacing: 0.1px;
 	/* Actual has a dedicated token for exactly this label, unlike the rest
 	   of the sidebar (which reuses --sb-fg / sidebarItemText). */
-	color: var(--color-sidebarBudgetName, var(--sb-fg));
+	color: var(--color-sidebarBudgetName, var(--abt-ink));
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -495,10 +449,10 @@
 	width: 14px;
 	height: 14px;
 	flex-shrink: 0;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .budget-select:hover .chevron-updown {
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 }
 
 /* Expanded budget switcher — same blended-into-sidebar chrome as
@@ -514,7 +468,7 @@
 	height: 3.75rem;
 	box-sizing: border-box;
 	padding: 0.75rem;
-	border-bottom: 1px solid var(--sb-border);
+	border-bottom: 1px solid var(--abt-ink-2);
 }
 .sidebar .split-panel .budget-select,
 .sidebar .split-panel .budget-header {
@@ -531,7 +485,7 @@
 	width: 26px;
 	height: 26px;
 	border-radius: 7px;
-	background: linear-gradient(135deg, var(--sb-accent-emphasis), var(--sb-accent));
+	background: linear-gradient(135deg, var(--abt-accent), var(--abt-accent));
 	color: #fff;
 	font-size: 10px;
 	font-weight: 800;
@@ -544,8 +498,8 @@
 	filter: brightness(1.12);
 }
 .sidebar .budget-icon-btn.has-icon {
-	background: var(--sb-neutral-muted);
-	color: var(--sb-fg-default);
+	background: var(--abt-ink-3);
+	color: var(--abt-ink);
 }
 .sidebar .budget-icon-btn--lg {
 	width: 32px;
@@ -582,16 +536,16 @@
 	font-size: 14px;
 	font-weight: 600;
 	letter-spacing: 0.1px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	background: var(--sb-canvas);
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 5px;
 	padding: 3px 7px;
 	margin: -3px -7px;
 	outline: none;
 }
 .sidebar .budget-edit:focus {
-	border-color: var(--sb-accent);
+	border-color: var(--abt-accent);
 }
 .sidebar .budget-edit-btn {
 	display: flex;
@@ -601,14 +555,14 @@
 	width: 24px;
 	height: 24px;
 	border-radius: 5px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	transition:
 		color 0.12s ease,
 		background 0.12s ease;
 }
 .sidebar .budget-edit-btn:hover {
-	color: var(--sb-fg-default);
-	background: var(--sb-hover-1);
+	color: var(--abt-ink);
+	background: var(--abt-ink-2);
 }
 .sidebar .budget-edit-btn svg {
 	width: 14px;
@@ -626,7 +580,7 @@
 	box-sizing: border-box;
 	padding: 5px;
 	background: var(--sb-bg);
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 0px;
 	border-inline: 0px;
 
@@ -652,23 +606,23 @@
 	transition: background 0.12s ease;
 }
 .sidebar .budget-item:hover {
-	background: var(--sb-hover-1);
+	background: var(--abt-ink-2);
 }
 .sidebar .budget-item.active {
-	background: var(--sb-accent-muted);
+	background: var(--abt-accent-2);
 }
 .sidebar .budget-item-name {
 	flex: 1 1 auto;
 	font-size: 13px;
 	font-weight: 500;
 	letter-spacing: 0.13px;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 .sidebar .budget-item.active .budget-item-name {
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 /* left dot: green marks the active budget, muted otherwise */
 .sidebar .budget-dot {
@@ -677,7 +631,7 @@
 	height: 6px;
 	margin: 0 1px;
 	border-radius: 50%;
-	background: var(--sb-fg-subtle);
+	background: var(--abt-soft);
 }
 .sidebar .budget-dot.active {
 	width: 8px;
@@ -694,7 +648,7 @@
 	justify-content: center;
 	width: 16px;
 	height: 16px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .budget-state svg {
 	width: 15px;
@@ -703,7 +657,7 @@
 .sidebar .budget-menu-divider {
 	height: 1px;
 	margin: 4px 6px;
-	background: var(--sb-border);
+	background: var(--abt-ink-2);
 }
 .sidebar .budget-exit {
 	display: flex;
@@ -714,14 +668,14 @@
 	padding: 6px 8px;
 	border-radius: 6px;
 	text-align: left;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	transition:
 		background 0.12s ease,
 		color 0.12s ease;
 }
 .sidebar .budget-exit:hover {
-	background: var(--sb-hover-1);
-	color: var(--sb-fg);
+	background: var(--abt-ink-2);
+	color: var(--abt-ink);
 }
 .sidebar .budget-exit svg {
 	flex-shrink: 0;
@@ -743,17 +697,17 @@
 	width: 100%;
 	box-sizing: border-box;
 	padding: calc(var(--sb-row-pad-y, 5px) + 2px) 13px;
-	background: color-mix(in srgb, var(--color-sidebarItemText) 5%, transparent);
-	border: 1px solid var(--sb-border);
+	background: var(--abt-ink-1);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 11px;
 	transition: border-color 0.12s ease;
 }
 .sidebar .search:hover {
-	border-color: var(--sb-border-strong);
+	border-color: var(--abt-ink-5);
 	background: var(--sb-surface-hover);
 }
 .sidebar .search:focus-visible {
-	border-color: var(--sb-accent);
+	border-color: var(--abt-accent);
 	outline: none;
 }
 .sidebar .search-left {
@@ -773,17 +727,17 @@
 	font-size: 15px;
 	font-weight: 400;
 	letter-spacing: 0.15px;
-	color: var(--sb-fg-a40);
+	color: var(--abt-subtle);
 }
 .sidebar .search-kbd {
 	flex-shrink: 0;
 	padding: 3px 7px;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 	border-radius: 5px;
 	font-size: 11px;
 	font-weight: 600;
 	letter-spacing: 0.11px;
-	color: var(--sb-fg-a40);
+	color: var(--abt-subtle);
 }
 /* Command palette (⌘K) */
 .sidebar .cp-backdrop {
@@ -809,7 +763,7 @@
 	width: min(600px, calc(100vw - 48px));
 	max-height: min(440px, 68vh);
 	background: var(--sb-bg);
-	border: 1px solid var(--sb-border) !important;
+	border: 1px solid var(--abt-ink-2) !important;
 	border-radius: 14px;
 	box-shadow:
 		0 0 0 1px var(--sb-shadow-2),
@@ -834,13 +788,13 @@
 	gap: 10px;
 	flex-shrink: 0;
 	padding: 13px 15px;
-	border-bottom: 1px solid var(--sb-border-muted);
+	border-bottom: 1px solid var(--abt-ink-3);
 }
 .sidebar .cp-search-icon {
 	width: 16px;
 	height: 16px;
 	flex-shrink: 0;
-	color: var(--sb-fg-a40);
+	color: var(--abt-subtle);
 }
 .sidebar .cp-back {
 	display: flex;
@@ -853,7 +807,7 @@
 	cursor: pointer;
 }
 .sidebar .cp-back:hover .cp-search-icon {
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 }
 .sidebar .cp-input {
 	flex: 1 1 auto;
@@ -864,20 +818,20 @@
 	padding: 0;
 	font-family: inherit;
 	font-size: 16px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 }
 .sidebar .cp-input::placeholder {
-	color: var(--sb-fg-a40);
+	color: var(--abt-subtle);
 }
 .sidebar .cp-kbd {
 	flex-shrink: 0;
 	padding: 2px 6px;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 	border-radius: 5px;
 	font-size: 10.5px;
 	font-weight: 600;
 	letter-spacing: 0.2px;
-	color: var(--sb-fg-a40);
+	color: var(--abt-subtle);
 }
 .sidebar .cp-body {
 	flex: 1 1 auto;
@@ -885,7 +839,7 @@
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	padding: 6px;
-	scrollbar-color: var(--sb-fg-a22) transparent;
+	scrollbar-color: var(--abt-ink-5) transparent;
 }
 .sidebar .cp-body::-webkit-scrollbar {
 	width: 8px;
@@ -894,13 +848,13 @@
 	background: transparent;
 }
 .sidebar .cp-body::-webkit-scrollbar-thumb {
-	background: var(--sb-fg-a18);
+	background: var(--abt-ink-4);
 	border-radius: 8px;
 	border: 2px solid transparent;
 	background-clip: padding-box;
 }
 .sidebar .cp-body::-webkit-scrollbar-thumb:hover {
-	background: var(--sb-fg-a32);
+	background: var(--abt-ink-5);
 	background-clip: padding-box;
 }
 /* Only a root↔sub-page *transition* animates — the {#key page} block gives
@@ -921,7 +875,7 @@
 	font-weight: 700;
 	letter-spacing: 0.7px;
 	text-transform: uppercase;
-	color: var(--sb-fgm-a75);
+	color: var(--abt-subtle);
 }
 .sidebar .cp-item {
 	display: flex;
@@ -932,13 +886,13 @@
 	border-radius: 8px;
 	font-size: 13.5px;
 	letter-spacing: 0.1px;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 	text-align: left;
 }
 /* selection follows the keyboard/mouse; no separate :hover so the two never fight */
 .sidebar .cp-item.selected {
-	background: var(--sb-accent-muted);
-	color: var(--sb-fg);
+	background: var(--abt-accent-2);
+	color: var(--abt-ink);
 }
 .sidebar .cp-item-glyph {
 	display: flex;
@@ -951,10 +905,10 @@
 .sidebar .cp-item-icon svg {
 	width: 15px;
 	height: 15px;
-	color: var(--sb-fgm-a80);
+	color: var(--abt-subtle);
 }
 .sidebar .cp-item.selected .cp-item-icon svg {
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 }
 .sidebar .cp-item-label {
 	flex: 1 1 auto;
@@ -964,17 +918,17 @@
 	white-space: nowrap;
 }
 .sidebar .cp-item.viewall .cp-item-label {
-	color: var(--sb-fgm-a75);
+	color: var(--abt-subtle);
 }
 .sidebar .cp-mark {
 	background: none;
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 	font-weight: 700;
 }
 .sidebar .cp-item-amount {
 	flex-shrink: 0;
 	font-size: 12.5px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .cp-item-amount.red {
 	color: var(--sb-danger);
@@ -983,7 +937,7 @@
 	width: 14px;
 	height: 14px;
 	flex-shrink: 0;
-	color: var(--sb-fg-a40);
+	color: var(--abt-subtle);
 	opacity: 0;
 }
 .sidebar .cp-item.selected .cp-go {
@@ -994,20 +948,20 @@
 	height: 10px;
 	border-radius: 50%;
 	flex-shrink: 0;
-	box-shadow: 0 0 0 1px var(--sb-fg-a18);
+	box-shadow: 0 0 0 1px var(--abt-ink-4);
 }
 .sidebar .cp-theme-active {
 	width: 14px;
 	height: 14px;
 	flex-shrink: 0;
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 .sidebar .cp-empty {
 	margin: 0;
 	padding: 28px 0 32px;
 	text-align: center;
 	font-size: 13px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .cp-foot {
 	display: flex;
@@ -1015,7 +969,7 @@
 	gap: 14px;
 	flex-shrink: 0;
 	padding: 9px 15px;
-	border-top: 1px solid var(--sb-border-muted);
+	border-top: 1px solid var(--abt-ink-3);
 	/* Flat, like the rail/activity-bar — no distinct-colored strip. */
 	background: var(--sb-bg);
 }
@@ -1024,7 +978,7 @@
 	align-items: center;
 	gap: 5px;
 	font-size: 11.5px;
-	color: var(--sb-fgm-a75);
+	color: var(--abt-subtle);
 }
 
 /* Nav */
@@ -1044,10 +998,10 @@
 	transition: background 0.12s ease;
 }
 .sidebar .nav-link:hover {
-	background: var(--sb-hover-3);
+	background: var(--abt-ink-4);
 }
 .sidebar .nav-link.active {
-	background: var(--sb-accent-muted);
+	background: var(--abt-accent-2);
 }
 .sidebar .nav-icon {
 	display: flex;
@@ -1056,7 +1010,7 @@
 	width: 18px;
 	height: 18px;
 	flex-shrink: 0;
-	color: var(--sb-fgm-a60);
+	color: var(--abt-subtle);
 }
 .sidebar .nav-icon svg {
 	width: 17px;
@@ -1066,13 +1020,13 @@
 	font-size: 15px;
 	font-weight: 500;
 	letter-spacing: 0.16px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 }
 .sidebar .nav-link.active .nav-icon {
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 .sidebar .nav-link.active .nav-label {
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 
 /* "More" disclosure caret + sub-links */
@@ -1081,7 +1035,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--sb-fgm-a50);
+	color: var(--abt-ink-5);
 }
 .sidebar .nav-caret .caret {
 	width: 14px;
@@ -1093,7 +1047,7 @@
 	gap: 2px;
 	margin: 2px 0 2px 17px;
 	padding-left: 10px;
-	border-left: 1px solid var(--sb-border-muted);
+	border-left: 1px solid var(--abt-ink-3);
 }
 .sidebar .nav-sublink {
 	gap: 11px;
@@ -1114,7 +1068,7 @@
 .sidebar .divider {
 	height: 1px;
 	width: 100%;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 	flex-shrink: 0;
 }
 
@@ -1146,7 +1100,7 @@
 	overflow-y: auto;
 	overflow-x: hidden;
 	scrollbar-width: thin;
-	scrollbar-color: var(--sb-fg-a22) transparent;
+	scrollbar-color: var(--abt-ink-5) transparent;
 	/* Pre-JS fallback — scrollFade (scroll-fade.ts) takes over, fading
 	   whichever edge has more content past it instead of always the bottom. */
 	mask-image: linear-gradient(black 0%, black calc(100% - 34px), transparent 100%);
@@ -1165,13 +1119,13 @@
 	background: transparent;
 }
 .sidebar .accounts::-webkit-scrollbar-thumb {
-	background: var(--sb-fg-a18);
+	background: var(--abt-ink-4);
 	border-radius: 8px;
 	border: 2px solid transparent;
 	background-clip: padding-box;
 }
 .sidebar .accounts::-webkit-scrollbar-thumb:hover {
-	background: var(--sb-fg-a32);
+	background: var(--abt-ink-5);
 	background-clip: padding-box;
 }
 .sidebar .all-accounts {
@@ -1201,7 +1155,7 @@
 	width: 22px;
 	height: 22px;
 	border-radius: 5px;
-	color: var(--sb-fgm-a45);
+	color: var(--abt-ink-5);
 	opacity: 0;
 	pointer-events: none;
 	transition:
@@ -1226,7 +1180,7 @@
 	width: 22px;
 	height: 22px;
 	border-radius: 5px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	opacity: 0;
 	pointer-events: none;
 	transition:
@@ -1235,19 +1189,19 @@
 		color 0.12s ease;
 }
 .sidebar .header-add:hover {
-	background: var(--sb-hover-4);
-	color: var(--sb-fg);
+	background: var(--abt-ink-4);
+	color: var(--abt-ink);
 }
 .sidebar .header-add svg {
 	width: 15px;
 	height: 15px;
 }
 .sidebar .group-toggle:hover {
-	background: var(--sb-hover-4);
-	color: var(--sb-fg);
+	background: var(--abt-ink-4);
+	color: var(--abt-ink);
 }
 .sidebar .group-toggle.on {
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 .sidebar .group-toggle svg {
 	width: 15px;
@@ -1277,7 +1231,7 @@
 	cursor: pointer;
 }
 .sidebar .group-header.toggleable:hover {
-	background: var(--sb-hover-2);
+	background: var(--abt-ink-3);
 }
 
 /* section caret = dedicated collapse button */
@@ -1293,7 +1247,7 @@
 	transition: background 0.12s ease;
 }
 .sidebar .caret-btn:hover {
-	background: var(--sb-hover-6);
+	background: var(--abt-ink-5);
 }
 .sidebar .caret-btn.disabled {
 	pointer-events: none;
@@ -1305,10 +1259,10 @@
 	cursor: default;
 }
 .sidebar .section-head:hover {
-	background: var(--sb-hover-2);
+	background: var(--abt-ink-3);
 }
 .sidebar .section-head.active {
-	background: var(--sb-accent-muted);
+	background: var(--abt-accent-2);
 }
 .sidebar .section-nav {
 	flex: 1 1 auto;
@@ -1328,7 +1282,7 @@
 	margin-left: auto;
 }
 .sidebar .section-head.active .group-label {
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 .sidebar .group-header.sub {
 	padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
@@ -1339,10 +1293,10 @@
 }
 .sidebar .group-header.sub:hover {
 	background: transparent;
-	color: var(--sb-fgm-a100);
+	color: var(--abt-soft);
 }
 .sidebar .group-header.sub:hover * {
-	color: var(--sb-fgm-a100);
+	color: var(--abt-soft);
 }
 .sidebar .caret {
 	width: 11px;
@@ -1359,10 +1313,10 @@
 	font-weight: 500;
 	letter-spacing: 0.125px;
 	text-transform: uppercase;
-	color: var(--sb-fgm-a75);
+	color: var(--abt-subtle);
 }
 .sidebar .group-label.dim {
-	color: var(--sb-fgm-a75);
+	color: var(--abt-subtle);
 }
 /* All Accounts reads as the top-level view, not a category — sentence case,
    brighter than the muted uppercase category labels */
@@ -1371,20 +1325,20 @@
 	font-weight: 600;
 	letter-spacing: 0.42px;
 	text-transform: none;
-	color: var(--sb-fg-a95);
+	color: var(--abt-ink);
 }
 .sidebar .sub-label {
 	flex: 0 1 auto;
 	font-size: 10.5px;
 	letter-spacing: 0.115px;
-	color: var(--sb-fgm-a50);
+	color: var(--abt-ink-5);
 }
 .sidebar .group-total {
 	font-size: 12.5px;
 	font-weight: 500;
 	letter-spacing: 0.125px;
 	text-transform: uppercase;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 	font-variant-numeric: tabular-nums;
 }
 /* account-count badge next to a category label */
@@ -1397,11 +1351,11 @@
 	height: 15px;
 	padding: 0 5px;
 	border-radius: 8px;
-	background: var(--sb-fgm-a16);
+	background: var(--abt-ink-3);
 	font-size: 10px;
 	font-weight: 700;
 	letter-spacing: 0.2px;
-	color: var(--sb-fgd-a85);
+	color: var(--abt-muted);
 	font-variant-numeric: tabular-nums;
 }
 /* sub-category counts appear on hover, or always once collapsed (no rows
@@ -1450,13 +1404,13 @@
 	transition: background 0.12s ease;
 }
 .sidebar .account:hover {
-	background: var(--sb-hover-3);
+	background: var(--abt-ink-4);
 }
 .sidebar .account.selected {
-	background: var(--sb-accent-muted);
+	background: var(--abt-accent-2);
 }
 .sidebar .account.selected .account-name {
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 .sidebar.split .account,
 .sidebar.split .skel-row {
@@ -1504,7 +1458,7 @@
 	color: var(--sb-danger);
 }
 .sidebar .status-manual {
-	color: var(--sb-fgm-a50);
+	color: var(--abt-ink-5);
 }
 .sidebar .orbit {
 	transform-origin: 24px 24px;
@@ -1557,25 +1511,25 @@
 	height: 17px;
 	border-radius: 50%;
 	flex-shrink: 0;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 }
 .sidebar .skel-name {
 	height: 9px;
 	border-radius: 4px;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 }
 .sidebar .skel-amount {
 	width: 34px;
 	height: 9px;
 	border-radius: 4px;
 	flex-shrink: 0;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 }
 .sidebar .skel-status {
 	width: 72px;
 	height: 8px;
 	border-radius: 4px;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 }
 .sidebar .skel-glyph,
 .sidebar .skel-name,
@@ -1605,7 +1559,7 @@
 	font-size: 13px;
 	font-weight: 500;
 	letter-spacing: 0.145px;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -1615,7 +1569,7 @@
 	font-weight: 400;
 	letter-spacing: 0.14px;
 	text-transform: uppercase;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	font-variant-numeric: tabular-nums;
 	flex-shrink: 0;
 }
@@ -1652,7 +1606,7 @@
 	/* 9px below centres the 26px controls on the rail's bottom icon (4px rail padding + half
 	   its 36px slot); the same above keeps it balanced. */
 	padding: 9px 0.65rem;
-	border-top: 1px solid var(--sb-border);
+	border-top: 1px solid var(--abt-ink-2);
 	flex-shrink: 0;
 }
 /* In the single-panel layout the body's own bottom padding would add to the footer's. */
@@ -1667,7 +1621,7 @@
 /* Undo and redo joined into one control, so they read as a pair. */
 .sidebar .undo-group {
 	display: inline-flex;
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 7px;
 	background: var(--sb-surface);
 	overflow: hidden;
@@ -1678,17 +1632,17 @@
 	justify-content: center;
 	width: 32px;
 	height: 24px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	transition:
 		color 0.12s ease,
 		background 0.12s ease;
 }
 .sidebar .undo-group button + button {
-	border-left: 1px solid var(--sb-border);
+	border-left: 1px solid var(--abt-ink-2);
 }
 .sidebar .undo-group button:hover {
-	color: var(--sb-fg-default);
-	background: var(--sb-hover-1);
+	color: var(--abt-ink);
+	background: var(--abt-ink-2);
 }
 .sidebar .undo-group svg {
 	width: 15px;
@@ -1702,10 +1656,10 @@
 	width: 26px;
 	height: 26px;
 	padding: 0;
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 7px;
 	background: var(--sb-surface);
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	transition:
 		background 0.12s ease,
 		border-color 0.12s ease,
@@ -1713,8 +1667,8 @@
 }
 .sidebar .footer-settings:hover {
 	background: var(--sb-surface-hover);
-	border-color: var(--sb-border-strong);
-	color: var(--sb-fg-default);
+	border-color: var(--abt-ink-5);
+	color: var(--abt-ink);
 }
 .sidebar .footer-settings svg {
 	width: 15px;
@@ -1727,13 +1681,13 @@
 	gap: 6px;
 	height: 26px;
 	padding: 0 10px 0 9px;
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 7px;
 	background: var(--sb-surface);
 	font-size: 12.5px;
 	font-weight: 500;
 	/* Muted like the undo/redo icons, so the footer recedes until it's needed. */
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	transition:
 		background 0.12s ease,
 		border-color 0.12s ease,
@@ -1741,12 +1695,12 @@
 }
 .sidebar .sync-btn:hover:not(:disabled) {
 	background: var(--sb-surface-hover);
-	border-color: var(--sb-border-strong);
-	color: var(--sb-fg-default);
+	border-color: var(--abt-ink-5);
+	color: var(--abt-ink);
 }
 .sidebar .sync-btn:disabled {
 	cursor: default;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .sync-btn svg {
 	width: 14px;
@@ -1765,15 +1719,15 @@
 	display: flex;
 	align-items: center;
 	padding: 5px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	border-radius: 6px;
 	transition:
 		color 0.12s ease,
 		background 0.12s ease;
 }
 .sidebar .collapse:hover {
-	color: var(--sb-fg-default);
-	background: var(--sb-hover-1);
+	color: var(--abt-ink);
+	background: var(--abt-ink-2);
 }
 .sidebar .collapse svg {
 	width: 18px;
@@ -1787,9 +1741,9 @@
 	max-width: 240px;
 	padding: 5px 9px;
 	background: var(--sb-surface);
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 7px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	font-size: 12px;
 	font-weight: 600;
 	line-height: 1.35;
@@ -1817,7 +1771,7 @@
 	width: 7px;
 	height: 7px;
 	background: var(--sb-surface);
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	transform: rotate(45deg);
 }
 .sidebar .tip-right::after {
@@ -1865,11 +1819,11 @@
 	z-index: 9999997;
 	width: 292px;
 	padding: 12px 13px 11px;
-	background: var(--sb-inset);
-	border: 1px solid var(--sb-border);
+	background: var(--sb-canvas);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 12px;
 	box-shadow: 0 12px 34px var(--sb-shadow);
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	pointer-events: none;
 	animation: acard-in 0.13s ease;
 }
@@ -1924,7 +1878,7 @@
 	font-size: 14px;
 	font-weight: 650;
 	letter-spacing: 0.1px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -1932,7 +1886,7 @@
 .sidebar .acard-sub {
 	font-size: 11px;
 	font-weight: 500;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .acard-balrow {
 	display: flex;
@@ -1945,13 +1899,13 @@
 	font-weight: 600;
 	letter-spacing: 0.4px;
 	text-transform: uppercase;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .acard-bal {
 	font-size: 19px;
 	font-weight: 500;
 	letter-spacing: 0.2px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	font-variant-numeric: tabular-nums;
 }
 .sidebar .acard-bal.neg {
@@ -1980,7 +1934,7 @@
 .sidebar .acard-period {
 	font-size: 11px;
 	font-weight: 500;
-	color: var(--sb-fg-subtle);
+	color: var(--abt-soft);
 }
 .sidebar .acard-delta {
 	font-size: 11.5px;
@@ -1996,7 +1950,7 @@
 .sidebar .acard-delta-abs {
 	margin-left: 3px;
 	font-weight: 600;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .acard-div {
 	height: 1px;
@@ -2018,12 +1972,12 @@
 	align-items: center;
 	gap: 6px;
 	font-size: 12px;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 }
 .sidebar .acard-line .v {
 	font-size: 12.5px;
 	font-weight: 600;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 	font-variant-numeric: tabular-nums;
 }
 .sidebar .acard-line .v.neg {
@@ -2037,10 +1991,10 @@
 	height: 16px;
 	padding: 0 4px;
 	border-radius: 8px;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 	font-size: 10px;
 	font-weight: 700;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 }
 .sidebar .acard-block-label {
 	margin-bottom: 7px;
@@ -2048,7 +2002,7 @@
 	font-weight: 600;
 	letter-spacing: 0.4px;
 	text-transform: uppercase;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .acard-sched {
 	display: flex;
@@ -2060,14 +2014,14 @@
 	width: 42px;
 	font-size: 11px;
 	font-weight: 600;
-	color: var(--sb-fg-subtle);
+	color: var(--abt-soft);
 	font-variant-numeric: tabular-nums;
 }
 .sidebar .acard-payee {
 	flex: 1 1 auto;
 	min-width: 0;
 	font-size: 12.5px;
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -2089,7 +2043,7 @@
 	margin-top: 11px;
 	font-size: 11.5px;
 	font-weight: 500;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .acard-sync-dot {
 	display: flex;
@@ -2117,7 +2071,7 @@
 	gap: 1px;
 	padding: 5px;
 	background: var(--sb-surface);
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 9px;
 	box-shadow: 0 12px 30px var(--sb-shadow);
 	animation: acard-in 0.1s ease;
@@ -2133,27 +2087,27 @@
 	font-size: 13px;
 	font-weight: 500;
 	letter-spacing: 0.13px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	transition: background 0.1s ease;
 }
 .sidebar .ctx-item:hover {
-	background: var(--sb-hover-2);
+	background: var(--abt-ink-3);
 }
 .sidebar .ctx-item svg {
 	width: 15px;
 	height: 15px;
 	flex-shrink: 0;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 }
 .sidebar .ctx-item:hover svg {
-	color: var(--sb-fg-default);
+	color: var(--abt-ink);
 }
 .sidebar .ctx-item.active,
 .sidebar .ctx-item.active svg {
-	color: var(--sb-accent);
+	color: var(--abt-accent);
 }
 .sidebar .ctx-item.active {
-	background: var(--sb-accent-muted);
+	background: var(--abt-accent-2);
 }
 .sidebar .ctx-item.danger {
 	color: var(--sb-danger);
@@ -2170,7 +2124,7 @@
 .sidebar .ctx-div {
 	height: 1px;
 	margin: 4px 4px;
-	background: var(--sb-neutral-muted);
+	background: var(--abt-ink-3);
 }
 
 /* ===== drag reorder ===== */
@@ -2200,7 +2154,7 @@
 	width: 3px;
 	height: 15px;
 	border-radius: 3px;
-	background: var(--sb-accent);
+	background: var(--abt-accent);
 }
 @media (prefers-reduced-motion: no-preference) {
 	.sidebar .nav-link.active::before,
@@ -2246,7 +2200,7 @@
 	right: 2px;
 	width: 6px;
 	border-radius: 3px;
-	background: var(--sb-fg-a22);
+	background: var(--abt-ink-5);
 	opacity: 0;
 	pointer-events: none;
 	/* Sits inside the sidebar's resize-handle hit area (right: 0, 10px wide,
@@ -2260,7 +2214,7 @@
 }
 .sidebar .abt-overlay-thumb:hover,
 .sidebar .abt-overlay-thumb:active {
-	background: var(--sb-fg-a32);
+	background: var(--abt-ink-5);
 }
 @media (prefers-reduced-motion: no-preference) {
 	.sidebar .abt-overlay-thumb {
@@ -2278,8 +2232,8 @@
 	right: 8px;
 	height: 2px;
 	border-radius: 2px;
-	background: var(--sb-accent);
-	box-shadow: 0 0 4px var(--sb-accent-a60);
+	background: var(--abt-accent);
+	box-shadow: 0 0 4px var(--abt-accent-4);
 	pointer-events: none;
 }
 .sidebar .account.drop-before::after,
@@ -2300,7 +2254,7 @@
 	box-sizing: border-box;
 	padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
 	border-radius: 7px;
-	background: var(--sb-accent-subtle);
+	background: var(--abt-accent-1);
 }
 .sidebar .account-rename {
 	flex: 1 1 auto;
@@ -2309,9 +2263,9 @@
 	font-size: 13px;
 	font-weight: 500;
 	letter-spacing: 0.145px;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	background: var(--sb-canvas);
-	border: 1px solid var(--sb-accent);
+	border: 1px solid var(--abt-accent);
 	border-radius: 5px;
 	padding: 2px 6px;
 	outline: none;
@@ -2332,7 +2286,7 @@
 	width: 22px;
 	height: 22px;
 	border-radius: 5px;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	opacity: 0;
 	pointer-events: none;
 	transition:
@@ -2349,8 +2303,8 @@
 	pointer-events: auto;
 }
 .sidebar .section-add:hover {
-	background: var(--sb-hover-4);
-	color: var(--sb-fg);
+	background: var(--abt-ink-4);
+	color: var(--abt-ink);
 }
 /* hide the total on hover to make room for the row's hover-revealed button —
    "add category" on the category rows, the grouped/flat toggle on All Accounts */
@@ -2375,9 +2329,9 @@
 	font-weight: 600;
 	letter-spacing: 0.115px;
 	text-transform: uppercase;
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 	background: var(--sb-canvas);
-	border: 1px solid var(--sb-accent);
+	border: 1px solid var(--abt-accent);
 	border-radius: 5px;
 	padding: 2px 6px;
 	outline: none;
@@ -2387,11 +2341,11 @@
 .sidebar .group-empty-hint {
 	margin: 2px 0 3px 9px;
 	padding: 8px 10px;
-	border: 1px dashed var(--sb-border);
+	border: 1px dashed var(--abt-ink-2);
 	border-radius: 7px;
 	font-size: 12px;
 	font-weight: 500;
-	color: var(--sb-fgm-a55);
+	color: var(--abt-subtle);
 	text-align: center;
 	transition:
 		border-color 0.12s ease,
@@ -2400,9 +2354,9 @@
 }
 .sidebar .group-empty-hint.drop-before {
 	border-style: solid;
-	border-color: var(--sb-accent);
-	color: var(--sb-accent);
-	background: var(--sb-accent-subtle2);
+	border-color: var(--abt-accent);
+	color: var(--abt-accent);
+	background: var(--abt-accent-1);
 }
 
 /* ===== account leading glyph (status + icon), clickable to set an icon ===== */
@@ -2425,7 +2379,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--sb-fg-muted);
+	color: var(--abt-soft);
 	opacity: 0;
 	transition:
 		opacity 0.1s ease,
@@ -2444,7 +2398,7 @@
 	opacity: 1;
 }
 .sidebar .acct-glyph:not(.has-icon):hover .acct-glyph-edit {
-	color: var(--sb-fg);
+	color: var(--abt-ink);
 }
 /* accounts WITH an icon: keep it visible, just give it a subtle clickable highlight */
 .sidebar .acct-glyph.has-icon .acct-icon {
@@ -2452,7 +2406,7 @@
 	transition: background 0.1s ease;
 }
 .sidebar .acct-glyph.has-icon:hover .acct-icon {
-	background: var(--sb-hover-5);
+	background: var(--abt-ink-5);
 }
 
 /* ===== account icon (avatar), left of the name ===== */
@@ -2475,7 +2429,7 @@
 	display: flex;
 	gap: 1px;
 	padding-bottom: 6px;
-	border-bottom: 1px solid var(--sb-border-muted);
+	border-bottom: 1px solid var(--abt-ink-3);
 }
 .sidebar .eg-tab {
 	flex: 1;
@@ -2493,17 +2447,17 @@
 }
 .sidebar .eg-tab:hover {
 	opacity: 0.85;
-	background: var(--sb-hover-1);
+	background: var(--abt-ink-2);
 }
 .sidebar .eg-tab.active {
 	opacity: 1;
-	background: var(--sb-accent-muted);
+	background: var(--abt-accent-2);
 }
 .sidebar .eg-grid-wrap {
 	max-height: 220px;
 	overflow-y: auto;
 	scrollbar-width: thin;
-	scrollbar-color: var(--sb-fg-a22) transparent;
+	scrollbar-color: var(--abt-ink-5) transparent;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -2517,8 +2471,8 @@
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: var(--sb-fg-muted);
-	background: var(--sb-inset);
+	color: var(--abt-soft);
+	background: var(--sb-canvas);
 }
 .sidebar .eg-grid {
 	display: grid;
@@ -2536,7 +2490,7 @@
 	transition: background 0.08s ease;
 }
 .sidebar .eg-btn:hover {
-	background: var(--sb-hover-4);
+	background: var(--abt-ink-4);
 }
 .sidebar .logo-preview {
 	display: flex;
@@ -2547,9 +2501,9 @@
 	width: 100%;
 	min-height: 84px;
 	padding: 12px;
-	border: 1px solid var(--sb-border);
+	border: 1px solid var(--abt-ink-2);
 	border-radius: 8px;
-	background: var(--sb-hover-0);
+	background: var(--abt-ink-1);
 	cursor: default;
 	transition:
 		background 0.15s ease,
@@ -2557,11 +2511,11 @@
 }
 .sidebar .logo-preview.loaded {
 	cursor: pointer;
-	border-color: var(--sb-accent);
-	background: var(--sb-accent-subtle2);
+	border-color: var(--abt-accent);
+	background: var(--abt-accent-1);
 }
 .sidebar .logo-preview.loaded:hover {
-	background: var(--sb-accent-wash);
+	background: var(--abt-accent-2);
 }
 .sidebar .logo-preview img {
 	width: 48px;
@@ -2577,7 +2531,7 @@
 	gap: 6px;
 	min-height: 104px;
 	padding: 12px;
-	border: 2px dashed var(--sb-border);
+	border: 2px dashed var(--abt-ink-2);
 	border-radius: 8px;
 	cursor: pointer;
 	transition:
@@ -2586,6 +2540,6 @@
 }
 .sidebar .dropzone:hover,
 .sidebar .dropzone.over {
-	border-color: var(--sb-accent);
-	background: var(--sb-accent-faint);
+	border-color: var(--abt-accent);
+	background: var(--abt-accent-1);
 }

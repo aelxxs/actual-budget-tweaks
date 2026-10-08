@@ -206,7 +206,7 @@
 	.abt-side-drawer-resize-handle.is-dragging .abt-side-drawer-grip {
 		--grip-dot: var(--abt-accent);
 		height: 32px;
-		border-color: color-mix(in srgb, var(--abt-accent) 60%, transparent);
+		border-color: var(--abt-accent-4);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

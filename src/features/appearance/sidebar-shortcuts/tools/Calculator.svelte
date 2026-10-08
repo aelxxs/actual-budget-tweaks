@@ -170,7 +170,7 @@
 		padding: 10px;
 		border: none;
 		border-radius: var(--abt-radius-sm);
-		background: color-mix(in srgb, var(--color-pageText) 6%, transparent);
+		background: var(--abt-ink-2);
 		color: var(--color-pageText);
 		font-family: inherit;
 		font-size: 15px;
@@ -180,11 +180,11 @@
 	}
 
 	.calc__btn:hover {
-		background: color-mix(in srgb, var(--color-pageText) 12%, transparent);
+		background: var(--abt-ink-3);
 	}
 
 	.calc__btn:active {
-		background: color-mix(in srgb, var(--color-pageText) 18%, transparent);
+		background: var(--abt-ink-4);
 	}
 
 	.calc__btn--fn {

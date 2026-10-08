@@ -172,7 +172,7 @@
 
 	.cal-cell:focus-visible {
 		outline: none;
-		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--abt-accent) 60%, transparent);
+		box-shadow: inset 0 0 0 1.5px var(--abt-accent-4);
 	}
 
 	.cal-cell.is-selected .cal-cell__date:not(.is-today) {
@@ -220,7 +220,7 @@
 	}
 
 	.cal-cell__date.is-today {
-		background: color-mix(in srgb, var(--abt-accent) 25%, transparent);
+		background: var(--abt-accent-3);
 		color: var(--abt-accent);
 		width: 22px;
 		height: 22px;
@@ -283,7 +283,7 @@
 		font-size: 9px;
 		font-weight: 600;
 		color: var(--color-pageTextSubdued);
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		background: var(--abt-ink-3);
 		padding: 0 4px;
 		border-radius: 4px;
 		flex-shrink: 0;
@@ -294,7 +294,7 @@
 		margin-left: 9px;
 		padding: 0 6px;
 		border-radius: 999px;
-		background: color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		background: var(--abt-ink-2);
 		color: var(--color-pageTextSubdued);
 		font-size: 9px;
 		font-weight: 600;

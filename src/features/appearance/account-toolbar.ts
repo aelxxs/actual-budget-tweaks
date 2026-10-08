@@ -121,8 +121,8 @@ const CSS = `
 	}
 
 	${SEARCH}:focus-within {
-		border-color: color-mix(in srgb, var(--abt-accent) 55%, transparent) !important;
-		box-shadow: 0 0 0 3px color-mix(in srgb, var(--abt-accent) 15%, transparent) !important;
+		border-color: var(--abt-accent-4) !important;
+		box-shadow: 0 0 0 3px var(--abt-accent-2) !important;
 	}
 
 	${SEARCH} input {

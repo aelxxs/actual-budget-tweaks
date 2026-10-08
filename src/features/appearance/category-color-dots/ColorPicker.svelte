@@ -73,7 +73,7 @@
 		gap: 8px;
 		margin-top: 8px;
 		padding-top: 8px;
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-top: 1px solid var(--abt-ink-2);
 	}
 
 	.cp__input {

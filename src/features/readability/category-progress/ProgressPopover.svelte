@@ -158,7 +158,7 @@
 	.cp__bar {
 		height: 6px;
 		border-radius: 3px;
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		background: var(--abt-ink-3);
 		overflow: hidden;
 	}
 
@@ -198,7 +198,7 @@
 	.cp__rows {
 		margin-top: 8px;
 		padding-top: 8px;
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-top: 1px solid var(--abt-ink-2);
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
@@ -237,7 +237,7 @@
 	.cp__goal-hint {
 		margin-top: 8px;
 		padding-top: 8px;
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-top: 1px solid var(--abt-ink-2);
 		font-size: 11px;
 		color: var(--color-warningText);
 	}

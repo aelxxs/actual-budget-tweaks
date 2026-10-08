@@ -370,7 +370,7 @@
 						{#if searchEnabled}
 							<button type="button" class="search" onclick={openPalette}>
 								<span class="search-left">
-									<Search class="search-icon" color="var(--sb-fg-muted)" strokeWidth={1.75} />
+									<Search class="search-icon" color="var(--abt-soft)" strokeWidth={1.75} />
 									<span class="search-placeholder">Search...</span>
 								</span>
 								<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
@@ -415,7 +415,7 @@
 			{#if searchEnabled}
 				<button type="button" class="search" onclick={openPalette}>
 					<span class="search-left">
-						<Search class="search-icon" color="var(--sb-fg-muted)" strokeWidth={1.75} />
+						<Search class="search-icon" color="var(--abt-soft)" strokeWidth={1.75} />
 						<span class="search-placeholder">Search...</span>
 					</span>
 					<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
@@ -480,6 +480,6 @@
 	.load-status {
 		padding: 12px 14px;
 		font-size: 13px;
-		color: var(--sb-fg-subtle);
+		color: var(--abt-soft);
 	}
 </style>

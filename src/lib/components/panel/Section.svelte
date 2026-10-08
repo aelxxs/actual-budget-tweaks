@@ -107,7 +107,7 @@
 		transition: background 0.1s;
 	}
 	button.head:hover {
-		background: var(--abt-panel-accent-muted);
+		background: var(--abt-accent-1);
 	}
 	.head[data-tone="error"] {
 		color: var(--color-errorText, #e57373);

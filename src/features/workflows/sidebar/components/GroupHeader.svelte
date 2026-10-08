@@ -52,7 +52,7 @@
 
 {#if editing}
 	<div class="group-header sub editing-group">
-		<ChevronDown class="caret" color="var(--sb-fgm-a50)" strokeWidth={3} />
+		<ChevronDown class="caret" color="var(--abt-ink-5)" strokeWidth={3} />
 		<input
 			class="group-rename"
 			use:autofocus
@@ -75,7 +75,7 @@
 	>
 		<ChevronDown
 			class={open ? "caret" : "caret collapsed"}
-			color="var(--sb-fgm-a50)"
+			color="var(--abt-ink-5)"
 			strokeWidth={3}
 		/>
 		<span class="group-label sub-label">{group.label}</span>

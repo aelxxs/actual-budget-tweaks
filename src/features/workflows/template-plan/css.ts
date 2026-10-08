@@ -214,7 +214,7 @@ export const CSS = `
 	.abt-tab-overview-mini-bar[data-status="warn"]    { background: var(--color-warningText, #e0c590); }
 	.abt-tab-overview-mini-bar[data-status="over"]    { background: var(--color-errorText, #e57373); }
 	.abt-tab-overview-mini-bar[data-status="goal"]    { background: linear-gradient(90deg, var(--abt-accent) 0%, var(--abt-panel-accent-secondary) 100%); }
-	.abt-tab-overview-mini-bar[data-status="elapsed"] { background: color-mix(in srgb, var(--color-pageText) 22%, transparent); }
+	.abt-tab-overview-mini-bar[data-status="elapsed"] { background: var(--abt-ink-5); }
 
 	/* ── Next Month hero ─────────────────────────────────────────── */
 	.abt-tab-overview-next-hero {
@@ -366,7 +366,7 @@ export const CSS = `
 		width: 6px;
 		height: 6px;
 		border-radius: 50%;
-		background: color-mix(in srgb, var(--abt-accent) 60%, transparent);
+		background: var(--abt-accent-4);
 		flex-shrink: 0;
 	}
 

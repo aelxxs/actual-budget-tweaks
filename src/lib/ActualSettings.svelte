@@ -395,8 +395,8 @@
 			font-weight: 700;
 			letter-spacing: 0.02em;
 			color: var(--abt-accent);
-			background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
-			border: 1px solid color-mix(in srgb, var(--abt-accent) 30%, transparent);
+			background: var(--abt-accent-2);
+			border: 1px solid var(--abt-accent-3);
 			border-radius: 4px;
 			padding: 1px 6px;
 			margin-left: 2px;

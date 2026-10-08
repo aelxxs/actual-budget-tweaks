@@ -87,11 +87,7 @@
 		left: 0;
 		right: 0;
 		height: 3px;
-		background: linear-gradient(
-			90deg,
-			var(--abt-accent),
-			color-mix(in srgb, var(--abt-accent) 40%, transparent)
-		);
+		background: linear-gradient(90deg, var(--abt-accent), var(--abt-accent-3));
 	}
 
 	.toast__header {
@@ -99,7 +95,7 @@
 		align-items: center;
 		gap: 10px;
 		padding: 14px 8px 12px 14px;
-		border-bottom: 1px solid color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		border-bottom: 1px solid var(--abt-ink-3);
 		flex-shrink: 0;
 	}
 
@@ -202,8 +198,8 @@
 		justify-content: space-between;
 		gap: 8px;
 		padding: 10px 14px;
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 10%, transparent);
-		background: color-mix(in srgb, var(--color-pageText) 3%, transparent);
+		border-top: 1px solid var(--abt-ink-3);
+		background: var(--abt-ink-1);
 		flex-shrink: 0;
 	}
 

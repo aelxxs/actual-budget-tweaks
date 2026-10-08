@@ -892,7 +892,7 @@ export const resizableTransactionColumns = defineSetting({
 				width: 3px;
 				height: 100%;
 				background: var(--abt-accent);
-				box-shadow: 0 0 0 3px color-mix(in srgb, var(--abt-accent) 22%, transparent);
+				box-shadow: 0 0 0 3px var(--abt-accent-3);
 				transition: none;
 			}
 		`,

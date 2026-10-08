@@ -535,7 +535,7 @@
 	}
 
 	.entry:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--abt-accent) 55%, transparent);
+		outline: 2px solid var(--abt-accent-4);
 		outline-offset: -2px;
 	}
 

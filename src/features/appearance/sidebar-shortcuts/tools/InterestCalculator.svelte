@@ -116,7 +116,7 @@
 		align-items: center;
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius-sm);
-		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
+		background: var(--abt-ink-1);
 		overflow: hidden;
 	}
 
@@ -164,7 +164,7 @@
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius-sm);
-		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
+		background: var(--abt-ink-1);
 		color: var(--color-pageText);
 		outline: none;
 		cursor: pointer;

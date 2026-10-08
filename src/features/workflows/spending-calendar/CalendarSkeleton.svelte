@@ -38,7 +38,7 @@
 		display: block;
 		height: 8px;
 		border-radius: 4px;
-		background: color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		background: var(--abt-ink-2);
 	}
 	.bar--date {
 		width: 14px;

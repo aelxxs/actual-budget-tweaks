@@ -411,8 +411,8 @@
 	}
 
 	.rp__chip:hover {
-		border-color: color-mix(in srgb, var(--abt-accent) 45%, transparent);
-		background: color-mix(in srgb, var(--abt-accent) 8%, transparent);
+		border-color: var(--abt-accent-4);
+		background: var(--abt-accent-1);
 	}
 
 	.rp__chip :global(svg) {

@@ -106,8 +106,8 @@
 
 	/* Mid-reconcile, so it reads as in progress even with the panel closed. */
 	.rb.is-active {
-		border-color: color-mix(in srgb, var(--abt-accent) 35%, transparent) !important;
-		background: color-mix(in srgb, var(--abt-accent) 16%, transparent) !important;
+		border-color: var(--abt-accent-3) !important;
+		background: var(--abt-accent-2) !important;
 		color: var(--abt-accent-text) !important;
 	}
 </style>

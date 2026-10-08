@@ -243,8 +243,8 @@
 		text-transform: uppercase;
 		padding: 8px 12px;
 		border-radius: var(--abt-radius-sm);
-		border: 1px dashed color-mix(in srgb, var(--abt-accent) 40%, transparent);
-		background: color-mix(in srgb, var(--abt-accent) 5%, transparent);
+		border: 1px dashed var(--abt-accent-3);
+		background: var(--abt-accent-1);
 		color: var(--abt-accent);
 		cursor: pointer;
 		transition:
@@ -254,7 +254,7 @@
 
 	.creator__randomize:hover {
 		border-color: var(--abt-accent);
-		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		background: var(--abt-accent-2);
 	}
 
 	.creator__rows {

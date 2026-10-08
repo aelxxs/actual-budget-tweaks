@@ -33,7 +33,7 @@
 		items.push({
 			label: "Remaining",
 			value: toBudget,
-			color: "color-mix(in srgb, var(--color-pageText) 15%, transparent)",
+			color: "var(--abt-ink-4)",
 			negative: toBudget < 0,
 		});
 		return items;
@@ -113,7 +113,7 @@
 
 	.flow__bar {
 		height: 6px;
-		background: color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		background: var(--abt-ink-2);
 		display: flex;
 		overflow: hidden;
 	}

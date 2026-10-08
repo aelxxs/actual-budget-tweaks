@@ -317,7 +317,7 @@
 				valueKey="spent"
 				currentMonthKey={data.monthKey}
 				barColor="var(--abt-accent)"
-				barColorDim="color-mix(in srgb, var(--abt-accent) 35%, transparent)"
+				barColorDim="var(--abt-accent-3)"
 				higherIsBad={true}
 			/>
 		</Section>

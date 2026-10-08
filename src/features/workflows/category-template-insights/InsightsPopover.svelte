@@ -278,7 +278,7 @@
 	.pop__bar {
 		margin-top: 6px;
 		height: 4px;
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		background: var(--abt-ink-3);
 		border-radius: 2px;
 		overflow: hidden;
 	}
@@ -301,7 +301,7 @@
 		display: flex;
 		gap: 8px;
 		padding: 6px 8px;
-		background: color-mix(in srgb, var(--color-pageText) 4%, transparent);
+		background: var(--abt-ink-1);
 		border-radius: 4px;
 	}
 
@@ -379,7 +379,7 @@
 	}
 
 	.pop__status--completed {
-		background: color-mix(in srgb, var(--color-pageText) 15%, transparent);
+		background: var(--abt-ink-4);
 		color: var(--color-pageTextSubdued);
 	}
 
@@ -392,7 +392,7 @@
 	.pop__hint {
 		margin-top: 8px;
 		padding-top: 6px;
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-top: 1px solid var(--abt-ink-2);
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -404,8 +404,8 @@
 		display: inline-block;
 		padding: 1px 5px;
 		border-radius: 3px;
-		border: 1px solid color-mix(in srgb, var(--color-pageText) 20%, transparent);
-		background: color-mix(in srgb, var(--color-pageText) 6%, transparent);
+		border: 1px solid var(--abt-ink-4);
+		background: var(--abt-ink-2);
 		font-family: var(--font-mono, ui-monospace, monospace);
 		font-size: 10px;
 		line-height: 1.2;

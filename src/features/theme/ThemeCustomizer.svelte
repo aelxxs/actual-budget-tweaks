@@ -730,7 +730,7 @@
 		gap: 8px;
 		padding: 10px 12px;
 		border-radius: var(--abt-radius);
-		background: color-mix(in srgb, var(--color-pageText) 3%, transparent);
+		background: var(--abt-ink-1);
 		border: var(--border);
 	}
 
@@ -795,7 +795,7 @@
 		flex-direction: column;
 		gap: 6px;
 		padding-top: 8px;
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 8%, transparent);
+		border-top: 1px solid var(--abt-ink-2);
 	}
 
 	.auto-switch__row {
@@ -852,8 +852,8 @@
 		text-transform: uppercase;
 		padding: 7px 12px;
 		border-radius: var(--abt-radius-sm);
-		border: 1px dashed color-mix(in srgb, var(--abt-accent) 50%, transparent);
-		background: color-mix(in srgb, var(--abt-accent) 5%, transparent);
+		border: 1px dashed var(--abt-accent-4);
+		background: var(--abt-accent-1);
 		color: var(--abt-accent);
 		cursor: pointer;
 		transition:
@@ -862,7 +862,7 @@
 	}
 
 	.create-theme-btn:hover {
-		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		background: var(--abt-accent-2);
 		border-color: var(--abt-accent);
 	}
 
@@ -975,13 +975,13 @@
 	}
 
 	.card:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--abt-accent) 60%, transparent);
-		box-shadow: 0 2px 8px color-mix(in srgb, var(--abt-accent) 15%, transparent);
+		border-color: var(--abt-accent-4);
+		box-shadow: 0 2px 8px var(--abt-accent-2);
 	}
 
 	.card--active {
 		border-color: var(--abt-accent);
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--abt-accent) 25%, transparent);
+		box-shadow: 0 0 0 2px var(--abt-accent-3);
 	}
 
 	.card--loading {
@@ -1048,9 +1048,9 @@
 
 	/* Creator badge uses the theme's own accent so it stays on-brand */
 	.badge--creator {
-		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		background: var(--abt-accent-2);
 		color: var(--abt-accent);
-		border-color: color-mix(in srgb, var(--abt-accent) 30%, transparent);
+		border-color: var(--abt-accent-3);
 	}
 
 	/* ── Card details ─────────────────────────────────────────────────── */
@@ -1098,8 +1098,8 @@
 		width: 100%;
 		padding: 5px 10px;
 		border: none;
-		border-top: 1px solid color-mix(in srgb, var(--abt-accent) 20%, transparent);
-		background: color-mix(in srgb, var(--abt-accent) 6%, transparent);
+		border-top: 1px solid var(--abt-accent-2);
+		background: var(--abt-accent-1);
 		color: var(--abt-accent);
 		font-family: inherit;
 		font-size: 9px;
@@ -1110,7 +1110,7 @@
 	}
 
 	.card__edits-toggle:hover {
-		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		background: var(--abt-accent-2);
 	}
 
 	.card__edits-chevron {
@@ -1126,8 +1126,8 @@
 		list-style: none;
 		margin: 0;
 		padding: 4px 10px 6px;
-		border-top: 1px solid color-mix(in srgb, var(--abt-accent) 15%, transparent);
-		background: color-mix(in srgb, var(--abt-accent) 4%, transparent);
+		border-top: 1px solid var(--abt-accent-2);
+		background: var(--abt-accent-1);
 		max-height: 88px;
 		overflow-y: auto;
 		scrollbar-width: thin;
@@ -1154,7 +1154,7 @@
 		width: 15px;
 		height: 15px;
 		border-radius: 50%;
-		border: 2px solid color-mix(in srgb, var(--abt-accent) 30%, transparent);
+		border: 2px solid var(--abt-accent-3);
 		border-top-color: var(--abt-accent);
 		animation: spin 0.6s linear infinite;
 	}
@@ -1191,7 +1191,7 @@
 
 	.card__edit-btn:hover {
 		color: var(--abt-accent);
-		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		background: var(--abt-accent-2);
 	}
 
 	.card__edit-btn svg {

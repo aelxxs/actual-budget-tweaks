@@ -122,7 +122,7 @@
 	}
 
 	.mm__flow .is-left {
-		background: color-mix(in srgb, var(--color-pageText) 15%, transparent);
+		background: var(--abt-ink-4);
 	}
 
 	/* On the month name's baseline, like a continuation of it. */
@@ -149,7 +149,7 @@
 		white-space: nowrap;
 		padding: var(--abt-space-1) var(--abt-space-3);
 		border-radius: 999px;
-		background: color-mix(in srgb, var(--abt-accent) 22%, transparent);
+		background: var(--abt-accent-3);
 		color: var(--abt-accent);
 		font-size: var(--abt-text-xs);
 		font-weight: 500;

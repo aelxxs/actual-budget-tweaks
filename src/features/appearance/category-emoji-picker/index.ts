@@ -55,7 +55,7 @@ const CSS = `
 	}
 
 	.abt-emoji-btn:hover {
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		background: var(--abt-ink-3);
 	}
 
 	.abt-emoji-btn--empty {

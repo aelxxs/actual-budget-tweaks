@@ -161,6 +161,6 @@
 	}
 
 	.bd__dot.is-left {
-		background: color-mix(in srgb, var(--color-pageText) 15%, transparent);
+		background: var(--abt-ink-4);
 	}
 </style>

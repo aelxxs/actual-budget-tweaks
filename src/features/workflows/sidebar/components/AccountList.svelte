@@ -396,7 +396,7 @@
 					>
 						<ChevronDown
 							class={collapsed[section.label] ? "caret collapsed" : "caret"}
-							color="var(--sb-fgm-a50)"
+							color="var(--abt-ink-5)"
 							strokeWidth={3}
 						/>
 					</button>

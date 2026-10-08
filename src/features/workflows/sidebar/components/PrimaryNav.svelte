@@ -113,7 +113,7 @@
 		<span class="nav-caret">
 			<ChevronDown
 				class={moreExpanded ? "caret" : "caret collapsed"}
-				color="var(--sb-fgm-a50)"
+				color="var(--abt-ink-5)"
 				strokeWidth={3}
 			/>
 		</span>

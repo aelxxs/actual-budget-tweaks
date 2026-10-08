@@ -1,7 +1,7 @@
 /*
  * ABT's shared UI: tokens, layout utilities, and controls. Components compose these and keep
  * their own CSS only for what's genuinely theirs. Everything is prefixed `abt-` because it
- * shares the page with Actual. Colours mix in pageText (not white) to work in any theme.
+ * shares the page with Actual.
  */
 
 :root {
@@ -27,16 +27,10 @@
 	/* Controls. */
 	--abt-control-h: 30px;
 	--abt-control-h-sm: 26px;
-	--abt-fill: color-mix(in srgb, var(--color-pageText) 10%, transparent);
-	--abt-fill-hover: color-mix(in srgb, var(--color-pageText) 17%, transparent);
-	--abt-line: color-mix(in srgb, var(--color-pageText) 10%, transparent);
-	/* Secondary text that stays legible on fills, where pageTextSubdued is faint. */
-	--abt-muted: color-mix(in srgb, var(--color-pageText) 72%, transparent);
+
+	/* The two colours every tint mixes from. Tints mix in ink (not white) to work in any theme. */
+	--abt-ink: var(--color-pageText);
 	--abt-accent: var(--color-sidebarItemAccentSelected);
-	--abt-accent-text: color-mix(in srgb, var(--abt-accent) 75%, var(--color-pageText));
-	/* The chosen option, as the Live sidebar marks its active item. */
-	--abt-selected-bg: color-mix(in srgb, var(--abt-accent) 15%, transparent);
-	--abt-selected-fg: var(--abt-accent-text);
 	/* How strongly accent cards (To Budget, current month, suggestions) wash in their colour. */
 	--abt-wash: 14%;
 	--abt-glow-duration: 450ms;
@@ -44,13 +38,46 @@
 	/* Side panel surfaces. Cards match the budget's current-month column, the same kind of surface
 	   on the same page background. */
 	--abt-panel-accent-secondary: var(--color-pageTextLink);
-	--abt-panel-accent-muted: color-mix(in srgb, var(--abt-accent) 10%, transparent);
 	/* Side panel header, matched by page headers beside it (border included). */
 	--abt-panel-header-height: 51px;
 	--abt-panel-surface: var(--color-budgetCurrentMonth, var(--color-tableBackground));
-	--abt-panel-surface-hover: color-mix(in srgb, var(--color-pageText) 4%, var(--abt-panel-surface));
-	--abt-panel-border: color-mix(in srgb, var(--color-pageText) 9%, transparent);
-	--abt-panel-track: color-mix(in srgb, var(--color-pageText) 8%, transparent);
+}
+
+/* The live sidebar has its own ink and accent (themes can give it a different background). */
+.sidebar {
+	--abt-ink: var(--color-sidebarItemText);
+	--abt-accent: var(--color-sidebarItemAccentSelected);
+}
+
+/* Tints. Declared again wherever the ink changes, since a custom property mixes where it's declared. */
+:root,
+.sidebar {
+	--abt-ink-1: color-mix(in srgb, var(--abt-ink) 4%, transparent);
+	--abt-ink-2: color-mix(in srgb, var(--abt-ink) 8%, transparent);
+	--abt-ink-3: color-mix(in srgb, var(--abt-ink) 12%, transparent);
+	--abt-ink-4: color-mix(in srgb, var(--abt-ink) 18%, transparent);
+	--abt-ink-5: color-mix(in srgb, var(--abt-ink) 26%, transparent);
+	/* Text: faint hints, quiet labels, and secondary text that stays legible on fills. */
+	--abt-subtle: color-mix(in srgb, var(--abt-ink) 45%, transparent);
+	--abt-soft: color-mix(in srgb, var(--abt-ink) 60%, transparent);
+	--abt-muted: color-mix(in srgb, var(--abt-ink) 72%, transparent);
+
+	--abt-accent-1: color-mix(in srgb, var(--abt-accent) 8%, transparent);
+	--abt-accent-2: color-mix(in srgb, var(--abt-accent) 15%, transparent);
+	--abt-accent-3: color-mix(in srgb, var(--abt-accent) 30%, transparent);
+	--abt-accent-4: color-mix(in srgb, var(--abt-accent) 55%, transparent);
+	--abt-accent-text: color-mix(in srgb, var(--abt-accent) 75%, var(--abt-ink));
+
+	/* What components read. */
+	--abt-fill: var(--abt-ink-3);
+	--abt-fill-hover: var(--abt-ink-4);
+	--abt-line: var(--abt-ink-3);
+	/* The chosen option, as the Live sidebar marks its active item. */
+	--abt-selected-bg: var(--abt-accent-2);
+	--abt-selected-fg: var(--abt-accent-text);
+	--abt-panel-surface-hover: color-mix(in srgb, var(--abt-ink) 4%, var(--abt-panel-surface));
+	--abt-panel-border: var(--abt-ink-2);
+	--abt-panel-track: var(--abt-ink-2);
 }
 
 /* An accent card's glowing border: its angle, reach and brightness. Registered so hovering can
@@ -151,7 +178,7 @@
 	border-radius: var(--abt-radius);
 	background: var(--color-tooltipBackground, var(--color-pageBackground));
 	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
-	color: var(--color-pageText);
+	color: var(--abt-ink);
 }
 
 /* Placeholder for content that's loading; size it with width and height. */
@@ -159,13 +186,7 @@
 	display: block;
 	border-radius: var(--abt-radius-sm);
 	background:
-		linear-gradient(
-				90deg,
-				transparent,
-				color-mix(in srgb, var(--color-pageText) 6%, transparent),
-				transparent
-			)
-			0 0 / 200% 100% no-repeat,
+		linear-gradient(90deg, transparent, var(--abt-ink-2), transparent) 0 0 / 200% 100% no-repeat,
 		var(--abt-panel-track);
 	animation: abt-skeleton 1.4s ease-in-out infinite;
 }
@@ -211,8 +232,8 @@
  * don't compete with the content beside them.
  */
 .abt-controls-quiet {
-	--abt-fill: color-mix(in srgb, var(--color-pageText) 6%, transparent);
-	--abt-fill-hover: color-mix(in srgb, var(--color-pageText) 12%, transparent);
+	--abt-fill: var(--abt-ink-2);
+	--abt-fill-hover: var(--abt-ink-3);
 }
 
 .abt-controls-quiet .abt-tone-accent {
@@ -231,7 +252,7 @@
 	border: 1px solid var(--abt-btn-line, var(--abt-line));
 	border-radius: var(--abt-radius);
 	background: var(--abt-btn-bg, var(--abt-fill));
-	color: var(--abt-btn-fg, var(--color-pageText));
+	color: var(--abt-btn-fg, var(--abt-ink));
 	font: inherit;
 	font-size: var(--abt-text-md);
 	font-weight: 500;
@@ -273,7 +294,7 @@
 }
 
 .abt-btn--icon:hover:not(:disabled) {
-	color: var(--color-pageText);
+	color: var(--abt-ink);
 }
 
 /* No box until hovered: for icon buttons sitting inside a card. */
@@ -363,7 +384,7 @@
 }
 
 .abt-seg > button:hover:not([aria-pressed="true"], :disabled) {
-	color: var(--color-pageText);
+	color: var(--abt-ink);
 }
 
 /* Same weight as the others, so choosing one doesn't shift the row. */
@@ -395,7 +416,7 @@
 	border: 1px solid var(--abt-line);
 	border-radius: var(--abt-radius);
 	background: var(--abt-fill);
-	color: var(--color-pageText);
+	color: var(--abt-ink);
 	font: inherit;
 	font-size: var(--abt-text-md);
 	outline: none;

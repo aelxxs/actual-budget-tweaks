@@ -83,6 +83,6 @@
 		height: 2.5px;
 		border-radius: 2px;
 		flex-shrink: 0;
-		background: color-mix(in srgb, var(--abt-accent) 45%, transparent);
+		background: var(--abt-accent-4);
 	}
 </style>

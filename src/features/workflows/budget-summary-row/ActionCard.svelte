@@ -361,7 +361,7 @@
 	}
 
 	.ac:hover {
-		border-color: color-mix(in srgb, var(--color-pageText) 20%, transparent);
+		border-color: var(--abt-ink-4);
 	}
 
 	/* Washed in the suggestion's colour, the border glowing from the corner like To Budget's. */
@@ -440,7 +440,7 @@
 	}
 
 	.ac__main:focus-visible::after {
-		outline: 2px solid color-mix(in srgb, var(--abt-accent) 55%, transparent);
+		outline: 2px solid var(--abt-accent-4);
 		outline-offset: -2px;
 	}
 

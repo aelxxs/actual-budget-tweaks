@@ -131,7 +131,7 @@
 	.gf__bar {
 		height: 6px;
 		border-radius: 999px;
-		background: color-mix(in srgb, var(--color-pageText) 10%, transparent);
+		background: var(--abt-ink-3);
 		overflow: hidden;
 	}
 
@@ -176,9 +176,9 @@
 	/* Tinted rather than solid: no theme-dependent text-on-accent contrast to get wrong. */
 	.gf__btn {
 		padding: 7px 10px;
-		border: 1px solid color-mix(in srgb, var(--abt-accent) 35%, transparent);
+		border: 1px solid var(--abt-accent-3);
 		border-radius: var(--abt-radius-sm);
-		background: color-mix(in srgb, var(--abt-accent) 16%, transparent);
+		background: var(--abt-accent-2);
 		color: var(--abt-accent);
 		font: inherit;
 		font-weight: 600;
@@ -189,8 +189,8 @@
 	}
 
 	.gf__btn:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--abt-accent) 26%, transparent);
-		border-color: color-mix(in srgb, var(--abt-accent) 55%, transparent);
+		background: var(--abt-accent-3);
+		border-color: var(--abt-accent-4);
 	}
 
 	.gf__btn:focus-visible {

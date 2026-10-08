@@ -50,7 +50,7 @@
 		padding: 7px 8px;
 		margin: 0 -8px;
 		border-radius: var(--abt-radius-sm);
-		border-top: 1px solid color-mix(in srgb, var(--color-pageText) 7%, transparent);
+		border-top: 1px solid var(--abt-ink-2);
 		cursor: pointer;
 		transition: background-color 0.15s;
 	}
@@ -60,7 +60,7 @@
 	}
 
 	.switch-row:hover {
-		background: color-mix(in srgb, var(--color-pageText) 5%, transparent);
+		background: var(--abt-ink-1);
 	}
 
 	.switch-row__icon {
