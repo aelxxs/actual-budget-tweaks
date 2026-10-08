@@ -165,7 +165,15 @@ export const sidePanel = {
 				return;
 			}
 
-			if (document.querySelector(`[${SIDEBAR_ATTR}]`)) return;
+			const existing = document.querySelector<HTMLElement>(`[${SIDEBAR_ATTR}]`);
+			if (existing) {
+				// React appends a remounted page after it; base.css finds the page as the 4th child.
+				if (existing.parentElement === body && body.lastElementChild !== existing) {
+					existing.style.animation = "none";
+					body.appendChild(existing);
+				}
+				return;
+			}
 
 			const sidebar = createElement("div", { className: "abt-side-drawer-sidebar" });
 			sidebar.setAttribute(SIDEBAR_ATTR, "true");
