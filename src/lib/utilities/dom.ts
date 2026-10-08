@@ -1,5 +1,4 @@
-const TOOLBAR_GROUP_SELECTOR = ".css-125dinm";
-const TOOLBAR_BTN_CLASS = "css-70zz4x";
+import { findAccountToolbar } from "./native-ui";
 
 export function createToolbarButton(options: {
 	id: string;
@@ -9,12 +8,13 @@ export function createToolbarButton(options: {
 }): HTMLButtonElement | null {
 	if (document.getElementById(options.id)) return null;
 
-	const group = document.querySelector(TOOLBAR_GROUP_SELECTOR);
+	const group = findAccountToolbar();
 	if (!group) return null;
 
 	const btn = document.createElement("button");
 	btn.id = options.id;
-	btn.className = TOOLBAR_BTN_CLASS;
+	// Borrow a native button's class so ours matches whatever Actual ships.
+	btn.className = group.querySelector("button")?.className ?? "";
 	btn.type = "button";
 	btn.title = options.title;
 	btn.setAttribute("aria-label", options.title);

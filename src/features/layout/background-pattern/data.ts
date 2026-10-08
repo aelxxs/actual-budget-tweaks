@@ -13,5 +13,5 @@ export const bgPatterns: Record<string, string> = {
 export const BG_PATTERN_SELECTORS = `
 :has([role="main"]),
 :has([data-testid="budget-summary"]),
-.css-jdrt9o
+[data-abt-content-grid] > div:nth-child(4)
 `;

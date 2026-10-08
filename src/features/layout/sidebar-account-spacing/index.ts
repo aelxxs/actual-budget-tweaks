@@ -23,20 +23,13 @@ export const sidebarAccountSpacing = defineSetting({
 	            --sb-row-pad-y: ${LIVE_ROW_PAD[value] ?? "5px"};
 	        }
 
-	        /* sidebar -- section title */
-	        .css-hfi7l9 {
-	            border-bottom: 2.5px solid var(--ctp-blue, var(--color-pageTextLink));
-	            padding-bottom: ${value};
-	        }
-
 	        /* sidebar -- acct title */
-	        .css-15e1mkk {
+	        a[href^="/accounts"] > div:last-of-type > div:first-of-type {
 	            padding-block: ${value};
 	        }
 
 	        /* sidebar -- small link */
-	        .css-13d5vlg,
-	        .css-e5dykp {
+	        [data-testid="sidebar-primary-buttons"] :is(a[href="/payees"], a[href="/rules"], a[href="/bank-sync"], a[href="/tags"], a[href="/settings"]) {
 	            padding-block: calc(${value} + .4rem);
 	        }
 		`,

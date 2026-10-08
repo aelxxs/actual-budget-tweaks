@@ -22,7 +22,7 @@ export const budgetPageBorders = defineSetting({
 		}
 
 		/* /budget -- table body. */
-		.css-5co8lf {
+		[data-testid="budget-table-scroll-container"] > div > div {
 			border: var(--border);
 			border-top: 0px;
 		}

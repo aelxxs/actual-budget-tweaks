@@ -239,13 +239,13 @@ export const sidebarRedesign = defineSetting({
 
 
             /* —— Add account —— */
-            .css-37q6ds {
+            [data-abt-sidebar-footer] {
                 flex-shrink: 0;
                 padding: 0px;
                 border-top: var(--border);
                 border-color: var(--color-sidebarItemBackgroundHover);
             }
-            .css-37q6ds button {
+            [data-abt-sidebar-footer] button {
                 margin-bottom: 0px !important;
                 padding-block: 0.75rem !important;
                 border-radius: 0px !important;
@@ -282,7 +282,7 @@ export const sidebarRedesign = defineSetting({
 				background: color-mix(in srgb, var(--color-sidebarItemText) 8%, transparent);
 			}
 
-            .css-1q5hn2l {
+            [data-abt-sidebar-header] {
                 border-bottom: var(--border);
                 border-color: var(--color-sidebarItemBackgroundHover);
                 padding-block: 1rem;
@@ -362,7 +362,7 @@ export const sidebarRedesign = defineSetting({
 			}
 
 			/* ── Add account button — override back ── */
-			.css-37q6ds button[data-react-aria-pressable] {
+			[data-abt-sidebar-footer] button[data-react-aria-pressable] {
 				border-radius: 0px !important;
 				margin-inline: 0px !important;
 				margin-bottom: 0px !important;

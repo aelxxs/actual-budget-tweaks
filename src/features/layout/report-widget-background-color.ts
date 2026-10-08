@@ -11,8 +11,8 @@ export const reportWidgetBackgroundColor = defineSetting({
 		defaultValue: false,
 	},
 	css: () => `
-		.css-w4wco7,
-		.css-eiyo5a {
+		.react-grid-item > div > div,
+		.react-grid-item > div > button > div {
 			width: 100%;
 			height: 100%;
 			transition: box-shadow 0.25s;
