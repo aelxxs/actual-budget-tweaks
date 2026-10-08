@@ -30,6 +30,7 @@ const GLYPHS: [string, IconName][] = [
 	['path[d^="M14.143 1.714"]', "minimize"],
 	['path[d^="M19.611 2.571"]', "maximize"],
 	['path[d^="M10 12a2 2 0 1 1"]', "moreHorizontal"],
+	['path[d^="M24.483.576"]', "chevronDown"],
 ];
 
 // Swaps a native glyph for ours by masking the svg itself, so React keeps owning its nodes.
@@ -98,6 +99,12 @@ const CSS = `
 	}
 
 	${swaps}
+
+	/* The selected-transactions menu's caret: a dropdown chevron, smaller than the icons. */
+	${BAR} svg:has(path[d^="M24.483.576"]) {
+		width: 12px !important;
+		height: 12px !important;
+	}
 
 	/* Actual turns its dots upright; ours already read across. Only these, so Bank Sync still spins. */
 	${BAR} svg:has(path[d^="M10 12a2 2 0 1 1"]) {
