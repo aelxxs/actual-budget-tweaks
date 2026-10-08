@@ -204,6 +204,27 @@ export default defineUnlistedScript(async () => {
 		});
 	}
 
+	// Marks the transaction rows Actual shows as new from a sync or import. That's its rows'
+	// `added` prop, which lives in React, out of content scripts' reach; its styling is a generated class.
+	document.addEventListener("abt:api:mark-new-rows", () => {
+		const rows = document.querySelectorAll('[data-testid="transaction-table"] [data-testid="row"]');
+		for (const row of rows) {
+			const key = Object.keys(row).find((k) => k.startsWith("__reactFiber$"));
+			let fiber = key ? row[key] : null;
+			let added = false;
+			for (let i = 0; i < 8 && fiber; i++) {
+				const props = fiber.memoizedProps;
+				if (props && "added" in props) {
+					added = !!props.added;
+					break;
+				}
+				fiber = fiber.return;
+			}
+			if (added !== row.hasAttribute("data-abt-tx-new"))
+				row.toggleAttribute("data-abt-tx-new", added);
+		}
+	});
+
 	(function attachStore(retries = 50) {
 		const store = findStore();
 		if (store) return watchImports(store);
