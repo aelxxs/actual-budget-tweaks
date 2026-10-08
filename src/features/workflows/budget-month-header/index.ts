@@ -92,9 +92,10 @@ function sync(): void {
 	if (!slot) return;
 	unmountHeader();
 	host = document.createElement("div");
-	// Out to the column's edges, where the calendar's header sits (it zeroes this padding).
+	// Out to the column's edges, where the calendar's header sits. The top padding is base.css's,
+	// read as a variable since it may only apply after the header mounts.
 	const pad = getComputedStyle(slot.column);
-	host.style.cssText = `flex-shrink: 0; margin: -${pad.paddingTop} -${pad.paddingRight} 0 -${pad.paddingLeft};`;
+	host.style.cssText = `flex-shrink: 0; margin: calc(-1 * var(--abt-page-pad-top, 0px)) -${pad.paddingRight} 0 -${pad.paddingLeft};`;
 	slot.column.insertBefore(host, slot.page);
 	instance = mount(MonthHeader, { target: host });
 }

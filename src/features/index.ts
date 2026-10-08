@@ -11,6 +11,7 @@ import { modernTitlebar } from "./appearance/titlebar";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { modernReconcile } from "./workflows/reconcile";
 import { modernToasts } from "./appearance/toasts";
+import { nativeHooks } from "./core/native-hooks";
 import { privacyMode } from "./core/privacy-mode";
 import { releaseNotification } from "./core/release-notification";
 import { scheduleHighlight } from "./core/schedule-highlight";
@@ -111,6 +112,7 @@ const experimental = [
 
 export const coreScripts = [
 	sidePanel,
+	nativeHooks,
 	scheduleHighlight,
 	tooltipStyling,
 	releaseNotification,

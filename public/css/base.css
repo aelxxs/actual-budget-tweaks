@@ -7,51 +7,43 @@ body {
 	overscroll-behavior: none;
 }
 
-/* select budget */
-.css-1neanul {
-	box-shadow: none;
-	border-radius: var(--border-radius);
-	border: var(--border);
-	background-color: var(--color-buttonNormalBackground);
+/* Page frame. The side panel marks Actual's content grid on every page (side-panel/index.ts);
+   its children are the header, toasts, the bank-sync banner, then the page. */
+[data-abt-content-grid] > div:nth-child(1) {
+	position: sticky;
+	height: 3.75rem;
+	flex-shrink: 0;
+	padding: 1.5rem 1rem;
+	background-color: var(--color-pageBackground);
 }
 
-/* sidebar */
-.css-10l5dm1 {
-	border-right: var(--border);
+[data-abt-content-grid] > div:nth-child(3) {
+	z-index: 1000 !important;
 }
 
-/* sidebar -- floating */
-.css-10l5dm1 {
-	background-color: var(--color-sidebarBackground);
+/* A variable so the month header can cancel it whenever it lands (budget-month-header). */
+[data-abt-content-grid] > div:nth-child(4) {
+	--abt-page-pad-top: 1.5rem;
+	padding-top: var(--abt-page-pad-top);
 }
 
-.css-t86gtt {
-	border-top-right-radius: var(--border-radius);
-	border-bottom-right-radius: var(--border-radius);
-	border: var(--border);
+/* Budget and calendar, marked by core/native-hooks.ts. The month header row stays full width. */
+[data-abt-content-grid] > [data-abt-budget-content] > :not(:first-child) {
+	padding-inline: 0.5rem;
 }
 
-/* sidebar -- budget name */
-.css-1am57kc {
-	font-size: var(--abt-text-lg);
+/* Space under list and settings page titles; the title has no hook, the page body after it does. */
+[data-abt-content-grid] > div:nth-child(4) > div + [role="main"] {
+	margin-top: 0.5rem;
 }
 
-/* sidebar -- section title */
-.css-1wbfbxg {
-	border-bottom: 2.5px solid var(--ctp-blue);
-	padding-bottom: 0rem !important;
-	margin: 0px !important;
+/* Reports wraps the page container one level deeper. */
+[data-abt-content-grid] > div[data-testid="reports-page"] {
+	padding-top: 0;
 }
 
-/* sidebar -- account links */
-.css-11jfeu7,
-.css-1s4ggjo {
-	padding-left: 2rem;
-}
-
-/* sidebar -- account dot */
-.css-1dtbr3w {
-	left: 10px;
+[data-testid="reports-page"] > div:first-child {
+	padding-top: 1.5rem;
 }
 
 /* /budget -- budget cards */
@@ -68,10 +60,10 @@ body {
 	overflow: hidden;
 }
 
-/* /budget -- table body. */
-.css-5co8lf {
+/* /budget -- table body */
+[data-testid="budget-table-scroll-container"] > div > div {
 	box-shadow: none;
-	border-radius: 0rem 0rem var(--border-radius) var(--border-radius);
+	border-radius: 0 0 var(--border-radius) var(--border-radius);
 	margin-bottom: 1rem;
 }
 
@@ -88,23 +80,15 @@ body {
 	margin-inline: 0.4rem;
 }
 
-/* reports -- sidebar & header */
-.css-1nasyg7 {
-	padding-left: 12px;
-}
-
-[data-testid="reports-page"] .css-agc3hr {
-	margin-left: 12px;
-	margin-bottom: 0.75rem;
-}
-
-.css-132j4dj {
-	padding-right: 12px;
-}
-
 /* reports borders */
 .react-grid-item {
 	border-radius: var(--border-radius);
+}
+
+/* The widget's card paints square corners; clip it inside the item's 1px border. */
+.react-grid-item > :first-child {
+	border-radius: max(0px, calc(var(--border-radius) - 1px));
+	overflow: hidden;
 }
 
 .recharts-surface {
@@ -112,20 +96,41 @@ body {
 	border-bottom-right-radius: var(--border-radius);
 }
 
-/* /reports -- bottom border */
-.css-142b4ef {
-	border-bottom: var(--border);
+/* /settings -- card gap */
+[data-testid="settings"] {
+	gap: 1.25rem;
 }
 
-/* /settings -- card */
-.css-1lr7sla {
+/* /settings -- cards (the last child is the advanced-settings toggle) */
+[data-testid="settings"] > div:not(:last-child) {
 	border-radius: var(--border-radius);
 	border: var(--border);
 }
 
-/* /settings -- card gap */
-[data-testid="settings"] {
-	gap: 1.25rem;
+/* List-page tables and search boxes, marked by core/native-hooks.ts */
+[data-abt-table] {
+	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
+}
+
+/* /bank-sync -- provider cards and the account table, which is bordered on all sides */
+[data-abt-content-grid] [data-testid^="bank-sync-provider-"],
+[data-abt-content-grid] [data-abt-card-table] {
+	border-radius: var(--border-radius);
+}
+
+/* Tables in modals (e.g. a schedule's matching transactions, found schedules) */
+[role="dialog"] [data-testid="table"],
+[role="dialog"] [data-abt-card-table] {
+	border-radius: calc(var(--border-radius) / 1.5);
+}
+
+[data-abt-search] {
+	color: var(--color-formInputText);
+	border-radius: calc(var(--border-radius) / 1.5);
+	border: var(--border);
+	padding: 0.25rem;
+	height: 2.35rem;
 }
 
 /* select checkbox padding */
@@ -133,47 +138,14 @@ body {
 	padding-inline: 1rem;
 }
 
-/* /schedules -- pills TODO: these are broken; need to update */
-.css-1whggh0,
-.css-f0xl0f,
-.css-6k1ng3,
-.css-1kc57on {
-	border-radius: var(--border-radius);
-}
-.css-6k1ng3,
-.css-f0xl0f,
-.css-1whggh0 {
-	background-color: var(--color-tableBorder);
-}
-
-/* content top padding */
-.css-3oa7u7,
-.css-jdrt9o,
-.css-ect7vi,
-.css-k9t6j1,
-.css-xggax0 {
-	padding-top: 3rem;
-}
-
-.css-3oa7u7 {
-	padding-inline: 0.5rem;
-	padding-top: 4rem;
-}
-
-/* search inputs */
-textarea,
-.css-onc7iq,
-.css-1pc0tw7 {
+/* textareas */
+textarea {
 	color: var(--color-formInputText);
 	border-radius: calc(var(--border-radius) / 1.5);
 	border: var(--border);
 	/* background-color: var(--ctp-mantle); */
 	padding: 0.25rem;
 	height: 2.35rem;
-}
-
-.css-onc7iq {
-	border-color: var(--ctp-blue);
 }
 
 /* consistent popups/modals */
@@ -191,82 +163,11 @@ textarea,
 	border-width: 0px;
 }
 
-.css-tz2vqy {
-	border: 0px;
-}
-
-/* here down to text color: broken and needs updating */
-.css-1jb61p2 {
-	margin-top: 0.35rem;
-}
-
-.css-hhza4t *,
-.css-19kjqc5 .css-1cmz3zb {
-	color: var(--color-tableText) !important;
-}
-
-.css-1r57ten {
-	background-color: var(--color-tableBackground);
-}
-
-/* no accounts splash */
-.css-os71s2 {
-	background-color: var(--color-tableHeaderBackground);
-	border-top: 0px;
-}
-
-/* text color */
-/* .css-70zz4x {
-	color: var(--ctp-text) !important;
-} */
-
-.css-ecyk1h {
-	color: var(--ctp-crust);
-}
-
-/* cmd + k command menu */
-.css-1nn1iu8 {
-	border-bottom: var(--border);
-}
-
-/* buttons */
-.css-myul91,
-.css-189odvl,
-.css-3uywls {
-	border-radius: min(var(--border-radius), 0.5rem);
-}
-
-/* bank sync banner */
-.css-u6wtsi {
-	z-index: 1000 !important;
-}
-
-/* keyboard shortcuts */
-.css-125b5ef,
-.css-yvyj5l,
-.css-m142m {
-	border-radius: var(--border-radius);
-}
-
 /* reports */
 [id="custom-report-content"] {
 	border-top-left-radius: var(--border-radius);
 	border-left: var(--border);
 	border-top: var(--border);
-}
-
-.css-4hlm7y {
-	border: var(--border);
-}
-
-.css-w4wco7,
-.css-eiyo5a {
-	border-radius: var(--border-radius);
-}
-
-.css-1eyeead,
-.css-eadiqq {
-	padding-bottom: 0.75rem;
 }
 
 /* charts */
@@ -282,14 +183,6 @@ textarea,
 	overflow: hidden;
 }
 
-/* /tags */
-.css-agc3hr {
-	margin-bottom: 0.5rem;
-}
-.css-g06fz9 {
-	margin-top: 0.75rem;
-}
-
 /* green balance */
 [data-testid="balance"] {
 	color: var(--color-noticeTextLight);
@@ -299,15 +192,6 @@ textarea,
 [data-testid="balance"][data-cellname^="-"] {
 	color: var(--color-errorText);
 	font-weight: bold;
-}
-
-/* tables border radius */
-.css-g3p8fk,
-.css-1jho2h9,
-.css-4oi62a,
-.css-g06fz9 {
-	border-top-left-radius: var(--border-radius);
-	border-top-right-radius: var(--border-radius);
 }
 
 /* svg icon in button */
@@ -327,58 +211,11 @@ textarea,
 	filter: none;
 }
 
-/* header */
-
-.css-pq65pe {
-	position: sticky;
-	background-color: var(--color-pageBackground);
-	padding: 1rem;
-	padding-block: 1.5rem;
-	height: 3.75rem;
-	flex-shrink: 0;
-}
-.css-3oa7u7,
-.css-jdrt9o,
-.css-ect7vi,
-.css-k9t6j1,
-.css-xggax0 {
-	padding-top: 1.5rem;
-}
-
 .abt-side-drawer-sidebar {
 	border-top: var(--border);
 	border-top-left-radius: var(--border-radius);
 }
 
-.css-125dinm button {
-	margin: 0px;
-	display: flex;
-	align-items: center;
-	border-radius: calc(var(--border-radius) / 1.5);
-	padding: 0.7rem !important;
-	height: 2.35rem;
-}
-
-.css-1ynskv0 {
-	padding-inline: 10px;
-}
-
-.css-125dinm {
-	gap: 7.5;
-}
-
 [data-testid="spent"] svg {
 	color: var(--color-pageTextLight) !important;
-}
-
-.css-15svmuk:hover,
-.css-15svmuk *,
-.css-276q18:hover,
-.css-276q18 * {
-	border-radius: 0px !important;
-}
-
-/* "You're up to date" text */
-.css-taa7id {
-	color: color-contrast(var(--color-pillBackground));
 }
