@@ -132,7 +132,7 @@
 	.cp {
 		min-width: 240px;
 		max-width: 320px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		padding: 10px 12px;
 	}
 
@@ -146,11 +146,11 @@
 
 	.cp__name {
 		font-weight: 600;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 	}
 
 	.cp__month {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		flex-shrink: 0;
 	}
@@ -183,7 +183,7 @@
 
 	.cp__status {
 		margin-top: 4px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 	}
 
@@ -226,7 +226,7 @@
 
 	.cp__hint {
 		display: block;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--color-noticeTextLight);
 	}
 
@@ -238,7 +238,7 @@
 		margin-top: 8px;
 		padding-top: 8px;
 		border-top: 1px solid var(--abt-ink-2);
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-warningText);
 	}
 </style>

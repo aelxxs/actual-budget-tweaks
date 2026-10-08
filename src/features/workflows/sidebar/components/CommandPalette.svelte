@@ -536,7 +536,7 @@
 		max-height: min(440px, 68vh);
 		background: var(--sb-bg);
 		border: 1px solid var(--abt-ink-2) !important;
-		border-radius: 14px;
+		border-radius: var(--abt-radius-lg);
 		box-shadow:
 			0 0 0 1px var(--sb-shadow-2),
 			0 24px 64px var(--sb-shadow);
@@ -589,7 +589,7 @@
 		background: transparent;
 		padding: 0;
 		font-family: inherit;
-		font-size: 16px;
+		font-size: var(--abt-text-xl);
 		color: var(--abt-ink);
 	}
 	.cp-input::placeholder {
@@ -599,8 +599,8 @@
 		flex-shrink: 0;
 		padding: 2px 6px;
 		background: var(--abt-ink-3);
-		border-radius: 5px;
-		font-size: 10.5px;
+		border-radius: var(--abt-radius-sm);
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		letter-spacing: 0.2px;
 		color: var(--abt-subtle);
@@ -621,7 +621,7 @@
 	}
 	.cp-body::-webkit-scrollbar-thumb {
 		background: var(--abt-ink-4);
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		border: 2px solid transparent;
 		background-clip: padding-box;
 	}
@@ -643,7 +643,7 @@
 	}
 	.cp-group-label {
 		padding: 9px 10px 4px;
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		font-weight: 700;
 		letter-spacing: 0.7px;
 		text-transform: uppercase;
@@ -655,8 +655,8 @@
 		gap: 10px;
 		width: 100%;
 		padding: 7px 10px;
-		border-radius: 8px;
-		font-size: 13.5px;
+		border-radius: var(--abt-radius);
+		font-size: var(--abt-text-md);
 		letter-spacing: 0.1px;
 		color: var(--abt-ink);
 		text-align: left;
@@ -699,7 +699,7 @@
 	}
 	.cp-item-amount {
 		flex-shrink: 0;
-		font-size: 12.5px;
+		font-size: var(--abt-text-base);
 		color: var(--abt-soft);
 	}
 	.cp-item-amount.red {
@@ -718,7 +718,7 @@
 	.cp-swatch-dot {
 		width: 10px;
 		height: 10px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 		box-shadow: 0 0 0 1px var(--abt-ink-4);
 	}
@@ -732,7 +732,7 @@
 		margin: 0;
 		padding: 28px 0 32px;
 		text-align: center;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		color: var(--abt-soft);
 	}
 	.cp-foot {
@@ -749,7 +749,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 5px;
-		font-size: 11.5px;
+		font-size: var(--abt-text-sm);
 		color: var(--abt-subtle);
 	}
 </style>

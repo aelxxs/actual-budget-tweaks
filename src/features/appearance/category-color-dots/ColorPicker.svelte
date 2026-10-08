@@ -50,7 +50,7 @@
 		width: 100%;
 		aspect-ratio: 1;
 		border: 2px solid transparent;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		cursor: pointer;
 		transition:
 			border-color 0.08s,
@@ -80,7 +80,7 @@
 		width: 28px;
 		height: 28px;
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		padding: 0;
 		cursor: pointer;
 		background: none;
@@ -92,16 +92,16 @@
 
 	.cp__input::-webkit-color-swatch {
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 	}
 
 	.cp__input::-moz-color-swatch {
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 	}
 
 	.cp__label {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 	}
 </style>

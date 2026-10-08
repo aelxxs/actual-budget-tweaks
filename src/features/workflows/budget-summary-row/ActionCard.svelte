@@ -463,7 +463,7 @@
 
 	.ac__sub {
 		line-height: 16px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		color: var(--color-pageTextSubdued);
 		white-space: nowrap;
 		overflow: hidden;
@@ -508,7 +508,7 @@
 	}
 
 	.ac-menu__title {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 550;
 		white-space: nowrap;
 	}

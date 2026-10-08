@@ -45,7 +45,7 @@ const CSS = `
 		border-radius: 3px;
 		background: none;
 		cursor: pointer;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		line-height: 1;
 		padding: 0;
 		margin-right: 1px;

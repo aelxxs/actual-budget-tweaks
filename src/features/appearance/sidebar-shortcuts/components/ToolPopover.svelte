@@ -69,7 +69,7 @@
 	}
 
 	.popover__title {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 	}
 
@@ -79,9 +79,9 @@
 		color: var(--color-sidebarItemText);
 		opacity: 0.5;
 		cursor: pointer;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		padding: 2px 4px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		line-height: 1;
 	}
 

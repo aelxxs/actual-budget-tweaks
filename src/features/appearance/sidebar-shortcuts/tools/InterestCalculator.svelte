@@ -104,7 +104,7 @@
 	}
 
 	.ic__label {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
@@ -126,7 +126,7 @@
 
 	.ic__prefix,
 	.ic__suffix {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		padding: 0 8px;
 		flex-shrink: 0;
@@ -136,7 +136,7 @@
 		flex: 1;
 		min-width: 0;
 		padding: 6px 8px;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-family: inherit;
 		border: none;
 		background: none;
@@ -160,7 +160,7 @@
 	.ic__select {
 		width: 100%;
 		padding: 6px 8px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius-sm);
@@ -187,14 +187,14 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 	}
 
 	.ic__row--total {
 		padding-top: 4px;
 		border-top: 1px solid
 			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 15%, transparent);
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 600;
 	}
 

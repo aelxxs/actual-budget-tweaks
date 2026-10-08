@@ -121,7 +121,7 @@
 
 	.bd__line {
 		line-height: 20px;
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 		font-variant-numeric: tabular-nums;
 		color: var(--abt-muted);
 	}

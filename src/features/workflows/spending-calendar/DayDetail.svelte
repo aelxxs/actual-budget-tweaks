@@ -128,19 +128,19 @@
 	.dd__tx-dot {
 		width: 6px;
 		height: 6px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 	}
 
 	.dd__tx-meta {
 		display: flex;
 		gap: 6px;
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 	}
 
 	.dd__tx-notes {
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		opacity: 0.7;
 	}

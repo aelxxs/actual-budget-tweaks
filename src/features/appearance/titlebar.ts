@@ -100,7 +100,7 @@ const CSS = `
 		height: 14px !important;
 		padding: 0 3px !important;
 		line-height: 14px !important;
-		font-size: 9px !important;
+		font-size: var(--abt-text-2xs) !important;
 	}
 
 	${UNCATEGORIZED},
@@ -111,8 +111,8 @@ const CSS = `
 		gap: 6px;
 		height: 24px;
 		padding: 0 var(--abt-space-3);
-		border-radius: 999px;
-		font-size: var(--abt-text-md);
+		border-radius: var(--abt-radius-pill);
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 	}
 
@@ -122,7 +122,7 @@ const CSS = `
 		content: "";
 		width: 6px;
 		height: 6px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: currentColor;
 	}
 

@@ -302,13 +302,13 @@
 
 	.item.is-half {
 		flex: 1 1 calc(50% - 3px);
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		justify-content: flex-start;
 	}
 
 	.item.is-wide {
 		flex: 1 1 100%;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		justify-content: flex-start;
 	}
 
@@ -323,12 +323,12 @@
 
 	.placeholder {
 		padding: 0 8px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		opacity: 0.5;
 	}
 
 	.favicon {
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		object-fit: contain;
 		display: block;
 	}
@@ -365,7 +365,7 @@
 		height: 18px;
 		padding: 0;
 		border: 1px solid var(--abt-line);
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: var(--color-tooltipBackground, var(--color-pageBackground));
 		color: var(--color-pageText);
 		cursor: pointer;

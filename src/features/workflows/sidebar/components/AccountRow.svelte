@@ -239,7 +239,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
-		border-radius: 7px;
+		border-radius: var(--abt-radius);
 		text-align: left;
 		transition: background 0.12s ease;
 	}
@@ -258,7 +258,7 @@
 	}
 	.account-name {
 		flex: 1 1 auto;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 500;
 		letter-spacing: 0.145px;
 		color: var(--abt-ink);
@@ -267,7 +267,7 @@
 		text-overflow: ellipsis;
 	}
 	.account-amount {
-		font-size: 12.5px;
+		font-size: var(--abt-text-base);
 		font-weight: 400;
 		letter-spacing: 0.14px;
 		text-transform: uppercase;
@@ -285,9 +285,9 @@
 		min-width: 16px;
 		height: 15px;
 		padding: 0 5px;
-		border-radius: 8px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--sb-attention-muted);
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 700;
 		letter-spacing: 0.2px;
 		color: var(--sb-attention);
@@ -334,20 +334,20 @@
 		width: 100%;
 		box-sizing: border-box;
 		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
-		border-radius: 7px;
+		border-radius: var(--abt-radius);
 		background: var(--abt-accent-1);
 	}
 	.account-rename {
 		flex: 1 1 auto;
 		min-width: 0;
 		font-family: inherit;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 500;
 		letter-spacing: 0.145px;
 		color: var(--abt-ink);
 		background: var(--sb-canvas);
 		border: 1px solid var(--abt-accent);
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		padding: 2px 6px;
 		outline: none;
 	}
@@ -394,7 +394,7 @@
 	}
 	/* accounts WITH an icon: keep it visible, just give it a subtle clickable highlight */
 	.acct-glyph.has-icon .acct-icon {
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		transition: background 0.1s ease;
 	}
 	.acct-glyph.has-icon:hover .acct-icon {

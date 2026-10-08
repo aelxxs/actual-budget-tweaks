@@ -145,7 +145,7 @@
 	}
 
 	.calc__expr {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		margin-bottom: 2px;
 	}
@@ -173,7 +173,7 @@
 		background: var(--abt-ink-2);
 		color: var(--color-pageText);
 		font-family: inherit;
-		font-size: 15px;
+		font-size: var(--abt-text-lg);
 		cursor: pointer;
 		transition: background 0.08s;
 		line-height: 1;
@@ -189,7 +189,7 @@
 
 	.calc__btn--fn {
 		color: var(--color-pageTextSubdued);
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 	}
 
 	.calc__btn--op {

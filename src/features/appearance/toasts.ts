@@ -17,12 +17,12 @@ const CSS = `
 		padding: var(--abt-space-4) 40px var(--abt-space-4) var(--abt-space-5) !important;
 		overflow: hidden;
 		border: 1px solid color-mix(in srgb, currentColor 22%, transparent) !important;
-		border-radius: 10px !important;
+		border-radius: var(--abt-radius) !important;
 		background: color-mix(in srgb, currentColor 7%, var(--color-tableBackground)) !important;
 		box-shadow:
 			0 10px 30px rgba(0, 0, 0, 0.28),
 			0 2px 6px rgba(0, 0, 0, 0.12) !important;
-		font-size: 13px !important;
+		font-size: var(--abt-text-md) !important;
 		line-height: 1.45;
 	}
 
@@ -90,7 +90,7 @@ const CSS = `
 	${ACTION} {
 		height: 26px;
 		padding: 0 var(--abt-space-4) !important;
-		border-radius: 999px !important;
+		border-radius: var(--abt-radius-pill) !important;
 		font-size: var(--abt-text-sm) !important;
 		font-weight: 500;
 		align-self: center;

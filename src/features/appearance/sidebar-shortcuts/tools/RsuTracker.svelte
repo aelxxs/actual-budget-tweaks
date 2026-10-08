@@ -99,14 +99,14 @@
 		width: 100%;
 		height: 100%;
 		padding: 0 8px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		overflow: hidden;
 		white-space: nowrap;
 	}
 
 	.rsu__sym {
 		font-weight: 700;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		opacity: 0.55;
 		flex-shrink: 0;
 	}
@@ -114,12 +114,12 @@
 	.rsu__val {
 		font-variant-numeric: tabular-nums;
 		font-weight: 500;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		flex-shrink: 0;
 	}
 
 	.rsu__growth {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 		margin-inline-start: auto;
@@ -146,7 +146,7 @@
 	}
 
 	.rsu__count {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		opacity: 0.45;
 		font-variant-numeric: tabular-nums;
 		flex-shrink: 0;
@@ -155,6 +155,6 @@
 	.rsu__dots {
 		opacity: 0.35;
 		margin-inline-start: auto;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 	}
 </style>

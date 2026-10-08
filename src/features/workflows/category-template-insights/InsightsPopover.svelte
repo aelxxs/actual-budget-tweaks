@@ -246,7 +246,7 @@
 	.pop {
 		min-width: 280px;
 		max-width: 440px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		padding: 10px 12px;
 	}
 
@@ -255,7 +255,7 @@
 	}
 	.pop__title {
 		font-weight: 600;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		margin-bottom: 4px;
 	}
 
@@ -302,7 +302,7 @@
 		gap: 8px;
 		padding: 6px 8px;
 		background: var(--abt-ink-1);
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 	}
 
 	.pop__priority {
@@ -324,7 +324,7 @@
 
 	.pop__raw {
 		font-family: var(--font-mono, ui-monospace, monospace);
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		opacity: 0.7;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -342,7 +342,7 @@
 		align-items: baseline;
 		gap: 6px;
 		margin-top: 2px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		opacity: 0.75;
 	}
 
@@ -362,8 +362,8 @@
 
 	.pop__status {
 		padding: 1px 6px;
-		border-radius: 10px;
-		font-size: 10px;
+		border-radius: var(--abt-radius-pill);
+		font-size: var(--abt-text-xs);
 		text-transform: uppercase;
 		letter-spacing: 0.4px;
 	}
@@ -385,7 +385,7 @@
 
 	.pop__missing {
 		margin-top: 3px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-errorText);
 	}
 
@@ -396,7 +396,7 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		opacity: 0.7;
 	}
 
@@ -407,7 +407,7 @@
 		border: 1px solid var(--abt-ink-4);
 		background: var(--abt-ink-2);
 		font-family: var(--font-mono, ui-monospace, monospace);
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		line-height: 1.2;
 	}
 </style>

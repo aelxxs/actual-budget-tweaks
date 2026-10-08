@@ -47,7 +47,7 @@
 	.switch__track {
 		position: absolute;
 		inset: 0;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background-color: var(--color-checkboxToggleBackground);
 		transition: background-color 0.15s;
 	}
@@ -58,7 +58,7 @@
 		left: 2px;
 		width: 12px;
 		height: 12px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: white;
 		transition: transform 0.15s;
 	}

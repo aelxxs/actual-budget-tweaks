@@ -875,7 +875,7 @@ export const resizableTransactionColumns = defineSetting({
 				right: 2px;
 				width: 1px;
 				height: 45%;
-				border-radius: 999px;
+				border-radius: var(--abt-radius-pill);
 				transform: translateY(-50%);
 				background: color-mix(in srgb, var(--color-tableText) 22%, transparent);
 				transition:

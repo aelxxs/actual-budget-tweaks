@@ -39,19 +39,19 @@
 	.skel-glyph {
 		width: 17px;
 		height: 17px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 		background: var(--abt-ink-3);
 	}
 	.skel-name {
 		height: 9px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-ink-3);
 	}
 	.skel-amount {
 		width: 34px;
 		height: 9px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 		background: var(--abt-ink-3);
 	}

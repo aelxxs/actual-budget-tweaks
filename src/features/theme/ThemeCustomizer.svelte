@@ -751,7 +751,7 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 	}
 
@@ -764,7 +764,7 @@
 	.auto-switch__pill {
 		width: 32px;
 		height: 18px;
-		border-radius: 9px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--color-pageTextSubdued);
 		position: relative;
 		transition: background 0.15s;
@@ -781,7 +781,7 @@
 		left: 2px;
 		width: 14px;
 		height: 14px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: var(--color-pageBackground);
 		transition: transform 0.15s;
 	}
@@ -809,7 +809,7 @@
 		display: flex;
 		align-items: center;
 		gap: 5px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--color-pageTextSubdued);
 		min-width: 52px;
@@ -825,7 +825,7 @@
 	}
 
 	.auto-switch__theme-name {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageText);
 		white-space: nowrap;
 		overflow: hidden;
@@ -833,7 +833,7 @@
 	}
 
 	.auto-switch__hint {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--color-pageTextSubdued);
 		font-style: italic;
 	}
@@ -847,7 +847,7 @@
 		gap: 6px;
 		width: 100%;
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		padding: 7px 12px;
@@ -881,7 +881,7 @@
 	.controls__search,
 	.controls__creator {
 		font-family: inherit;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		padding: 5px 8px;
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);
@@ -922,7 +922,7 @@
 	}
 
 	.gallery__section-label {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--color-pageTextSubdued);
@@ -945,7 +945,7 @@
 
 	.gallery__empty,
 	.gallery__status {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		color: var(--color-pageTextSubdued);
 		padding: 4px 0;
 		margin: 0;
@@ -1007,7 +1007,7 @@
 	}
 
 	.card__name {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		color: var(--color-pageText);
 		white-space: nowrap;
@@ -1024,11 +1024,11 @@
 	/* ── Badges ───────────────────────────────────────────────────────── */
 
 	.badge {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
 		padding: 2px 5px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		font-weight: 600;
 		border: 1px solid transparent;
 	}
@@ -1056,7 +1056,7 @@
 	/* ── Card details ─────────────────────────────────────────────────── */
 
 	.card__source {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		color: var(--color-pageTextSubdued);
 		white-space: nowrap;
 		overflow: hidden;
@@ -1078,10 +1078,10 @@
 		right: 5px;
 		width: 17px;
 		height: 17px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-accent);
 		color: var(--color-pageBackground);
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1102,7 +1102,7 @@
 		background: var(--abt-accent-1);
 		color: var(--abt-accent);
 		font-family: inherit;
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		letter-spacing: 0.04em;
 		font-weight: 600;
 		cursor: pointer;
@@ -1134,7 +1134,7 @@
 	}
 
 	.card__edits-list li {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		color: var(--color-pageTextSubdued);
 		padding: 1px 0;
 		white-space: nowrap;
@@ -1153,7 +1153,7 @@
 		right: 5px;
 		width: 15px;
 		height: 15px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		border: 2px solid var(--abt-accent-3);
 		border-top-color: var(--abt-accent);
 		animation: spin 0.6s linear infinite;
@@ -1180,7 +1180,7 @@
 		justify-content: center;
 		width: 22px;
 		height: 22px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		cursor: pointer;
 		color: var(--color-pageTextSubdued);
 		flex-shrink: 0;
@@ -1210,7 +1210,7 @@
 		justify-content: center;
 		width: 22px;
 		height: 22px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		cursor: pointer;
 		color: var(--color-pageTextSubdued);
 		flex-shrink: 0;

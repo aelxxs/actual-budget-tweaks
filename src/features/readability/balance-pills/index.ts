@@ -44,7 +44,7 @@ const CSS = (Object.keys(TONES) as Status[])
 		align-items: center;
 		gap: 4px;
 		padding: 1px 8px 1px 6px;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background: color-mix(in srgb, var(--abt-pill-tone) 18%, transparent);
 		color: color-mix(in srgb, var(--abt-pill-tone) 80%, var(--color-pageText)) !important;
 		font-variant-numeric: tabular-nums;

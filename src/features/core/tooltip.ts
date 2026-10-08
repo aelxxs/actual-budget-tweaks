@@ -12,11 +12,11 @@ const CSS = `
 		display: none;
 		max-width: 260px;
 		padding: 5px 8px;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		background: var(--color-menuBackground);
 		color: var(--color-menuItemText);
 		border: 1px solid var(--color-menuBorder);
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-family: inherit;
 		line-height: 1.4;
 		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);

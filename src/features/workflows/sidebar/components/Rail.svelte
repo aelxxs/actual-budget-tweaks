@@ -385,10 +385,10 @@
 		justify-content: center;
 		width: 34px;
 		height: 34px;
-		border-radius: 9px;
+		border-radius: var(--abt-radius);
 		background: linear-gradient(135deg, var(--abt-accent), var(--abt-accent));
 		color: #fff;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 800;
 		letter-spacing: 0.3px;
 		overflow: hidden;
@@ -481,10 +481,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 9px;
+		border-radius: var(--abt-radius);
 		background: var(--abt-ink-3);
 		color: var(--abt-ink);
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 700;
 		letter-spacing: 0.2px;
 		transition: filter 0.12s ease;
@@ -499,7 +499,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		border-radius: 9px;
+		border-radius: var(--abt-radius);
 	}
 	.rtile-wrap:hover .rtile {
 		filter: brightness(1.2);
@@ -543,7 +543,7 @@
 		justify-content: center;
 		width: 36px;
 		height: 36px;
-		border-radius: 9px;
+		border-radius: var(--abt-radius);
 		color: var(--abt-soft);
 		cursor: pointer;
 		flex-shrink: 0;

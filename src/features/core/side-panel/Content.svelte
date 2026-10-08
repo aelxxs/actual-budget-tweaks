@@ -182,7 +182,7 @@
 		width: 9px;
 		height: 26px;
 		border: 1px solid var(--abt-panel-border);
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		/* Three dots placed by proportion, so they spread apart as the pill grows. */
 		background:
 			radial-gradient(circle, var(--grip-dot) 1.2px, transparent 1.7px) 50% 18% / 6px 6px no-repeat,
@@ -246,7 +246,7 @@
 
 	.abt-side-drawer-title {
 		margin: 0;
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		line-height: 1.3;
 		font-weight: 700;
 		color: var(--color-pageText);

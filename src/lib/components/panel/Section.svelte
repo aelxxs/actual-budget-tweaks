@@ -116,20 +116,20 @@
 	.title {
 		flex: 1;
 		min-width: 0;
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.7px;
 	}
 
 	.count {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-variant-numeric: tabular-nums;
 		color: color-mix(in srgb, currentColor 65%, var(--color-pageText));
 	}
 
 	.trailing {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;

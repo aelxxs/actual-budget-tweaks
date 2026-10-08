@@ -97,7 +97,7 @@
 	}
 
 	.flow__available {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		display: flex;
 		align-items: baseline;
@@ -105,7 +105,7 @@
 	}
 
 	.flow__available-val {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 		color: var(--color-pageText);
@@ -146,7 +146,7 @@
 		display: flex;
 		align-items: center;
 		gap: 5px;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--color-pageTextSubdued);
 	}
 

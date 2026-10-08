@@ -403,7 +403,7 @@
 		background: none;
 		color: var(--color-pageText);
 		font: inherit;
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 		cursor: pointer;
 		transition:
 			background 0.1s,
@@ -463,7 +463,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 		color: var(--rp-tone);
@@ -505,7 +505,7 @@
 		align-items: center;
 		gap: var(--abt-space-2);
 		min-height: 26px;
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 	}
 
 	.rp__rows > .rp__line:not(:has(.rp__line-op)) {
@@ -608,7 +608,7 @@
 		flex-shrink: 0;
 		padding: 3px;
 		border: none;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background: none;
 		color: var(--abt-muted);
 		cursor: pointer;
@@ -632,7 +632,7 @@
 		flex: 1;
 		flex-direction: column;
 		min-width: 0;
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 	}
 
 	.rp__item-payee {
@@ -643,7 +643,7 @@
 
 	.rp__item-amount {
 		flex-shrink: 0;
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 		font-variant-numeric: tabular-nums;
 	}
 

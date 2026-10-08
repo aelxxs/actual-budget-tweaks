@@ -34,7 +34,7 @@ const CSS = `
 	.abt-cat-dot {
 		width: 7px;
 		height: 7px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		border: none;
 		padding: 0;
 		cursor: pointer;
@@ -50,7 +50,7 @@ const CSS = `
 	.abt-tx-cat-dot {
 		width: 7px;
 		height: 7px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 		display: inline-block;
 		margin-right: 5px;

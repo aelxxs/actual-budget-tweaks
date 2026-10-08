@@ -75,7 +75,7 @@
 
 	.bpp-label {
 		display: block;
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		font-weight: 600;

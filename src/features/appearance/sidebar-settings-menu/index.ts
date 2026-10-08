@@ -17,7 +17,7 @@ const CSS = `
 		justify-content: center;
 		color: currentColor;
 		padding: 5px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		cursor: pointer;
 		flex-shrink: 0;
 	}

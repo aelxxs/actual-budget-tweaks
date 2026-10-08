@@ -85,7 +85,7 @@
 		width: 48px;
 		height: 48px;
 		flex-shrink: 0;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 	}
 
 	.sk__stack {

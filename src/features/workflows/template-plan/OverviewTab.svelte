@@ -104,7 +104,7 @@
 						/>
 					{/if}
 				</svg>
-				<div class="abt-tab-overview-ring-label" style="font-size:9px">
+				<div class="abt-tab-overview-ring-label" style="font-size:var(--abt-text-2xs)">
 					{data.totalBudgeted > 0 ? `${spentPctCapped}%` : "—"}
 				</div>
 			</div>

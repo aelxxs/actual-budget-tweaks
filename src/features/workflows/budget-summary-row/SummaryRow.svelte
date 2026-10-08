@@ -237,7 +237,7 @@
 		text-overflow: ellipsis;
 		height: 16px;
 		line-height: 16px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		color: var(--color-pageTextSubdued);
 		white-space: nowrap;
 	}
@@ -249,7 +249,7 @@
 	.sr__dot {
 		width: 6px;
 		height: 6px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: currentColor;
 		display: inline-block;
 		margin-right: var(--abt-space-2);
@@ -262,7 +262,7 @@
 
 	.sr__card.is-skeleton > span {
 		width: 60%;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		background: var(--abt-panel-track);
 	}
 
@@ -287,7 +287,7 @@
 	}
 
 	.sr__count {
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		color: var(--color-pageTextSubdued);
 	}

@@ -57,7 +57,7 @@
 
 	.color-row__label {
 		flex: 1;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextLight);
 		white-space: nowrap;
 		overflow: hidden;
@@ -74,10 +74,10 @@
 
 	.color-row__hex {
 		font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", monospace;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		width: 68px;
 		padding: 3px 5px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-formInputBackground);
 		color: var(--color-formInputText);
@@ -94,7 +94,7 @@
 		appearance: none;
 		width: 22px;
 		height: 22px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: none;
 		cursor: pointer;

@@ -26,7 +26,7 @@ const CSS = `
 	.abt-to-budget-label {
 		text-align: left !important;
 		color: var(--color-pageTextSubdued) !important;
-		font-size: 11px !important;
+		font-size: var(--abt-text-sm) !important;
 		padding-left: 16px;
 	}
 

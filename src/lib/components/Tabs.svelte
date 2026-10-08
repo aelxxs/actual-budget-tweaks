@@ -50,7 +50,7 @@
 		background: none;
 		color: var(--abt-muted);
 		font: inherit;
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 		white-space: nowrap;
 		cursor: pointer;

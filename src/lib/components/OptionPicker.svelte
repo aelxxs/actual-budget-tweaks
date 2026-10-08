@@ -67,7 +67,7 @@
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		border: 1px solid var(--color-tableBorder);
 		background: var(--color-tableBackground);
 	}
@@ -77,7 +77,7 @@
 	}
 
 	.op-label {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--color-pageTextSubdued);

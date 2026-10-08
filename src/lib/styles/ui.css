@@ -13,16 +13,20 @@
 	--abt-space-5: 16px;
 	--abt-space-6: 24px;
 
-	/* Type scale. */
+	/* Type scale. Display sizes (emoji, headline figures) stay raw. */
+	--abt-text-2xs: 9px;
 	--abt-text-xs: 10px;
-	--abt-text-sm: 11.5px;
-	--abt-text-md: 12.5px;
-	--abt-text-lg: 15px;
-	--abt-text-xl: 17px;
+	--abt-text-sm: 11px;
+	--abt-text-base: 12px;
+	--abt-text-md: 13px;
+	--abt-text-lg: 14px;
+	--abt-text-xl: 16px;
 
 	/* Radius: follows the Border Radius setting, capped so "Pill" doesn't turn cards into capsules. */
-	--abt-radius: clamp(0px, var(--border-radius, 0.5rem), 0.75rem);
 	--abt-radius-sm: clamp(0px, calc(var(--border-radius, 0.5rem) * 0.5), 0.375rem);
+	--abt-radius: clamp(0px, var(--border-radius, 0.5rem), 0.75rem);
+	--abt-radius-lg: clamp(0px, calc(var(--border-radius, 0.5rem) * 1.5), 1rem);
+	--abt-radius-pill: 999px;
 
 	/* Controls. */
 	--abt-control-h: 30px;
@@ -254,7 +258,7 @@
 	background: var(--abt-btn-bg, var(--abt-fill));
 	color: var(--abt-btn-fg, var(--abt-ink));
 	font: inherit;
-	font-size: var(--abt-text-md);
+	font-size: var(--abt-text-base);
 	font-weight: 500;
 	white-space: nowrap;
 	cursor: pointer;
@@ -284,7 +288,7 @@
 }
 
 .abt-btn--pill {
-	border-radius: 999px;
+	border-radius: var(--abt-radius-pill);
 }
 
 .abt-btn--icon {
@@ -369,7 +373,7 @@
 	background: none;
 	color: var(--abt-muted);
 	font: inherit;
-	font-size: var(--abt-text-md);
+	font-size: var(--abt-text-base);
 	font-weight: 500;
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
@@ -418,7 +422,7 @@
 	background: var(--abt-fill);
 	color: var(--abt-ink);
 	font: inherit;
-	font-size: var(--abt-text-md);
+	font-size: var(--abt-text-base);
 	outline: none;
 	transition: border-color 0.1s;
 }
@@ -493,7 +497,7 @@
 
 .abt-menu__heading {
 	padding: var(--abt-space-3) var(--abt-space-3) var(--abt-space-2);
-	font-size: 10.5px;
+	font-size: var(--abt-text-sm);
 	font-weight: 600;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;

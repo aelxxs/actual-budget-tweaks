@@ -399,7 +399,7 @@
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--abt-soft);
 		white-space: nowrap;
@@ -412,7 +412,7 @@
 		flex-shrink: 0;
 	}
 	.budget-name {
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		font-weight: 600;
 		letter-spacing: 0.1px;
 		/* Actual has a dedicated token for exactly this label, unlike the rest
@@ -461,10 +461,10 @@
 		flex-shrink: 0;
 		width: 26px;
 		height: 26px;
-		border-radius: 7px;
+		border-radius: var(--abt-radius);
 		background: linear-gradient(135deg, var(--abt-accent), var(--abt-accent));
 		color: #fff;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 800;
 		letter-spacing: 0.2px;
 		overflow: hidden;
@@ -481,14 +481,14 @@
 	.budget-icon-btn--lg {
 		width: 32px;
 		height: 32px;
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		font-size: 15px;
 	}
 	.budget-icon-btn--lg .budget-icon-emoji {
 		font-size: 21px;
 	}
 	.budget-icon-emoji {
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		line-height: 1;
 	}
 	.budget-icon-img {
@@ -502,7 +502,7 @@
 		max-width: 100%;
 		padding: 1px 4px;
 		margin: -1px -4px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		text-align: left;
 		transition: background 0.12s ease;
 	}
@@ -510,13 +510,13 @@
 		width: 100%;
 		box-sizing: border-box;
 		font-family: inherit;
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		font-weight: 600;
 		letter-spacing: 0.1px;
 		color: var(--abt-ink);
 		background: var(--sb-canvas);
 		border: 1px solid var(--abt-ink-2);
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		padding: 3px 7px;
 		margin: -3px -7px;
 		outline: none;
@@ -531,7 +531,7 @@
 		flex-shrink: 0;
 		width: 24px;
 		height: 24px;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		color: var(--abt-soft);
 		transition:
 			color 0.12s ease,
@@ -578,7 +578,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		padding: 6px 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		text-align: left;
 		transition: background 0.12s ease;
 	}
@@ -590,7 +590,7 @@
 	}
 	.budget-item-name {
 		flex: 1 1 auto;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 500;
 		letter-spacing: 0.13px;
 		color: var(--abt-ink);
@@ -607,7 +607,7 @@
 		width: 6px;
 		height: 6px;
 		margin: 0 1px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-soft);
 	}
 	.budget-dot.active {
@@ -643,7 +643,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		padding: 6px 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		text-align: left;
 		color: var(--abt-soft);
 		transition:
@@ -660,7 +660,7 @@
 		height: 15px;
 	}
 	.budget-exit span {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 500;
 		letter-spacing: 0.13px;
 	}
@@ -668,7 +668,7 @@
 	.skel-status {
 		width: 72px;
 		height: 8px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-ink-3);
 	}
 	.skel-status {

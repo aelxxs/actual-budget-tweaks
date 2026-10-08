@@ -10,7 +10,7 @@
 	flex-direction: column;
 	overflow: hidden;
 	font-family: inherit;
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	color: var(--color-buttonNormalText, #cdd6f4);
 	background: var(--color-tableBackground, #181825);
 	border-radius: var(--abt-radius);
@@ -51,7 +51,7 @@
 }
 
 h2.abt-ib-title {
-	font-size: 15px;
+	font-size: var(--abt-text-lg);
 	font-weight: 500;
 	color: var(--color-buttonNormalText, #cdd6f4);
 	margin: 0;
@@ -67,7 +67,7 @@ h2.abt-ib-title {
 	color: var(--color-formInputText, var(--color-buttonNormalText, #cdd6f4));
 	background: var(--color-formInputBackground, var(--color-tableBackground, #181825));
 	border: 0.8px solid var(--color-formInputBorder, #313244);
-	border-radius: 4px;
+	border-radius: var(--abt-radius-sm);
 }
 
 .abt-ib-rename-input:focus {
@@ -76,7 +76,7 @@ h2.abt-ib-title {
 }
 
 .abt-ib-subtitle {
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	font-weight: 400;
 	color: var(--color-buttonNormalDisabledText, #6c7086);
 }
@@ -92,7 +92,7 @@ h2.abt-ib-title {
 	line-height: 1;
 	margin: -3px -4px 0 8px;
 	padding: 4px 8px;
-	border-radius: 4px;
+	border-radius: var(--abt-radius-sm);
 	transition:
 		opacity 0.15s,
 		background 0.1s;
@@ -128,7 +128,7 @@ h2.abt-ib-title {
 	border: 0.8px solid var(--color-buttonNormalBorder, #313244);
 	border-radius: var(--abt-radius-sm);
 	padding: 4px 10px;
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	color: var(--color-buttonNormalText, #cdd6f4);
 	cursor: pointer;
 	font-family: inherit;
@@ -166,13 +166,13 @@ h2.abt-ib-title {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	color: var(--color-buttonNormalDisabledText, #6c7086);
 }
 
 .abt-ib-input {
 	padding: 4px 8px;
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	font-family: inherit;
 	background: var(--color-buttonNormalBackground, #181825);
 	border: 0.8px solid var(--color-buttonNormalBorder, #313244);
@@ -197,7 +197,7 @@ h2.abt-ib-title {
 	display: flex;
 	align-items: center;
 	gap: 4px;
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	color: var(--color-buttonNormalText, #cdd6f4);
 	cursor: pointer;
 	user-select: none;
@@ -245,7 +245,7 @@ h2.abt-ib-title {
 /* ── Labels ──────────────────────────────────────────────────────────── */
 .abt-ib-label {
 	fill: #ffffff;
-	font-size: 11px;
+	font-size: var(--abt-text-sm);
 	font-family: inherit;
 	pointer-events: none;
 	paint-order: stroke fill;
@@ -255,7 +255,7 @@ h2.abt-ib-title {
 
 .abt-ib-label-amount {
 	fill: #e4e4e7;
-	font-size: 10px;
+	font-size: var(--abt-text-xs);
 }
 
 /* ── Tooltip ─────────────────────────────────────────────────────────── */
@@ -266,7 +266,7 @@ h2.abt-ib-title {
 	border: 0.8px solid var(--color-formInputBorder, #313244);
 	border-radius: var(--abt-radius);
 	padding: 6px 10px;
-	font-size: 12px;
+	font-size: var(--abt-text-base);
 	color: var(--color-buttonNormalText, #cdd6f4);
 	white-space: nowrap;
 	z-index: 100;
@@ -275,7 +275,7 @@ h2.abt-ib-title {
 }
 
 .abt-ib-tooltip-hint {
-	font-size: 10px;
+	font-size: var(--abt-text-xs);
 	color: var(--color-buttonNormalDisabledText, #6c7086);
 	font-style: italic;
 }
@@ -288,7 +288,7 @@ h2.abt-ib-title {
 	justify-content: center;
 	min-height: 200px;
 	color: var(--color-buttonNormalDisabledText, #6c7086);
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 }
 
 /* ── Transaction popover ─────────────────────────────────────────────── */
@@ -317,7 +317,7 @@ h2.abt-ib-title {
 	display: flex;
 	align-items: baseline;
 	gap: 8px;
-	font-size: 14px;
+	font-size: var(--abt-text-lg);
 	font-weight: 500;
 	color: var(--color-buttonNormalText, #cdd6f4);
 	flex: 1;
@@ -325,7 +325,7 @@ h2.abt-ib-title {
 }
 
 .abt-ib-popover-total {
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	font-weight: 600;
 }
 
@@ -344,7 +344,7 @@ h2.abt-ib-title {
 }
 
 .abt-ib-popover-count {
-	font-size: 12px;
+	font-size: var(--abt-text-base);
 	color: var(--color-buttonNormalDisabledText, #6c7086);
 	white-space: nowrap;
 }
@@ -353,11 +353,11 @@ h2.abt-ib-title {
 	background: var(--color-buttonPrimaryBackground, #89b4fa);
 	color: var(--color-buttonPrimaryText, #1e1e2e);
 	border: none;
-	font-size: 11px;
+	font-size: var(--abt-text-sm);
 	font-weight: 600;
 	cursor: pointer;
 	padding: 3px 10px;
-	border-radius: 4px;
+	border-radius: var(--abt-radius-sm);
 	white-space: nowrap;
 	font-family: inherit;
 	line-height: 1.4;
@@ -371,10 +371,10 @@ h2.abt-ib-title {
 	background: none;
 	border: none;
 	color: var(--color-buttonNormalDisabledText, #6c7086);
-	font-size: 16px;
+	font-size: var(--abt-text-xl);
 	cursor: pointer;
 	padding: 2px 6px;
-	border-radius: 4px;
+	border-radius: var(--abt-radius-sm);
 	line-height: 1;
 	flex-shrink: 0;
 	font-family: inherit;
@@ -396,7 +396,7 @@ h2.abt-ib-title {
 .abt-ib-popover-table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 12px;
+	font-size: var(--abt-text-base);
 	table-layout: fixed;
 }
 
@@ -410,7 +410,7 @@ h2.abt-ib-title {
 	text-align: left;
 	padding: 5px 8px;
 	font-weight: 500;
-	font-size: 11px;
+	font-size: var(--abt-text-sm);
 	color: var(--color-buttonNormalDisabledText, #6c7086);
 	background: var(--color-tableHeaderBackground, #11111b);
 	border-bottom: 0.8px solid var(--color-buttonNormalBorder, #313244);
@@ -495,7 +495,7 @@ h2.abt-ib-title {
 	padding: 3px 0;
 	background: var(--color-menuBackground, var(--color-pageBackground, #11111b));
 	border: 0.8px solid var(--color-menuBorder, var(--color-buttonNormalBorder, #313244));
-	border-radius: 4px;
+	border-radius: var(--abt-radius-sm);
 	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 	overflow: hidden;
 }
@@ -511,7 +511,7 @@ h2.abt-ib-title {
 	color: var(--color-menuItemText, var(--color-buttonNormalText, #cdd6f4));
 	cursor: default;
 	font: inherit;
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	line-height: 1.2;
 	text-align: left;
 }
@@ -529,7 +529,7 @@ h2.abt-ib-title {
 .abt-ib-menu-title {
 	margin: 5px 9px 3px;
 	color: var(--color-menuItemTextHeader, var(--color-buttonNormalDisabledText, #6c7086));
-	font-size: 11px;
+	font-size: var(--abt-text-sm);
 	line-height: 1em;
 	text-transform: uppercase;
 }
@@ -537,7 +537,7 @@ h2.abt-ib-title {
 .abt-ib-menu-empty {
 	padding: 10px;
 	color: var(--color-buttonNormalDisabledText, #6c7086);
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 }
 
 /* Let react-grid-layout resize handle sit above the widget overlay */

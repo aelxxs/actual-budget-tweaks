@@ -9,7 +9,7 @@ const VALUE_SELECTOR =
 const CSS = `
 	[${LABEL_ATTR}] {
 		color: var(--color-pageTextSubdued);
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 500;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;

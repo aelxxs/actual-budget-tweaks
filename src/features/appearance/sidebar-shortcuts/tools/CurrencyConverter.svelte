@@ -174,7 +174,7 @@
 		background: var(--abt-ink-2);
 		color: var(--color-pageText);
 		font-family: inherit;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 600;
 		cursor: pointer;
 		outline: none;
@@ -188,7 +188,7 @@
 		background: transparent;
 		color: var(--color-pageText);
 		font-family: inherit;
-		font-size: 16px;
+		font-size: var(--abt-text-xl);
 		font-weight: 500;
 		outline: none;
 		text-align: right;
@@ -227,7 +227,7 @@
 		width: 28px;
 		height: 28px;
 		border: 1px solid var(--color-tableBorder);
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: var(--color-cardBackground);
 		color: var(--color-pageTextSubdued);
 		cursor: pointer;
@@ -245,7 +245,7 @@
 	}
 
 	.conv__error {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-errorText);
 		text-align: center;
 		padding: 4px 0;
@@ -254,7 +254,7 @@
 	.conv__meta {
 		display: flex;
 		justify-content: space-between;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--color-pageTextSubdued);
 		padding-top: 6px;
 	}

@@ -148,7 +148,7 @@
 		justify-self: start;
 		white-space: nowrap;
 		padding: var(--abt-space-1) var(--abt-space-3);
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-accent-3);
 		color: var(--abt-accent);
 		font-size: var(--abt-text-xs);

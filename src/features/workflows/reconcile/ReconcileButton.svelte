@@ -84,7 +84,7 @@
 		gap: 4px;
 		margin-left: 2px;
 		padding: 1px 6px;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-fill);
 		color: var(--abt-muted);
 		font-size: var(--abt-text-xs);
@@ -100,7 +100,7 @@
 		content: "";
 		width: 5px;
 		height: 5px;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background: currentColor;
 	}
 

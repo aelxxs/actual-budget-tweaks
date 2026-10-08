@@ -116,7 +116,7 @@
 		gap: 8px;
 		border-bottom: 1px solid var(--color-menuBorder);
 		color: var(--color-menuItemText);
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 	}
 
 	.gf__title {
@@ -124,13 +124,13 @@
 	}
 
 	.gf__month {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		color: var(--color-pageTextSubdued);
 	}
 
 	.gf__bar {
 		height: 6px;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-ink-3);
 		overflow: hidden;
 	}
@@ -204,7 +204,7 @@
 	}
 
 	.gf__note {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		color: var(--color-pageTextSubdued);
 	}
 
@@ -214,7 +214,7 @@
 	}
 
 	.gf__done {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		color: var(--color-noticeTextLight);
 	}

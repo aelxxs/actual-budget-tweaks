@@ -14,7 +14,7 @@
 		padding: 5px 8px;
 		border-radius: var(--abt-radius-sm);
 		border: 1px solid transparent;
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		line-height: 1.4;
 	}
 	.callout:not(:first-child) {

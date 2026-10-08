@@ -46,7 +46,7 @@
 		gap: 1px;
 	}
 	dt {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
@@ -54,7 +54,7 @@
 	}
 	dd {
 		margin: 0;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 400;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;

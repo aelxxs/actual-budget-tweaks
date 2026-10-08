@@ -480,7 +480,7 @@
 <style>
 	.load-status {
 		padding: 12px 14px;
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		color: var(--abt-soft);
 	}
 
@@ -519,7 +519,7 @@
 	}
 	/* placeholder look-alike: the box is a launcher, typing happens in the palette */
 	.search-placeholder {
-		font-size: 15px;
+		font-size: var(--abt-text-lg);
 		font-weight: 400;
 		letter-spacing: 0.15px;
 		color: var(--abt-subtle);
@@ -528,8 +528,8 @@
 		flex-shrink: 0;
 		padding: 3px 7px;
 		background: var(--abt-ink-3);
-		border-radius: 5px;
-		font-size: 11px;
+		border-radius: var(--abt-radius-sm);
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		letter-spacing: 0.11px;
 		color: var(--abt-subtle);
@@ -549,9 +549,9 @@
 		padding: 5px 9px;
 		background: var(--sb-surface);
 		border: 1px solid var(--abt-ink-2);
-		border-radius: 7px;
+		border-radius: var(--abt-radius);
 		color: var(--abt-ink);
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		line-height: 1.35;
 		white-space: nowrap;

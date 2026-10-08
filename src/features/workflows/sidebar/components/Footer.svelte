@@ -159,7 +159,7 @@
 	.undo-group {
 		display: inline-flex;
 		border: 1px solid var(--abt-ink-2);
-		border-radius: 7px;
+		border-radius: var(--abt-radius);
 		background: var(--sb-surface);
 		overflow: hidden;
 	}
@@ -194,7 +194,7 @@
 		height: 26px;
 		padding: 0;
 		border: 1px solid var(--abt-ink-2);
-		border-radius: 7px;
+		border-radius: var(--abt-radius);
 		background: var(--sb-surface);
 		color: var(--abt-soft);
 		transition:
@@ -219,9 +219,9 @@
 		height: 26px;
 		padding: 0 10px 0 9px;
 		border: 1px solid var(--abt-ink-2);
-		border-radius: 7px;
+		border-radius: var(--abt-radius);
 		background: var(--sb-surface);
-		font-size: 12.5px;
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 		/* Muted like the undo/redo icons, so the footer recedes until it's needed. */
 		color: var(--abt-soft);
@@ -257,7 +257,7 @@
 		align-items: center;
 		padding: 5px;
 		color: var(--abt-soft);
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		transition:
 			color 0.12s ease,
 			background 0.12s ease;

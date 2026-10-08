@@ -33,7 +33,7 @@ body {
 
 /* sidebar -- budget name */
 .css-1am57kc {
-	font-size: 15px;
+	font-size: var(--abt-text-lg);
 }
 
 /* sidebar -- section title */

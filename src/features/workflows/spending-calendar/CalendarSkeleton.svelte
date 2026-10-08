@@ -37,7 +37,7 @@
 	.bar {
 		display: block;
 		height: 8px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-ink-2);
 	}
 	.bar--date {

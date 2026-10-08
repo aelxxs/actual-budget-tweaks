@@ -640,7 +640,7 @@
 	}
 	.accounts::-webkit-scrollbar-thumb {
 		background: var(--abt-ink-4);
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		border: 2px solid transparent;
 		background-clip: padding-box;
 	}
@@ -658,7 +658,7 @@
 		height: 32px;
 		padding: 6px;
 		padding-inline: 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		flex-shrink: 0;
 	}
 	/* grouped/flat account layout toggle — swaps in over the total on hover,
@@ -674,7 +674,7 @@
 		justify-content: center;
 		width: 22px;
 		height: 22px;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		color: var(--abt-ink-5);
 		opacity: 0;
 		pointer-events: none;
@@ -699,7 +699,7 @@
 		justify-content: center;
 		width: 22px;
 		height: 22px;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		color: var(--abt-soft);
 		opacity: 0;
 		pointer-events: none;
@@ -741,7 +741,7 @@
 		margin: -2px 0;
 		height: 16px;
 		width: 16px;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		cursor: pointer;
 		transition: background 0.12s ease;
 	}
@@ -781,14 +781,14 @@
 	/* All Accounts reads as the top-level view, not a category — sentence case,
 	   brighter than the muted uppercase category labels */
 	.all-accounts .group-label {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 600;
 		letter-spacing: 0.42px;
 		text-transform: none;
 		color: var(--abt-ink);
 	}
 	.accounts :global(.group-total) {
-		font-size: 12.5px;
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 		letter-spacing: 0.125px;
 		text-transform: uppercase;
@@ -852,7 +852,7 @@
 		justify-content: center;
 		width: 22px;
 		height: 22px;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		color: var(--abt-soft);
 		opacity: 0;
 		pointer-events: none;
@@ -886,8 +886,8 @@
 		margin: 2px 0 3px 9px;
 		padding: 8px 10px;
 		border: 1px dashed var(--abt-ink-2);
-		border-radius: 7px;
-		font-size: 12px;
+		border-radius: var(--abt-radius);
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 		color: var(--abt-subtle);
 		text-align: center;

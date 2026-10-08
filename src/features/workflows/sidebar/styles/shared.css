@@ -9,7 +9,7 @@
 	width: 100%;
 	box-sizing: border-box;
 	padding: var(--sb-row-pad-y, 5px) 8px;
-	border-radius: 6px;
+	border-radius: var(--abt-radius-sm);
 	text-align: left;
 	cursor: default;
 	transition: background 0.12s ease;
@@ -32,7 +32,7 @@
 }
 .sidebar .group-label {
 	flex: 1 1 auto;
-	font-size: 11px;
+	font-size: var(--abt-text-sm);
 	font-weight: 500;
 	letter-spacing: 0.125px;
 	text-transform: uppercase;
@@ -50,9 +50,9 @@
 	min-width: 16px;
 	height: 15px;
 	padding: 0 5px;
-	border-radius: 8px;
+	border-radius: var(--abt-radius-pill);
 	background: var(--abt-ink-3);
-	font-size: 10px;
+	font-size: var(--abt-text-xs);
 	font-weight: 700;
 	letter-spacing: 0.2px;
 	color: var(--abt-muted);
@@ -89,7 +89,7 @@
 	padding: 5px;
 	background: var(--sb-surface);
 	border: 1px solid var(--abt-ink-2);
-	border-radius: 9px;
+	border-radius: var(--abt-radius);
 	box-shadow: 0 12px 30px var(--sb-shadow);
 	animation: ctx-in 0.1s ease;
 }
@@ -105,9 +105,9 @@
 	gap: 10px;
 	width: 100%;
 	padding: 7px 9px;
-	border-radius: 6px;
+	border-radius: var(--abt-radius-sm);
 	text-align: left;
-	font-size: 13px;
+	font-size: var(--abt-text-md);
 	font-weight: 500;
 	letter-spacing: 0.13px;
 	color: var(--abt-ink);

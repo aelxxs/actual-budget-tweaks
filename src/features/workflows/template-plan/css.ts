@@ -28,7 +28,7 @@ export const CSS = `
 		color: inherit;
 		cursor: pointer;
 		font: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 		padding: 4px 12px;
 	}
@@ -80,7 +80,7 @@ export const CSS = `
 	}
 
 	.abt-tab-overview-hero-label {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		text-transform: uppercase;
 		letter-spacing: 0.6px;
 		color: var(--abt-muted);
@@ -125,7 +125,7 @@ export const CSS = `
 		display: flex;
 		align-items: baseline;
 		gap: 6px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 	}
 
 	.abt-tab-overview-bdr-op {
@@ -134,7 +134,7 @@ export const CSS = `
 		color: var(--abt-muted);
 		flex-shrink: 0;
 		font-family: monospace;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 	}
 
 	.abt-tab-overview-bdr-label {
@@ -155,12 +155,12 @@ export const CSS = `
 		padding-top: 6px;
 		margin-top: 3px;
 		border-top: 1px solid var(--abt-panel-border);
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 	}
 	.abt-tab-overview-bdr--total .abt-tab-overview-bdr-op { color: var(--abt-muted); }
 
 	.abt-tab-overview-bdr-avail {
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		font-weight: 700;
 	}
 	.abt-tab-overview-bdr-avail[data-sign="neg"] { color: var(--color-errorText, #e57373); }
@@ -171,7 +171,7 @@ export const CSS = `
 		display: flex;
 		align-items: baseline;
 		gap: 8px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		margin-bottom: 4px;
 	}
 
@@ -191,7 +191,7 @@ export const CSS = `
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--abt-muted);
 		margin-top: 8px;
 		font-variant-numeric: tabular-nums;
@@ -236,15 +236,15 @@ export const CSS = `
 
 	.abt-tab-overview-next-sub {
 		color: var(--abt-muted);
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 	}
 
 	.abt-tab-overview-pill {
 		display: inline-flex;
 		align-items: center;
 		padding: 2px 8px;
-		border-radius: 999px;
-		font-size: 10px;
+		border-radius: var(--abt-radius-pill);
+		font-size: var(--abt-text-xs);
 		font-weight: 600;
 		white-space: nowrap;
 	}
@@ -266,13 +266,13 @@ export const CSS = `
 	}
 
 	.abt-tab-overview-next-month-name {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 700;
 		letter-spacing: 0.1px;
 	}
 
 	.abt-tab-overview-next-month-sub {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--abt-muted);
 		text-transform: uppercase;
 		letter-spacing: 0.6px;
@@ -280,7 +280,7 @@ export const CSS = `
 	}
 
 	.abt-tab-overview-next-amounts {
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		font-variant-numeric: tabular-nums;
 		color: var(--abt-muted);
 		margin-top: 6px;
@@ -288,7 +288,7 @@ export const CSS = `
 	}
 
 	.abt-tab-overview-next-summary {
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 		margin-top: 8px;
 		line-height: 1.45;
@@ -303,7 +303,7 @@ export const CSS = `
 		margin-top: 10px;
 		padding-top: 8px;
 		border-top: 1px solid var(--abt-panel-border);
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 	}
 
 	.abt-tab-overview-next-breakdown-label {
@@ -334,15 +334,15 @@ export const CSS = `
 		align-items: baseline;
 		gap: 6px;
 		margin-top: 6px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-variant-numeric: tabular-nums;
 	}
 
 	.abt-tab-overview-chart-delta {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 700;
 		padding: 1px 5px;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 	}
 	.abt-tab-overview-chart-delta[data-sign="neg"] {
 		background: color-mix(in srgb, var(--color-errorText, #e57373) 15%, transparent);
@@ -355,7 +355,7 @@ export const CSS = `
 
 	.abt-tab-overview-chart-avg {
 		margin-left: auto;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--abt-muted);
 		white-space: nowrap;
 	}
@@ -365,7 +365,7 @@ export const CSS = `
 	.abt-tab-overview-sched-dot {
 		width: 6px;
 		height: 6px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-accent-4);
 		flex-shrink: 0;
 	}
@@ -375,11 +375,11 @@ export const CSS = `
 		color: var(--abt-muted);
 		flex-shrink: 0;
 		width: 44px;
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 	}
 
 	.abt-tab-overview-empty-row {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 	}
 
@@ -439,7 +439,7 @@ export const CSS = `
 		border-top: 1px solid var(--abt-panel-border);
 		background: transparent;
 		font: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: inherit;
 		opacity: 0.75;
 		cursor: pointer;
@@ -456,7 +456,7 @@ export const CSS = `
 		height: 10px;
 		border: 2px solid currentColor;
 		border-right-color: transparent;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		animation: abt-tab-spin 0.7s linear infinite;
 		margin-right: 6px;
 		vertical-align: -1px;
@@ -495,7 +495,7 @@ export const CSS = `
 		background: var(--color-buttonNormalBackground);
 		color: var(--color-pageText);
 		font: inherit;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 		cursor: pointer;
 		z-index: 50;

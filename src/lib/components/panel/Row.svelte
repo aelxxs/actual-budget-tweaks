@@ -46,7 +46,7 @@
 <style>
 	.panel-row {
 		padding: 4px 0;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 	}
 	.panel-row:first-child {
 		padding-top: 0;
@@ -71,7 +71,7 @@
 
 	.meta {
 		margin-left: 5px;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-style: italic;
 		opacity: 0.45;
 	}

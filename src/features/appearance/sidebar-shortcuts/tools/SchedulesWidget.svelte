@@ -170,7 +170,7 @@
 		display: flex;
 		align-items: center;
 		gap: 5px;
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
@@ -178,7 +178,7 @@
 	}
 
 	.sched__empty {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		opacity: 0.4;
 		padding: 2px 0;
 	}
@@ -193,12 +193,12 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		line-height: 1.3;
 	}
 
 	.sched__date {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		font-weight: 600;
 		opacity: 0.4;
 		min-width: 28px;
@@ -227,7 +227,7 @@
 		font-variant-numeric: tabular-nums;
 		font-weight: 500;
 		flex-shrink: 0;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		opacity: 0.7;
 	}
 </style>

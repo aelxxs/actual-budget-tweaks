@@ -148,7 +148,7 @@
 		gap: 13px;
 		width: 100%;
 		padding: calc(var(--sb-row-pad-y, 5px) + 2px) 8px;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 		text-align: left;
 		transition: background 0.12s ease;
 	}
@@ -172,7 +172,7 @@
 		height: 17px;
 	}
 	.nav-label {
-		font-size: 15px;
+		font-size: var(--abt-text-lg);
 		font-weight: 500;
 		letter-spacing: 0.16px;
 		color: var(--abt-ink);
@@ -217,6 +217,6 @@
 		height: 15px;
 	}
 	.nav-sublink .nav-label {
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 	}
 </style>

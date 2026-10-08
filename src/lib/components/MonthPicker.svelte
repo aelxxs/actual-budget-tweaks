@@ -244,7 +244,7 @@
 		margin-bottom: 6px;
 	}
 	.picker__year {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 	}
@@ -261,7 +261,7 @@
 		background: none;
 		color: var(--color-pageText);
 		font: inherit;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		cursor: pointer;
 	}
 	/* Row hover is too close to the popover's own background to read here. */
@@ -291,7 +291,7 @@
 		display: inline-block;
 		width: 4px;
 		height: 4px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 	}
 	.picker__month .picker__dot {
 		position: absolute;
@@ -315,7 +315,7 @@
 		margin-top: 8px;
 		padding-top: 8px;
 		border-top: 1px solid var(--color-tableBorder);
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 	}
 	.picker__legend span {
@@ -379,7 +379,7 @@
 	}
 	.picker.is-compact .picker__month {
 		padding: 9px 0 13px;
-		font-size: 12.5px;
+		font-size: var(--abt-text-base);
 		font-weight: 550;
 	}
 	/* Every shown month reads the same: a quiet tint with accent text. */
@@ -406,6 +406,6 @@
 	.picker.is-compact .picker__legend {
 		margin-top: 10px;
 		padding-top: 10px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 	}
 </style>

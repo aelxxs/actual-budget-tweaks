@@ -100,7 +100,7 @@
 	}
 	:global(.sidebar) .sub-label {
 		flex: 0 1 auto;
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		letter-spacing: 0.115px;
 		color: var(--abt-ink-5);
 	}
@@ -141,14 +141,14 @@
 		flex: 1 1 auto;
 		min-width: 0;
 		font-family: inherit;
-		font-size: 10.5px;
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		letter-spacing: 0.115px;
 		text-transform: uppercase;
 		color: var(--abt-ink);
 		background: var(--sb-canvas);
 		border: 1px solid var(--abt-accent);
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		padding: 2px 6px;
 		outline: none;
 	}

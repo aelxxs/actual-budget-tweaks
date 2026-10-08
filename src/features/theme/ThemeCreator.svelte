@@ -237,7 +237,7 @@
 		gap: 6px;
 		width: 100%;
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
@@ -274,7 +274,7 @@
 	.creator__css-input {
 		flex: 1;
 		font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", monospace;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		padding: 10px;
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);
@@ -294,7 +294,7 @@
 
 	.creator__css-apply {
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		padding: 7px 12px;
 		border-radius: var(--abt-radius-sm);
 		border: none;

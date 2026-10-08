@@ -13,8 +13,8 @@
 		align-items: center;
 		flex-shrink: 0;
 		padding: 1px 6px;
-		border-radius: 999px;
-		font-size: 9px;
+		border-radius: var(--abt-radius-pill);
+		font-size: var(--abt-text-2xs);
 		font-weight: 700;
 		letter-spacing: 0.2px;
 		white-space: nowrap;

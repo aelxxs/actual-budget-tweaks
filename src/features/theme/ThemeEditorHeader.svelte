@@ -64,7 +64,7 @@
 
 	.editor__title {
 		margin: 0;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -73,7 +73,7 @@
 
 	.editor__sub {
 		margin: 2px 0 0;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--color-pageTextSubdued);
 		letter-spacing: 0.04em;
 	}
@@ -85,7 +85,7 @@
 
 	.editor__export {
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		padding: 4px 10px;
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);
@@ -103,7 +103,7 @@
 
 	.editor__reset {
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		padding: 4px 10px;
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);

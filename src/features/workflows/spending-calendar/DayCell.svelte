@@ -204,7 +204,7 @@
 	}
 
 	.cal-cell__date {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 		opacity: 0.6;
 	}
@@ -215,7 +215,7 @@
 	.cal-cell__missed {
 		width: 5px;
 		height: 5px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		background: var(--color-errorText);
 	}
 
@@ -224,18 +224,18 @@
 		color: var(--abt-accent);
 		width: 22px;
 		height: 22px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 700;
 		opacity: 1;
 		color: color-contrast(var(--abt-accent)) !important;
 	}
 
 	.cal-cell__total {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 	}
@@ -260,7 +260,7 @@
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		line-height: 1.5;
 		min-width: 0;
 	}
@@ -268,7 +268,7 @@
 	.cal-tx__dot {
 		width: 7px;
 		height: 7px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 	}
 
@@ -280,12 +280,12 @@
 	}
 
 	.cal-tx__count {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		font-weight: 600;
 		color: var(--color-pageTextSubdued);
 		background: var(--abt-ink-3);
 		padding: 0 4px;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		flex-shrink: 0;
 		line-height: 1.5;
 	}
@@ -293,10 +293,10 @@
 	.cal-more {
 		margin-left: 9px;
 		padding: 0 6px;
-		border-radius: 999px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-ink-2);
 		color: var(--color-pageTextSubdued);
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		font-weight: 600;
 		line-height: 1.6;
 	}

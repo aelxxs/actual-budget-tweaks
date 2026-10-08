@@ -61,7 +61,7 @@ const CSS = `
 		border: 1px solid transparent !important;
 		border-radius: var(--abt-radius) !important;
 		color: var(--abt-muted) !important;
-		font-size: var(--abt-text-md) !important;
+		font-size: var(--abt-text-base) !important;
 		font-weight: 400 !important;
 		transition:
 			background 0.1s,
@@ -128,7 +128,7 @@ const CSS = `
 	${SEARCH} input {
 		padding: 0 !important;
 		background: transparent !important;
-		font-size: var(--abt-text-md) !important;
+		font-size: var(--abt-text-base) !important;
 	}
 
 	/* The icon buttons sit behind a hairline after search, drawn by search since what follows can be hidden. */

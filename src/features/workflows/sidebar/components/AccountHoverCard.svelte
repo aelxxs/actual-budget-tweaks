@@ -144,7 +144,7 @@
 		padding: 12px 13px 11px;
 		background: var(--sb-canvas);
 		border: 1px solid var(--abt-ink-2);
-		border-radius: 12px;
+		border-radius: var(--abt-radius-lg);
 		box-shadow: 0 12px 34px var(--sb-shadow);
 		color: var(--abt-ink);
 		pointer-events: none;
@@ -198,7 +198,7 @@
 		gap: 3px;
 	}
 	.acard-name {
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		font-weight: 650;
 		letter-spacing: 0.1px;
 		color: var(--abt-ink);
@@ -207,7 +207,7 @@
 		text-overflow: ellipsis;
 	}
 	.acard-sub {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--abt-soft);
 	}
@@ -218,7 +218,7 @@
 		margin-top: 11px;
 	}
 	.acard-ballabel {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		letter-spacing: 0.4px;
 		text-transform: uppercase;
@@ -255,12 +255,12 @@
 		margin-top: 3px;
 	}
 	.acard-period {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--abt-soft);
 	}
 	.acard-delta {
-		font-size: 11.5px;
+		font-size: var(--abt-text-sm);
 		font-weight: 650;
 		font-variant-numeric: tabular-nums;
 	}
@@ -294,11 +294,11 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		color: var(--abt-ink);
 	}
 	.acard-line .v {
-		font-size: 12.5px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		color: var(--abt-ink);
 		font-variant-numeric: tabular-nums;
@@ -313,15 +313,15 @@
 		min-width: 16px;
 		height: 16px;
 		padding: 0 4px;
-		border-radius: 8px;
+		border-radius: var(--abt-radius-pill);
 		background: var(--abt-ink-3);
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		font-weight: 700;
 		color: var(--abt-ink);
 	}
 	.acard-block-label {
 		margin-bottom: 7px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		letter-spacing: 0.4px;
 		text-transform: uppercase;
@@ -335,7 +335,7 @@
 	.acard-date {
 		flex-shrink: 0;
 		width: 42px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		color: var(--abt-soft);
 		font-variant-numeric: tabular-nums;
@@ -343,7 +343,7 @@
 	.acard-payee {
 		flex: 1 1 auto;
 		min-width: 0;
-		font-size: 12.5px;
+		font-size: var(--abt-text-base);
 		color: var(--abt-ink);
 		white-space: nowrap;
 		overflow: hidden;
@@ -351,7 +351,7 @@
 	}
 	.acard-amt {
 		flex-shrink: 0;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		color: var(--sb-success);
 		font-variant-numeric: tabular-nums;
@@ -364,7 +364,7 @@
 		align-items: center;
 		gap: 7px;
 		margin-top: 11px;
-		font-size: 11.5px;
+		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--abt-soft);
 	}

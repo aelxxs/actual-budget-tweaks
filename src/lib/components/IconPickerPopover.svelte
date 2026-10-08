@@ -431,7 +431,7 @@
 		border: none;
 		background: transparent;
 		color: var(--color-pageTextSubdued);
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 		font-family: inherit;
 		cursor: pointer;
@@ -458,7 +458,7 @@
 		align-items: center;
 		justify-content: center;
 		border: none;
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		background: transparent;
 		color: var(--color-pageTextSubdued);
 		cursor: pointer;
@@ -499,9 +499,9 @@
 		justify-content: center;
 		padding: 4px 0;
 		border: none;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		background: none;
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		line-height: 1;
 		cursor: pointer;
 		opacity: 0.5;
@@ -530,7 +530,7 @@
 	}
 
 	.eg-label {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
@@ -554,7 +554,7 @@
 		justify-content: center;
 		aspect-ratio: 1;
 		border: none;
-		border-radius: 5px;
+		border-radius: var(--abt-radius-sm);
 		background: none;
 		font-size: 18px;
 		cursor: pointer;
@@ -575,7 +575,7 @@
 		justify-content: center;
 		gap: 6px;
 		padding: 12px;
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		border: 1px solid var(--abt-ink-2);
 		background: var(--abt-ink-1);
 		cursor: default;
@@ -598,22 +598,22 @@
 		width: 48px;
 		height: 48px;
 		object-fit: contain;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 	}
 	.logo-preview__hint {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--abt-accent);
 		font-weight: 500;
 	}
 	.logo-preview__err {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-errorText);
 	}
 
 	/* ── Upload ── */
 	.dropzone {
 		border: 2px dashed var(--abt-ink-2);
-		border-radius: 8px;
+		border-radius: var(--abt-radius);
 		min-height: 104px;
 		display: flex;
 		flex-direction: column;
@@ -633,7 +633,7 @@
 		background: var(--abt-accent-1);
 	}
 	.dropzone__label {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		text-align: center;
 	}
@@ -641,10 +641,10 @@
 		max-width: 100%;
 		max-height: 80px;
 		object-fit: contain;
-		border-radius: 6px;
+		border-radius: var(--abt-radius-sm);
 	}
 	.dropzone__hint {
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		color: var(--color-pageTextSubdued);
 	}
 
@@ -666,7 +666,7 @@
 	.inp {
 		width: 100%;
 		padding: 7px 9px;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius-sm);
@@ -686,7 +686,7 @@
 	}
 
 	.hint {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		margin: 0;
 		padding: 4px 0;
@@ -699,7 +699,7 @@
 		border-radius: var(--abt-radius-sm);
 		background: var(--color-buttonPrimaryBackground);
 		color: var(--color-buttonPrimaryText);
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		font-family: inherit;
 		cursor: pointer;
@@ -717,7 +717,7 @@
 		border-radius: var(--abt-radius-sm);
 		background: transparent;
 		color: var(--color-errorText);
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-family: inherit;
 		cursor: pointer;
 		transition: background 0.1s;

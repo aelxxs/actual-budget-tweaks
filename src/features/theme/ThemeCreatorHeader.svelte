@@ -63,7 +63,7 @@
 
 	.creator-header__name {
 		font-family: inherit;
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		padding: 4px 8px;
 		border-radius: var(--abt-radius-sm);
@@ -81,7 +81,7 @@
 
 	.creator-header__mode {
 		font-family: inherit;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		padding: 4px 6px;
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);
@@ -98,7 +98,7 @@
 	.creator-header__delete,
 	.creator-header__save {
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		padding: 4px 10px;
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);

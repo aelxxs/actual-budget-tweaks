@@ -558,7 +558,7 @@
 
 	.editor__tab {
 		font-family: inherit;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		padding: 4px 10px 5px;
@@ -590,7 +590,7 @@
 
 	.editor__search-input {
 		font-family: inherit;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		width: 100%;
 		padding: 5px 8px;
 		border-radius: var(--abt-radius-sm);
@@ -616,7 +616,7 @@
 
 	.editor__empty {
 		padding: 20px 16px;
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		margin: 0;
 	}

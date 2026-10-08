@@ -480,7 +480,7 @@
 
 	.cal-filters__title {
 		padding: 5px 8px 4px;
-		font-size: 10px;
+		font-size: var(--abt-text-xs);
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--color-pageTextSubdued);
@@ -492,8 +492,8 @@
 		justify-content: space-between;
 		gap: 12px;
 		padding: 5px 8px;
-		border-radius: 4px;
-		font-size: 13px;
+		border-radius: var(--abt-radius-sm);
+		font-size: var(--abt-text-md);
 		cursor: pointer;
 	}
 
@@ -518,7 +518,7 @@
 	}
 
 	.cal-day-name {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;

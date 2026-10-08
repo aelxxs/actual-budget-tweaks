@@ -80,7 +80,7 @@
 	.lp-dot {
 		width: 5px;
 		height: 5px;
-		border-radius: 50%;
+		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 		background: color-mix(in srgb, var(--color-pageTextSubdued) 35%, transparent);
 	}

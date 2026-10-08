@@ -382,7 +382,7 @@
 			width: 16px;
 			height: 16px;
 			flex-shrink: 0;
-			border-radius: 4px;
+			border-radius: var(--abt-radius-sm);
 		}
 
 		.header-actions {
@@ -397,7 +397,7 @@
 			color: var(--abt-accent);
 			background: var(--abt-accent-2);
 			border: 1px solid var(--abt-accent-3);
-			border-radius: 4px;
+			border-radius: var(--abt-radius-sm);
 			padding: 1px 6px;
 			margin-left: 2px;
 		}
@@ -473,7 +473,7 @@
 		}
 
 		.subgroup-label {
-			font-size: 10px;
+			font-size: var(--abt-text-xs);
 			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.06em;

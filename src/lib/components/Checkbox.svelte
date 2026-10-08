@@ -78,12 +78,12 @@
 	}
 
 	.switch-row__label {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 500;
 	}
 
 	.switch-row__desc {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 	}
 </style>

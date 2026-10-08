@@ -37,12 +37,12 @@
 	}
 
 	.dh__date {
-		font-size: 15px;
+		font-size: var(--abt-text-lg);
 		font-weight: 700;
 	}
 
 	.dh__total {
-		font-size: 14px;
+		font-size: var(--abt-text-lg);
 		font-weight: 500;
 		font-variant-numeric: tabular-nums;
 		flex-shrink: 0;

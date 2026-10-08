@@ -10,7 +10,7 @@ const CSS = `
 		font-weight: 600 !important;
 		letter-spacing: 0.02em !important;
 		padding: 3px 10px 3px 7px !important;
-		border-radius: 4px !important;
+		border-radius: var(--abt-radius-sm) !important;
 		border: none !important;
 		cursor: pointer;
 		transition: filter 0.1s;
@@ -33,7 +33,7 @@ const CSS = `
 		font-weight: 600 !important;
 		letter-spacing: 0.02em !important;
 		padding: 3px 10px 3px 7px !important;
-		border-radius: 4px !important;
+		border-radius: var(--abt-radius-sm) !important;
 		border: none !important;
 		cursor: pointer;
 		transition: filter 0.1s;

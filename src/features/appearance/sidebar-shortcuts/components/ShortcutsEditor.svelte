@@ -495,7 +495,7 @@
 	}
 
 	.side__title {
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 	}
 
@@ -568,7 +568,7 @@
 	}
 
 	.entry__title {
-		font-size: var(--abt-text-md);
+		font-size: var(--abt-text-base);
 		font-weight: 500;
 	}
 

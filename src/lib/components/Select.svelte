@@ -88,12 +88,12 @@
 	}
 
 	.select-label {
-		font-size: 13px;
+		font-size: var(--abt-text-md);
 		font-weight: 500;
 	}
 
 	.select-desc {
-		font-size: 11px;
+		font-size: var(--abt-text-sm);
 		font-weight: 400;
 		color: var(--color-pageTextSubdued);
 	}
@@ -103,7 +103,7 @@
 		font-size: 1em;
 		background-color: var(--color-buttonNormalBackground);
 		border: 1px solid var(--color-buttonNormalBorder);
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		color: var(--color-buttonNormalText);
 	}
 </style>

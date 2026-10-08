@@ -269,7 +269,7 @@ export const sidebarRedesign = defineSetting({
 
 			/* ── Budget header ── */
 			button[style*="sidebarBudgetName"] {
-				font-size: 15px !important;
+				font-size: var(--abt-text-lg) !important;
 				font-weight: 700 !important;
 				letter-spacing: -0.02em;
 				margin-left: 0 !important;
@@ -464,7 +464,7 @@ export const sidebarRedesign = defineSetting({
 			/* Group label text */
 			a[href="/accounts/onbudget"] > div:last-child > div:first-child,
 			a[href="/accounts/offbudget"] > div:last-child > div:first-child {
-				font-size: 11px !important;
+				font-size: var(--abt-text-sm) !important;
 				font-weight: 600 !important;
 				text-transform: uppercase !important;
 				letter-spacing: 0.05em !important;
@@ -475,7 +475,7 @@ export const sidebarRedesign = defineSetting({
 			/* Group balance */
 			a[href="/accounts/onbudget"] [data-testid="sidebar-on-budget-balance"],
 			a[href="/accounts/offbudget"] [data-testid="sidebar-off-budget-balance"] {
-				font-size: 11px !important;
+				font-size: var(--abt-text-sm) !important;
 				color: var(--color-sidebarItemText) !important;
 				opacity: 0.7;
 			}
@@ -626,7 +626,7 @@ export const sidebarRedesign = defineSetting({
 			/* Dim individual account balances */
 			a[href^="/accounts/"][href*="-"] [data-cellname^="__global!balance-"] {
 				opacity: 0.8;
-				font-size: 12px !important;
+				font-size: var(--abt-text-base) !important;
 			}
 
 			a[href^="/accounts/"][href*="-"]:hover [data-cellname^="__global!balance-"] {
@@ -645,13 +645,13 @@ export const sidebarRedesign = defineSetting({
 
 			/* ── Uncategorized badge ── */
 			.abt-uncat-badge {
-				font-size: 10px;
+				font-size: var(--abt-text-xs);
 				font-weight: 600;
 				font-variant-numeric: tabular-nums;
 				min-width: 18px;
 				height: 18px;
 				padding: 0 2px;
-				border-radius: 9px;
+				border-radius: var(--abt-radius-pill);
 				background: color-mix(in srgb, var(--color-warningText) 20%, transparent);
 				color: var(--color-warningText);
 				flex-shrink: 0;

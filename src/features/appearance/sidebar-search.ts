@@ -27,17 +27,17 @@ const CSS = /* css */ `
 	}
 
 	[${BAR_ATTR}] .search-text {
-		font-size: 12px;
+		font-size: var(--abt-text-base);
 		color: color-mix(in srgb, var(--color-sidebarItemText) 65%, transparent);
 		flex: 1;
 	}
 
 	[${BAR_ATTR}] .search-kbd {
-		font-size: 9px;
+		font-size: var(--abt-text-2xs);
 		font-family: inherit;
 		color: color-mix(in srgb, var(--color-sidebarItemText) 60%, transparent);
 		border: 1px solid color-mix(in srgb, var(--color-sidebarItemText) 15%, transparent);
-		border-radius: 4px;
+		border-radius: var(--abt-radius-sm);
 		padding: 1px 5px;
 		line-height: 1.4;
 	}
