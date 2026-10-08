@@ -27,11 +27,6 @@ body {
 	padding-top: var(--abt-page-pad-top);
 }
 
-/* Budget and calendar, marked by core/native-hooks.ts. The month header row stays full width. */
-[data-abt-content-grid] > [data-abt-budget-content] > :not(:first-child) {
-	padding-inline: 0.5rem;
-}
-
 /* Space under list and settings page titles; the title has no hook, the page body after it does. */
 [data-abt-content-grid] > div:nth-child(4) > div + [role="main"] {
 	margin-top: 0.5rem;
@@ -67,11 +62,11 @@ body {
 	margin-bottom: 1rem;
 }
 
+/* Actual already insets the cards and table 13px; match it above and between them. */
 [data-testid="budget-summary"] {
 	flex: 1 1 0%;
 	overflow: hidden;
-	margin: 0.8rem;
-	margin-inline: 0.4rem;
+	margin: 13px 0;
 }
 
 /* reports borders */

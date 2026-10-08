@@ -1,19 +1,10 @@
 import { watchDom } from "@lib/utilities/dom-watcher";
 
-const BUDGET_ATTR = "data-abt-budget-content";
-
 /** Marks Actual elements that base.css styles but that carry no stable hook of their own. */
 export const nativeHooks = {
 	type: "core" as const,
 	init: () => {
 		watchDom(() => {
-			// Budget (and the calendar, which keeps the budget table) gets inline padding; React may
-			// reuse the content element across pages, so the mark is toggled, not just set.
-			const content = document.querySelector("[data-abt-content-grid] > div:nth-child(4)");
-			const onBudget = !!content?.querySelector('[data-testid="budget-table"]');
-			if (onBudget) mark(content, BUDGET_ATTR);
-			else document.querySelector(`[${BUDGET_ATTR}]`)?.removeAttribute(BUDGET_ATTR);
-
 			// List pages (not the transaction table) wrap a header row and the table, which some
 			// pages nest in a single-child div.
 			if (!location.pathname.startsWith("/accounts")) {
