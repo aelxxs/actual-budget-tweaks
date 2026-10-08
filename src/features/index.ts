@@ -44,6 +44,7 @@ import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { goalFunding } from "./workflows/goal-funding";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
+import { liveSidebarNotice } from "./workflows/sidebar/notice";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { templatePlan } from "./workflows/template-plan";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
@@ -107,6 +108,7 @@ export const coreScripts = [
 	releaseNotification,
 	privacyMode,
 	budgetViewOptions,
+	liveSidebarNotice,
 ];
 
 export const scriptSections = [
