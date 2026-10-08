@@ -26,6 +26,20 @@ const synced = new Set(EXTRA_KEYS);
 
 const isBudgetLoaded = () => !!document.querySelector(BUDGET_LOADED);
 
+// Chrome's storage hands objects back with their keys sorted, so key order can't count.
+function sameValue(a: unknown, b: unknown): boolean {
+	if (a === b) return true;
+	if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false;
+	if (Array.isArray(a) !== Array.isArray(b)) return false;
+	const ak = Object.keys(a);
+	const bk = Object.keys(b);
+	if (ak.length !== bk.length) return false;
+	return ak.every(
+		(k) =>
+			k in b && sameValue((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
+	);
+}
+
 function push(key: string, value: unknown): Promise<void> {
 	log.info(`saving "${key}" to the budget`);
 	return send<void>("preferences/save", { id: PREFIX + key, value: JSON.stringify(value) }).catch(
@@ -77,13 +91,13 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			if (remote === null) continue;
 			// getValue reads a stored null as missing, which would never match the budget's "null".
 			const local = (await hasValue(key)) ? await getValue<unknown>(key, null) : undefined;
-			if (local !== undefined && JSON.stringify(local) === remote) continue;
 			let value: unknown;
 			try {
 				value = JSON.parse(remote);
 			} catch {
 				continue;
 			}
+			if (local !== undefined && sameValue(local, value)) continue;
 			log.info(`adopting "${key}" from the budget`);
 			applying = true;
 			try {
