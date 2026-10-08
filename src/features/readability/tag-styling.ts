@@ -53,43 +53,25 @@ function tagText(r: number, g: number, b: number): string {
 	return `color-mix(in srgb, rgb(${r}, ${g}, ${b}) 50%, var(--color-pageText))`;
 }
 
-function readNativeBg(el: HTMLElement): string {
-	el.style.removeProperty("background-color");
-	const bg = getComputedStyle(el).backgroundColor;
-	return bg;
+function needsColors(el: HTMLElement): boolean {
+	// React swaps the emotion class (which carries the color) on recycled rows, or drops our override.
+	return el.className !== el.dataset.abtTagClass || !el.style.getPropertyValue("background-color");
 }
 
-function applyTagColors(el: HTMLElement) {
-	el.dataset.abtTagClass = el.className;
-	const bg = readNativeBg(el);
-	const rgb = parseRgb(bg);
-	if (rgb) {
+// Reading a native color forces a style recalc, so clear every override first, read them all,
+// then write: one recalc per pass instead of one per tag.
+function colorTags(els: HTMLElement[]) {
+	if (!els.length) return;
+	for (const el of els) el.style.removeProperty("background-color");
+	const colors = els.map((el) => parseRgb(getComputedStyle(el).backgroundColor));
+	els.forEach((el, i) => {
+		el.dataset.abtTagClass = el.className;
+		const rgb = colors[i];
+		if (!rgb) return;
 		const [r, g, b] = rgb;
-		el.dataset.abtTagBg = `${r},${g},${b}`;
 		el.style.setProperty("background-color", `rgba(${r}, ${g}, ${b}, 0.15)`, "important");
 		el.style.setProperty("color", tagText(r, g, b), "important");
-	}
-}
-
-function refreshTagColors(el: HTMLElement) {
-	// Re-reading the native color forces a style recalc per tag, so only do it when
-	// the emotion class (which carries the color) changed or React dropped our override.
-	if (el.className === el.dataset.abtTagClass && el.style.getPropertyValue("background-color")) {
-		return;
-	}
-	el.dataset.abtTagClass = el.className;
-	const bg = readNativeBg(el);
-	const rgb = parseRgb(bg);
-	if (!rgb) return;
-	const [r, g, b] = rgb;
-	const key = `${r},${g},${b}`;
-	if (el.dataset.abtTagBg === key) {
-		el.style.setProperty("background-color", `rgba(${r}, ${g}, ${b}, 0.15)`, "important");
-		return;
-	}
-	el.dataset.abtTagBg = key;
-	el.style.setProperty("background-color", `rgba(${r}, ${g}, ${b}, 0.15)`, "important");
-	el.style.setProperty("color", tagText(r, g, b), "important");
+	});
 }
 
 function splitHash(el: HTMLElement) {
@@ -104,46 +86,31 @@ function splitHash(el: HTMLElement) {
 	el.prepend(hash);
 }
 
-function decorateTagButton(btn: HTMLButtonElement) {
-	if (btn.hasAttribute(ATTR)) return;
-	const text = btn.textContent?.trim() || "";
-	if (!text.startsWith("#")) return;
-	btn.setAttribute(ATTR, "");
-
-	applyTagColors(btn);
-	splitHash(btn);
-}
-
-function decorateTagOption(item: HTMLElement) {
-	if (item.hasAttribute(ATTR)) return;
-	const textEl = item.querySelector<HTMLElement>("div");
-	if (!textEl) return;
-	const text = textEl.textContent?.trim() || "";
-	if (!text.startsWith("#")) return;
-	item.setAttribute(ATTR, "");
-
-	applyTagColors(textEl);
-	splitHash(textEl);
-}
-
 function scanTags() {
+	const stale: HTMLElement[] = [];
 	for (const btn of document.querySelectorAll<HTMLButtonElement>(
 		'button[data-react-aria-pressable="true"]',
 	)) {
 		if (btn.hasAttribute(ATTR)) {
-			refreshTagColors(btn);
+			if (needsColors(btn)) stale.push(btn);
 		} else if (btn.textContent?.trim().startsWith("#")) {
-			decorateTagButton(btn);
+			btn.setAttribute(ATTR, "");
+			splitHash(btn);
+			stale.push(btn);
 		}
 	}
 	for (const item of document.querySelectorAll<HTMLElement>(".react-aria-ListBoxItem")) {
+		const textEl = item.querySelector<HTMLElement>("div");
+		if (!textEl) continue;
 		if (item.hasAttribute(ATTR)) {
-			const textEl = item.querySelector<HTMLElement>("div");
-			if (textEl) refreshTagColors(textEl);
-		} else if (item.textContent?.trim().startsWith("#")) {
-			decorateTagOption(item);
+			if (needsColors(textEl)) stale.push(textEl);
+		} else if (textEl.textContent?.trim().startsWith("#")) {
+			item.setAttribute(ATTR, "");
+			splitHash(textEl);
+			stale.push(textEl);
 		}
 	}
+	colorTags(stale);
 }
 
 function restoreHash(el: HTMLElement) {
