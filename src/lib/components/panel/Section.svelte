@@ -99,7 +99,7 @@
 		background: transparent;
 		border: none;
 		font: inherit;
-		color: var(--abt-panel-accent);
+		color: var(--abt-accent);
 		text-align: left;
 	}
 	button.head {

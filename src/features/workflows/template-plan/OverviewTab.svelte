@@ -58,7 +58,7 @@
 			? "var(--color-errorText, #e57373)"
 			: spentPct >= 85
 				? "var(--color-warningText, #e0c590)"
-				: "var(--abt-panel-accent)"}
+				: "var(--abt-accent)"}
 	{@const dashFill = (RING_CIRC * spentPctCapped) / 100}
 	{@const [yearNum, monthNum] = data.monthKey.split("-").map(Number)}
 	{@const today = new Date()}
@@ -316,8 +316,8 @@
 				trend={data.trend}
 				valueKey="spent"
 				currentMonthKey={data.monthKey}
-				barColor="var(--abt-panel-accent)"
-				barColorDim="color-mix(in srgb, var(--abt-panel-accent) 35%, transparent)"
+				barColor="var(--abt-accent)"
+				barColorDim="color-mix(in srgb, var(--abt-accent) 35%, transparent)"
 				higherIsBad={true}
 			/>
 		</Section>

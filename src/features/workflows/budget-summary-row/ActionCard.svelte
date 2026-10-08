@@ -402,7 +402,7 @@
 	}
 
 	.ac.is-primary {
-		--ac-tone: var(--abt-panel-accent);
+		--ac-tone: var(--abt-accent);
 	}
 
 	.ac.is-danger {
@@ -440,7 +440,7 @@
 	}
 
 	.ac__main:focus-visible::after {
-		outline: 2px solid color-mix(in srgb, var(--abt-panel-accent) 55%, transparent);
+		outline: 2px solid color-mix(in srgb, var(--abt-accent) 55%, transparent);
 		outline-offset: -2px;
 	}
 
@@ -454,7 +454,7 @@
 	}
 
 	.ac.is-primary .ac__title {
-		color: var(--abt-panel-accent);
+		color: var(--abt-accent);
 	}
 
 	.ac.is-danger .ac__title {

@@ -110,7 +110,7 @@ export const CSS = `
 		min-width: 2px;
 		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
-	.abt-tab-overview-card-bar[data-status="ok"]   { background: var(--abt-panel-accent); }
+	.abt-tab-overview-card-bar[data-status="ok"]   { background: var(--abt-accent); }
 	.abt-tab-overview-card-bar[data-status="warn"] { background: var(--color-warningText, #e0c590); }
 	.abt-tab-overview-card-bar[data-status="over"] { background: var(--color-errorText, #e57373); }
 
@@ -210,10 +210,10 @@ export const CSS = `
 		min-width: 2px;
 		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
-	.abt-tab-overview-mini-bar[data-status="ok"]      { background: var(--abt-panel-accent); }
+	.abt-tab-overview-mini-bar[data-status="ok"]      { background: var(--abt-accent); }
 	.abt-tab-overview-mini-bar[data-status="warn"]    { background: var(--color-warningText, #e0c590); }
 	.abt-tab-overview-mini-bar[data-status="over"]    { background: var(--color-errorText, #e57373); }
-	.abt-tab-overview-mini-bar[data-status="goal"]    { background: linear-gradient(90deg, var(--abt-panel-accent) 0%, var(--abt-panel-accent-secondary) 100%); }
+	.abt-tab-overview-mini-bar[data-status="goal"]    { background: linear-gradient(90deg, var(--abt-accent) 0%, var(--abt-panel-accent-secondary) 100%); }
 	.abt-tab-overview-mini-bar[data-status="elapsed"] { background: color-mix(in srgb, var(--color-pageText) 22%, transparent); }
 
 	/* ── Next Month hero ─────────────────────────────────────────── */
@@ -366,7 +366,7 @@ export const CSS = `
 		width: 6px;
 		height: 6px;
 		border-radius: 50%;
-		background: color-mix(in srgb, var(--abt-panel-accent) 60%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 60%, transparent);
 		flex-shrink: 0;
 	}
 
