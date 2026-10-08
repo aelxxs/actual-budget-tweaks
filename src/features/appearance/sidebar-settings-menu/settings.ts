@@ -1,10 +1,7 @@
 import { accountIconPicker } from "@features/appearance/account-icon-picker";
-import { sidebarIcons } from "@features/appearance/sidebar-icons";
-import { sidebarRedesign } from "@features/appearance/sidebar-redesign";
 import { sidebarSearch } from "@features/appearance/sidebar-search";
 import { sidebarShortcuts, sidebarShortcutsAddTile } from "@features/appearance/sidebar-shortcuts";
 import ShortcutsEditor from "@features/appearance/sidebar-shortcuts/components/ShortcutsEditor.svelte";
-import { sidebarAccountSpacing } from "@features/layout/sidebar-account-spacing";
 import { colorNegativeBalances } from "@features/readability/color-negative-balances";
 import type { Setting } from "@features/types";
 import { experimentalSidebar, experimentalSidebarLayout } from "@features/workflows/sidebar";
@@ -21,7 +18,7 @@ export function setLiveSidebarBudget(budgetId: string | undefined): void {
 	liveSidebarBudget = budgetId;
 }
 
-/** Every sidebar setting in one dialog, opened from either sidebar or the shortcuts bar. */
+/** Every sidebar setting in one dialog, opened from the live sidebar or its shortcuts bar. */
 export function openSidebarSettings({ tab }: { tab?: SidebarSettingsTab } = {}): void {
 	const budgetId = liveSidebarBudget;
 	// Built on open, not at import: the sidebar features import this module back.
@@ -36,12 +33,7 @@ export function openSidebarSettings({ tab }: { tab?: SidebarSettingsTab } = {}):
 				},
 				{
 					heading: "Appearance",
-					settings: [
-						sidebarAccountSpacing,
-						sidebarRedesign,
-						sidebarIcons,
-						sidebarSearch,
-					] as Setting[],
+					settings: [sidebarSearch] as Setting[],
 				},
 				{
 					heading: "Accounts",

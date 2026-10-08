@@ -2,10 +2,7 @@ import { accountIconPicker } from "./appearance/account-icon-picker";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
-import { sidebarIcons } from "./appearance/sidebar-icons";
-import { sidebarRedesign } from "./appearance/sidebar-redesign";
 import { sidebarSearch } from "./appearance/sidebar-search";
-import { sidebarSettingsMenu } from "./appearance/sidebar-settings-menu";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
 import { modernTitlebar } from "./appearance/titlebar";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
@@ -23,7 +20,6 @@ import { budgetTableRowHeight } from "./layout/budget-table-row-height";
 import { hideMonthOnScroll } from "./layout/hide-month-on-scroll";
 import { reportWidgetBackgroundColor } from "./layout/report-widget-background-color";
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
-import { sidebarAccountSpacing } from "./layout/sidebar-account-spacing";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { balancePills } from "./readability/balance-pills";
 import { budgetCardStyling } from "./readability/budget-card-styling";
@@ -84,11 +80,8 @@ const appearance = [
 	modernReconcile,
 	modernToasts,
 	privacyStyle,
-	sidebarRedesign,
-	sidebarIcons,
 	sidebarSearch,
 	sidebarShortcuts,
-	sidebarAccountSpacing,
 	accountIconPicker,
 	categoryColorDots,
 	categoryEmojiPicker,
@@ -117,7 +110,6 @@ export const coreScripts = [
 	tooltipStyling,
 	releaseNotification,
 	privacyMode,
-	sidebarSettingsMenu,
 	budgetViewOptions,
 ];
 

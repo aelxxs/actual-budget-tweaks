@@ -27,14 +27,6 @@ export const nativeHooks = {
 					mark(header.parentElement?.parentElement ?? null, "data-abt-card-table");
 				}
 			}
-			mark(
-				document.querySelector('[data-testid="budget-name"]')?.parentElement ?? null,
-				"data-abt-sidebar-header",
-			);
-			mark(
-				document.querySelector('[data-testid="sidebar-add-account"]')?.parentElement ?? null,
-				"data-abt-sidebar-footer",
-			);
 			for (const input of document.querySelectorAll("input[data-rac]")) {
 				if (input.previousElementSibling instanceof SVGElement) {
 					mark(input.parentElement, "data-abt-search");

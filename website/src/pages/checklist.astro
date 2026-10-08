@@ -7,14 +7,10 @@ const sections = [
     description: "Target CSS-in-JS class names that change whenever Actual rebuilds styles. Most likely to break.",
     risk: "critical",
     items: [
-      { feature: "Sidebar Density", file: "src/features/layout/sidebar-account-spacing.ts", selectors: ["css-hfi7l9", "css-15e1mkk", "css-13d5vlg", "css-e5dykp"], checks: ["Account list spacing looks correct", "Account name text renders properly"] },
       { feature: "Report Widget Background", file: "src/features/layout/report-widget-background-color.ts", selectors: ["css-w4wco7", "css-eiyo5a"], checks: ["Report widget backgrounds apply correctly"] },
       { feature: "Budget Page Borders", file: "src/features/readability/budget-page-borders.ts", selectors: ["css-5co8lf"], checks: ["Budget page border styling applies"] },
       { feature: "Header Border", file: "src/features/readability/top-nav-border.ts", selectors: ["css-pq65pe"], checks: ["Top nav border renders"] },
-      { feature: "Sidebar Redesign", file: "src/features/appearance/sidebar-redesign.ts", selectors: ["css-37q6ds", "css-1q5hn2l"], checks: ["Sidebar redesign renders properly", "Collapsible account groups work", "Uncategorized badges show correct counts"] },
-      { feature: "Sidebar Icons / States", file: "src/features/appearance/sidebar-icons.ts", selectors: ["css-169sxsz", "css-1y6zg9g", "css-3klntp"], checks: ["Sidebar icons render", "Active/hover states look correct"] },
       { feature: "Toolbar Buttons", file: "src/lib/utilities/dom.ts", selectors: ["css-125dinm", "css-70zz4x"], checks: ["Features using createToolbarButton() render their button"] },
-      { feature: "Account Icon Picker", file: "src/features/appearance/account-icon-picker/index.ts", selectors: ["css-15e1mkk", "css-1kp6ojj"], checks: ["Account icons render in sidebar", "Icon picker opens and saves"] },
     ],
   },
   {
