@@ -182,8 +182,8 @@ let dotStateColors = new Map<string, string>();
 /** Class sets with no color rule even after a rescan, so they don't trigger rescans forever. */
 const unresolvedDotClasses = new Set<string>();
 
-// Classic sidebar: each row's `.dot` gets a per-state emotion class (e.g.
-// css-1c4utta) rather than an inline style, and its *computed* color can't be
+// Classic sidebar: each row's `.dot` gets a per-state emotion class rather than
+// an inline style, and its *computed* color can't be
 // trusted either — when the account is the active route, a higher-priority
 // rule overrides the rendered color without touching `.dot`'s classList. So
 // this reads the declared rule for whichever class is actually in the

@@ -8,15 +8,18 @@ Move ABT's styles onto shared primitives in [`src/lib/styles/ui.css`](../src/lib
 - No raw sizes or colour mixes where a token exists.
 - Components don't set outer margins; parents space children with `gap`.
 - CSS that restyles Actual's own DOM is adapter code: keep it in a labelled block, use tokens for its values, and comment any `!important` or structural selector that isn't obvious.
+- Anchor adapter CSS on a `data-testid`, ARIA role or label, `href`, structure under `[data-abt-content-grid]`, or a `data-abt-*` marker set in JS (most in `src/features/core/native-hooks.ts`). Never Actual's hashed `.css-xxxxx` classes; they change with every release.
+- No broad `:has()`. A `:has()` whose subject matches many elements reruns on every DOM change; set a marker in JS instead.
+- `pnpm check:tokens` (also in CI) enforces the token and hashed-class rules. A deliberate exception carries a `raw:` comment on the same line.
 
 ## Starting point
 
-| Form                                      | Where                                                                                                                 | Notes                                                                   |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Svelte-scoped CSS                         | sidebar-shortcuts (1,112 lines), spending-calendar (538), release-notification (207), `src/lib/components`            | Most of the duplicated buttons and popovers                             |
-| Global CSS in TS strings for ABT's own UI | template-plan `css.ts` (595 lines, 83 `abt-tab-*` classes), category-template-insights (266), category-progress (267) | Should be scoped Svelte CSS on primitives                               |
-| Global stylesheets                        | `workflows/sidebar/sidebar.css` (585 px values), `public/css/income-breakdown.css` (546 lines)                        |                                                                         |
-| Adapter CSS                               | `public/css/base.css`, layout and readability features                                                                | 73 hashed `.css-xxxxx` selectors in `base.css` break on Actual releases |
+| Form                                      | Where                                                                                                                 | Notes                                                            |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Svelte-scoped CSS                         | sidebar-shortcuts (1,112 lines), spending-calendar (538), release-notification (207), `src/lib/components`            | Most of the duplicated buttons and popovers                      |
+| Global CSS in TS strings for ABT's own UI | template-plan `css.ts` (595 lines, 83 `abt-tab-*` classes), category-template-insights (266), category-progress (267) | Should be scoped Svelte CSS on primitives                        |
+| Global stylesheets                        | `workflows/sidebar/sidebar.css` (585 px values), `public/css/income-breakdown.css` (546 lines)                        |                                                                  |
+| Adapter CSS                               | `public/css/base.css`, layout and readability features                                                                | Hashed `.css-xxxxx` selectors broke on Actual releases (removed) |
 
 Across all of it: ~1,500 raw px values, eight `pageText` mix percentages (3–20%) for fill, hairline and track, three radius systems (`--abt-radius`, raw `--border-radius`, ~90 hardcoded 2–6px), ~18 overlay implementations, 6 segmented controls, and `--color-tableRowBackgroundHover` used as a button hover in 6 places.
 
@@ -28,14 +31,14 @@ Across all of it: ~1,500 raw px values, eight `pageText` mix percentages (3–20
 
 ## Phases
 
-| Phase | Scope                                                                                                                                                                                                   | Status |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| 0     | Tokens and utilities; budget-month-header, budget-summary-row, budget-category-filter                                                                                                                   | Done   |
-| 1     | `src/lib/components`: Tabs, OptionPicker, Select, Switch, Checkbox, MonthPicker, IconPickerPopover. Add the primitives they need (likely a text field and a popover shell).                             |        |
-| 2     | template-plan (Insights panel; move `css.ts` into scoped Svelte CSS), sidebar-shortcuts (Modal, ToolPopover, buttons), spending-calendar, release-notification                                          |        |
-| 3     | budget-view-options, goal-funding, category-template-insights, category-progress, category-color-dots, emoji and icon pickers, sidebar-settings-menu, side-panel shell                                  |        |
-| 4     | Adapter layer: `base.css`, layout and readability features, sidebar-redesign, `sidebar.css`. Replace hashed selectors with `data-testid`, ARIA, or structural hooks; group by feature; tokenise values. |        |
-| 5     | Guardrails: stylelint or a check script that flags raw px and hashed selectors outside `ui.css` and labelled adapter blocks; a "Styling" section in CLAUDE.md                                           |        |
+| Phase | Scope                                                                                                                                                                                                   | Status                                    |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| 0     | Tokens and utilities; budget-month-header, budget-summary-row, budget-category-filter                                                                                                                   | Done                                      |
+| 1     | `src/lib/components`: Tabs, OptionPicker, Select, Switch, Checkbox, MonthPicker, IconPickerPopover. Add the primitives they need (likely a text field and a popover shell).                             |                                           |
+| 2     | template-plan (Insights panel; move `css.ts` into scoped Svelte CSS), sidebar-shortcuts (Modal, ToolPopover, buttons), spending-calendar, release-notification                                          |                                           |
+| 3     | budget-view-options, goal-funding, category-template-insights, category-progress, category-color-dots, emoji and icon pickers, sidebar-settings-menu, side-panel shell                                  |                                           |
+| 4     | Adapter layer: `base.css`, layout and readability features, sidebar-redesign, `sidebar.css`. Replace hashed selectors with `data-testid`, ARIA, or structural hooks; group by feature; tokenise values. | Done; `base.css` values not yet tokenised |
+| 5     | Guardrails: `pnpm check:tokens` flags raw values that have a token and hashed selectors; anchoring rules above                                                                                          | Done                                      |
 
 ## Per change
 

@@ -1,5 +1,6 @@
 // Flags hand-written values that have a token in src/lib/styles/ui.css, so the scales don't
-// drift apart again. A deliberate exception carries a `raw:` comment on the same line,
+// drift apart again, and Actual's hashed class names, which change with every Actual release.
+// A deliberate exception carries a `raw:` comment on the same line,
 // e.g. `border-radius: 11px; /* raw: fixed to match the shortcut tiles */`.
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -14,6 +15,12 @@ const SKIP = [
 	"public/css/base.css", // overrides Actual's own styles
 ];
 const EXT = /\.(svelte|css|ts)$/;
+
+const HASHED = {
+	// Emotion hashes always contain a digit, which keeps BEM names like `creator__css-input` out.
+	re: /(?<![\w-])css-(?=[a-z]*\d)[a-z0-9]{5,8}\b/g,
+	hint: "anchor on a data-testid, role, structure or a native-hooks data-abt-* marker",
+};
 
 const RULES = [
 	{
@@ -50,12 +57,12 @@ const problems = [];
 for (const base of SCAN) {
 	for (const file of walk(join(root, base))) {
 		const rel = relative(root, file);
-		if (SKIP.some((s) => rel.startsWith(s))) continue;
+		const rules = SKIP.some((s) => rel.startsWith(s)) ? [HASHED] : [HASHED, ...RULES];
 		readFileSync(file, "utf8")
 			.split("\n")
 			.forEach((line, i) => {
 				if (line.includes("raw:")) return;
-				for (const { re, hint } of RULES) {
+				for (const { re, hint } of rules) {
 					for (const m of line.matchAll(re)) {
 						problems.push(`${rel}:${i + 1}  ${m[0].replace(/[;}"]$/, "")}  → ${hint}`);
 					}
@@ -67,7 +74,7 @@ for (const base of SCAN) {
 if (problems.length) {
 	console.error(problems.join("\n"));
 	console.error(
-		`\n${problems.length} raw value(s) with a token. Mark deliberate ones with a "raw:" comment.`,
+		`\n${problems.length} raw value(s) or hashed class(es). Mark deliberate ones with a "raw:" comment.`,
 	);
 	process.exit(1);
 }
