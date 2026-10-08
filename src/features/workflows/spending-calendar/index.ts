@@ -32,7 +32,7 @@ function updateActiveState(): void {
 
 /**
  * Exported so other features can trigger the same calendar overlay without
- * duplicating its DOM-manipulation logic — the experimental sidebar's
+ * duplicating its DOM-manipulation logic — the live sidebar's
  * PrimaryNav uses this instead of cloning a native sidebar link (this
  * feature's own trigger mechanism), since it isn't a real `<a href>` element.
  */

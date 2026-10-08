@@ -77,11 +77,35 @@
 	// Other features (Modern Reconcile) collapse it for a while and put it back.
 	$effect(() => watchValue<boolean>(COLLAPSED_KEY, (v) => (collapsed = !!v)));
 
+	// Narrow windows show just the rail; opening it there doesn't change the saved choice.
+	const NARROW_QUERY = "(max-width: 960px)";
+	let narrow = $state(false);
+	let openWhileNarrow = $state(false);
+	const isCollapsed = $derived(narrow ? !openWhileNarrow : collapsed);
+	$effect(() => {
+		const mq = window.matchMedia(NARROW_QUERY);
+		const update = () => {
+			narrow = mq.matches;
+			openWhileNarrow = false;
+		};
+		update();
+		mq.addEventListener("change", update);
+		return () => mq.removeEventListener("change", update);
+	});
+
 	function expandSidebar() {
+		if (narrow) {
+			openWhileNarrow = true;
+			return;
+		}
 		collapsed = false;
 		setValue(COLLAPSED_KEY, false);
 	}
 	function collapseSidebar() {
+		if (narrow) {
+			openWhileNarrow = false;
+			return;
+		}
 		collapsed = true;
 		setValue(COLLAPSED_KEY, true);
 	}
@@ -95,18 +119,21 @@
 	// ---- resize ----
 	const MIN_WIDTH = 240;
 	const MAX_WIDTH = 560;
-	const DEFAULT_WIDTH = 325;
+	// Split's accounts panel sits beside the rail, so it needs less than the single column.
+	const defaultWidth = (mode: SidebarLayout) => (mode === "split" ? 260 : 325);
 	const WIDTH_KEY = "experimental-sidebar-width";
-	let sidebarWidth = $state(DEFAULT_WIDTH);
+	let sidebarWidth = $state(defaultWidth("split"));
+	// Until the user sizes it, the width follows the layout's default.
+	let widthStored = false;
 	// total on-screen width covers both modes: the classic single-column
 	// rail/expanded sidebar, and split mode's fixed activity bar plus its
 	// optional (collapsible) resizable accounts panel.
 	const sidebarTotalWidth = $derived(
 		layoutMode === "split"
-			? collapsed
+			? isCollapsed
 				? ACTIVITY_BAR_WIDTH
 				: `calc(${ACTIVITY_BAR_WIDTH} + ${sidebarWidth}px)`
-			: collapsed
+			: isCollapsed
 				? RAIL_WIDTH
 				: `${sidebarWidth}px`,
 	);
@@ -133,11 +160,12 @@
 		if (!resizing) return;
 		resizing = false;
 		(e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+		widthStored = true;
 		setValue(WIDTH_KEY, sidebarWidth);
 	}
 	function resetWidth() {
-		sidebarWidth = DEFAULT_WIDTH;
-		setValue(WIDTH_KEY, DEFAULT_WIDTH);
+		sidebarWidth = defaultWidth(layoutMode);
+		setValue(WIDTH_KEY, sidebarWidth);
 	}
 
 	let sidebarEl: HTMLDivElement | undefined = $state();
@@ -161,8 +189,10 @@
 				);
 			if (`local:${SEARCH_KEY}` in changes)
 				searchEnabled = Boolean(changes[`local:${SEARCH_KEY}`].newValue ?? SEARCH_DEFAULT);
-			if (`local:${LAYOUT_KEY}` in changes)
+			if (`local:${LAYOUT_KEY}` in changes) {
 				layoutMode = toLayout(changes[`local:${LAYOUT_KEY}`].newValue);
+				if (!widthStored) sidebarWidth = defaultWidth(layoutMode);
+			}
 		};
 		browser.storage.onChanged.addListener(onStorageChange);
 		return () => browser.storage.onChanged.removeListener(onStorageChange);
@@ -304,15 +334,19 @@
 		const [storedCollapsed, storedWidth, storedGroupMode, storedLayoutMode, loadedIcons] =
 			await Promise.all([
 				getValue<boolean>(COLLAPSED_KEY, false),
-				getValue<number>(WIDTH_KEY, DEFAULT_WIDTH),
+				getValue<number | null>(WIDTH_KEY, null),
 				getValue<boolean>(GROUP_MODE_KEY, true),
 				getValue<unknown>(LAYOUT_KEY, "split"),
 				loadIconCache(),
 			]);
 		collapsed = storedCollapsed;
-		sidebarWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, storedWidth));
 		groupAccounts = storedGroupMode;
 		layoutMode = toLayout(storedLayoutMode);
+		widthStored = storedWidth != null;
+		sidebarWidth = Math.min(
+			MAX_WIDTH,
+			Math.max(MIN_WIDTH, storedWidth ?? defaultWidth(layoutMode)),
+		);
 		icons = loadedIcons;
 		requestAnimationFrame(() => (transitionsReady = true));
 
@@ -326,7 +360,7 @@
 			loading = false;
 			await refreshUncategorizedCounts(accounts);
 		} catch (err) {
-			console.error("[ABT experimental sidebar] failed to load live data", err);
+			console.error("[ABT live sidebar] failed to load live data", err);
 			if (loading) failed = true;
 		} finally {
 			loading = false;
@@ -339,7 +373,7 @@
 	class:resizing
 	class:transitions-ready={transitionsReady}
 	class:split={layoutMode === "split"}
-	class:collapsed={collapsed && layoutMode === "standard"}
+	class:collapsed={isCollapsed && layoutMode === "standard"}
 	bind:this={sidebarEl}
 	style="width: {sidebarTotalWidth}"
 >
@@ -353,11 +387,11 @@
 				onExpand={expandSidebar}
 				onSearch={openPalette}
 				split
-				panelCollapsed={collapsed}
-				onTogglePanel={() => (collapsed ? expandSidebar() : collapseSidebar())}
+				panelCollapsed={isCollapsed}
+				onTogglePanel={() => (isCollapsed ? expandSidebar() : collapseSidebar())}
 			/>
 		</div>
-		{#if !collapsed}
+		{#if !isCollapsed}
 			<div class="split-panel">
 				<BudgetHeader
 					name={budgetName}
@@ -401,7 +435,7 @@
 				<Footer {accounts} />
 			</div>
 		{/if}
-	{:else if collapsed}
+	{:else if isCollapsed}
 		<Rail
 			{budgetName}
 			{budgetId}
@@ -446,7 +480,7 @@
 		</div>
 	{/if}
 
-	{#if !collapsed}
+	{#if !isCollapsed}
 		<div
 			class="resize-handle"
 			class:active={resizing}

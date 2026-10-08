@@ -88,12 +88,6 @@
 				"group": "Transactions"
 			},
 			{
-				"label": "Improve Notification Contrast",
-				"description": "Darker text on notification banners for readability.",
-				"icon": "eye",
-				"group": "General"
-			},
-			{
 				"label": "Show Daily Available",
 				"description": "Show a daily spending allowance under To Budget.",
 				"icon": "calculator",
@@ -142,16 +136,46 @@
 		"description": "UI chrome and personalization",
 		"items": [
 			{
-				"label": "Improved Sidebar Design",
-				"description": "A cleaner layout for the account sidebar.",
-				"icon": "layout",
+				"label": "Live sidebar",
+				"description": "ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
+				"icon": null,
 				"group": "Sidebar"
 			},
 			{
-				"label": "Modern Sidebar Icons",
-				"description": "Replaces the nav icons with a matching, modern set.",
-				"icon": "shuffle",
+				"label": "Live sidebar layout",
+				"description": "Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
+				"icon": null,
 				"group": "Sidebar"
+			},
+			{
+				"label": "Modern Titlebar",
+				"description": "Restyles the top bar's buttons with matching icons and status chips.",
+				"icon": "layout",
+				"group": "General"
+			},
+			{
+				"label": "Modern Account Toolbar",
+				"description": "Restyles the account page's actions, search and icon buttons with matching icons.",
+				"icon": "layout",
+				"group": "General"
+			},
+			{
+				"label": "Modern Reconcile",
+				"description": "Reconcile in a side panel: live balances, clear transactions from a list, one-click adjustment and undo.",
+				"icon": "shield",
+				"group": "General"
+			},
+			{
+				"label": "Modern Toasts",
+				"description": "Restyles notifications as compact cards with a coloured accent.",
+				"icon": "layout",
+				"group": "General"
+			},
+			{
+				"label": "Privacy Style",
+				"description": "How amounts look while privacy mode hides them.",
+				"icon": "eyeOff",
+				"group": "General"
 			},
 			{
 				"label": "Sidebar Search Bar",
@@ -163,12 +187,6 @@
 				"label": "Sidebar Shortcuts",
 				"description": "Pin quick links and tools to the sidebar.",
 				"icon": "star",
-				"group": "Sidebar"
-			},
-			{
-				"label": "Sidebar Density",
-				"description": "Adjust the spacing of accounts, nav links, and search in the sidebar.",
-				"icon": null,
 				"group": "Sidebar"
 			},
 			{
@@ -197,7 +215,7 @@
 		"items": [
 			{
 				"label": "Category Template Insights",
-				"description": "Progress bars showing how funded each category's #template is.",
+				"description": "Progress bars showing how funded each category's template is.",
 				"icon": "interest",
 				"group": null
 			},
@@ -231,18 +249,6 @@
 		"title": "Experimental",
 		"description": "Early previews of in-progress features",
 		"items": [
-			{
-				"label": "Live sidebar (experimental)",
-				"description": "Replace the native sidebar with a rebuilt one wired to live account data.",
-				"icon": null,
-				"group": "Sidebar"
-			},
-			{
-				"label": "Live sidebar layout",
-				"description": "Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
-				"icon": null,
-				"group": "Sidebar"
-			},
 			{
 				"label": "Month header (experimental)",
 				"description": "Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",

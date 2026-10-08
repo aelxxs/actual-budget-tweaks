@@ -66,7 +66,7 @@
 			filesLoaded = true;
 			if (id) icon = await loadBudgetIcon(id);
 		} catch (err) {
-			console.error("[ABT experimental sidebar] failed to load budget header data", err);
+			console.error("[ABT live sidebar] failed to load budget header data", err);
 		} finally {
 			filesLoaded = true;
 		}
@@ -125,7 +125,7 @@
 			files = loadedFiles;
 			currentId = id;
 		} catch (err) {
-			console.error("[ABT experimental sidebar] failed to load budget files", err);
+			console.error("[ABT live sidebar] failed to load budget files", err);
 			files = [];
 		}
 	}

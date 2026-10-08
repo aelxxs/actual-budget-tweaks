@@ -75,6 +75,8 @@ const readability = [
 ];
 
 const appearance = [
+	experimentalSidebar,
+	experimentalSidebarLayout,
 	modernTitlebar,
 	modernAccountToolbar,
 	modernReconcile,
@@ -95,13 +97,7 @@ const workflows = [
 	spendingCalendar,
 ];
 
-const experimental = [
-	experimentalSidebar,
-	experimentalSidebarLayout,
-	budgetMonthHeader,
-	budgetSummaryRow,
-	budgetCategoryFilter,
-];
+const experimental = [budgetMonthHeader, budgetSummaryRow, budgetCategoryFilter];
 
 export const coreScripts = [
 	sidePanel,

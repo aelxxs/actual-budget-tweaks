@@ -8,6 +8,8 @@ import { NATIVE_ROOT_ATTR } from "./lib/data";
 import { LAYOUT_KEY } from "./lib/layout";
 import Sidebar from "./Sidebar.svelte";
 
+const WRAP_ATTR = "data-abt-live-sidebar-wrap";
+
 function findNativeSidebarRoot(): HTMLElement | null {
 	const anchor = document.querySelector('[data-testid="sidebar-all-accounts-balance"]');
 	let el = anchor?.parentElement ?? null;
@@ -32,19 +34,20 @@ const CSS = `
 	}
 	/* Actual's sidebar wrapper clips at the sidebar's edge; let the resize grip straddle it.
 	   Its own z-index (above the titlebar) already keeps the grip over the page. */
-	:has(> [${MOUNT_ATTR}]) {
+	[${WRAP_ATTR}] {
 		overflow: visible !important;
 	}
 `;
 
 export const experimentalSidebar = defineSetting({
 	type: "checkbox",
-	label: "Live sidebar (experimental)",
-	description: "Replace the native sidebar with a rebuilt one wired to live account data.",
+	label: "Live sidebar",
+	description:
+		"ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
 	group: "Sidebar",
 	context: {
 		key: "experimental-sidebar",
-		defaultValue: false,
+		defaultValue: true,
 	},
 	css: () => CSS,
 	init: () => {
@@ -54,6 +57,7 @@ export const experimentalSidebar = defineSetting({
 			const native = findNativeSidebarRoot();
 			if (!native) return;
 			native.setAttribute(NATIVE_ROOT_ATTR, "1");
+			native.parentElement?.setAttribute(WRAP_ATTR, "");
 
 			if (instance && document.querySelector(`[${MOUNT_ATTR}]`)) return;
 
@@ -69,6 +73,7 @@ export const experimentalSidebar = defineSetting({
 			unwatch();
 			document.querySelector(`[${MOUNT_ATTR}]`)?.remove();
 			document.querySelector(`[${NATIVE_ROOT_ATTR}]`)?.removeAttribute(NATIVE_ROOT_ATTR);
+			document.querySelector(`[${WRAP_ATTR}]`)?.removeAttribute(WRAP_ATTR);
 			if (instance) unmount(instance);
 			instance = null;
 		};
