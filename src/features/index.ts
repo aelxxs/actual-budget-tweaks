@@ -46,6 +46,7 @@ import { goalFunding } from "./workflows/goal-funding";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
 import { spendingCalendar } from "./workflows/spending-calendar";
+import { syncRecap } from "./workflows/sync-recap";
 import { templatePlan } from "./workflows/template-plan";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 
@@ -96,6 +97,7 @@ const workflows = [
 	templatePlan,
 	nextMonthCoverageMethod,
 	spendingCalendar,
+	syncRecap,
 ];
 
 const experimental = [budgetMonthHeader, budgetSummaryRow, budgetCategoryFilter];

@@ -139,6 +139,77 @@ export default defineUnlistedScript(async () => {
 		);
 	});
 
+	// Actual keeps its Redux store off window; the <Provider> near the React root holds it.
+	function findStore() {
+		const root = document.getElementById("root");
+		const key = root && Object.keys(root).find((k) => k.startsWith("__reactContainer$"));
+		const stack = key ? [root[key]] : [];
+		for (let i = 0; stack.length && i < 200; i++) {
+			const fiber = stack.pop();
+			const store = fiber?.memoizedProps?.store;
+			if (store && typeof store.subscribe === "function") return store;
+			if (fiber?.sibling) stack.push(fiber.sibling);
+			if (fiber?.child) stack.push(fiber.child);
+		}
+		return null;
+	}
+
+	// Reports the transactions a bank sync or file import added, once it has finished. Actual
+	// appends to newTransactions for the whole session, so only ids not seen before count.
+	function watchImports(store) {
+		const seen = new Set(store.getState().transactions?.newTransactions ?? []);
+		let pending = { added: [], matched: [] };
+		let prev = store.getState();
+		let timer = null;
+		const flush = () => {
+			timer = null;
+			const state = store.getState();
+			if (state.account?.accountsSyncing?.length) return;
+			if (!pending.added.length && !pending.matched.length) return;
+			const detail = {
+				...pending,
+				failed: Object.keys(state.account?.failedAccounts ?? {}),
+			};
+			pending = { added: [], matched: [] };
+			document.dispatchEvent(
+				new CustomEvent("abt:api:imported", { detail: JSON.stringify(detail) }),
+			);
+		};
+		store.subscribe(() => {
+			const state = store.getState();
+			const tx = state.transactions;
+			if (tx && tx !== prev.transactions) {
+				for (const id of tx.newTransactions ?? []) {
+					if (!seen.has(id)) {
+						seen.add(id);
+						pending.added.push(id);
+					}
+				}
+				for (const id of tx.matchedTransactions ?? []) {
+					if (!seen.has(id)) {
+						seen.add(id);
+						pending.matched.push(id);
+					}
+				}
+			}
+			const syncing = state.account?.accountsSyncing?.length > 0;
+			const wasSyncing = prev.account?.accountsSyncing?.length > 0;
+			prev = state;
+			// A file import never sets accountsSyncing, so settle briefly before reporting.
+			if (syncing) return;
+			if (wasSyncing || pending.added.length || pending.matched.length) {
+				clearTimeout(timer);
+				timer = setTimeout(flush, 400);
+			}
+		});
+	}
+
+	(function attachStore(retries = 50) {
+		const store = findStore();
+		if (store) return watchImports(store);
+		if (retries > 0) setTimeout(() => attachStore(retries - 1), 200);
+	})();
+
 	document.addEventListener("abt:api:navigate", (e) => {
 		const { path, options } = parseDetail(e);
 		if (path && typeof window.__navigate === "function") {

@@ -159,7 +159,8 @@ function onToastEvent(e: Event) {
 }
 
 /**
- * Show one of Actual's own notification toasts, optionally with a button.
+ * Show one of Actual's own notification toasts, optionally with a button. Resolves to its key,
+ * for dismissNotification.
  *
  * @example
  * await notify({ message: "Budget copied" }, { title: "Undo", action: () => send("undo") });
@@ -167,7 +168,7 @@ function onToastEvent(e: Event) {
 export async function notify(
 	toast: Toast,
 	button?: { title: string; action: () => unknown },
-): Promise<void> {
+): Promise<string> {
 	await waitForBudget();
 	const key = `abt-toast-${++reqId}-${Date.now()}`;
 	if (button) {
@@ -177,6 +178,13 @@ export async function notify(
 		if (!toast.sticky) setTimeout(() => toastActions.delete(key), (toast.timeout ?? 6500) + 1000);
 	}
 	await request("abt:api:notify", { key, notification: toast, button: button?.title });
+	return key;
+}
+
+/** Removes a toast shown by notify, e.g. one a newer toast replaces. */
+export async function dismissNotification(key: string): Promise<void> {
+	toastActions.delete(key);
+	await dispatch("removeNotification", { id: key });
 }
 
 /**
@@ -249,4 +257,23 @@ export function waitForBudget(): Promise<void> {
 		obs.observe(document.body, { childList: true, subtree: true });
 	});
 	return budgetReadyPromise;
+}
+
+export interface ImportResult {
+	/** Transactions the bank sync or file import added. */
+	added: string[];
+	/** Existing transactions it matched. */
+	matched: string[];
+	/** Accounts whose last bank sync failed. */
+	failed: string[];
+}
+
+/** Calls back after each bank sync or file import that added or matched transactions. */
+export function onImported(callback: (result: ImportResult) => void): () => void {
+	const listener = (e: Event) => {
+		const raw = (e as CustomEvent).detail;
+		callback(typeof raw === "string" ? JSON.parse(raw) : raw);
+	};
+	document.addEventListener("abt:api:imported", listener);
+	return () => document.removeEventListener("abt:api:imported", listener);
 }
