@@ -469,7 +469,7 @@
 		min-height: 80px;
 		padding: var(--abt-space-4);
 		border: 1.5px dashed color-mix(in srgb, var(--color-sidebarItemText) 25%, transparent);
-		border-radius: 10px;
+		border-radius: 10px; /* raw: fixed, with the sidebar search bar */
 		font-size: var(--abt-text-sm);
 		text-align: center;
 		color: color-mix(in srgb, var(--color-sidebarItemText) 55%, transparent);

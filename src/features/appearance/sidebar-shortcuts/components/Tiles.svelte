@@ -260,7 +260,7 @@
 		position: relative;
 		height: 38px;
 		border: none;
-		border-radius: 10px;
+		border-radius: 10px; /* raw: fixed, with the sidebar search bar */
 		background: var(--sc-bg);
 		color: var(--color-sidebarItemText, #e0e0e0);
 		display: flex;

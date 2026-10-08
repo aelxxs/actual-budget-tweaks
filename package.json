@@ -16,6 +16,7 @@
 		"zip": "wxt zip",
 		"zip:firefox": "wxt zip -b firefox",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
+		"check:tokens": "node scripts/check-tokens.mjs",
 		"test:coverage": "node --experimental-vm-modules --test scripts/next-month-coverage.test.mjs",
 		"test:lifecycle": "node --experimental-vm-modules --test scripts/template-plan-lifecycle.test.mjs",
 		"lint": "eslint .",

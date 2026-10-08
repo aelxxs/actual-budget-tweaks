@@ -886,7 +886,7 @@ export const resizableTransactionColumns = defineSetting({
 			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}:hover::before {
 				width: 3px;
 				height: 70%;
-				background: color-mix(in srgb, var(--abt-accent) 70%, transparent);
+				background: color-mix(in srgb, var(--abt-accent) 70%, transparent); /* raw: hover sits between accent-4 and the solid drag line */
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] .${RESIZE_HANDLE_CLASS}[data-dragging="true"]::before {
 				width: 3px;

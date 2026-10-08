@@ -482,7 +482,7 @@
 		width: 32px;
 		height: 32px;
 		border-radius: var(--abt-radius);
-		font-size: 15px;
+		font-size: 15px; /* raw: initials sized to the 32px tile */
 	}
 	.budget-icon-btn--lg .budget-icon-emoji {
 		font-size: 21px;

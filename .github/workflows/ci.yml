@@ -28,6 +28,9 @@ jobs:
       - name: Type check
         run: pnpm check
 
+      - name: Token check
+        run: pnpm check:tokens
+
       - name: Build (Chrome)
         run: pnpm build
 
