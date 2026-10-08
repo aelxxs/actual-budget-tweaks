@@ -34,11 +34,15 @@ Across all of it: ~1,500 raw px values, eight `pageText` mix percentages (3–20
 | Phase | Scope                                                                                                                                                                                                   | Status                                    |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
 | 0     | Tokens and utilities; budget-month-header, budget-summary-row, budget-category-filter                                                                                                                   | Done                                      |
-| 1     | `src/lib/components`: Tabs, OptionPicker, Select, Switch, Checkbox, MonthPicker, IconPickerPopover. Add the primitives they need (likely a text field and a popover shell).                             |                                           |
-| 2     | template-plan (Insights panel; move `css.ts` into scoped Svelte CSS), sidebar-shortcuts (Modal, ToolPopover, buttons), spending-calendar, release-notification                                          |                                           |
-| 3     | budget-view-options, goal-funding, category-template-insights, category-progress, category-color-dots, emoji and icon pickers, sidebar-settings-menu, side-panel shell                                  |                                           |
+| 1     | `src/lib/components`: setting rows on a shared `abt-setting` primitive; Tabs with icons and a trailing slot; IconPickerPopover and MonthPicker on `abt-popover`, `abt-input` and `abt-btn`              | Done                                      |
+| 2     | template-plan (Insights panel; move `css.ts` into scoped Svelte CSS), sidebar-shortcuts (Modal, ToolPopover, buttons), spending-calendar, release-notification                                          | As touched                                |
+| 3     | budget-view-options, goal-funding, category-template-insights, category-progress, category-color-dots, emoji and icon pickers, sidebar-settings-menu, side-panel shell                                  | As touched                                |
 | 4     | Adapter layer: `base.css`, layout and readability features, sidebar-redesign, `sidebar.css`. Replace hashed selectors with `data-testid`, ARIA, or structural hooks; group by feature; tokenise values. | Done; `base.css` values not yet tokenised |
 | 5     | Guardrails: `pnpm check:tokens` flags raw values that have a token and hashed selectors; anchoring rules above                                                                                          | Done                                      |
+
+## Phases 2 and 3
+
+Opportunistic: when a feature in them changes for another reason, move it onto the primitives in the same pass, as its own commit.
 
 ## Per change
 

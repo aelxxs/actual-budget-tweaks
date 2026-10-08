@@ -18,6 +18,7 @@ What ABT is, and what every change should hold to.
 - **Anchors:** inside containers ABT also appends to, use `div:last-of-type` / `div:first-of-type`, not `:last-child` / `:first-child`. Put new markers in `src/features/core/native-hooks.ts`.
 - **Page gating:** check `matchesPage()` at the top of a permanent `watchDom()` callback, not a start/stop pair driven by `watchRoute`, which misses some in-app navigations.
 - **Tokens:** use `--abt-text-*`, `--abt-radius*` and the ink and accent steps instead of raw values. `pnpm check:tokens` enforces this and bans hashed classes; a deliberate exception carries a `raw:` comment on the same line. The popup doesn't load `ui.css`, so it keeps raw values.
+- **Shared UI:** when changing a feature's own UI, move what you touch onto the primitives in `ui.css` and the components in `src/lib/components` (phases 2 and 3 of the styling doc happen this way, not as a sweep).
 - **Comments:** only where the code can't explain itself (a constraint, a workaround), in one or two lines.
 - **Commits:** conventional, using `feat:`, `fix:`, `style:`, `refactor:` or `chore:`. changelogen builds the changelog and version from them.
 - **Verify:** `pnpm format && pnpm check && pnpm lint && pnpm check:tokens`, then look at the change in a running Actual instance on a test budget, not real financial data. None of the checks catch a selector that stopped matching.
