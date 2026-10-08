@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { scriptSections, scripts } from "../features";
+	import { pushStoredSettings } from "../features/settings-sync";
 	import Icon from "./components/Icon.svelte";
 	import SettingRow from "./components/SettingRow.svelte";
 
@@ -146,6 +147,8 @@
 				}
 				await browser.storage.local.clear();
 				await browser.storage.local.set(data);
+				// Otherwise the budget's old values would win again after the reload.
+				await pushStoredSettings();
 				importStatus = "success";
 				setTimeout(() => location.reload(), 1000);
 			} catch {

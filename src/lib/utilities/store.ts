@@ -27,10 +27,18 @@ export async function hasValue(key: string): Promise<boolean> {
 	}
 }
 
+let onSet: ((key: string, value: unknown) => void) | null = null;
+
+/** Lets settings sync mirror writes into Actual; one hook, set by the content script. */
+export function onSetValue(hook: typeof onSet): void {
+	onSet = hook;
+}
+
 export function setValue(key: string, value: unknown) {
 	if (isContextInvalidated()) return Promise.resolve();
 	try {
 		const plain = JSON.parse(JSON.stringify(value));
+		onSet?.(key, plain);
 		return browser.storage.local.set({ ["local:" + key]: plain });
 	} catch {
 		return Promise.resolve();

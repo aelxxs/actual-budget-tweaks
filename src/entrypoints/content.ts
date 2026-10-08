@@ -40,12 +40,14 @@ export default defineContentScript({
 				{ createElement },
 				{ mount, unmount },
 				{ bootstrapSettings },
+				{ startSettingsSync },
 			] = await Promise.all([
 				import("@lib/ActualSettings.svelte"),
 				import("@features/index"),
 				import("@lib/utilities/dom"),
 				import("svelte"),
 				import("@features/runtime"),
+				import("@features/settings-sync"),
 			]);
 
 			let baseCss: string;
@@ -75,7 +77,9 @@ export default defineContentScript({
 			// activating. bootstrapSettings uses Promise.all internally, so one
 			// feature's slow/hung init() would otherwise block the panel from
 			// ever mounting.
-			bootstrapSettings([...coreScripts, ...scripts.flat()]);
+			const all = [...coreScripts, ...scripts.flat()];
+			bootstrapSettings(all);
+			ctx.onInvalidated(startSettingsSync(all));
 			const ui = createIntegratedUi(ctx, {
 				position: "inline",
 				anchor: "[data-testid='settings'] > :nth-child(2)",

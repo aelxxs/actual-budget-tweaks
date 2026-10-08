@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import type { SelectSetting } from "../../features/types";
 	import { applySettingChange } from "../../features/runtime";
-	import { getValue } from "../utilities/store";
+	import { getValue, watchValue } from "../utilities/store";
 	import Icon from "./Icon.svelte";
 	import type { IconName } from "../icons";
 
@@ -22,6 +22,13 @@
 		const saved = await getValue(ctx.key, ctx.defaultValue);
 		value = typeof saved === "string" ? saved : "";
 	});
+
+	$effect(() =>
+		watchValue(ctx.key, (v) => {
+			const next = v ?? ctx.defaultValue;
+			value = typeof next === "string" ? next : "";
+		}),
+	);
 
 	async function handleChange(event: Event) {
 		const newValue = (event.target as HTMLSelectElement).value;

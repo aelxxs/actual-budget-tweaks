@@ -53,9 +53,15 @@ export async function applySettingChange(setting: Setting, newValue: unknown) {
 	if (setting.type === "core" || setting.type === "custom") return;
 
 	await setValue(setting.context.key, newValue);
-	const willReactivate = shouldRun(setting, newValue);
+	await reapplySetting(setting, newValue);
+}
+
+/** Brings a running setting to a value that's already stored, e.g. one synced from Actual. */
+export async function reapplySetting(setting: Setting, value: unknown) {
+	if (setting.type === "core" || setting.type === "custom") return;
+	const willReactivate = shouldRun(setting, value);
 	await deactivate(setting.context.key, { preserveCss: willReactivate });
-	if (willReactivate) await activate(setting, newValue);
+	if (willReactivate) await activate(setting, value);
 }
 
 async function bootstrapOne(setting: Setting): Promise<void> {

@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import type { CheckboxSetting } from "../../features/types";
 	import { applySettingChange } from "../../features/runtime";
-	import { getValue } from "../utilities/store";
+	import { getValue, watchValue } from "../utilities/store";
 	import Icon from "./Icon.svelte";
 	import Switch from "./Switch.svelte";
 	import type { IconName } from "../icons";
@@ -19,6 +19,9 @@
 		const saved = await getValue(ctx.key, ctx.defaultValue);
 		value = Boolean(saved);
 	});
+
+	// Follows changes made elsewhere, like a sync from another browser.
+	$effect(() => watchValue(ctx.key, (v) => (value = Boolean(v ?? ctx.defaultValue))));
 
 	async function handleChange(newValue: boolean) {
 		await applySettingChange(setting, newValue);
