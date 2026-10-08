@@ -1,6 +1,21 @@
 <script lang="ts">
 	import { getFaviconUrl } from "@lib/utilities/favicon";
-	import { Image, Smile, Upload, X } from "lucide-svelte";
+	import {
+		Flag,
+		Globe,
+		Image,
+		Lightbulb,
+		PawPrint,
+		Pizza,
+		Plane,
+		Search,
+		Shapes,
+		Smile,
+		Upload,
+		User,
+		Volleyball,
+		X,
+	} from "lucide-svelte";
 	import { onMount } from "svelte";
 	import Tabs from "./Tabs.svelte";
 	import emojiData from "unicode-emoji-json/data-by-group.json";
@@ -49,7 +64,10 @@
 			logoError = false;
 			return;
 		}
-		logoUrl = getFaviconUrl(clean);
+		const url = getFaviconUrl(clean);
+		// Same src fires no new load event, so resetting would leave the logo unclickable.
+		if (url === logoUrl) return;
+		logoUrl = url;
 		logoLoaded = false;
 		logoError = false;
 	}
@@ -71,16 +89,16 @@
 		emojis: EmojiEntry[];
 	}
 	const groups: EmojiGroup[] = emojiData as EmojiGroup[];
-	const GROUP_ICONS: Record<string, string> = {
-		"Smileys & Emotion": "😀",
-		"People & Body": "🧑",
-		"Animals & Nature": "🐶",
-		"Food & Drink": "🍕",
-		"Travel & Places": "✈️",
-		Activities: "⚽",
-		Objects: "💡",
-		Symbols: "💱",
-		Flags: "🏳️",
+	const GROUP_ICONS: Record<string, typeof Smile> = {
+		"Smileys & Emotion": Smile,
+		"People & Body": User,
+		"Animals & Nature": PawPrint,
+		"Food & Drink": Pizza,
+		"Travel & Places": Plane,
+		Activities: Volleyball,
+		Objects: Lightbulb,
+		Symbols: Shapes,
+		Flags: Flag,
 	};
 	let emojiSearch = $state("");
 	let activeGroup = $state(groups[0]?.name ?? "");
@@ -191,22 +209,28 @@
 	<!-- Emoji -->
 	{#if activeTab === "emoji"}
 		<div class="pane pane--emoji">
-			<input
-				class="abt-input inp"
-				type="text"
-				placeholder="Search emoji…"
-				bind:value={emojiSearch}
-			/>
+			<label class="search">
+				<Search size={14} class="search__icon" />
+				<input
+					class="search__input"
+					type="text"
+					placeholder="Search emoji…"
+					bind:value={emojiSearch}
+				/>
+			</label>
 			{#if !emojiSearch.trim()}
 				<div class="eg-tabs">
 					{#each groups as g (g.name)}
+						{@const GroupIcon = GROUP_ICONS[g.name] ?? Shapes}
 						<button
+							type="button"
 							class="eg-tab"
 							class:active={activeGroup === g.name}
 							title={g.name}
+							aria-label={g.name}
 							onclick={() => scrollToGroup(g.name)}
 						>
-							{GROUP_ICONS[g.name] ?? "·"}
+							<GroupIcon size={15} />
 						</button>
 					{/each}
 				</div>
@@ -222,9 +246,7 @@
 							>
 						{/each}
 					</div>
-					{#if filteredEmoji.length === 0}<div class="hint" style="padding:12px;text-align:center">
-							No results
-						</div>{/if}
+					{#if filteredEmoji.length === 0}<p class="hint hint--empty">No results</p>{/if}
 				{:else}
 					{#each groups as g (g.name)}
 						<div data-group={g.name}>
@@ -249,14 +271,17 @@
 		<!-- Logo -->
 	{:else if activeTab === "logo"}
 		<div class="pane pane--logo">
-			<input
-				class="abt-input inp"
-				type="text"
-				placeholder="bankofamerica.com"
-				bind:value={domain}
-				oninput={onDomainInput}
-				onkeydown={(e) => e.key === "Enter" && fetchLogo()}
-			/>
+			<label class="search">
+				<Globe size={14} class="search__icon" />
+				<input
+					class="search__input"
+					type="text"
+					placeholder="bankofamerica.com"
+					bind:value={domain}
+					oninput={onDomainInput}
+					onkeydown={(e) => e.key === "Enter" && fetchLogo()}
+				/>
+			</label>
 			{#if logoUrl}
 				<button
 					class="logo-preview"
@@ -319,20 +344,7 @@
 					<img src={uploadedDataUrl} alt="preview" class="dropzone__img" />
 					<span class="dropzone__hint">Click to replace</span>
 				{:else}
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						width="22"
-						height="22"
-						style="opacity:0.3;color:var(--color-pageText)"
-						><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
-							points="17 8 12 3 7 8"
-						/><line x1="12" y1="3" x2="12" y2="15" /></svg
-					>
+					<Upload size={20} class="dropzone__icon" />
 					<span class="dropzone__label">Drop image or click to browse</span>
 				{/if}
 			</div>
@@ -373,19 +385,45 @@
 	.pane {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		padding: 10px;
+		gap: var(--abt-space-3);
+		padding: 0 var(--abt-space-3) var(--abt-space-3);
 	}
-	.pane--emoji {
-		padding: 8px;
+	.pane--upload {
+		padding-top: var(--abt-space-3);
+	}
+
+	.search {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
+		margin: 0 calc(-1 * var(--abt-space-3));
+		padding: var(--abt-space-4);
+		border-bottom: 1px solid var(--abt-ink-2);
+		cursor: text;
+	}
+	.search :global(.search__icon) {
+		flex-shrink: 0;
+		color: var(--abt-subtle);
+	}
+	.search__input {
+		flex: 1;
+		min-width: 0;
+		padding: 0;
+		border: none;
+		outline: none;
+		background: transparent;
+		font: inherit;
+		font-size: var(--abt-text-md);
+		color: var(--abt-ink);
+	}
+	.search__input::placeholder {
+		color: var(--abt-subtle);
 	}
 
 	/* ── Emoji ── */
 	.eg-tabs {
 		display: flex;
-		gap: 1px;
-		padding-bottom: 6px;
-		border-bottom: 1px solid var(--abt-ink-3);
+		gap: var(--abt-space-1);
 	}
 
 	.eg-tab {
@@ -393,26 +431,29 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 4px 0;
+		padding: var(--abt-space-2) 0;
 		border: none;
 		border-radius: var(--abt-radius-sm);
 		background: none;
-		font-size: var(--abt-text-lg);
-		line-height: 1;
+		color: var(--abt-subtle);
 		cursor: pointer;
-		opacity: 0.5;
 		transition:
-			opacity 0.08s,
+			color 0.08s,
 			background 0.08s;
 	}
 
 	.eg-tab:hover {
-		opacity: 0.85;
+		color: var(--abt-ink);
 		background: var(--abt-ink-2);
 	}
 	.eg-tab.active {
-		opacity: 1;
+		color: var(--abt-accent);
 		background: var(--abt-accent-2);
+	}
+	.eg-tab:focus-visible,
+	.eg-btn:focus-visible {
+		outline: 2px solid var(--abt-accent-4);
+		outline-offset: -2px;
 	}
 
 	.eg-grid-wrap {
@@ -460,7 +501,7 @@
 	}
 
 	.eg-btn:hover {
-		background: var(--abt-ink-4);
+		background: var(--abt-accent-2);
 	}
 
 	/* ── Logo ── */
@@ -508,7 +549,7 @@
 
 	/* ── Upload ── */
 	.dropzone {
-		border: 2px dashed var(--abt-ink-2);
+		border: 1px dashed var(--abt-ink-4);
 		border-radius: var(--abt-radius);
 		min-height: 104px;
 		display: flex;
@@ -527,6 +568,9 @@
 	.dropzone.over {
 		border-color: var(--abt-accent);
 		background: var(--abt-accent-1);
+	}
+	.dropzone :global(.dropzone__icon) {
+		color: var(--abt-subtle);
 	}
 	.dropzone__label {
 		font-size: var(--abt-text-sm);
@@ -559,15 +603,15 @@
 		clip: rect(0, 0, 0, 0);
 	}
 
-	.inp {
-		width: 100%;
-	}
-
 	.hint {
 		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
 		margin: 0;
 		padding: 4px 0;
+	}
+	.hint--empty {
+		padding: var(--abt-space-4);
+		text-align: center;
 	}
 
 	.wide {
