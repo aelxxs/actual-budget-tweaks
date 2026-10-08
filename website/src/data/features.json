@@ -100,6 +100,12 @@
 				"group": "Transactions"
 			},
 			{
+				"label": "Quiet New Transactions",
+				"description": "Mark newly imported transactions with an accent bar instead of bold colored text.",
+				"icon": "sparkles",
+				"group": "Transactions"
+			},
+			{
 				"label": "Tag Styling",
 				"description": "Color #tags in notes and transaction fields.",
 				"icon": "palette",
@@ -242,6 +248,12 @@
 				"description": "A calendar view of daily spending, added to the sidebar.",
 				"icon": "calendar",
 				"group": null
+			},
+			{
+				"label": "Sync recap",
+				"description": "After a bank sync or import, review what came in and categorize it in the side panel.",
+				"icon": "download",
+				"group": "Accounts"
 			}
 		]
 	},
