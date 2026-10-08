@@ -1,6 +1,70 @@
 # Changelog
 
 
+## v0.1.85
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.84...v0.1.85)
+
+### 🚀 Enhancements
+
+- Sync ABT settings to the budget's synced preferences ([43ace08](https://github.com/aelxxs/actual-budget-tweaks/commit/43ace08))
+- Reconcile back button, and collapse the live sidebar while reconciling ([b2c1245](https://github.com/aelxxs/actual-budget-tweaks/commit/b2c1245))
+- Turn the live sidebar on by default and collapse it to the rail in narrow windows ([ab885bc](https://github.com/aelxxs/actual-budget-tweaks/commit/ab885bc))
+- Suggest the live sidebar once to people who have it off ([e64c198](https://github.com/aelxxs/actual-budget-tweaks/commit/e64c198))
+- Sync account groups, account order and budget icons with each budget ([e04784f](https://github.com/aelxxs/actual-budget-tweaks/commit/e04784f))
+- Stack side panels so closing one restores the panel underneath ([aa467ac](https://github.com/aelxxs/actual-budget-tweaks/commit/aa467ac))
+- Recap imported transactions after a sync and categorize them in the side panel ([cc9b977](https://github.com/aelxxs/actual-budget-tweaks/commit/cc9b977))
+- Mark new transactions with an accent bar instead of bold colored text ([c90614d](https://github.com/aelxxs/actual-budget-tweaks/commit/c90614d))
+
+### 🩹 Fixes
+
+- Anchor toolbar and titlebar CSS on JS-set attributes to stop fast-scroll blanking ([5daebd5](https://github.com/aelxxs/actual-budget-tweaks/commit/5daebd5))
+- Find the account toolbar and reconcile lock in JS instead of :has() ([4fd4db1](https://github.com/aelxxs/actual-budget-tweaks/commit/4fd4db1))
+- Keep sidebar tooltips hidden after a click focuses the button ([ce8fa7c](https://github.com/aelxxs/actual-budget-tweaks/commit/ce8fa7c))
+- Open the calendar at the top when the page underneath was scrolled ([0fe8c47](https://github.com/aelxxs/actual-budget-tweaks/commit/0fe8c47))
+- Keep the side panel after the page so a remounted page keeps its layout ([d7c8bd4](https://github.com/aelxxs/actual-budget-tweaks/commit/d7c8bd4))
+- Stop re-adopting synced settings whose keys Chrome stores in another order ([ba55ca6](https://github.com/aelxxs/actual-budget-tweaks/commit/ba55ca6))
+- Drop the stale category-notes wording from the template empty states ([d581dbd](https://github.com/aelxxs/actual-budget-tweaks/commit/d581dbd))
+- Sync the sidebar shortcut list with the budget ([c3bc8ab](https://github.com/aelxxs/actual-budget-tweaks/commit/c3bc8ab))
+- Pass the live sidebar's sync results to Actual so new transactions show up ([7a96748](https://github.com/aelxxs/actual-budget-tweaks/commit/7a96748))
+- Keep fast scrolling smooth in transaction tables with tags ([fb55aff](https://github.com/aelxxs/actual-budget-tweaks/commit/fb55aff))
+
+### 💅 Refactors
+
+- Remove legacy onChange setting lifecycle ([0d10743](https://github.com/aelxxs/actual-budget-tweaks/commit/0d10743))
+- Define all ABT tokens in ui.css and drop the panel-accent alias ([6cff472](https://github.com/aelxxs/actual-budget-tweaks/commit/6cff472))
+- Unify ABT colour tokens on an ink and accent tint scale ([316df7a](https://github.com/aelxxs/actual-budget-tweaks/commit/316df7a))
+- Split sidebar.css by area and scope palette and hover-card styles ([d808315](https://github.com/aelxxs/actual-budget-tweaks/commit/d808315))
+- Move sidebar styles into their Svelte components ([af06244](https://github.com/aelxxs/actual-budget-tweaks/commit/af06244))
+- Put ABT type and corner radii on shared scales ([7db1bdc](https://github.com/aelxxs/actual-budget-tweaks/commit/7db1bdc))
+- Replace hashed Actual selectors in base.css with stable hooks ([8487c07](https://github.com/aelxxs/actual-budget-tweaks/commit/8487c07))
+- Replace hashed Actual selectors in features with stable hooks ([25f897c](https://github.com/aelxxs/actual-budget-tweaks/commit/25f897c))
+- Drop broad :has() selectors from base.css and background pattern ([0bf908a](https://github.com/aelxxs/actual-budget-tweaks/commit/0bf908a))
+- Move shared settings rows, tabs and popovers onto ui.css primitives ([53f1ab4](https://github.com/aelxxs/actual-budget-tweaks/commit/53f1ab4))
+- Remove the native sidebar styling features ([be9cbef](https://github.com/aelxxs/actual-budget-tweaks/commit/be9cbef))
+- Reduce Account Icon Picker to the account page title ([6baa1c1](https://github.com/aelxxs/actual-budget-tweaks/commit/6baa1c1))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.84 ([85a2d89](https://github.com/aelxxs/actual-budget-tweaks/commit/85a2d89))
+- Audit cleanup — lint, formatting, tests, dead code ([f44be7c](https://github.com/aelxxs/actual-budget-tweaks/commit/f44be7c))
+- Add a token check that flags raw tints, font sizes and radii ([6ae2cdd](https://github.com/aelxxs/actual-budget-tweaks/commit/6ae2cdd))
+- Flag hashed Actual classes in check:tokens and add AGENTS.md ([4fc5ef4](https://github.com/aelxxs/actual-budget-tweaks/commit/4fc5ef4))
+- Mark styling phase 1 done and make phases 2-3 opportunistic ([5ee8b22](https://github.com/aelxxs/actual-budget-tweaks/commit/5ee8b22))
+- List Sync recap and Quiet New Transactions on the features page ([f2a9763](https://github.com/aelxxs/actual-budget-tweaks/commit/f2a9763))
+
+### 🎨 Styles
+
+- Use the purple accent for checked switches ([d72da6b](https://github.com/aelxxs/actual-budget-tweaks/commit/d72da6b))
+- Refresh the icon picker to match the command palette ([6306aa0](https://github.com/aelxxs/actual-budget-tweaks/commit/6306aa0))
+- Even out the budget page's padding around the cards and table ([f148bac](https://github.com/aelxxs/actual-budget-tweaks/commit/f148bac))
+- Match the budget summary cards' gap to the page padding ([d55a313](https://github.com/aelxxs/actual-budget-tweaks/commit/d55a313))
+- Shrink the caret on the selected transactions button ([5ce6899](https://github.com/aelxxs/actual-budget-tweaks/commit/5ce6899))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.84
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.83...v0.1.84)
