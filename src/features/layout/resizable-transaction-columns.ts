@@ -1,6 +1,7 @@
 import { defineSetting } from "@features/types";
 import { createElement, createToolbarButton } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
 import { watchRoute } from "@lib/utilities/route-watcher";
 import { getValue, setValue } from "@lib/utilities/store";
 
@@ -15,6 +16,9 @@ const ROOT_TOGGLE_ATTR = "data-abt-resizable-cols";
 const ROOT_RESIZING_ATTR = "data-abt-resizing-cols";
 /** Amount columns the user has resized; the rest keep Actual's auto-measured width. */
 const ROOT_FIXED_AMOUNTS_ATTR = "data-abt-fixed-amounts";
+// Set per route rather than `:root:has([data-testid="budget-table"])`, which Firefox
+// re-searched the whole page for on every row it styled, blanking fast scrolls.
+const ROOT_BUDGET_ATTR = "data-abt-budget-page";
 const ROUTE_REFRESH_DELAY_MS = 0;
 const INITIAL_ATTACH_RETRY_FRAMES = 6;
 const HEADER_COLUMNS: HeaderColumn[] = [
@@ -94,10 +98,15 @@ let stopInitialAttach: (() => void) | null = null;
 let routePollInterval: number | null = null;
 let stopWatchingRoute: (() => void) | null = null;
 
+function markBudgetPage(): void {
+	document.documentElement.toggleAttribute(ROOT_BUDGET_ATTR, matchesPage(Page.Budget));
+}
+
 function onRouteSignal(): void {
 	const currentRouteKey = getCurrentRouteKey();
 	if (currentRouteKey === observedRouteKey) return;
 	observedRouteKey = currentRouteKey;
+	markBudgetPage();
 
 	// Apply widths synchronously before React re-renders the new page so the new
 	// header never paints with the previous page's CSS variable values.
@@ -750,7 +759,7 @@ export const resizableTransactionColumns = defineSetting({
 		defaultValue: true,
 	},
 	css: () => `
-			:root[${ROOT_TOGGLE_ATTR}="on"]:not(:has([data-testid="budget-table"])) [data-testid="row"] {
+			:root[${ROOT_TOGGLE_ATTR}="on"]:not([${ROOT_BUDGET_ATTR}]) [data-testid="row"] {
 				position: relative;
 			}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="account"],
@@ -820,7 +829,7 @@ export const resizableTransactionColumns = defineSetting({
 			/* Amount columns stay on Actual's auto-measured width until resized. */
 			${amountColumnCss("payment", ["payment", "debit"])}
 			${amountColumnCss("deposit", ["deposit", "credit"])}
-			${amountColumnCss("balance", ["balance"], ':not(:has([data-testid="budget-table"]))')}
+			${amountColumnCss("balance", ["balance"], `:not([${ROOT_BUDGET_ATTR}])`)}
 			:root[${ROOT_TOGGLE_ATTR}="on"] [data-testid="cleared"] {
 				width: var(--abt-col-cleared, 38px) !important;
 				min-width: var(--abt-col-cleared-min, 38px) !important;
@@ -897,6 +906,7 @@ export const resizableTransactionColumns = defineSetting({
 		cachedWidths = {};
 
 		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
+		markBudgetPage();
 		await syncPageWidths(true);
 		startObserving();
 
@@ -906,6 +916,7 @@ export const resizableTransactionColumns = defineSetting({
 			document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
 			document.documentElement.removeAttribute(ROOT_RESIZING_ATTR);
 			document.documentElement.removeAttribute(ROOT_FIXED_AMOUNTS_ATTR);
+			document.documentElement.removeAttribute(ROOT_BUDGET_ATTR);
 			storagePrefixKey = "";
 			currentStorageKey = "";
 		};

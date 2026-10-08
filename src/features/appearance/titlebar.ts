@@ -1,5 +1,6 @@
 import { defineSetting } from "@features/types";
 import { type IconName, icon } from "@lib/icons";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 /*
  * Adapter CSS for Actual's titlebar cluster (uncategorized, privacy, notifications, sync,
@@ -8,7 +9,10 @@ import { type IconName, icon } from "@lib/icons";
  * in a spinning wrapper, and the uncategorized link (no tooltip, so unwrapped) and the server
  * status (inside a View) are the text-only buttons.
  */
-const BAR = 'div:has(> div > [data-testid="help-menu-button"])';
+const BAR_ATTR = "data-abt-titlebar";
+// Marked in JS: as a :has() anchor, Firefox tested it up the tree from every button with an svg
+// in the transaction rows, and blanked the table while restyling on fast scroll.
+const BAR = `[${BAR_ATTR}]`;
 const HELP = `${BAR} > div > [data-testid="help-menu-button"]`;
 const UNCATEGORIZED = `${BAR} > button:not(:has(svg))`;
 const STATUS = `${BAR} > div > div > button:not(:has(svg))`;
@@ -213,4 +217,22 @@ export const modernTitlebar = defineSetting({
 		defaultValue: true,
 	},
 	css: () => CSS,
+	init: () => {
+		let bar: Element | null = null;
+
+		const unwatch = watchDom(() => {
+			const next =
+				document.querySelector('[data-testid="help-menu-button"]')?.parentElement?.parentElement ?? null;
+			if (next === bar) return;
+			bar?.removeAttribute(BAR_ATTR);
+			bar = next;
+			bar?.setAttribute(BAR_ATTR, "");
+		});
+
+		return () => {
+			unwatch();
+			bar?.removeAttribute(BAR_ATTR);
+			bar = null;
+		};
+	},
 });

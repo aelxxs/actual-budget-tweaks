@@ -1,5 +1,6 @@
 import { defineSetting } from "@features/types";
 import { type IconName, icon } from "@lib/icons";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 /*
  * Adapter CSS for the account page's toolbar (Bank Sync, Import, Add New, Filter, search, then
@@ -8,8 +9,11 @@ import { type IconName, icon } from "@lib/icons";
  * splits the actions from search and the icon buttons. Some buttons sit in tooltip wrappers.
  * Actual's glyphs are told apart by the start of their path.
  */
-const HEADER = 'div:has(> div:first-child [data-testid="account-name"])';
-const BAR = `${HEADER} > div:last-child:has(> div:empty):has(> div > input)`;
+const BAR_ATTR = "data-abt-account-toolbar";
+// Matched once in JS: as a CSS anchor, these :has() checks ran for every svg in the
+// transaction rows on each scroll frame, and Firefox blanked the table while restyling.
+const BAR_SHAPE = "div:has(> div:empty):has(> div > input)";
+const BAR = `[${BAR_ATTR}]`;
 const ACTIONS = `${BAR} > button:has(~ div:empty), ${BAR} > div:has(~ div:empty) button`;
 // The account menu's dots; an overflow menu reads last, after ABT's column reset.
 const MENU = `${BAR} > div:has(path[d^="M10 12a2 2 0 1 1"])`;
@@ -160,4 +164,28 @@ export const modernAccountToolbar = defineSetting({
 		defaultValue: true,
 	},
 	css: () => CSS,
+	init: () => {
+		let bar: Element | null = null;
+
+		function findBar(): Element | null {
+			const name = document.querySelector('[data-testid="account-name"]');
+			for (let el = name?.parentElement; el?.parentElement; el = el.parentElement) {
+				const last = el.parentElement.lastElementChild;
+				if (el === el.parentElement.firstElementChild && last?.matches(BAR_SHAPE)) return last;
+			}
+			return null;
+		}
+
+		const unwatch = watchDom(() => {
+			if (bar?.isConnected) return;
+			bar = findBar();
+			bar?.setAttribute(BAR_ATTR, "");
+		});
+
+		return () => {
+			unwatch();
+			bar?.removeAttribute(BAR_ATTR);
+			bar = null;
+		};
+	},
 });
