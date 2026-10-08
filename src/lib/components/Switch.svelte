@@ -64,7 +64,7 @@
 	}
 
 	.switch__input:checked ~ .switch__track {
-		background-color: var(--color-checkboxToggleBackgroundSelected);
+		background-color: var(--abt-accent);
 	}
 
 	.switch__input:checked ~ .switch__track .switch__thumb {
