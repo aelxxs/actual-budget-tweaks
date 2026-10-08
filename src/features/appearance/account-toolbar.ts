@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { type IconName, icon } from "@lib/icons";
+import { type IconName, iconMask } from "@lib/icons";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { findAccountToolbar } from "@lib/utilities/native-ui";
 
@@ -32,17 +32,12 @@ const GLYPHS: [string, IconName][] = [
 	['path[d^="M10 12a2 2 0 1 1"]', "moreHorizontal"],
 ];
 
-function mask(name: IconName): string {
-	const svg = icon(name, { size: 24 }).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ');
-	return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-}
-
 // Swaps a native glyph for ours by masking the svg itself, so React keeps owning its nodes.
 const swaps = GLYPHS.map(
 	([path, name]) => `
 	${BAR} svg:has(${path}) {
 		background: currentColor;
-		mask: ${mask(name)} center / contain no-repeat;
+		mask: ${iconMask(name)} center / contain no-repeat;
 	}
 	${BAR} svg:has(${path}) > * {
 		display: none;

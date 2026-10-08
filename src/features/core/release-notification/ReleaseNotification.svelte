@@ -189,11 +189,7 @@
 		width: 4px;
 		height: 4px;
 		border-radius: 50%;
-		background: color-mix(
-			in srgb,
-			var(--abt-accent) 70%,
-			var(--color-pageTextSubdued)
-		);
+		background: color-mix(in srgb, var(--abt-accent) 70%, var(--color-pageTextSubdued));
 	}
 
 	.toast__empty {
@@ -255,10 +251,7 @@
 
 	.toast__checkbox:checked {
 		border-color: var(--color-checkboxBorderSelected, var(--abt-accent));
-		background-color: var(
-			--color-checkboxBackgroundSelected,
-			var(--abt-accent)
-		);
+		background-color: var(--color-checkboxBackgroundSelected, var(--abt-accent));
 	}
 
 	.toast__checkbox:checked::after {

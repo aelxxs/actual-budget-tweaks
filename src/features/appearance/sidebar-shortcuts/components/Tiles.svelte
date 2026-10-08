@@ -132,7 +132,12 @@
 			return;
 		}
 		if (!e.altKey) return;
-		const step = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : 0;
+		const step =
+			e.key === "ArrowLeft" || e.key === "ArrowUp"
+				? -1
+				: e.key === "ArrowRight" || e.key === "ArrowDown"
+					? 1
+					: 0;
 		const to = idx + step;
 		if (!step || to < 0 || to >= items.length) return;
 		e.preventDefault();
@@ -196,7 +201,9 @@
 			data-id={shortcut.id}
 			style={colorVars(idx, mode === "edit" || !isWidget || isData)}
 			title={shortcut.label}
-			aria-label={mode === "edit" ? `${shortcut.label}. Delete to remove, Alt+arrows to move` : undefined}
+			aria-label={mode === "edit"
+				? `${shortcut.label}. Delete to remove, Alt+arrows to move`
+				: undefined}
 			tabindex={mode === "edit" ? 0 : undefined}
 			draggable="true"
 			onclick={mode === "bar" && !isWidget

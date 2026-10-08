@@ -3,7 +3,6 @@
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import Icon from "@lib/components/Icon.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
 	import ActionCard from "./ActionCard.svelte";
 	import Breakdown from "./Breakdown.svelte";
 	import NativeRoll from "./NativeRoll.svelte";
@@ -98,7 +97,11 @@
 		{/if}
 		<div class="sr__card abt-card abt-stack">
 			<span class="sr__label abt-label">Spent</span>
-			<RollingNumber value={totals.spent} resetKey={sheet} class="sr__value abt-num abt-privacy-number" />
+			<RollingNumber
+				value={totals.spent}
+				resetKey={sheet}
+				class="sr__value abt-num abt-privacy-number"
+			/>
 			{#if totals.overIds.length}
 				<span
 					class="sr__sub abt-cluster abt-gap-2 is-bad"
@@ -115,11 +118,7 @@
 			{:else}
 				<span class="sr__sub abt-cluster abt-gap-2">
 					{#if totals.budgeted > 0}
-						of <RollingNumber
-							value={totals.budgeted}
-							resetKey={sheet}
-							class="abt-privacy-number"
-						/> budgeted
+						of <RollingNumber value={totals.budgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
 					{:else}
 						Nothing budgeted yet
 					{/if}
@@ -252,7 +251,7 @@
 		height: 6px;
 		border-radius: 50%;
 		background: currentColor;
-			display: inline-block;
+		display: inline-block;
 		margin-right: var(--abt-space-2);
 		vertical-align: 1px;
 	}

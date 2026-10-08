@@ -676,8 +676,7 @@
 
 	.inp:focus {
 		border-color: var(--abt-accent);
-		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--abt-accent) 12%, transparent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--abt-accent) 12%, transparent);
 	}
 	.inp::placeholder {
 		color: var(--color-pageTextSubdued);

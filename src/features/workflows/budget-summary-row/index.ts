@@ -1,7 +1,7 @@
 import { markSheetsStale, sheetsInMutations } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
-import { icon } from "@lib/icons";
+import { iconMask } from "@lib/icons";
 import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -25,9 +25,7 @@ const REFRESH_MS = 250;
 /** Both modes' card height, so switching between them never moves the table. */
 const CARD_HEIGHT = 92;
 /** ABT's notes icon, drawn over Actual's notes button so the button itself stays Actual's. */
-const NOTE_MASK = `url("data:image/svg+xml,${encodeURIComponent(
-	icon("note", { size: 24 }).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" '),
-)}")`;
+const NOTE_MASK = iconMask("note");
 /**
  * Keyed to the table rather than each card: Actual renders a new month's card a frame
  * before sync() could mark it, and that frame would show the tall native card.

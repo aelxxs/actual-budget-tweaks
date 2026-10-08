@@ -248,7 +248,7 @@
 			<span class="ac__sub"
 				>{#if suggestion.amount != null}<span class="abt-privacy-number"
 						>{fmtMoney(suggestion.amount)}</span
-					>{" "}{/if}{suggestion.sub}</span
+					>&nbsp;{/if}{suggestion.sub}</span
 			>
 		</button>
 		<button

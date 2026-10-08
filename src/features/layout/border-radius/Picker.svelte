@@ -73,13 +73,8 @@
 
 	.rp-option.is-active {
 		border-color: var(--abt-accent);
-		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--abt-accent) 20%, transparent);
-		background: color-mix(
-			in srgb,
-			var(--abt-accent) 5%,
-			var(--color-cardBackground)
-		);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--abt-accent) 20%, transparent);
+		background: color-mix(in srgb, var(--abt-accent) 5%, var(--color-cardBackground));
 	}
 
 	.rp-preview {
@@ -94,10 +89,8 @@
 		width: 2.75rem;
 		height: 2.5rem;
 		background: color-mix(in srgb, var(--abt-accent) 12%, transparent);
-		border-top: 2px solid
-			color-mix(in srgb, var(--abt-accent) 50%, transparent);
-		border-right: 2px solid
-			color-mix(in srgb, var(--abt-accent) 50%, transparent);
+		border-top: 2px solid color-mix(in srgb, var(--abt-accent) 50%, transparent);
+		border-right: 2px solid color-mix(in srgb, var(--abt-accent) 50%, transparent);
 		border-bottom-left-radius: 0.15rem;
 		transition: background 0.15s;
 	}

@@ -165,7 +165,7 @@
 .sidebar .split-panel {
 	/* Extra right-side room on top of each row's own padding; rows stay full-bleed so their
 	   highlight still reaches the edges. */
-	--sb-inset: 4px;
+	--sb-panel-room: 4px;
 	display: flex;
 	flex-direction: column;
 	flex: 1 1 auto;
@@ -266,12 +266,6 @@
 	font-weight: 700;
 	color: var(--sb-fg-faint);
 }
-.sidebar .rail-gsep {
-	width: 20px;
-	height: 1px;
-	margin: 4px 0;
-	background: var(--sb-surface-hover);
-}
 .sidebar .rtile-wrap {
 	position: relative;
 	width: 40px;
@@ -332,22 +326,6 @@
 	.sidebar .rtile-wrap.selected::before {
 		animation: active-pop 0.16s ease;
 	}
-}
-.sidebar .rtile-badge {
-	position: absolute;
-	right: -2px;
-	bottom: -2px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 16px;
-	height: 16px;
-	border-radius: 50%;
-	background: var(--sb-bg);
-}
-.sidebar .rtile-badge .status {
-	width: 18px;
-	height: 18px;
 }
 .sidebar .rail-foot {
 	display: flex;
@@ -540,7 +518,7 @@
 }
 .sidebar .split-panel .budget-select,
 .sidebar .split-panel .budget-header {
-	padding-right: calc(0.75rem + var(--sb-inset));
+	padding-right: calc(0.75rem + var(--sb-panel-room));
 }
 
 /* Budget icon (default: initials, matches .rail-avatar; customizable via the
@@ -1483,24 +1461,24 @@
 .sidebar.split .account,
 .sidebar.split .skel-row {
 	border-radius: 0;
-	padding-right: calc(8px + var(--sb-inset));
+	padding-right: calc(8px + var(--sb-panel-room));
 }
 .sidebar.split .all-accounts {
 	border-radius: 0;
 	margin-bottom: -0.75rem;
 	padding-left: 11px;
-	padding-right: calc(8px + var(--sb-inset));
+	padding-right: calc(8px + var(--sb-panel-room));
 }
 .sidebar.split .group-header {
 	border-radius: 0;
-	padding-right: calc(8px + var(--sb-inset));
+	padding-right: calc(8px + var(--sb-panel-room));
 }
 .sidebar.split .group-toggle,
 .sidebar.split .section-add {
-	right: calc(4px + var(--sb-inset));
+	right: calc(4px + var(--sb-panel-room));
 }
 .sidebar.split .header-add {
-	right: calc(28px + var(--sb-inset));
+	right: calc(28px + var(--sb-panel-room));
 }
 /* Sync-status glyphs (dot grammar) */
 .sidebar .status {
@@ -1659,9 +1637,6 @@
 	color: var(--sb-attention);
 	font-variant-numeric: tabular-nums;
 }
-.sidebar .mauve {
-	color: var(--sb-accent);
-}
 .sidebar .red {
 	color: var(--sb-danger);
 }
@@ -1785,25 +1760,6 @@
 	.sidebar .sync-btn.is-syncing svg {
 		animation: none;
 	}
-}
-.sidebar .theme-toggle {
-	display: flex;
-	align-items: center;
-	margin-left: auto;
-	padding: 5px;
-	color: var(--sb-fg-muted);
-	border-radius: 6px;
-	transition:
-		color 0.12s ease,
-		background 0.12s ease;
-}
-.sidebar .theme-toggle:hover {
-	color: var(--sb-fg-default);
-	background: var(--sb-hover-1);
-}
-.sidebar .theme-toggle svg {
-	width: 17px;
-	height: 17px;
 }
 .sidebar .collapse {
 	display: flex;
@@ -2509,104 +2465,11 @@
 	flex-shrink: 0;
 	margin-left: -1px;
 }
-.sidebar .acct-icon-emoji {
-	font-size: 14px;
-	line-height: 1;
-}
 .sidebar .acct-icon-img {
 	width: 16px;
 	height: 16px;
 	object-fit: cover;
 	border-radius: 2px;
-}
-
-/* ===== account icon picker ===== */
-.sidebar .ipick {
-	position: fixed;
-	z-index: 80;
-	width: 280px;
-	display: flex;
-	flex-direction: column;
-	background: var(--sb-inset);
-	border: 1px solid var(--sb-border);
-	border-radius: 12px;
-	box-shadow: 0 12px 34px var(--sb-shadow);
-	overflow: hidden;
-	animation: acard-in 0.12s ease;
-}
-.sidebar .ipick-tabs {
-	display: flex;
-	align-items: center;
-	gap: 2px;
-	padding: 5px 6px;
-	border-bottom: 1px solid var(--sb-border-muted);
-}
-.sidebar .ipick-tab {
-	padding: 6px 10px;
-	border-radius: 6px;
-	font-size: 12.5px;
-	font-weight: 600;
-	color: var(--sb-fg-muted);
-	transition:
-		background 0.1s ease,
-		color 0.1s ease;
-}
-.sidebar .ipick-tab:hover {
-	color: var(--sb-fg);
-	background: var(--sb-hover-1);
-}
-.sidebar .ipick-tab.active {
-	color: var(--sb-accent);
-	background: var(--sb-accent-muted);
-}
-.sidebar .ipick-close {
-	margin-left: auto;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 24px;
-	height: 24px;
-	border-radius: 5px;
-	color: var(--sb-fg-muted);
-	transition:
-		background 0.1s ease,
-		color 0.1s ease;
-}
-.sidebar .ipick-close:hover {
-	color: var(--sb-fg);
-	background: var(--sb-hover-2);
-}
-.sidebar .ipick-close svg {
-	width: 12px;
-	height: 12px;
-}
-.sidebar .ipick-pane {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	padding: 9px;
-}
-.sidebar .ipick-input {
-	width: 100%;
-	box-sizing: border-box;
-	padding: 7px 9px;
-	font-family: inherit;
-	font-size: 12.5px;
-	color: var(--sb-fg);
-	background: var(--sb-canvas);
-	border: 1px solid var(--sb-border);
-	border-radius: 7px;
-	outline: none;
-	transition:
-		border-color 0.12s ease,
-		box-shadow 0.12s ease;
-}
-.sidebar .ipick-input:focus {
-	border-color: var(--sb-accent);
-	box-shadow: 0 0 0 2px var(--sb-accent-muted);
-}
-.sidebar .ipick-input::placeholder {
-	color: var(--sb-fg-a40);
 }
 .sidebar .eg-tabs {
 	display: flex;
@@ -2706,15 +2569,6 @@
 	object-fit: contain;
 	border-radius: 6px;
 }
-.sidebar .logo-hint {
-	font-size: 10.5px;
-	font-weight: 600;
-	color: var(--sb-accent);
-}
-.sidebar .logo-err {
-	font-size: 11px;
-	color: var(--sb-danger);
-}
 .sidebar .dropzone {
 	display: flex;
 	flex-direction: column;
@@ -2734,59 +2588,4 @@
 .sidebar .dropzone.over {
 	border-color: var(--sb-accent);
 	background: var(--sb-accent-faint);
-}
-.sidebar .dropzone-icon {
-	width: 22px;
-	height: 22px;
-	opacity: 0.35;
-	color: var(--sb-fg);
-}
-.sidebar .dropzone-img {
-	max-width: 100%;
-	max-height: 82px;
-	object-fit: contain;
-	border-radius: 6px;
-}
-.sidebar .ipick-hint {
-	font-size: 11.5px;
-	color: var(--sb-fgm-a80);
-	text-align: center;
-	margin: 0;
-	padding: 4px 0;
-}
-.sidebar .ipick-primary {
-	width: 100%;
-	padding: 8px;
-	border-radius: 7px;
-	font-size: 12.5px;
-	font-weight: 600;
-	color: #fff;
-	background: var(--sb-accent-emphasis);
-	transition: background 0.1s ease;
-}
-.sidebar .ipick-primary:hover {
-	background: var(--sb-accent);
-}
-.sidebar .ipick-foot {
-	padding: 6px 9px 9px;
-	border-top: 1px solid var(--sb-border-muted);
-}
-.sidebar .ipick-remove {
-	width: 100%;
-	padding: 6px;
-	border-radius: 6px;
-	font-size: 11.5px;
-	font-weight: 500;
-	color: var(--sb-danger);
-	transition: background 0.1s ease;
-}
-.sidebar .ipick-remove:hover {
-	background: var(--sb-danger-subtle);
-}
-.sidebar .ipick-sr {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
 }

@@ -2,8 +2,11 @@ import { defineSetting } from "@features/types";
 import { icon } from "@lib/icons";
 import { query } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { createLogger } from "@lib/utilities/logger";
 import { findUncategorizedButton } from "@lib/utilities/native-ui";
 import { NATIVE_ROOT_ATTR } from "@features/workflows/sidebar/lib/data";
+
+const log = createLogger("sidebar-redesign");
 
 let uncatInterval: ReturnType<typeof setInterval> | null = null;
 let stopWatchingUncatButton: (() => void) | null = null;
@@ -60,7 +63,7 @@ async function updateUncategorizedBadges() {
 			}
 		}
 	} catch (err) {
-		console.debug("[ABT Sidebar] updateUncategorizedBadges failed:", err);
+		log.debug("updateUncategorizedBadges failed:", err);
 	}
 }
 

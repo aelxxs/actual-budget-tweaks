@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
 	import type { IconName } from "@lib/icons";
-	import { Check, ChevronLeft, Globe, Plus, X } from "lucide-svelte";
+	import { Check, ChevronLeft, Globe, Plus } from "lucide-svelte";
 	import { onMount } from "svelte";
 	import {
 		BUILTIN_TOOLS as builtinTools,
@@ -289,140 +289,139 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="layout" onkeydown={onKeydown}>
-			<!-- The sidebar's own bar, at its real width, edited in place. -->
-			<section class="stage" aria-label="Sidebar preview">
-				<span class="stage__label">Your sidebar</span>
-				<div class="stage__bar" style:width="{stageWidth}px">
-					{#if items.length === 0 && !ghost}
-						<div class="stage__empty">Pick something on the right to pin it here</div>
-					{:else}
-						<Tiles
-							{items}
-							mode="edit"
-							{ghost}
-							onReorder={commit}
-							onRemove={(id) => commit(items.filter((s) => s.id !== id))}
-						/>
-					{/if}
-				</div>
-				{#if items.length > 0}
-					<p class="stage__hint">Drag to reorder · hover a tile to remove it</p>
-				{/if}
-			</section>
-
-			<section class="side">
-				{#if form}
-					<form
-						class="abt-stack abt-gap-4"
-						onsubmit={(e) => {
-							e.preventDefault();
-							submitForm();
-						}}
-					>
-						<div class="abt-cluster abt-gap-2">
-							<button
-								type="button"
-								class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
-								aria-label="Back to all shortcuts"
-								onclick={closeForm}
-							>
-								<ChevronLeft size={16} strokeWidth={1.75} />
-							</button>
-							<h4 class="side__title">{FORM_TITLES[form]}</h4>
-						</div>
-
-						{#if form === "website"}
-							<label class="field">
-								<span class="field__label">Address</span>
-								<input
-									class="abt-input"
-									type="text"
-									placeholder="bank.com"
-									bind:value={addUrl}
-									use:autofocus
-								/>
-							</label>
-							<label class="field">
-								<span class="field__label">Name</span>
-								<input
-									class="abt-input"
-									type="text"
-									placeholder={websiteLabel(websiteUrl(addUrl.trim())) ||
-										"Defaults to the site's name"}
-									bind:value={addLabel}
-								/>
-							</label>
-						{:else}
-							<label class="field">
-								<span class="field__label">Symbol</span>
-								<input
-									class="abt-input symbol"
-									type="text"
-									placeholder="AAPL"
-									bind:value={symbol}
-									use:autofocus
-								/>
-							</label>
-							{#if form === "rsu-tracker"}
-								<div class="field-pair">
-									<label class="field">
-										<span class="field__label">Grant date</span>
-										<input class="abt-input date" type="date" bind:value={grantDate} />
-									</label>
-									<label class="field">
-										<span class="field__label">Shares</span>
-										<input
-											class="abt-input"
-											type="text"
-											inputmode="numeric"
-											placeholder="100"
-											bind:value={shares}
-										/>
-									</label>
-								</div>
-							{/if}
-						{/if}
-
-						<p class="side__note">The preview updates as you type.</p>
-
-						<button type="submit" class="abt-btn add-btn" disabled={!formValid}>
-							<Plus size={14} strokeWidth={2} /> Add to sidebar
-						</button>
-					</form>
-				{:else}
-					<h4 class="abt-label">Add to sidebar</h4>
-					<ul class="catalog">
-						{#each catalog as entry (entry.id)}
-							<li>
-								<button
-									type="button"
-									class="entry"
-									disabled={entry.pinned}
-									onclick={entry.select}
-									onmouseenter={() => (hovered = entry)}
-									onmouseleave={() => hovered === entry && (hovered = null)}
-									onfocus={() => (hovered = entry)}
-									onblur={() => hovered === entry && (hovered = null)}
-								>
-									<span class="entry__icon">{@render entryIcon(entry.icon)}</span>
-									<span class="entry__text">
-										<span class="entry__title">{entry.label}</span>
-										<span class="entry__meta">{DESCRIPTIONS[entry.id]}</span>
-									</span>
-									<span class="entry__action">
-										{#if entry.pinned}
-											<Check size={14} strokeWidth={2} />
-										{:else}
-											<Plus size={14} strokeWidth={2} />
-										{/if}
-									</span>
-								</button>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</section>
+	<!-- The sidebar's own bar, at its real width, edited in place. -->
+	<section class="stage" aria-label="Sidebar preview">
+		<span class="stage__label">Your sidebar</span>
+		<div class="stage__bar" style:width="{stageWidth}px">
+			{#if items.length === 0 && !ghost}
+				<div class="stage__empty">Pick something on the right to pin it here</div>
+			{:else}
+				<Tiles
+					{items}
+					mode="edit"
+					{ghost}
+					onReorder={commit}
+					onRemove={(id) => commit(items.filter((s) => s.id !== id))}
+				/>
+			{/if}
 		</div>
+		{#if items.length > 0}
+			<p class="stage__hint">Drag to reorder · hover a tile to remove it</p>
+		{/if}
+	</section>
+
+	<section class="side">
+		{#if form}
+			<form
+				class="abt-stack abt-gap-4"
+				onsubmit={(e) => {
+					e.preventDefault();
+					submitForm();
+				}}
+			>
+				<div class="abt-cluster abt-gap-2">
+					<button
+						type="button"
+						class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+						aria-label="Back to all shortcuts"
+						onclick={closeForm}
+					>
+						<ChevronLeft size={16} strokeWidth={1.75} />
+					</button>
+					<h4 class="side__title">{FORM_TITLES[form]}</h4>
+				</div>
+
+				{#if form === "website"}
+					<label class="field">
+						<span class="field__label">Address</span>
+						<input
+							class="abt-input"
+							type="text"
+							placeholder="bank.com"
+							bind:value={addUrl}
+							use:autofocus
+						/>
+					</label>
+					<label class="field">
+						<span class="field__label">Name</span>
+						<input
+							class="abt-input"
+							type="text"
+							placeholder={websiteLabel(websiteUrl(addUrl.trim())) || "Defaults to the site's name"}
+							bind:value={addLabel}
+						/>
+					</label>
+				{:else}
+					<label class="field">
+						<span class="field__label">Symbol</span>
+						<input
+							class="abt-input symbol"
+							type="text"
+							placeholder="AAPL"
+							bind:value={symbol}
+							use:autofocus
+						/>
+					</label>
+					{#if form === "rsu-tracker"}
+						<div class="field-pair">
+							<label class="field">
+								<span class="field__label">Grant date</span>
+								<input class="abt-input date" type="date" bind:value={grantDate} />
+							</label>
+							<label class="field">
+								<span class="field__label">Shares</span>
+								<input
+									class="abt-input"
+									type="text"
+									inputmode="numeric"
+									placeholder="100"
+									bind:value={shares}
+								/>
+							</label>
+						</div>
+					{/if}
+				{/if}
+
+				<p class="side__note">The preview updates as you type.</p>
+
+				<button type="submit" class="abt-btn add-btn" disabled={!formValid}>
+					<Plus size={14} strokeWidth={2} /> Add to sidebar
+				</button>
+			</form>
+		{:else}
+			<h4 class="abt-label">Add to sidebar</h4>
+			<ul class="catalog">
+				{#each catalog as entry (entry.id)}
+					<li>
+						<button
+							type="button"
+							class="entry"
+							disabled={entry.pinned}
+							onclick={entry.select}
+							onmouseenter={() => (hovered = entry)}
+							onmouseleave={() => hovered === entry && (hovered = null)}
+							onfocus={() => (hovered = entry)}
+							onblur={() => hovered === entry && (hovered = null)}
+						>
+							<span class="entry__icon">{@render entryIcon(entry.icon)}</span>
+							<span class="entry__text">
+								<span class="entry__title">{entry.label}</span>
+								<span class="entry__meta">{DESCRIPTIONS[entry.id]}</span>
+							</span>
+							<span class="entry__action">
+								{#if entry.pinned}
+									<Check size={14} strokeWidth={2} />
+								{:else}
+									<Plus size={14} strokeWidth={2} />
+								{/if}
+							</span>
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</section>
+</div>
 
 <style>
 	h4 {

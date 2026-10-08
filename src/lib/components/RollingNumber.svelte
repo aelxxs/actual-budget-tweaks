@@ -30,7 +30,11 @@
 	// Keyed by place from the right, so the ones digit stays the ones digit as the length changes.
 	const slots = $derived.by(() => {
 		const chars = [...text.replace(/[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, "")];
-		return chars.map((char, i) => ({ char, place: chars.length - 1 - i, digit: DIGITS.indexOf(char) }));
+		return chars.map((char, i) => ({
+			char,
+			place: chars.length - 1 - i,
+			digit: DIGITS.indexOf(char),
+		}));
 	});
 
 	let instant = $state(true);
@@ -48,7 +52,9 @@
 		lastKey = key;
 		instant = true;
 		frames.forEach(cancelAnimationFrame);
-		frames = [requestAnimationFrame(() => frames.push(requestAnimationFrame(() => (instant = false))))];
+		frames = [
+			requestAnimationFrame(() => frames.push(requestAnimationFrame(() => (instant = false)))),
+		];
 	});
 
 	onDestroy(() => frames.forEach(cancelAnimationFrame));

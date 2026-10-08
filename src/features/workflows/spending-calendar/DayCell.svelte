@@ -172,8 +172,7 @@
 
 	.cal-cell:focus-visible {
 		outline: none;
-		box-shadow: inset 0 0 0 1.5px
-			color-mix(in srgb, var(--abt-accent) 60%, transparent);
+		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--abt-accent) 60%, transparent);
 	}
 
 	.cal-cell.is-selected .cal-cell__date:not(.is-today) {

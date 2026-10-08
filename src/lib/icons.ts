@@ -277,3 +277,9 @@ export function icon(name: IconName, opts: IconOptions = {}): string {
 	const strokeWidth = opts.strokeWidth ?? def.strokeWidth ?? 2;
 	return `<svg width="${size}" height="${size}" viewBox="${def.viewBox}" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${classAttr}>${def.body}</svg>`;
 }
+
+/** An icon as a CSS `url()`, for `mask` over a native glyph so React keeps owning its nodes. */
+export function iconMask(name: IconName): string {
+	const svg = icon(name, { size: 24 }).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ');
+	return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}

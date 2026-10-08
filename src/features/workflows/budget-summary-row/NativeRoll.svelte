@@ -68,6 +68,8 @@
 			sizes.disconnect();
 			stopBulk();
 			source.removeAttribute(HIDDEN_ATTR);
+			// It was moved into Actual's DOM above, so Svelte can't take it out on its own.
+			// eslint-disable-next-line svelte/no-dom-manipulating
 			host.remove();
 		};
 	});

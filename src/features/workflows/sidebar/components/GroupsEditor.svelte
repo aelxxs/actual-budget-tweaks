@@ -75,8 +75,8 @@
 
 <div class="groups" bind:this={listEl}>
 	<p class="intro">
-		Groups nest accounts under On and Off budget in the Live sidebar. Drag an account onto a
-		group there to move it in.
+		Groups nest accounts under On and Off budget in the Live sidebar. Drag an account onto a group
+		there to move it in.
 	</p>
 
 	{#each SECTIONS as section (section.kind)}
@@ -110,7 +110,11 @@
 					</button>
 				</div>
 			{/each}
-			<button type="button" class="add abt-btn abt-btn--sm abt-btn--ghost" onclick={() => add(section.kind)}>
+			<button
+				type="button"
+				class="add abt-btn abt-btn--sm abt-btn--ghost"
+				onclick={() => add(section.kind)}
+			>
 				<Plus size={14} strokeWidth={1.75} /> Add group
 			</button>
 		</section>

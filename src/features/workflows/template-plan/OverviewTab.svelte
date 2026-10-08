@@ -23,7 +23,6 @@
 		if (!loading) templatePlanState.onTabChange?.("overview");
 	}
 
-
 	function longMonth(monthKey: string): string {
 		const [y, m] = monthKey.split("-").map(Number);
 		return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });

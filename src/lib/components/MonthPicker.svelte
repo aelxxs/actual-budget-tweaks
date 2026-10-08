@@ -345,8 +345,7 @@
 		outline: none;
 	}
 	.title.is-compact:focus-visible {
-		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--abt-accent) 55%, transparent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--abt-accent) 55%, transparent);
 	}
 	.title__short {
 		display: none;

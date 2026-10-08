@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { type IconName, icon } from "@lib/icons";
+import { type IconName, iconMask } from "@lib/icons";
 import { watchDom } from "@lib/utilities/dom-watcher";
 
 /*
@@ -21,17 +21,12 @@ const CONNECTING = `${BAR} > span`;
 const SYNC = `${BAR} > div > button:has(> div > svg)`;
 const ONLINE = `${BAR}:has(> div > button:not([aria-disabled="true"]) > div > svg)`;
 
-function mask(name: IconName): string {
-	const svg = icon(name, { size: 24 }).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ');
-	return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-}
-
 // Swaps a native glyph for ours by masking the svg itself, so React keeps owning its nodes.
 function swap(button: string, name: IconName): string {
 	return `
 		${button} svg {
 			background: currentColor;
-			mask: ${mask(name)} center / contain no-repeat;
+			mask: ${iconMask(name)} center / contain no-repeat;
 		}
 		${button} svg > * {
 			display: none;
@@ -222,7 +217,8 @@ export const modernTitlebar = defineSetting({
 
 		const unwatch = watchDom(() => {
 			const next =
-				document.querySelector('[data-testid="help-menu-button"]')?.parentElement?.parentElement ?? null;
+				document.querySelector('[data-testid="help-menu-button"]')?.parentElement?.parentElement ??
+				null;
 			if (next === bar) return;
 			bar?.removeAttribute(BAR_ATTR);
 			bar = next;

@@ -363,7 +363,9 @@
 					stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg
 				>
 			</button>
-			<button class="abt-btn abt-btn--sm" onclick={goToday} disabled={isAtCurrentMonth}>Today</button>
+			<button class="abt-btn abt-btn--sm" onclick={goToday} disabled={isAtCurrentMonth}
+				>Today</button
+			>
 			<button
 				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 				title="Next month"
@@ -499,7 +501,6 @@
 		background: var(--abt-fill-hover);
 	}
 
-
 	.cal-grid {
 		flex: 1;
 		display: grid;
@@ -543,5 +544,4 @@
 		background: var(--color-tooltipBackground, var(--color-pageBackground));
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 	}
-
 </style>

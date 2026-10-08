@@ -976,14 +976,12 @@
 
 	.card:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--abt-accent) 60%, transparent);
-		box-shadow: 0 2px 8px
-			color-mix(in srgb, var(--abt-accent) 15%, transparent);
+		box-shadow: 0 2px 8px color-mix(in srgb, var(--abt-accent) 15%, transparent);
 	}
 
 	.card--active {
 		border-color: var(--abt-accent);
-		box-shadow: 0 0 0 2px
-			color-mix(in srgb, var(--abt-accent) 25%, transparent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--abt-accent) 25%, transparent);
 	}
 
 	.card--loading {
@@ -1100,8 +1098,7 @@
 		width: 100%;
 		padding: 5px 10px;
 		border: none;
-		border-top: 1px solid
-			color-mix(in srgb, var(--abt-accent) 20%, transparent);
+		border-top: 1px solid color-mix(in srgb, var(--abt-accent) 20%, transparent);
 		background: color-mix(in srgb, var(--abt-accent) 6%, transparent);
 		color: var(--abt-accent);
 		font-family: inherit;
@@ -1129,8 +1126,7 @@
 		list-style: none;
 		margin: 0;
 		padding: 4px 10px 6px;
-		border-top: 1px solid
-			color-mix(in srgb, var(--abt-accent) 15%, transparent);
+		border-top: 1px solid color-mix(in srgb, var(--abt-accent) 15%, transparent);
 		background: color-mix(in srgb, var(--abt-accent) 4%, transparent);
 		max-height: 88px;
 		overflow-y: auto;

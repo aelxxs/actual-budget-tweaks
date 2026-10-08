@@ -14,6 +14,7 @@ export default ts.config(
 			"sidebar-test/**",
 			"public/**",
 			"images/**",
+			".playwright-mcp/**",
 			"*.config.js",
 		],
 	},

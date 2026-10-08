@@ -14,6 +14,7 @@ async function setup({ deferRestore = false } = {}) {
 	const listeners = new Map();
 	const watchers = new Set();
 	const intervals = new Set();
+	const observers = new Set();
 	const restores = [];
 	let panelOpen = false;
 	let mounted = 0;
@@ -31,6 +32,7 @@ async function setup({ deferRestore = false } = {}) {
 		console,
 		document: {
 			getElementById: (id) => [...nodes].find((node) => node.id === id),
+			querySelector: () => null,
 			createElement: node,
 			createTextNode: (text) => text,
 			body: { appendChild: (node) => nodes.add(node) },
@@ -45,6 +47,8 @@ async function setup({ deferRestore = false } = {}) {
 			return fn;
 		},
 		clearInterval: (fn) => intervals.delete(fn),
+		setTimeout,
+		clearTimeout,
 	});
 	const overrides = {
 		defineSetting: (setting) => setting,
@@ -54,6 +58,13 @@ async function setup({ deferRestore = false } = {}) {
 		matchesPage: () => true,
 		isBudgetPage: () => true,
 		createPriorityPlanner: () => ({}),
+		createDebouncedObserver: () => {
+			const observer = {
+				observe: () => observers.add(observer),
+				disconnect: () => observers.delete(observer),
+			};
+			return observer;
+		},
 		watchDom: (fn) => {
 			watchers.add(fn);
 			fn();
@@ -105,6 +116,7 @@ async function setup({ deferRestore = false } = {}) {
 			assert.equal(listeners.size, 0, "document listeners removed");
 			assert.equal(watchers.size, 0, "DOM watcher unsubscribed");
 			assert.equal(intervals.size, 0, "polling stopped");
+			assert.equal(observers.size, 0, "month observer disconnected");
 			assert.equal(mounted, 0, "Svelte panel unmounted");
 			assert.equal(panelOpen, false, "drawer closed");
 			assert.equal(state.onTabChange, null);

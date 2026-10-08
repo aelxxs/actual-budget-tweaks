@@ -53,7 +53,11 @@
 		--color-pageText: var(--color-sidebarItemText);
 		--color-pageTextSubdued: var(--color-sidebarTextSubdued);
 		--color-tableBorder: color-mix(in srgb, var(--color-sidebarItemText) 12%, transparent);
-		--color-cardBackground: color-mix(in srgb, var(--color-sidebarItemText) 6%, var(--color-sidebarBackground));
+		--color-cardBackground: color-mix(
+			in srgb,
+			var(--color-sidebarItemText) 6%,
+			var(--color-sidebarBackground)
+		);
 	}
 
 	.popover__hd {

@@ -46,11 +46,7 @@
 	.rhp-header {
 		height: 9px;
 		flex-shrink: 0;
-		background: color-mix(
-			in srgb,
-			var(--abt-accent) 18%,
-			var(--color-tableHeaderBackground)
-		);
+		background: color-mix(in srgb, var(--abt-accent) 18%, var(--color-tableHeaderBackground));
 		border-bottom: 1px solid var(--color-tableBorder);
 	}
 
