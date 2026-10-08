@@ -117,7 +117,7 @@
 {#if open}
 	{@const now = new Date()}
 	<div
-		class="picker"
+		class="picker abt-popover"
 		class:is-compact={variant === "compact"}
 		role="dialog"
 		aria-label="Jump to month"
@@ -231,11 +231,7 @@
 		position: fixed;
 		z-index: 9999;
 		width: 220px;
-		padding: 8px;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: var(--abt-radius);
-		background: var(--color-tooltipBackground, var(--color-pageBackground));
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+		padding: var(--abt-space-3);
 	}
 	.picker__head {
 		display: flex;
@@ -332,7 +328,7 @@
 	.title.is-compact {
 		margin: 0;
 		padding: 4px 10px;
-		border-radius: var(--border-radius, 6px);
+		border-radius: var(--abt-radius);
 		font-size: 17px;
 		font-weight: 650;
 		letter-spacing: -0.01em;
@@ -367,8 +363,7 @@
 	}
 	.picker.is-compact {
 		width: 264px;
-		padding: 12px;
-		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+		padding: var(--abt-space-4);
 	}
 	.picker.is-compact .picker__head {
 		margin-bottom: 8px;

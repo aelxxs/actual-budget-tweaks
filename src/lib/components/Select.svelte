@@ -37,73 +37,21 @@
 	}
 </script>
 
-<div class="stack select-row" data-testid={ctx.key}>
-	<span class="select-label-row">
+<div class="abt-setting abt-setting--stacked" data-testid={ctx.key}>
+	<span class="abt-setting__head">
 		{#if icon}
-			<span class="select-icon"><Icon name={icon} size={15} /></span>
+			<span class="abt-setting__icon"><Icon name={icon} size={15} /></span>
 		{/if}
-		<span class="select-label-group">
-			<span class="select-label">{labelText}</span>
+		<span class="abt-setting__text">
+			<span class="abt-setting__label">{labelText}</span>
 			{#if setting.description}
-				<span class="select-desc">{setting.description}</span>
+				<span class="abt-setting__desc">{setting.description}</span>
 			{/if}
 		</span>
 	</span>
-	<select bind:value class="select" onchange={handleChange}>
+	<select bind:value class="abt-input" onchange={handleChange}>
 		{#each options as option (option.value)}
 			<option value={option.value}>{option.label}</option>
 		{/each}
 	</select>
 </div>
-
-<style>
-	.select-row {
-		gap: 6px;
-		padding: 8px;
-		margin: 0 -8px;
-		border-radius: var(--abt-radius-sm);
-		border-top: 1px solid var(--abt-ink-2);
-	}
-
-	.select-row:first-child {
-		border-top: none;
-	}
-
-	.select-label-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.select-icon {
-		display: inline-flex;
-		flex-shrink: 0;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.select-label-group {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.select-label {
-		font-size: var(--abt-text-md);
-		font-weight: 500;
-	}
-
-	.select-desc {
-		font-size: var(--abt-text-sm);
-		font-weight: 400;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.select {
-		padding: 0.45rem 0.75rem;
-		font-size: 1em;
-		background-color: var(--color-buttonNormalBackground);
-		border: 1px solid var(--color-buttonNormalBorder);
-		border-radius: var(--abt-radius-sm);
-		color: var(--color-buttonNormalText);
-	}
-</style>

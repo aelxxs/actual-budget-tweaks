@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { getFaviconUrl } from "@lib/utilities/favicon";
+	import { Image, Smile, Upload, X } from "lucide-svelte";
 	import { onMount } from "svelte";
+	import Tabs from "./Tabs.svelte";
 	import emojiData from "unicode-emoji-json/data-by-group.json";
 
 	export type IconPickerResult =
@@ -23,6 +25,11 @@
 	}>();
 
 	type Tab = "emoji" | "logo" | "upload";
+	const TABS: { value: Tab; label: string; icon: typeof Smile }[] = [
+		{ value: "emoji", label: "Emoji", icon: Smile },
+		{ value: "logo", label: "Logo", icon: Image },
+		{ value: "upload", label: "Upload", icon: Upload },
+	];
 	let activeTab = $state<Tab>("emoji");
 	let popoverEl = $state<HTMLElement>();
 	let style = $state("opacity:0");
@@ -167,82 +174,29 @@
 
 <svelte:window onkeydown={handleKeydown} onmousedown={onOutsideClick} />
 
-<div class="pop" {style} bind:this={popoverEl} role="dialog" aria-label="Icon picker">
-	<!-- Tabs -->
-	<div class="tabs">
-		<button class="tab" class:active={activeTab === "emoji"} onclick={() => (activeTab = "emoji")}>
-			<svg
-				viewBox="0 0 16 16"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				width="13"
-				height="13"
-				><circle cx="8" cy="8" r="6" /><path d="M5.5 9.5s.8 1.5 2.5 1.5 2.5-1.5 2.5-1.5" /><circle
-					cx="6"
-					cy="6.5"
-					r=".6"
-					fill="currentColor"
-					stroke="none"
-				/><circle cx="10" cy="6.5" r=".6" fill="currentColor" stroke="none" /></svg
+<div class="pop abt-popover" {style} bind:this={popoverEl} role="dialog" aria-label="Icon picker">
+	<Tabs tabs={TABS} bind:value={activeTab} --abt-tabs-bg="none" --abt-tabs-pad="var(--abt-space-3)">
+		{#snippet trailing()}
+			<button
+				type="button"
+				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+				onclick={onClose}
+				aria-label="Close"
 			>
-			Emoji
-		</button>
-		<button class="tab" class:active={activeTab === "logo"} onclick={() => (activeTab = "logo")}>
-			<svg
-				viewBox="0 0 16 16"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				width="13"
-				height="13"
-				><rect x="2" y="2" width="12" height="12" rx="3" /><circle cx="5.5" cy="5.5" r="1" /><path
-					d="M14 10l-3.5-3.5L6 11"
-				/></svg
-			>
-			Logo
-		</button>
-		<button
-			class="tab"
-			class:active={activeTab === "upload"}
-			onclick={() => (activeTab = "upload")}
-		>
-			<svg
-				viewBox="0 0 16 16"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				width="13"
-				height="13"
-				><path d="M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" /><polyline
-					points="11 5 8 2 5 5"
-				/><line x1="8" y1="2" x2="8" y2="11" /></svg
-			>
-			Upload
-		</button>
-		<button class="tab-close" onclick={onClose} aria-label="Close">
-			<svg
-				viewBox="0 0 16 16"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				width="12"
-				height="12"><path d="M4 4l8 8M12 4l-8 8" /></svg
-			>
-		</button>
-	</div>
+				<X size={14} />
+			</button>
+		{/snippet}
+	</Tabs>
 
 	<!-- Emoji -->
 	{#if activeTab === "emoji"}
 		<div class="pane pane--emoji">
-			<input class="inp" type="text" placeholder="Search emoji…" bind:value={emojiSearch} />
+			<input
+				class="abt-input inp"
+				type="text"
+				placeholder="Search emoji…"
+				bind:value={emojiSearch}
+			/>
 			{#if !emojiSearch.trim()}
 				<div class="eg-tabs">
 					{#each groups as g (g.name)}
@@ -296,7 +250,7 @@
 	{:else if activeTab === "logo"}
 		<div class="pane pane--logo">
 			<input
-				class="inp"
+				class="abt-input inp"
 				type="text"
 				placeholder="bankofamerica.com"
 				bind:value={domain}
@@ -384,7 +338,8 @@
 			</div>
 			{#if uploadedDataUrl}
 				<button
-					class="btn-primary"
+					type="button"
+					class="abt-btn abt-tone-accent wide"
 					onclick={() => onSelect({ type: "dataUrl", value: uploadedDataUrl! })}
 					>Use this image</button
 				>
@@ -395,7 +350,11 @@
 	<!-- Footer -->
 	{#if hasIcon && onRemove}
 		<div class="footer">
-			<button class="btn-remove" onclick={onRemove}>Remove icon</button>
+			<button
+				type="button"
+				class="abt-btn abt-btn--sm abt-btn--ghost abt-tone-danger wide"
+				onclick={onRemove}>Remove icon</button
+			>
 		</div>
 	{/if}
 </div>
@@ -404,74 +363,11 @@
 	.pop {
 		position: fixed;
 		z-index: 10001;
-		background: var(--color-menuBackground);
-		border: 1px solid var(--color-menuBorder);
-		border-radius: var(--border-radius);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 		width: 280px;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
 		transition: opacity 0.15s;
-	}
-
-	.tabs {
-		display: flex;
-		align-items: center;
-		padding: 0 4px;
-		border-bottom: 1px solid var(--abt-ink-2);
-		flex-shrink: 0;
-	}
-
-	.tab {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		padding: 9px 8px;
-		border: none;
-		background: transparent;
-		color: var(--color-pageTextSubdued);
-		font-size: var(--abt-text-base);
-		font-weight: 500;
-		font-family: inherit;
-		cursor: pointer;
-		border-bottom: 2px solid transparent;
-		margin-bottom: -1px;
-		transition:
-			color 0.1s,
-			border-color 0.1s;
-	}
-
-	.tab:hover {
-		color: var(--color-pageText);
-	}
-	.tab.active {
-		color: var(--abt-accent);
-		border-bottom-color: var(--abt-accent);
-	}
-
-	.tab-close {
-		margin-left: auto;
-		width: 24px;
-		height: 24px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border: none;
-		border-radius: var(--abt-radius-sm);
-		background: transparent;
-		color: var(--color-pageTextSubdued);
-		cursor: pointer;
-		padding: 0;
-		flex-shrink: 0;
-		transition:
-			background 0.1s,
-			color 0.1s;
-	}
-
-	.tab-close:hover {
-		background: var(--abt-ink-2);
-		color: var(--color-pageText);
 	}
 
 	.pane {
@@ -538,7 +434,7 @@
 		padding: 4px 2px 3px;
 		position: sticky;
 		top: 0;
-		background: var(--color-menuBackground);
+		background: var(--abt-popover-bg);
 		z-index: 1;
 	}
 
@@ -665,24 +561,6 @@
 
 	.inp {
 		width: 100%;
-		padding: 7px 9px;
-		font-size: var(--abt-text-base);
-		font-family: inherit;
-		border: 1px solid var(--color-tableBorder);
-		border-radius: var(--abt-radius-sm);
-		background: var(--abt-ink-1);
-		color: var(--color-pageText);
-		outline: none;
-		box-sizing: border-box;
-	}
-
-	.inp:focus {
-		border-color: var(--abt-accent);
-		box-shadow: 0 0 0 2px var(--abt-accent-2);
-	}
-	.inp::placeholder {
-		color: var(--color-pageTextSubdued);
-		opacity: 0.5;
 	}
 
 	.hint {
@@ -692,38 +570,7 @@
 		padding: 4px 0;
 	}
 
-	.btn-primary {
+	.wide {
 		width: 100%;
-		padding: 7px;
-		border: none;
-		border-radius: var(--abt-radius-sm);
-		background: var(--color-buttonPrimaryBackground);
-		color: var(--color-buttonPrimaryText);
-		font-size: var(--abt-text-base);
-		font-weight: 600;
-		font-family: inherit;
-		cursor: pointer;
-		transition: background 0.1s;
-	}
-
-	.btn-primary:hover {
-		background: var(--color-buttonPrimaryBackgroundHover);
-	}
-
-	.btn-remove {
-		width: 100%;
-		padding: 5px;
-		border: none;
-		border-radius: var(--abt-radius-sm);
-		background: transparent;
-		color: var(--color-errorText);
-		font-size: var(--abt-text-sm);
-		font-family: inherit;
-		cursor: pointer;
-		transition: background 0.1s;
-	}
-
-	.btn-remove:hover {
-		background: color-mix(in srgb, var(--color-errorText) 8%, transparent);
 	}
 </style>

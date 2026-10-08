@@ -29,14 +29,14 @@
 	}
 </script>
 
-<label class="switch-row" data-testid={ctx.key}>
+<label class="abt-setting switch-row" data-testid={ctx.key}>
 	{#if icon}
-		<span class="switch-row__icon"><Icon name={icon} size={15} /></span>
+		<span class="abt-setting__icon"><Icon name={icon} size={15} /></span>
 	{/if}
-	<span class="switch-row__text">
-		<span class="switch-row__label">{labelText}</span>
+	<span class="abt-setting__text">
+		<span class="abt-setting__label">{labelText}</span>
 		{#if setting.description}
-			<span class="switch-row__desc">{setting.description}</span>
+			<span class="abt-setting__desc">{setting.description}</span>
 		{/if}
 	</span>
 	<Switch checked={value} onCheckedChange={handleChange} />
@@ -44,46 +44,10 @@
 
 <style>
 	.switch-row {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 7px 8px;
-		margin: 0 -8px;
-		border-radius: var(--abt-radius-sm);
-		border-top: 1px solid var(--abt-ink-2);
 		cursor: pointer;
-		transition: background-color 0.15s;
-	}
-
-	.switch-row:first-child {
-		border-top: none;
 	}
 
 	.switch-row:hover {
 		background: var(--abt-ink-1);
-	}
-
-	.switch-row__icon {
-		display: inline-flex;
-		flex-shrink: 0;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.switch-row__text {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		min-width: 0;
-		flex: 1;
-	}
-
-	.switch-row__label {
-		font-size: var(--abt-text-md);
-		font-weight: 500;
-	}
-
-	.switch-row__desc {
-		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
 	}
 </style>

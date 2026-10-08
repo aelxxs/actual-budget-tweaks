@@ -64,7 +64,12 @@
 			</button>
 		</header>
 
-		<Tabs tabs={tabs.map((t) => ({ value: t.value, label: t.label }))} bind:value={tab} />
+		<Tabs
+			tabs={tabs.map((t) => ({ value: t.value, label: t.label }))}
+			bind:value={tab}
+			--abt-tabs-bg="none"
+			--abt-tabs-pad="var(--abt-space-5)"
+		/>
 
 		<div class="abt-dialog__body body" class:body--bleed={current.bleed}>
 			{#if current.groups?.length}
@@ -96,12 +101,6 @@
 	.settings-dialog {
 		--abt-dialog-w: 640px;
 		height: min(620px, 85vh);
-	}
-
-	/* The tabs sit on the dialog's surface rather than the page background they use in panels. */
-	.settings-dialog :global(.abt-tabs) {
-		padding: 0 var(--abt-space-5);
-		background: none;
 	}
 
 	.body--bleed {
