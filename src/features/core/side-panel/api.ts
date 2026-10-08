@@ -15,6 +15,10 @@ export type OpenOptions = {
 	persist?: boolean;
 	/** False to show it without the slide-in, for a panel coming back rather than opening. */
 	animate?: boolean;
+	/** Opens over the current panel, which comes back when this one closes. */
+	stack?: boolean;
+	/** Names the panel, so opening the same one again replaces it instead of stacking. */
+	key?: string;
 	/** Suggested initial width in px. Only applied the first time the panel is ever opened — ignored once the user has manually resized it. */
 	width?: number;
 };

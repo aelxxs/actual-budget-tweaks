@@ -7,12 +7,15 @@
 
 	let {
 		onClose,
+		stacked,
 		initialWidth,
 		defaultWidth,
 		onResize,
 		onResizeEnd,
 	}: {
 		onClose: () => void;
+		/** Whether closing reveals a panel underneath, which the drawer shouldn't slide out for. */
+		stacked: () => boolean;
 		initialWidth: number;
 		/** What a double-click on the resize handle goes back to. */
 		defaultWidth: () => number;
@@ -24,7 +27,7 @@
 		const sidebar = document.querySelector(
 			"[data-abt-side-drawer-sidebar]",
 		) as HTMLDivElement | null;
-		if (!sidebar || sidebar.classList.contains(SIDEBAR_CLOSING_CLASS)) {
+		if (!sidebar || stacked() || sidebar.classList.contains(SIDEBAR_CLOSING_CLASS)) {
 			onClose();
 			return;
 		}

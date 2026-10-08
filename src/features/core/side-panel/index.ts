@@ -2,7 +2,7 @@ import { applyGlobalCSS, createElement } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { clamp } from "@lib/utilities/math";
 import { getValue, hasValue, setValue } from "@lib/utilities/store";
-import { mountToPanelBody } from "@lib/utilities/svelte";
+import { mount, unmount } from "svelte";
 import {
 	CONTENT_GRID,
 	PANEL_CLOSE_EVENT,
@@ -52,7 +52,16 @@ function getBodyElement() {
 	return grid;
 }
 
+// A drawer React removed is detached, not destroyed: a live instance would keep pulling
+// panelState's nodes into it, leaving the visible drawer blank.
+let content: ReturnType<typeof mount> | null = null;
+function destroyContent() {
+	if (content) unmount(content);
+	content = null;
+}
+
 function removeSideDrawerLayout() {
+	destroyContent();
 	document.querySelector(`[${SIDEBAR_ATTR}]`)?.remove();
 }
 
@@ -148,6 +157,26 @@ export const sidePanel = {
 			if (showingPersisted) setPersistedRoute(null);
 			showingPersisted = false;
 		};
+		// Panels opened with `stack` keep the ones underneath, restored as each closes.
+		type Entry = {
+			key?: string;
+			title: string;
+			bodyNode: Node | null;
+			headerNode: Node | null;
+			persisted: boolean;
+		};
+		let under: Entry[] = [];
+		let currentKey: string | undefined;
+		const restoreUnder = (): boolean => {
+			const prev = under.pop();
+			if (!prev) return false;
+			panelState.title = prev.title;
+			panelState.bodyNode = prev.bodyNode;
+			panelState.headerNode = prev.headerNode;
+			showingPersisted = prev.persisted;
+			currentKey = prev.key;
+			return true;
+		};
 		let animateNext = true;
 		let requestedWidth = DEFAULT_SIDEBAR_WIDTH;
 		let sidebarWidth = clamp(Math.round(storedWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
@@ -179,9 +208,26 @@ export const sidePanel = {
 			sidebar.setAttribute(SIDEBAR_ATTR, "true");
 			if (!animateNext) sidebar.style.animation = "none";
 			animateNext = true;
-			sidebar.appendChild(
-				mountToPanelBody(SidePanelContent, {
+			destroyContent();
+			const container = createElement("div", {
+				style: {
+					display: "flex",
+					flex: "1",
+					flexDirection: "column",
+					height: "100%",
+					minHeight: "0px",
+					overflow: "hidden",
+				},
+			});
+			content = mount(SidePanelContent, {
+				target: container,
+				props: {
+					stacked: () => under.length > 0,
 					onClose: () => {
+						if (restoreUnder()) {
+							document.querySelector(`[${SIDEBAR_ATTR}]`)?.classList.remove(SIDEBAR_CLOSING_CLASS);
+							return;
+						}
 						isOpen = false;
 						forgetPersisted();
 						sync();
@@ -196,20 +242,32 @@ export const sidePanel = {
 						widthStored = true;
 						setValue(WIDTH_KEY, width);
 					},
-				}),
-			);
+				},
+			});
+			sidebar.appendChild(container);
 			body.appendChild(sidebar);
 			body.style.gridTemplateColumns = `1fr ${sidebarWidth}px`;
 		};
 
 		document.addEventListener(PANEL_OPEN_EVENT, (event) => {
 			const detail: OpenOptions = (event as CustomEvent).detail ?? {};
+			// Already mounted — panelState below flows into the live component, no teardown/remount needed.
+			const alreadyOpen = isOpen && !!document.querySelector(`[${SIDEBAR_ATTR}]`);
+			if (!detail.stack) under = [];
+			else if (alreadyOpen && panelState.bodyNode && (!detail.key || detail.key !== currentKey)) {
+				under.push({
+					key: currentKey,
+					title: panelState.title,
+					bodyNode: panelState.bodyNode,
+					headerNode: panelState.headerNode,
+					persisted: showingPersisted,
+				});
+			}
+			currentKey = detail.key;
+
 			panelState.title = getSafeTitle(detail.title, panelState.title);
 			panelState.bodyNode = isDomNodeLike(detail.bodyNode) ? detail.bodyNode : null;
 			panelState.headerNode = isDomNodeLike(detail.headerNode) ? detail.headerNode : null;
-
-			// Already mounted — panelState above already flowed into the live component, no teardown/remount needed.
-			const alreadyOpen = isOpen && !!document.querySelector(`[${SIDEBAR_ATTR}]`);
 			isOpen = true;
 
 			showingPersisted = !!detail.persist;
@@ -231,12 +289,14 @@ export const sidePanel = {
 		});
 
 		document.addEventListener(PANEL_CLOSE_EVENT, () => {
+			if (restoreUnder()) return;
 			isOpen = false;
 			forgetPersisted();
 			sync();
 		});
 
 		document.addEventListener(PANEL_DISMISS_EVENT, () => {
+			under = [];
 			isOpen = false;
 			showingPersisted = false;
 			panelState.bodyNode = null;
@@ -252,6 +312,9 @@ export const sidePanel = {
 					sync();
 				}
 			} else {
+				// Put back the bottom panel, so coming back to its page shows it rather than a stacked one.
+				under = under.slice(0, 1);
+				restoreUnder();
 				if (isOpen) {
 					isOpen = false;
 					sync();
@@ -261,7 +324,9 @@ export const sidePanel = {
 
 		document.addEventListener(PANEL_SET_TITLE_EVENT, (event) => {
 			const { title } = (event as CustomEvent).detail ?? {};
-			panelState.title = getSafeTitle(title, panelState.title);
+			// Only base panels (Insights, reconcile) set titles; one stacked on top keeps its own.
+			if (under.length) under[0].title = getSafeTitle(title, under[0].title);
+			else panelState.title = getSafeTitle(title, panelState.title);
 		});
 
 		const unwatch = watchDom(sync);
