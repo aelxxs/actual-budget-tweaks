@@ -343,7 +343,9 @@ export const budgetSummaryRow = defineSetting({
 			flex-direction: row !important;
 			flex-wrap: nowrap;
 			align-items: stretch !important;
-			gap: var(--abt-space-3);
+			/* Actual's 13px inset around the cards and table (base.css), so every gap matches. */
+			--abt-sr-gap: 13px;
+			gap: var(--abt-sr-gap);
 			background: none !important;
 			box-shadow: none !important;
 			/* Transparent, not the text colour: Actual animates the border back in multi-month. */
@@ -369,7 +371,7 @@ export const budgetSummaryRow = defineSetting({
 			width: 0;
 			min-width: 0;
 			align-self: stretch;
-			margin: 0 0 0 calc(-1 * var(--abt-space-3)) !important;
+			margin: 0 0 0 calc(-1 * var(--abt-sr-gap)) !important;
 			padding: 0 !important;
 		}
 		${SUMMARY_CARD} > :first-child > :not(:last-child) { display: none !important; }
