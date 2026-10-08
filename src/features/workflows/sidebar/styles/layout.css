@@ -1,0 +1,198 @@
+/* Plain, unscoped CSS imported by Sidebar.svelte, as are the other partials here, in a fixed
+   order. Svelte only scopes styles in a component's own <style> block, so every selector is
+   manually prefixed with `.sidebar` to keep it off Actual's page. Keep that prefix on new rules. */
+
+.sidebar,
+.sidebar *,
+.sidebar *::before,
+.sidebar *::after {
+	box-sizing: border-box;
+}
+
+/* Portal root for fixed-position overlays — see portal.ts. Carries the
+   `.sidebar` class so the sidebar's tokens still resolve; `display:
+   contents` strips its own box so it can't clip its children. */
+.sidebar.sb-portal-root {
+	display: contents;
+}
+
+.sidebar {
+	/* Sidebar-only colours; tints come from ui.css, which re-derives them from the sidebar's ink. */
+	--sb-bg: var(--color-sidebarBackground);
+	--sb-canvas: color-mix(in srgb, var(--abt-ink) 5%, var(--sb-bg));
+	--sb-surface: color-mix(in srgb, var(--abt-ink) 6%, var(--sb-bg));
+	--sb-surface-hover: color-mix(in srgb, var(--abt-ink) 10%, var(--sb-bg));
+	--sb-success: var(--color-sidebarItemBackgroundPositive);
+	--sb-success-muted: color-mix(in srgb, var(--sb-success) 18%, transparent);
+	--sb-danger: var(--color-sidebarItemBackgroundFailed);
+	--sb-danger-muted: color-mix(in srgb, var(--sb-danger) 12%, transparent);
+	--sb-attention: var(--color-sidebarItemBackgroundPending);
+	--sb-attention-muted: color-mix(in srgb, var(--sb-attention) 18%, transparent);
+	--sb-shadow: rgba(1, 4, 9, 0.6);
+	--sb-shadow-2: rgba(1, 4, 9, 0.55);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 340px;
+	height: 100vh;
+	background: var(--sb-bg);
+	border-right: 1px solid var(--abt-ink-2);
+	/* explicit so the widget's row heights don't depend on the host page's
+		   inherited line-height */
+	line-height: 1.4 !important;
+	font-feature-settings:
+		"lnum" 1,
+		"tnum" 1;
+	/* Clips panel content while the width animates, with room for the resize grip to
+	   straddle the border (Safari ignores the margin and just clips it). */
+	overflow: clip;
+	overflow-clip-margin: 6px;
+}
+
+.sidebar > .body {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: 0.75rem;
+	gap: 10px;
+}
+
+.sidebar.resizing {
+	user-select: none;
+}
+
+/* ===== collapse/expand animation =====
+   .transitions-ready (Sidebar.svelte) skips the width transition on the
+   first paint that hydrates a persisted collapsed/width value. */
+@media (prefers-reduced-motion: no-preference) {
+	.sidebar.transitions-ready:not(.resizing) {
+		transition: width 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	.sidebar > .budget,
+	.sidebar > .body,
+	.sidebar .split-panel,
+	.sidebar.collapsed > .rail-avatar,
+	.sidebar.collapsed > .rail-icon,
+	.sidebar.collapsed > .rail-nav,
+	.sidebar.collapsed > .rail-divider,
+	.sidebar.collapsed > .rail-list,
+	.sidebar.collapsed > .rail-foot {
+		animation: sidebar-content-in 0.12s ease;
+	}
+}
+@keyframes sidebar-content-in {
+	from {
+		opacity: 0;
+		transform: translateY(-2px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ===== Split layout: icon activity bar + accounts panel =====
+   .activity-bar shares the collapsed rail's layout (see rail.css)
+   — it just lives beside a panel instead of being the
+   sidebar's only content. */
+.sidebar.split {
+	flex-direction: row;
+	align-items: stretch;
+	padding: 0;
+	gap: 0;
+}
+.sidebar .activity-bar {
+	display: flex;
+	flex-direction: column;
+	width: 4rem;
+	flex-shrink: 0;
+	height: 100%;
+	border-right: 1px solid var(--abt-ink-2);
+	/* Darker than the accounts panel beside it, so the two read as separate. */
+	background-color: color-mix(in oklab, var(--sb-bg), black 10%);
+}
+.sidebar .rail-spacer {
+	flex: 1 1 auto;
+}
+.sidebar .split-panel {
+	/* Extra right-side room on top of each row's own padding; rows stay full-bleed so their
+	   highlight still reaches the edges. */
+	--sb-panel-room: 4px;
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 100%;
+	overflow: hidden;
+}
+
+/* Resize handle on the right edge */
+.sidebar .resize-handle {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 10px;
+	height: 100%;
+	cursor: col-resize;
+	z-index: 10;
+	touch-action: none;
+}
+/* Same grip as the side panel's, centred on the border, shown only on hover. */
+.sidebar .resize-handle::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: -2px;
+	width: 3px;
+	height: 100%;
+	background: var(--abt-accent);
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+.sidebar .resize-grip {
+	position: absolute;
+	top: 50%;
+	right: -5px;
+	box-sizing: border-box;
+	width: 9px;
+	height: 26px;
+	border: 1px solid var(--abt-accent-4);
+	border-radius: 999px;
+	/* Three dots placed by proportion, so they spread apart as the pill grows. */
+	background:
+		radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 18% / 6px 6px no-repeat,
+		radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 50% / 6px 6px no-repeat,
+		radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 82% / 6px 6px no-repeat,
+		var(--sb-bg);
+	opacity: 0;
+	transform: translateY(-50%);
+	/* Above the hover line. */
+	z-index: 1;
+	transition:
+		opacity 0.15s,
+		height 0.15s;
+}
+.sidebar .resize-handle:hover::after,
+.sidebar .resize-handle.active::after {
+	opacity: 0.45;
+}
+.sidebar .resize-handle:hover .resize-grip,
+.sidebar .resize-handle.active .resize-grip {
+	height: 32px;
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	.sidebar .resize-handle::after,
+	.sidebar .resize-grip {
+		transition: none;
+	}
+}
+
+.sidebar button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: none;
+	cursor: pointer;
+}

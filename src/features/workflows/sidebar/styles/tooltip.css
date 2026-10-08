@@ -1,0 +1,76 @@
+/* ===== Custom tooltip ===== */
+.sidebar .tooltip {
+	position: fixed;
+	z-index: 9999999;
+	max-width: 240px;
+	padding: 5px 9px;
+	background: var(--sb-surface);
+	border: 1px solid var(--abt-ink-2);
+	border-radius: 7px;
+	color: var(--abt-ink);
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.35;
+	white-space: nowrap;
+	box-shadow: 0 6px 20px var(--sb-shadow);
+	pointer-events: none;
+	animation: tip-in 0.11s ease;
+}
+.sidebar .tip-right {
+	transform: translateY(-50%);
+}
+.sidebar .tip-left {
+	transform: translate(-100%, -50%);
+}
+.sidebar .tip-top {
+	transform: translate(-50%, -100%);
+}
+.sidebar .tip-bottom {
+	transform: translateX(-50%);
+}
+/* little arrow that points back to the anchor */
+.sidebar .tooltip::after {
+	content: "";
+	position: absolute;
+	width: 7px;
+	height: 7px;
+	background: var(--sb-surface);
+	border: 1px solid var(--abt-ink-2);
+	transform: rotate(45deg);
+}
+.sidebar .tip-right::after {
+	left: -4.5px;
+	top: 50%;
+	margin-top: -3.5px;
+	border-right: none;
+	border-top: none;
+}
+.sidebar .tip-left::after {
+	right: -4.5px;
+	top: 50%;
+	margin-top: -3.5px;
+	border-left: none;
+	border-bottom: none;
+}
+.sidebar .tip-top::after {
+	bottom: -4.5px;
+	left: 50%;
+	margin-left: -3.5px;
+	border-left: none;
+	border-top: none;
+}
+.sidebar .tip-bottom::after {
+	top: -4.5px;
+	left: 50%;
+	margin-left: -3.5px;
+	border-right: none;
+	border-bottom: none;
+}
+@keyframes tip-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}

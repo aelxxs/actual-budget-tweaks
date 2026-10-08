@@ -1,0 +1,301 @@
+/* Budget selection */
+.sidebar .budget {
+	position: relative;
+	width: 100%;
+	flex-shrink: 0;
+}
+.sidebar .budget-select {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	height: 3.75rem;
+	box-sizing: border-box;
+	padding: 0.75rem;
+	/* transparent border matches the expanded header exactly → no layout shift */
+	border-bottom: 1px solid var(--abt-ink-2);
+	text-align: left;
+	transition:
+		background 0.12s ease,
+		border-color 0.12s ease;
+}
+.sidebar .budget-select:hover {
+	background: var(--sb-surface);
+	border-color: var(--abt-ink-2);
+}
+.sidebar .budget-select-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.sidebar .budget-select-status {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--abt-soft);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sidebar .budget-select-status svg {
+	width: 12px;
+	height: 12px;
+	flex-shrink: 0;
+}
+.sidebar .budget-name {
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.1px;
+	/* Actual has a dedicated token for exactly this label, unlike the rest
+	   of the sidebar (which reuses --sb-fg / sidebarItemText). */
+	color: var(--color-sidebarBudgetName, var(--abt-ink));
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sidebar .chevron-updown {
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+	color: var(--abt-soft);
+}
+.sidebar .budget-select:hover .chevron-updown {
+	color: var(--abt-ink);
+}
+
+/* Expanded budget switcher — same blended-into-sidebar chrome as
+   .budget-select (same height/padding/bottom border/icon size) so opening
+   the switcher or entering rename mode doesn't change the header's look,
+   only its trailing control (chevron → pencil/check) and its text (name →
+   input). */
+.sidebar .budget-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	height: 3.75rem;
+	box-sizing: border-box;
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--abt-ink-2);
+}
+.sidebar .split-panel .budget-select,
+.sidebar .split-panel .budget-header {
+	padding-right: calc(0.75rem + var(--sb-panel-room));
+}
+
+/* Budget icon (default: initials, matches .rail-avatar; customizable via the
+   same icon picker used for accounts) */
+.sidebar .budget-icon-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 26px;
+	height: 26px;
+	border-radius: 7px;
+	background: linear-gradient(135deg, var(--abt-accent), var(--abt-accent));
+	color: #fff;
+	font-size: 10px;
+	font-weight: 800;
+	letter-spacing: 0.2px;
+	overflow: hidden;
+	cursor: pointer;
+	transition: filter 0.12s ease;
+}
+.sidebar .budget-icon-btn:hover {
+	filter: brightness(1.12);
+}
+.sidebar .budget-icon-btn.has-icon {
+	background: var(--abt-ink-3);
+	color: var(--abt-ink);
+}
+.sidebar .budget-icon-btn--lg {
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	font-size: 15px;
+}
+.sidebar .budget-icon-btn--lg .budget-icon-emoji {
+	font-size: 21px;
+}
+.sidebar .budget-icon-emoji {
+	font-size: 14px;
+	line-height: 1;
+}
+.sidebar .budget-icon-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.sidebar .budget-name-btn {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+	padding: 1px 4px;
+	margin: -1px -4px;
+	border-radius: 4px;
+	text-align: left;
+	transition: background 0.12s ease;
+}
+.sidebar .budget-edit {
+	width: 100%;
+	box-sizing: border-box;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.1px;
+	color: var(--abt-ink);
+	background: var(--sb-canvas);
+	border: 1px solid var(--abt-ink-2);
+	border-radius: 5px;
+	padding: 3px 7px;
+	margin: -3px -7px;
+	outline: none;
+}
+.sidebar .budget-edit:focus {
+	border-color: var(--abt-accent);
+}
+.sidebar .budget-edit-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	border-radius: 5px;
+	color: var(--abt-soft);
+	transition:
+		color 0.12s ease,
+		background 0.12s ease;
+}
+.sidebar .budget-edit-btn:hover {
+	color: var(--abt-ink);
+	background: var(--abt-ink-2);
+}
+.sidebar .budget-edit-btn svg {
+	width: 14px;
+	height: 14px;
+}
+.sidebar .budget-menu {
+	position: absolute;
+	top: calc(100% + -1px);
+	left: 0;
+	right: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	box-sizing: border-box;
+	padding: 5px;
+	background: var(--sb-bg);
+	border: 1px solid var(--abt-ink-2);
+	border-radius: 0px;
+	border-inline: 0px;
+
+	box-shadow: 0 8px 24px var(--sb-shadow-2);
+	transform-origin: top;
+	animation: bmenu-in 0.14s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes bmenu-in {
+	from {
+		opacity: 0;
+		transform: translateY(-6px) scale(0.98);
+	}
+}
+.sidebar .budget-item {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 6px 8px;
+	border-radius: 6px;
+	text-align: left;
+	transition: background 0.12s ease;
+}
+.sidebar .budget-item:hover {
+	background: var(--abt-ink-2);
+}
+.sidebar .budget-item.active {
+	background: var(--abt-accent-2);
+}
+.sidebar .budget-item-name {
+	flex: 1 1 auto;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.13px;
+	color: var(--abt-ink);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sidebar .budget-item.active .budget-item-name {
+	color: var(--abt-accent);
+}
+/* left dot: green marks the active budget, muted otherwise */
+.sidebar .budget-dot {
+	flex-shrink: 0;
+	width: 6px;
+	height: 6px;
+	margin: 0 1px;
+	border-radius: 50%;
+	background: var(--abt-soft);
+}
+.sidebar .budget-dot.active {
+	width: 8px;
+	height: 8px;
+	margin: 0;
+	background: var(--sb-success);
+	box-shadow: 0 0 0 3px var(--sb-success-muted);
+}
+/* right: file-state icon */
+.sidebar .budget-state {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	color: var(--abt-soft);
+}
+.sidebar .budget-state svg {
+	width: 15px;
+	height: 15px;
+}
+.sidebar .budget-menu-divider {
+	height: 1px;
+	margin: 4px 6px;
+	background: var(--abt-ink-2);
+}
+.sidebar .budget-exit {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 6px 8px;
+	border-radius: 6px;
+	text-align: left;
+	color: var(--abt-soft);
+	transition:
+		background 0.12s ease,
+		color 0.12s ease;
+}
+.sidebar .budget-exit:hover {
+	background: var(--abt-ink-2);
+	color: var(--abt-ink);
+}
+.sidebar .budget-exit svg {
+	flex-shrink: 0;
+	width: 15px;
+	height: 15px;
+}
+.sidebar .budget-exit span {
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.13px;
+}

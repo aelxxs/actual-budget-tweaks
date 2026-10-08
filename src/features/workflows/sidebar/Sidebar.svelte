@@ -36,7 +36,14 @@
 		renameAccount,
 	} from "./lib/data";
 	import { isMac } from "./lib/search";
-	import "./sidebar.css";
+	import "./styles/layout.css";
+	import "./styles/rail.css";
+	import "./styles/budget-header.css";
+	import "./styles/nav.css";
+	import "./styles/accounts.css";
+	import "./styles/footer.css";
+	import "./styles/tooltip.css";
+	import "./styles/icon-picker.css";
 
 	let paletteRef: CommandPalette | undefined = $state();
 	function openPalette(): void {
@@ -66,10 +73,10 @@
 
 	// ---- collapsed rail ----
 	const COLLAPSED_KEY = SIDEBAR_COLLAPSED_KEY;
-	const RAIL_WIDTH = "4rem"; // matches .activity-bar's width in sidebar.css
+	const RAIL_WIDTH = "4rem"; // matches .activity-bar's width in styles/layout.css
 	let collapsed = $state(false);
 
-	// Gates .sidebar.transitions-ready (sidebar.css) so hydrating a persisted
+	// Gates .sidebar.transitions-ready (styles/layout.css) so hydrating a persisted
 	// collapsed/width value on mount doesn't itself animate.
 	let transitionsReady = $state(false);
 
@@ -481,5 +488,56 @@
 		padding: 12px 14px;
 		font-size: 13px;
 		color: var(--abt-soft);
+	}
+
+	.search {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		width: 100%;
+		box-sizing: border-box;
+		padding: calc(var(--sb-row-pad-y, 5px) + 2px) 13px;
+		background: var(--abt-ink-1);
+		border: 1px solid var(--abt-ink-2);
+		border-radius: 11px;
+		transition: border-color 0.12s ease;
+	}
+	.search:hover {
+		border-color: var(--abt-ink-5);
+		background: var(--sb-surface-hover);
+	}
+	.search:focus-visible {
+		border-color: var(--abt-accent);
+		outline: none;
+	}
+	.search-left {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.search :global(.search-icon) {
+		width: 12.5px;
+		height: 12.5px;
+		flex-shrink: 0;
+	}
+	/* placeholder look-alike: the box is a launcher, typing happens in the palette */
+	.search-placeholder {
+		font-size: 15px;
+		font-weight: 400;
+		letter-spacing: 0.15px;
+		color: var(--abt-subtle);
+	}
+	.search-kbd {
+		flex-shrink: 0;
+		padding: 3px 7px;
+		background: var(--abt-ink-3);
+		border-radius: 5px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.11px;
+		color: var(--abt-subtle);
 	}
 </style>

@@ -510,3 +510,246 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	.cp-backdrop {
+		position: fixed;
+		inset: 0;
+		/* Rendered via a body-level portal (portal.ts) — needs to beat Actual's
+		   own stacking contexts, not just other sidebar elements. Maxed (not just
+		   above the other portaled overlays) since this is a full modal. */
+		z-index: 2147483647;
+		background: var(--sb-shadow-2);
+		backdrop-filter: blur(2px);
+		-webkit-backdrop-filter: blur(2px);
+		animation: cp-fade 0.14s ease;
+	}
+	.cp {
+		position: fixed;
+		left: 50%;
+		top: 14vh;
+		transform: translateX(-50%);
+		z-index: 2147483647;
+		display: flex;
+		flex-direction: column;
+		width: min(600px, calc(100vw - 48px));
+		max-height: min(440px, 68vh);
+		background: var(--sb-bg);
+		border: 1px solid var(--abt-ink-2) !important;
+		border-radius: 14px;
+		box-shadow:
+			0 0 0 1px var(--sb-shadow-2),
+			0 24px 64px var(--sb-shadow);
+		overflow: hidden;
+		animation: cp-pop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1);
+	}
+	@keyframes cp-fade {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes cp-pop {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(-10px) scale(0.98);
+		}
+	}
+	.cp-search {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		flex-shrink: 0;
+		padding: 13px 15px;
+		border-bottom: 1px solid var(--abt-ink-3);
+	}
+	.cp-search :global(.cp-search-icon) {
+		width: 16px;
+		height: 16px;
+		flex-shrink: 0;
+		color: var(--abt-subtle);
+	}
+	.cp-back {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+	}
+	.cp-back:hover :global(.cp-search-icon) {
+		color: var(--abt-ink);
+	}
+	.cp-input {
+		flex: 1 1 auto;
+		min-width: 0;
+		border: none;
+		outline: none;
+		background: transparent;
+		padding: 0;
+		font-family: inherit;
+		font-size: 16px;
+		color: var(--abt-ink);
+	}
+	.cp-input::placeholder {
+		color: var(--abt-subtle);
+	}
+	.cp-kbd {
+		flex-shrink: 0;
+		padding: 2px 6px;
+		background: var(--abt-ink-3);
+		border-radius: 5px;
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.2px;
+		color: var(--abt-subtle);
+	}
+	.cp-body {
+		flex: 1 1 auto;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: 6px;
+		scrollbar-color: var(--abt-ink-5) transparent;
+	}
+	.cp-body::-webkit-scrollbar {
+		width: 8px;
+	}
+	.cp-body::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.cp-body::-webkit-scrollbar-thumb {
+		background: var(--abt-ink-4);
+		border-radius: 8px;
+		border: 2px solid transparent;
+		background-clip: padding-box;
+	}
+	.cp-body::-webkit-scrollbar-thumb:hover {
+		background: var(--abt-ink-5);
+		background-clip: padding-box;
+	}
+	/* Only a root↔sub-page *transition* animates — the {#key page} block gives
+	   the body a fresh DOM node each time so this replays on every transition,
+	   not just the dialog's initial open. */
+	@keyframes cp-page-enter {
+		from {
+			opacity: 0;
+			transform: translateX(8px);
+		}
+	}
+	.cp-body.cp-page-enter {
+		animation: cp-page-enter 0.14s ease;
+	}
+	.cp-group-label {
+		padding: 9px 10px 4px;
+		font-size: 10.5px;
+		font-weight: 700;
+		letter-spacing: 0.7px;
+		text-transform: uppercase;
+		color: var(--abt-subtle);
+	}
+	.cp-item {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		padding: 7px 10px;
+		border-radius: 8px;
+		font-size: 13.5px;
+		letter-spacing: 0.1px;
+		color: var(--abt-ink);
+		text-align: left;
+	}
+	/* selection follows the keyboard/mouse; no separate :hover so the two never fight */
+	.cp-item.selected {
+		background: var(--abt-accent-2);
+		color: var(--abt-ink);
+	}
+	.cp-item-glyph {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		min-width: 18px;
+		flex-shrink: 0;
+	}
+	.cp-item-icon :global(svg) {
+		width: 15px;
+		height: 15px;
+		color: var(--abt-subtle);
+	}
+	.cp-item.selected .cp-item-icon :global(svg) {
+		color: var(--abt-ink);
+	}
+	.cp-item-label {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.cp-item.viewall .cp-item-label {
+		color: var(--abt-subtle);
+	}
+	.cp-mark {
+		background: none;
+		color: var(--abt-accent);
+		font-weight: 700;
+	}
+	.cp-item-amount {
+		flex-shrink: 0;
+		font-size: 12.5px;
+		color: var(--abt-soft);
+	}
+	.cp-item-amount.red {
+		color: var(--sb-danger);
+	}
+	.cp :global(.cp-go) {
+		width: 14px;
+		height: 14px;
+		flex-shrink: 0;
+		color: var(--abt-subtle);
+		opacity: 0;
+	}
+	.cp-item.selected :global(.cp-go) {
+		opacity: 1;
+	}
+	.cp-swatch-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		box-shadow: 0 0 0 1px var(--abt-ink-4);
+	}
+	.cp :global(.cp-theme-active) {
+		width: 14px;
+		height: 14px;
+		flex-shrink: 0;
+		color: var(--abt-accent);
+	}
+	.cp-empty {
+		margin: 0;
+		padding: 28px 0 32px;
+		text-align: center;
+		font-size: 13px;
+		color: var(--abt-soft);
+	}
+	.cp-foot {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		flex-shrink: 0;
+		padding: 9px 15px;
+		border-top: 1px solid var(--abt-ink-3);
+		/* Flat, like the rail/activity-bar — no distinct-colored strip. */
+		background: var(--sb-bg);
+	}
+	.cp-foot-hint {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 11.5px;
+		color: var(--abt-subtle);
+	}
+</style>

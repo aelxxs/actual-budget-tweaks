@@ -1,0 +1,895 @@
+/* Accounts */
+/* Wraps .accounts (which scrolls) so split mode's custom scrollbar thumb
+   (see overlay-scrollbar.ts) has a non-scrolling element to be positioned
+   against — an absolutely positioned child of .accounts itself would scroll
+   away with the content it's meant to represent. */
+.sidebar .accounts-viewport {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.sidebar .accounts {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	flex: 1 1 auto;
+	min-height: 0;
+	/* 8px overflows into the sidebar's right padding so the scrollbar lives
+	   there instead of squeezing row content; the extra 6px on the left is
+	   a gutter for the active-indicator pill (see below). */
+	width: calc(100% + 14px);
+	margin-left: -6px;
+	padding-left: 6px;
+	padding-right: 8px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
+	scrollbar-color: var(--abt-ink-5) transparent;
+	/* Pre-JS fallback — scrollFade (scroll-fade.ts) takes over, fading
+	   whichever edge has more content past it instead of always the bottom. */
+	mask-image: linear-gradient(black 0%, black calc(100% - 34px), transparent 100%);
+	-webkit-mask-image: linear-gradient(black 0%, black calc(100% - 34px), transparent 100%);
+	transition:
+		mask-image 140ms ease,
+		-webkit-mask-image 140ms ease;
+}
+.sidebar .accounts.is-scrollable {
+	padding-bottom: 2rem;
+}
+.sidebar .accounts::-webkit-scrollbar {
+	width: 8px;
+}
+.sidebar .accounts::-webkit-scrollbar-track {
+	background: transparent;
+}
+.sidebar .accounts::-webkit-scrollbar-thumb {
+	background: var(--abt-ink-4);
+	border-radius: 8px;
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}
+.sidebar .accounts::-webkit-scrollbar-thumb:hover {
+	background: var(--abt-ink-5);
+	background-clip: padding-box;
+}
+.sidebar .all-accounts {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	box-sizing: border-box;
+	height: 32px;
+	padding: 6px;
+	padding-inline: 8px;
+	border-radius: 6px;
+	flex-shrink: 0;
+}
+/* grouped/flat account layout toggle — swaps in over the total on hover,
+   same slot/pattern as .section-add for the category rows */
+.sidebar .group-toggle {
+	position: absolute;
+	right: 4px;
+	top: 50%;
+	padding: 0px !important;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 5px;
+	color: var(--abt-ink-5);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 0.12s ease,
+		background 0.12s ease,
+		color 0.12s ease;
+}
+.sidebar .all-accounts:hover .group-toggle,
+.sidebar .all-accounts:hover .header-add {
+	opacity: 1;
+	pointer-events: auto;
+}
+.sidebar .header-add {
+	position: absolute;
+	right: 28px;
+	top: 50%;
+	padding: 0px !important;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 5px;
+	color: var(--abt-soft);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 0.12s ease,
+		background 0.12s ease,
+		color 0.12s ease;
+}
+.sidebar .header-add:hover {
+	background: var(--abt-ink-4);
+	color: var(--abt-ink);
+}
+.sidebar .header-add svg {
+	width: 15px;
+	height: 15px;
+}
+.sidebar .group-toggle:hover {
+	background: var(--abt-ink-4);
+	color: var(--abt-ink);
+}
+.sidebar .group-toggle.on {
+	color: var(--abt-accent);
+}
+.sidebar .group-toggle svg {
+	width: 15px;
+	height: 15px;
+}
+
+.sidebar .section {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	width: 100%;
+}
+.sidebar .group-header {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--sb-row-pad-y, 5px) 8px;
+	border-radius: 6px;
+	text-align: left;
+	cursor: default;
+	transition: background 0.12s ease;
+}
+/* sub-group headers stay a single whole-row toggle */
+.sidebar .group-header.toggleable {
+	cursor: pointer;
+}
+.sidebar .group-header.toggleable:hover {
+	background: var(--abt-ink-3);
+}
+
+/* section caret = dedicated collapse button */
+.sidebar .caret-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: -2px 0;
+	height: 16px;
+	width: 16px;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+.sidebar .caret-btn:hover {
+	background: var(--abt-ink-5);
+}
+.sidebar .caret-btn.disabled {
+	pointer-events: none;
+	opacity: 0.35;
+}
+
+/* whole section header row navigates; caret (above) is the collapse sub-control */
+.sidebar .section-head {
+	cursor: default;
+}
+.sidebar .section-head:hover {
+	background: var(--abt-ink-3);
+}
+.sidebar .section-head.active {
+	background: var(--abt-accent-2);
+}
+.sidebar .section-nav {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0;
+	background: transparent;
+	text-align: left;
+	cursor: pointer;
+}
+.sidebar .section-nav .group-label {
+	flex: 0 0 auto;
+}
+.sidebar .section-nav .group-total {
+	margin-left: auto;
+}
+.sidebar .section-head.active .group-label {
+	color: var(--abt-accent);
+}
+.sidebar .group-header.sub {
+	padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
+	padding-left: 16px;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
+}
+.sidebar .group-header.sub:hover {
+	background: transparent;
+	color: var(--abt-soft);
+}
+.sidebar .group-header.sub:hover * {
+	color: var(--abt-soft);
+}
+.sidebar .caret {
+	width: 11px;
+	height: 11px;
+	flex-shrink: 0;
+	transition: transform 0.15s ease;
+}
+.sidebar .caret.collapsed {
+	transform: rotate(-90deg);
+}
+.sidebar .group-label {
+	flex: 1 1 auto;
+	font-size: 11px;
+	font-weight: 500;
+	letter-spacing: 0.125px;
+	text-transform: uppercase;
+	color: var(--abt-subtle);
+}
+.sidebar .group-label.dim {
+	color: var(--abt-subtle);
+}
+/* All Accounts reads as the top-level view, not a category — sentence case,
+   brighter than the muted uppercase category labels */
+.sidebar .all-accounts .group-label {
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.42px;
+	text-transform: none;
+	color: var(--abt-ink);
+}
+.sidebar .sub-label {
+	flex: 0 1 auto;
+	font-size: 10.5px;
+	letter-spacing: 0.115px;
+	color: var(--abt-ink-5);
+}
+.sidebar .group-total {
+	font-size: 12.5px;
+	font-weight: 500;
+	letter-spacing: 0.125px;
+	text-transform: uppercase;
+	color: var(--abt-ink);
+	font-variant-numeric: tabular-nums;
+}
+/* account-count badge next to a category label */
+.sidebar .group-count {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 16px;
+	height: 15px;
+	padding: 0 5px;
+	border-radius: 8px;
+	background: var(--abt-ink-3);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+	color: var(--abt-muted);
+	font-variant-numeric: tabular-nums;
+}
+/* sub-category counts appear on hover, or always once collapsed (no rows
+   visible underneath to show the count some other way) */
+.sidebar .sub-count {
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+.sidebar .group-header.sub.toggleable:hover .sub-count,
+.sidebar .group-header.sub.toggleable.collapsed .sub-count {
+	opacity: 1;
+}
+
+.sidebar .account-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0px;
+	width: 100%;
+}
+.sidebar .account-list.indented {
+	padding-left: 9px;
+}
+/* accounts nested under a sub-category sit a touch tighter */
+.sidebar .account-list.indented .account {
+	padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
+}
+/* Split layout: the indent has to live inside the row (padding), not on
+   the list container, otherwise a selected nested row's background would
+   stop 9px short of the panel's left edge instead of reaching it like its
+   unindented siblings. */
+.sidebar.split .account-list.indented {
+	padding-left: 0;
+}
+.sidebar.split .account-list.indented .account {
+	padding-left: 22px;
+}
+.sidebar .account {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
+	border-radius: 7px;
+	text-align: left;
+	transition: background 0.12s ease;
+}
+.sidebar .account:hover {
+	background: var(--abt-ink-4);
+}
+.sidebar .account.selected {
+	background: var(--abt-accent-2);
+}
+.sidebar .account.selected .account-name {
+	color: var(--abt-accent);
+}
+.sidebar.split .account,
+.sidebar.split .skel-row {
+	border-radius: 0;
+	padding-right: calc(8px + var(--sb-panel-room));
+}
+.sidebar.split .all-accounts {
+	border-radius: 0;
+	margin-bottom: -0.75rem;
+	padding-left: 11px;
+	padding-right: calc(8px + var(--sb-panel-room));
+}
+.sidebar.split .group-header {
+	border-radius: 0;
+	padding-right: calc(8px + var(--sb-panel-room));
+}
+.sidebar.split .group-toggle,
+.sidebar.split .section-add {
+	right: calc(4px + var(--sb-panel-room));
+}
+.sidebar.split .header-add {
+	right: calc(28px + var(--sb-panel-room));
+}
+/* Sync-status glyphs (dot grammar) */
+.sidebar .status {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 17px;
+	height: 17px;
+	flex-shrink: 0;
+}
+.sidebar .status svg {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+.sidebar .status-synced {
+	color: var(--sb-success);
+}
+.sidebar .status-syncing {
+	color: var(--sb-attention);
+}
+.sidebar .status-error {
+	color: var(--sb-danger);
+}
+.sidebar .status-manual {
+	color: var(--abt-ink-5);
+}
+.sidebar .orbit {
+	transform-origin: 24px 24px;
+	animation: abt-orbit 0.95s linear infinite;
+}
+.sidebar .ring-pulse {
+	transform-origin: center;
+	animation: abt-ring-pulse 1.7s ease-in-out infinite;
+}
+@keyframes abt-orbit {
+	to {
+		transform: rotate(360deg);
+	}
+}
+@keyframes abt-ring-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.35;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sidebar .orbit,
+	.sidebar .ring-pulse {
+		animation: none;
+	}
+}
+/* ===== account list loading skeleton ===== */
+.sidebar .skel-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 2px 0;
+	flex: 1 1 auto;
+}
+/* row dimensions mirror .account exactly so the real list doesn't jump when
+   it replaces this. */
+.sidebar .skel-row {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
+}
+.sidebar .skel-glyph {
+	width: 17px;
+	height: 17px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	background: var(--abt-ink-3);
+}
+.sidebar .skel-name {
+	height: 9px;
+	border-radius: 4px;
+	background: var(--abt-ink-3);
+}
+.sidebar .skel-amount {
+	width: 34px;
+	height: 9px;
+	border-radius: 4px;
+	flex-shrink: 0;
+	background: var(--abt-ink-3);
+}
+.sidebar .skel-status {
+	width: 72px;
+	height: 8px;
+	border-radius: 4px;
+	background: var(--abt-ink-3);
+}
+.sidebar .skel-glyph,
+.sidebar .skel-name,
+.sidebar .skel-amount,
+.sidebar .skel-status {
+	animation: skel-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skel-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.4;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sidebar .skel-glyph,
+	.sidebar .skel-name,
+	.sidebar .skel-amount {
+		animation: none;
+		opacity: 0.7;
+	}
+}
+.sidebar .account-name {
+	flex: 1 1 auto;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.145px;
+	color: var(--abt-ink);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.sidebar .account-amount {
+	font-size: 12.5px;
+	font-weight: 400;
+	letter-spacing: 0.14px;
+	text-transform: uppercase;
+	color: var(--abt-soft);
+	font-variant-numeric: tabular-nums;
+	flex-shrink: 0;
+}
+/* count of uncategorized transactions — amber like the "syncing" status dot,
+	   since both signal "needs your attention" rather than a neutral fact */
+.sidebar .account-uncat {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 16px;
+	height: 15px;
+	padding: 0 5px;
+	border-radius: 8px;
+	background: var(--sb-attention-muted);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+	color: var(--sb-attention);
+	font-variant-numeric: tabular-nums;
+}
+.sidebar .red {
+	color: var(--sb-danger);
+}
+
+/* ===== Account context menu ===== */
+.sidebar .ctx {
+	position: fixed;
+	/* Rendered via a body-level portal (portal.ts) — needs to beat Actual's
+	   own stacking contexts, not just other sidebar elements. */
+	z-index: 9999998;
+	min-width: 190px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 5px;
+	background: var(--sb-surface);
+	border: 1px solid var(--abt-ink-2);
+	border-radius: 9px;
+	box-shadow: 0 12px 30px var(--sb-shadow);
+	animation: ctx-in 0.1s ease;
+}
+@keyframes ctx-in {
+	from {
+		opacity: 0;
+		transform: translateX(-4px);
+	}
+}
+.sidebar .ctx-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	padding: 7px 9px;
+	border-radius: 6px;
+	text-align: left;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.13px;
+	color: var(--abt-ink);
+	transition: background 0.1s ease;
+}
+.sidebar .ctx-item:hover {
+	background: var(--abt-ink-3);
+}
+.sidebar .ctx-item svg {
+	width: 15px;
+	height: 15px;
+	flex-shrink: 0;
+	color: var(--abt-soft);
+}
+.sidebar .ctx-item:hover svg {
+	color: var(--abt-ink);
+}
+.sidebar .ctx-item.active,
+.sidebar .ctx-item.active svg {
+	color: var(--abt-accent);
+}
+.sidebar .ctx-item.active {
+	background: var(--abt-accent-2);
+}
+.sidebar .ctx-item.danger {
+	color: var(--sb-danger);
+}
+.sidebar .ctx-item.danger svg {
+	color: var(--sb-danger);
+}
+.sidebar .ctx-item.danger:hover {
+	background: var(--sb-danger-muted);
+}
+.sidebar .ctx-item.danger:hover svg {
+	color: var(--sb-danger);
+}
+.sidebar .ctx-div {
+	height: 1px;
+	margin: 4px 4px;
+	background: var(--abt-ink-3);
+}
+
+/* ===== drag reorder ===== */
+.sidebar .account,
+.sidebar .group-header.sub.toggleable {
+	position: relative;
+}
+.sidebar .account.dragging,
+.sidebar .group-header.dragging {
+	opacity: 0.4;
+}
+
+/* ===== active indicator ===== */
+/* a short rounded accent pill just left of the active row's background */
+.sidebar .nav-link,
+.sidebar .section-head {
+	position: relative;
+}
+.sidebar .nav-link.active::before,
+.sidebar .section-head.active::before,
+.sidebar .account.selected::before {
+	content: "";
+	position: absolute;
+	left: -6px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 3px;
+	height: 15px;
+	border-radius: 3px;
+	background: var(--abt-accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.sidebar .nav-link.active::before,
+	.sidebar .section-head.active::before,
+	.sidebar .account.selected::before {
+		animation: active-pop 0.16s ease;
+	}
+}
+@keyframes active-pop {
+	from {
+		opacity: 0;
+		height: 4px;
+	}
+	to {
+		opacity: 1;
+		height: 15px;
+	}
+}
+/* The split layout's accounts panel uses a flush-left highlight instead
+   of the accent bar — so
+   the reserved gutter the bar lives in (see .accounts above) isn't needed
+   here either. */
+.sidebar.split .account.selected::before {
+	display: none;
+}
+.sidebar.split .accounts {
+	width: 100%;
+	margin-left: 0;
+	padding-left: 0;
+	padding-right: 0;
+	/* Native scrollbar fully hidden — overlay-scrollbar.ts draws a themed one
+	   that never reserves layout width, since no combination of
+	   scrollbar-width/-color gets Firefox to do that natively (see
+	   overlay-scrollbar.ts). */
+	scrollbar-width: none;
+}
+.sidebar.split .accounts::-webkit-scrollbar {
+	display: none;
+}
+.sidebar .abt-overlay-thumb {
+	position: absolute;
+	top: 0;
+	right: 2px;
+	width: 6px;
+	border-radius: 3px;
+	background: var(--abt-ink-5);
+	opacity: 0;
+	pointer-events: none;
+	/* Sits inside the sidebar's resize-handle hit area (right: 0, 10px wide,
+	   z-index: 10) — has to out-rank it or dragging the thumb resizes the
+	   sidebar instead. */
+	z-index: 11;
+}
+.sidebar .abt-overlay-thumb.visible {
+	opacity: 1;
+	pointer-events: auto;
+}
+.sidebar .abt-overlay-thumb:hover,
+.sidebar .abt-overlay-thumb:active {
+	background: var(--abt-ink-5);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.sidebar .abt-overlay-thumb {
+		transition: opacity 0.15s ease;
+	}
+}
+/* blue insertion line above/below the drop target */
+.sidebar .account.drop-before::after,
+.sidebar .account.drop-after::after,
+.sidebar .group-header.drop-before::after,
+.sidebar .group-header.drop-after::after {
+	content: "";
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	height: 2px;
+	border-radius: 2px;
+	background: var(--abt-accent);
+	box-shadow: 0 0 4px var(--abt-accent-4);
+	pointer-events: none;
+}
+.sidebar .account.drop-before::after,
+.sidebar .group-header.drop-before::after {
+	top: -1px;
+}
+.sidebar .account.drop-after::after,
+.sidebar .group-header.drop-after::after {
+	bottom: -1px;
+}
+
+/* inline account rename */
+.sidebar .account.editing {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
+	border-radius: 7px;
+	background: var(--abt-accent-1);
+}
+.sidebar .account-rename {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.145px;
+	color: var(--abt-ink);
+	background: var(--sb-canvas);
+	border: 1px solid var(--abt-accent);
+	border-radius: 5px;
+	padding: 2px 6px;
+	outline: none;
+}
+
+/* ===== category (sub-group) management ===== */
+/* hover "+" on a section header — swapped with the total, so no layout shift */
+.sidebar .section-add {
+	/* Firefox's default button padding would squeeze the icon below its size. */
+	padding: 0;
+	position: absolute;
+	right: 4px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 5px;
+	color: var(--abt-soft);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 0.12s ease,
+		background 0.12s ease,
+		color 0.12s ease;
+}
+.sidebar .section-add svg {
+	width: 15px;
+	height: 15px;
+}
+.sidebar .section-head:hover .section-add {
+	opacity: 1;
+	pointer-events: auto;
+}
+.sidebar .section-add:hover {
+	background: var(--abt-ink-4);
+	color: var(--abt-ink);
+}
+/* hide the total on hover to make room for the row's hover-revealed button —
+   "add category" on the category rows, the grouped/flat toggle on All Accounts */
+.sidebar .section-head .group-total {
+	transition: opacity 0.12s ease;
+}
+.sidebar .section-head:hover .group-total {
+	opacity: 0;
+}
+
+/* inline category rename */
+.sidebar .group-header.sub.editing-group {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+.sidebar .group-rename {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: inherit;
+	font-size: 10.5px;
+	font-weight: 600;
+	letter-spacing: 0.115px;
+	text-transform: uppercase;
+	color: var(--abt-ink);
+	background: var(--sb-canvas);
+	border: 1px solid var(--abt-accent);
+	border-radius: 5px;
+	padding: 2px 6px;
+	outline: none;
+}
+
+/* empty category placeholder / drop zone */
+.sidebar .group-empty-hint {
+	margin: 2px 0 3px 9px;
+	padding: 8px 10px;
+	border: 1px dashed var(--abt-ink-2);
+	border-radius: 7px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--abt-subtle);
+	text-align: center;
+	transition:
+		border-color 0.12s ease,
+		color 0.12s ease,
+		background 0.12s ease;
+}
+.sidebar .group-empty-hint.drop-before {
+	border-style: solid;
+	border-color: var(--abt-accent);
+	color: var(--abt-accent);
+	background: var(--abt-accent-1);
+}
+
+/* ===== account leading glyph (status + icon), clickable to set an icon ===== */
+.sidebar .acct-glyph {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	flex-shrink: 0;
+	cursor: pointer;
+	outline: none;
+}
+/* the edit affordance sits over the status-dot slot only (never over the icon) */
+.sidebar .acct-glyph-edit {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 17px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--abt-soft);
+	opacity: 0;
+	transition:
+		opacity 0.1s ease,
+		color 0.1s ease;
+	pointer-events: none;
+}
+.sidebar .acct-glyph-edit svg {
+	width: 15px;
+	height: 15px;
+}
+/* accounts WITHOUT an icon: cross-fade the status dot to the "add icon" affordance */
+.sidebar .account:hover .acct-glyph:not(.has-icon) .status {
+	opacity: 0;
+}
+.sidebar .account:hover .acct-glyph:not(.has-icon) .acct-glyph-edit {
+	opacity: 1;
+}
+.sidebar .acct-glyph:not(.has-icon):hover .acct-glyph-edit {
+	color: var(--abt-ink);
+}
+/* accounts WITH an icon: keep it visible, just give it a subtle clickable highlight */
+.sidebar .acct-glyph.has-icon .acct-icon {
+	border-radius: 5px;
+	transition: background 0.1s ease;
+}
+.sidebar .acct-glyph.has-icon:hover .acct-icon {
+	background: var(--abt-ink-5);
+}
+
+/* ===== account icon (avatar), left of the name ===== */
+.sidebar .acct-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	margin-left: -1px;
+}
+.sidebar .acct-icon-img {
+	width: 16px;
+	height: 16px;
+	object-fit: cover;
+	border-radius: 2px;
+}

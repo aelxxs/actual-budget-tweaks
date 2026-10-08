@@ -133,3 +133,252 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	.acard {
+		position: fixed;
+		/* Rendered via a body-level portal (portal.ts) — needs to beat Actual's
+		   own stacking contexts, not just other sidebar elements. */
+		z-index: 9999997;
+		width: 292px;
+		padding: 12px 13px 11px;
+		background: var(--sb-canvas);
+		border: 1px solid var(--abt-ink-2);
+		border-radius: 12px;
+		box-shadow: 0 12px 34px var(--sb-shadow);
+		color: var(--abt-ink);
+		pointer-events: none;
+		animation: acard-in 0.13s ease;
+	}
+	@keyframes acard-in {
+		from {
+			opacity: 0;
+			transform: translateX(-4px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	.acard.flip {
+		animation-name: acard-in-flip;
+	}
+	@keyframes acard-in-flip {
+		from {
+			opacity: 0;
+			transform: translateX(4px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.acard {
+			animation: none;
+		}
+	}
+	.acard-head {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+	}
+	.acard-status {
+		flex-shrink: 0;
+		display: flex;
+	}
+	.acard-status :global(.status) {
+		width: 15px;
+		height: 15px;
+	}
+	.acard-title {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+	}
+	.acard-name {
+		font-size: 14px;
+		font-weight: 650;
+		letter-spacing: 0.1px;
+		color: var(--abt-ink);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.acard-sub {
+		font-size: 11px;
+		font-weight: 500;
+		color: var(--abt-soft);
+	}
+	.acard-balrow {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		margin-top: 11px;
+	}
+	.acard-ballabel {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.4px;
+		text-transform: uppercase;
+		color: var(--abt-soft);
+	}
+	.acard-bal {
+		font-size: 19px;
+		font-weight: 500;
+		letter-spacing: 0.2px;
+		color: var(--abt-ink);
+		font-variant-numeric: tabular-nums;
+	}
+	.acard-bal.neg {
+		color: var(--sb-danger);
+	}
+	.acard-chart {
+		margin-top: 6px;
+	}
+	.acard-chart svg {
+		display: block;
+		width: 100%;
+		height: 52px;
+	}
+	.acard-chart svg.up {
+		color: var(--sb-success);
+	}
+	.acard-chart svg.down {
+		color: var(--sb-danger);
+	}
+	.acard-chart-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 3px;
+	}
+	.acard-period {
+		font-size: 11px;
+		font-weight: 500;
+		color: var(--abt-soft);
+	}
+	.acard-delta {
+		font-size: 11.5px;
+		font-weight: 650;
+		font-variant-numeric: tabular-nums;
+	}
+	.acard-delta.up {
+		color: var(--sb-success);
+	}
+	.acard-delta.down {
+		color: var(--sb-danger);
+	}
+	.acard-delta-abs {
+		margin-left: 3px;
+		font-weight: 600;
+		color: var(--abt-soft);
+	}
+	.acard-div {
+		height: 1px;
+		margin: 11px -13px;
+		background: var(--sb-surface-hover);
+	}
+	.acard-lines {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+	.acard-line {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.acard-line .k {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 12px;
+		color: var(--abt-ink);
+	}
+	.acard-line .v {
+		font-size: 12.5px;
+		font-weight: 600;
+		color: var(--abt-ink);
+		font-variant-numeric: tabular-nums;
+	}
+	.acard-line .v.neg {
+		color: var(--sb-danger);
+	}
+	.acard-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 16px;
+		height: 16px;
+		padding: 0 4px;
+		border-radius: 8px;
+		background: var(--abt-ink-3);
+		font-size: 10px;
+		font-weight: 700;
+		color: var(--abt-ink);
+	}
+	.acard-block-label {
+		margin-bottom: 7px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.4px;
+		text-transform: uppercase;
+		color: var(--abt-soft);
+	}
+	.acard-sched {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.acard-date {
+		flex-shrink: 0;
+		width: 42px;
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--abt-soft);
+		font-variant-numeric: tabular-nums;
+	}
+	.acard-payee {
+		flex: 1 1 auto;
+		min-width: 0;
+		font-size: 12.5px;
+		color: var(--abt-ink);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.acard-amt {
+		flex-shrink: 0;
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--sb-success);
+		font-variant-numeric: tabular-nums;
+	}
+	.acard-amt.neg {
+		color: var(--sb-danger);
+	}
+	.acard-sync {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		margin-top: 11px;
+		font-size: 11.5px;
+		font-weight: 500;
+		color: var(--abt-soft);
+	}
+	.acard-sync-dot {
+		display: flex;
+	}
+	.acard-sync-dot :global(.status) {
+		width: 12px;
+		height: 12px;
+	}
+	.acard-sync-error {
+		color: var(--sb-danger);
+	}
+	.acard-sync-syncing {
+		color: var(--sb-attention);
+	}
+</style>

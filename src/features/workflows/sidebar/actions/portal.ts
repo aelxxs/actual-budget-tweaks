@@ -1,5 +1,5 @@
 // Carries the `.sidebar` class so the --sb-* tokens still cascade;
-// `display: contents` (see sidebar.css) strips its own box so it can't clip
+// `display: contents` (see styles/layout.css) strips its own box so it can't clip
 // its children.
 let portalRoot: HTMLElement | null = null;
 

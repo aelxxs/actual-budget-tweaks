@@ -1,0 +1,119 @@
+/* IconPickerPopover overrides for when it opens from the sidebar (Rail, BudgetHeader). */
+.sidebar .eg-tabs {
+	display: flex;
+	gap: 1px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid var(--abt-ink-3);
+}
+.sidebar .eg-tab {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 0;
+	border-radius: 5px;
+	font-size: 14px;
+	line-height: 1;
+	opacity: 0.5;
+	transition:
+		opacity 0.08s ease,
+		background 0.08s ease;
+}
+.sidebar .eg-tab:hover {
+	opacity: 0.85;
+	background: var(--abt-ink-2);
+}
+.sidebar .eg-tab.active {
+	opacity: 1;
+	background: var(--abt-accent-2);
+}
+.sidebar .eg-grid-wrap {
+	max-height: 220px;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--abt-ink-5) transparent;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.sidebar .eg-label {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	padding: 4px 2px 3px;
+	font-size: 9px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--abt-soft);
+	background: var(--sb-canvas);
+}
+.sidebar .eg-grid {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 1px;
+}
+.sidebar .eg-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 1;
+	border-radius: 5px;
+	font-size: 18px;
+	line-height: 1;
+	transition: background 0.08s ease;
+}
+.sidebar .eg-btn:hover {
+	background: var(--abt-ink-4);
+}
+.sidebar .logo-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	width: 100%;
+	min-height: 84px;
+	padding: 12px;
+	border: 1px solid var(--abt-ink-2);
+	border-radius: 8px;
+	background: var(--abt-ink-1);
+	cursor: default;
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease;
+}
+.sidebar .logo-preview.loaded {
+	cursor: pointer;
+	border-color: var(--abt-accent);
+	background: var(--abt-accent-1);
+}
+.sidebar .logo-preview.loaded:hover {
+	background: var(--abt-accent-2);
+}
+.sidebar .logo-preview img {
+	width: 48px;
+	height: 48px;
+	object-fit: contain;
+	border-radius: 6px;
+}
+.sidebar .dropzone {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 104px;
+	padding: 12px;
+	border: 2px dashed var(--abt-ink-2);
+	border-radius: 8px;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+.sidebar .dropzone:hover,
+.sidebar .dropzone.over {
+	border-color: var(--abt-accent);
+	background: var(--abt-accent-1);
+}
