@@ -300,24 +300,64 @@ export async function closeAccount(accountId: string): Promise<void> {
 	});
 }
 
-// Real per-account bank sync — the same "accounts-bank-sync" RPC and
-// setAccountsSyncing bracketing the native app's own sync mutation uses
-// (accounts/mutations.ts's useSyncAccountsMutation), minus its React Query
-// cache invalidation, since this sidebar already re-derives its own state
-// off the same accountsSyncing dot Redux tracks (see Sidebar.svelte's
-// syncingIds effect / readNativeSyncingAccountIds). Dispatching plain
-// "sync" (the file-level cloud sync, Titlebar's button) doesn't touch bank
-// accounts at all — that was the earlier, wrong action for this.
+interface BankSyncResult {
+	errors?: { type?: string; category?: string; code?: string; message: string }[];
+	newTransactions?: string[];
+	matchedTransactions?: string[];
+	updatedAccounts?: string[];
+}
+
+// Per-account bank sync, the same "accounts-bank-sync" RPC and Redux follow-up as the native
+// sync (accounts/mutations.ts's syncAccounts and handleSyncResponse): failed/success marks,
+// error toasts, then the new, matched and updated ids, which Actual's "new" styling and the
+// sync recap read. Its React Query invalidation is left out; this sidebar reloads its own data.
 export async function syncAllAccounts(accounts: SidebarAccount[]): Promise<void> {
 	const ids = accounts.filter((a) => a.status !== "manual" && !a.closed).map((a) => a.id);
 	if (!ids.length) return;
+	const added: string[] = [];
+	const matched: string[] = [];
+	const updated: string[] = [];
 	await dispatch("setAccountsSyncing", { ids });
+	try {
+		await syncEach(ids, added, matched, updated);
+		await dispatch("setNewTransactions", { newTransactions: added, matchedTransactions: matched });
+		await dispatch("markUpdatedAccounts", { ids: updated });
+	} finally {
+		// Always, or the sync spinner would stay on if a follow-up dispatch failed.
+		await dispatch("setAccountsSyncing", { ids: [] });
+	}
+}
+
+async function syncEach(
+	ids: string[],
+	added: string[],
+	matched: string[],
+	updated: string[],
+): Promise<void> {
 	for (const id of ids) {
 		try {
-			await send("accounts-bank-sync", { ids: [id] });
+			const res = await send<BankSyncResult>("accounts-bank-sync", { ids: [id] });
+			const errors = res?.errors ?? [];
+			const syncError = errors.find((e) => e.type === "SyncError");
+			if (syncError) {
+				await dispatch("markAccountFailed", {
+					id,
+					errorType: syncError.category,
+					errorCode: syncError.code,
+				});
+			} else if (!errors.length) {
+				await dispatch("markAccountSuccess", { id });
+			}
+			for (const error of errors) {
+				await dispatch("addNotification", {
+					notification: { type: "error", message: error.message },
+				});
+			}
+			added.push(...(res?.newTransactions ?? []));
+			matched.push(...(res?.matchedTransactions ?? []));
+			updated.push(...(res?.updatedAccounts ?? []));
 		} catch {
 			// best-effort — one broken/unreachable account shouldn't block the rest
 		}
 	}
-	await dispatch("setAccountsSyncing", { ids: [] });
 }
