@@ -24,7 +24,54 @@ const EXTRA_KEYS = [
 /** Extra keys whose readers watch storage, so adopting them needs no reload. */
 const WATCHED_KEYS = new Set(["abt-sidebar-shortcuts"]);
 
+/**
+ * Data this browser keeps per budget, keyed by the budget's local id, which differs on every
+ * device. The budget itself stores just its own copy, under `remote`.
+ */
+interface BudgetScoped {
+	remote: string;
+	/** Whether a local write to `key` is this budget's data; returns the value to save. */
+	fromWrite: (key: string, value: unknown, budgetId: string) => { value: unknown } | null;
+	read: (budgetId: string) => Promise<unknown>;
+	write: (budgetId: string, value: unknown) => Promise<void>;
+	/** Its readers watch storage, so adopting it needs no reload. */
+	watched: boolean;
+}
+
+function perBudgetKey(base: string): BudgetScoped {
+	const local = (id: string) => `${base}:${id}`;
+	return {
+		remote: base,
+		fromWrite: (key, value, id) => (key === local(id) ? { value } : null),
+		read: async (id) => ((await hasValue(local(id))) ? getValue(local(id), null) : undefined),
+		write: (id, value) => setValue(local(id), value),
+		watched: true,
+	};
+}
+
+const BUDGET_ICONS_KEY = "abt-budget-icons";
+const BUDGET_SCOPED: BudgetScoped[] = [
+	perBudgetKey("experimental-sidebar-groups"),
+	perBudgetKey("experimental-sidebar-account-groups"),
+	perBudgetKey("experimental-sidebar-account-order"),
+	{
+		// One map here for every budget; each budget keeps only its own icon, null once removed.
+		remote: "budget-icon",
+		fromWrite: (key, value, id) =>
+			key === BUDGET_ICONS_KEY ? { value: (value as Record<string, unknown>)[id] ?? null } : null,
+		read: async (id) => (await getValue<Record<string, unknown>>(BUDGET_ICONS_KEY, {}))[id] ?? null,
+		write: async (id, value) => {
+			const icons = { ...(await getValue<Record<string, unknown>>(BUDGET_ICONS_KEY, {})) };
+			if (value == null) delete icons[id];
+			else icons[id] = value;
+			await setValue(BUDGET_ICONS_KEY, icons);
+		},
+		watched: false,
+	},
+];
+
 let applying = false;
+let budgetId: string | undefined;
 const synced = new Set(EXTRA_KEYS);
 
 const isBudgetLoaded = () => !!document.querySelector(BUDGET_LOADED);
@@ -73,8 +120,24 @@ export function startSettingsSync(settings: Setting[]): () => void {
 	}
 
 	onSetValue((key, value) => {
-		if (!applying && synced.has(key) && isBudgetLoaded()) void push(key, value);
+		if (applying || !isBudgetLoaded()) return;
+		if (synced.has(key)) void push(key, value);
+		if (!budgetId) return;
+		for (const scoped of BUDGET_SCOPED) {
+			const write = scoped.fromWrite(key, value, budgetId);
+			if (write) void push(scoped.remote, write.value);
+		}
 	});
+
+	async function adopt(key: string, write: () => Promise<void>): Promise<void> {
+		log.info(`adopting "${key}" from the budget`);
+		applying = true;
+		try {
+			await write();
+		} finally {
+			applying = false;
+		}
+	}
 
 	let pulling: Promise<void> | null = null;
 	let again = false;
@@ -101,16 +164,33 @@ export function startSettingsSync(settings: Setting[]): () => void {
 				continue;
 			}
 			if (local !== undefined && sameValue(local, value)) continue;
-			log.info(`adopting "${key}" from the budget`);
-			applying = true;
-			try {
-				await setValue(key, value);
-			} finally {
-				applying = false;
-			}
+			await adopt(key, () => setValue(key, value));
 			const setting = live.get(key);
 			if (setting) await reapplySetting(setting, value);
 			else if (!WATCHED_KEYS.has(key)) needsReload.push(key);
+		}
+
+		budgetId = (await send<{ id?: string }>("load-prefs").catch(() => null))?.id;
+		const id = budgetId;
+		if (id) {
+			for (const scoped of BUDGET_SCOPED) {
+				const remote = prefs[PREFIX + scoped.remote];
+				const local = await scoped.read(id);
+				if (remote === undefined) {
+					if (local !== undefined) void push(scoped.remote, local);
+					continue;
+				}
+				if (remote === null) continue;
+				let value: unknown;
+				try {
+					value = JSON.parse(remote);
+				} catch {
+					continue;
+				}
+				if (sameValue(local, value)) continue;
+				await adopt(scoped.remote, () => scoped.write(id, value));
+				if (!scoped.watched) needsReload.push(scoped.remote);
+			}
 		}
 		if (needsReload.length) {
 			log.info("synced settings that need a reload", needsReload);
@@ -146,6 +226,8 @@ export function startSettingsSync(settings: Setting[]): () => void {
 	let loaded = false;
 	const unwatch = watchDom(() => {
 		const now = isBudgetLoaded();
+		// Forgotten until the next pull reads it, so a switch can't file writes under the old one.
+		if (!now) budgetId = undefined;
 		if (now && !loaded) schedulePull();
 		loaded = now;
 	});

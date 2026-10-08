@@ -1,4 +1,4 @@
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue, watchValue } from "@lib/utilities/store";
 
 const ORDER_KEY = "experimental-sidebar-account-order";
 
@@ -12,6 +12,16 @@ export async function loadAccountOrder(budgetId: string | undefined): Promise<st
 
 export function saveAccountOrder(budgetId: string | undefined, order: string[]): void {
 	setValue(budgetId ? `${ORDER_KEY}:${budgetId}` : ORDER_KEY, order);
+}
+
+/** Follows order changes made elsewhere, such as another device's, adopted by settings sync. */
+export function watchAccountOrder(
+	budgetId: string | undefined,
+	callback: (order: string[]) => void,
+): () => void {
+	return watchValue<string[]>(budgetId ? `${ORDER_KEY}:${budgetId}` : ORDER_KEY, (v) =>
+		callback(v ?? []),
+	);
 }
 
 /** Sorts `items` by their position in `order`; anything not listed keeps its

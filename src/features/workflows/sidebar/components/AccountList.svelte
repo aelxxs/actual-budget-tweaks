@@ -24,7 +24,7 @@
 		watchAssignments,
 		watchGroups,
 	} from "../lib/groups";
-	import { applyOrder, loadAccountOrder, saveAccountOrder } from "../lib/order";
+	import { applyOrder, loadAccountOrder, saveAccountOrder, watchAccountOrder } from "../lib/order";
 	import AccountHoverCard from "./AccountHoverCard.svelte";
 	import AccountRow from "./AccountRow.svelte";
 	import GroupHeader from "./GroupHeader.svelte";
@@ -77,6 +77,7 @@
 	// remounting.
 	$effect(() => {
 		loadAccountOrder(budgetId).then((stored) => (order = stored));
+		return watchAccountOrder(budgetId, (stored) => (order = stored));
 	});
 	$effect(() => {
 		loadGroups(budgetId).then((stored) => (groups = stored));

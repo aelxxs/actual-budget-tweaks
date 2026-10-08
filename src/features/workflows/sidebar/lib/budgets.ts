@@ -1,6 +1,6 @@
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import { dispatch, send } from "@lib/utilities/actual-api";
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue, watchValue } from "@lib/utilities/store";
 
 export type FileState = "local" | "remote" | "synced" | "detached" | "broken" | "unknown";
 
@@ -128,6 +128,10 @@ export type BudgetIcon = IconPickerResult;
 const BUDGET_ICON_STORAGE_KEY = "abt-budget-icons";
 
 let iconCache: Record<string, BudgetIcon> | null = null;
+// Settings sync can replace the map; a stale cache would write the old one back.
+watchValue<Record<string, BudgetIcon>>(BUDGET_ICON_STORAGE_KEY, (icons) => {
+	iconCache = icons ?? {};
+});
 
 async function loadBudgetIcons(): Promise<Record<string, BudgetIcon>> {
 	if (!iconCache) {
