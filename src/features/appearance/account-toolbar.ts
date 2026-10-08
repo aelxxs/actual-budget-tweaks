@@ -1,6 +1,7 @@
 import { defineSetting } from "@features/types";
 import { type IconName, icon } from "@lib/icons";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { findAccountToolbar } from "@lib/utilities/native-ui";
 
 /*
  * Adapter CSS for the account page's toolbar (Bank Sync, Import, Add New, Filter, search, then
@@ -12,7 +13,6 @@ import { watchDom } from "@lib/utilities/dom-watcher";
 const BAR_ATTR = "data-abt-account-toolbar";
 // Matched once in JS: as a CSS anchor, these :has() checks ran for every svg in the
 // transaction rows on each scroll frame, and Firefox blanked the table while restyling.
-const BAR_SHAPE = "div:has(> div:empty):has(> div > input)";
 const BAR = `[${BAR_ATTR}]`;
 const ACTIONS = `${BAR} > button:has(~ div:empty), ${BAR} > div:has(~ div:empty) button`;
 // The account menu's dots; an overflow menu reads last, after ABT's column reset.
@@ -167,18 +167,9 @@ export const modernAccountToolbar = defineSetting({
 	init: () => {
 		let bar: Element | null = null;
 
-		function findBar(): Element | null {
-			const name = document.querySelector('[data-testid="account-name"]');
-			for (let el = name?.parentElement; el?.parentElement; el = el.parentElement) {
-				const last = el.parentElement.lastElementChild;
-				if (el === el.parentElement.firstElementChild && last?.matches(BAR_SHAPE)) return last;
-			}
-			return null;
-		}
-
 		const unwatch = watchDom(() => {
 			if (bar?.isConnected) return;
-			bar = findBar();
+			bar = findAccountToolbar();
 			bar?.setAttribute(BAR_ATTR, "");
 		});
 

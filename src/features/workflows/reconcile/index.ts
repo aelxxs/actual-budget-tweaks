@@ -1,9 +1,10 @@
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { findAccountToolbar } from "@lib/utilities/native-ui";
 import { getCurrentPath } from "@lib/utilities/route-watcher";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
-import { NATIVE_LOCK, TOOLBAR } from "./dom";
+import { NATIVE_LOCK } from "./dom";
 import { closePanel, destroyPanel, panelWasClosed } from "./panel";
 import ReconcileButton from "./ReconcileButton.svelte";
 import { cancel, reconcile } from "./state.svelte";
@@ -13,17 +14,22 @@ import { cancel, reconcile } from "./state.svelte";
  * its glyph (labels are translated) and hidden; ours joins the actions, showing how long it's been.
  */
 const OURS = "data-abt-reconcile";
+// Marked in JS: a `div:has(<lock path>)` rule made every div on the page search its subtree.
+const HIDDEN_LOCK = "data-abt-native-lock";
 const ACCOUNT_PATH = /^\/accounts\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/;
 
 const CSS = `
-	${TOOLBAR} > div:has(${NATIVE_LOCK}):not([${OURS}]) {
+	[${HIDDEN_LOCK}] {
 		display: none !important;
 	}
 `;
 
 let mounted: { accountId: string; node: HTMLElement; instance: unknown } | null = null;
+let hiddenLock: Element | null = null;
 
 function teardown() {
+	hiddenLock?.removeAttribute(HIDDEN_LOCK);
+	hiddenLock = null;
 	if (!mounted) return;
 	void unmount(mounted.instance as Record<string, unknown>);
 	mounted.node.remove();
@@ -42,9 +48,16 @@ function sync() {
 
 	const accountId = getCurrentPath().match(ACCOUNT_PATH)?.[1];
 	// Runs on every DOM change: skip the queries while the button is in place.
-	if (accountId && mounted?.accountId === accountId && mounted.node.isConnected) return;
+	if (
+		accountId &&
+		mounted?.accountId === accountId &&
+		mounted.node.isConnected &&
+		hiddenLock?.isConnected
+	) {
+		return;
+	}
 
-	const toolbar = accountId ? document.querySelector<HTMLElement>(TOOLBAR) : null;
+	const toolbar = accountId ? findAccountToolbar() : null;
 	const lockWrapper = toolbar
 		? [...toolbar.children].find((c) => !c.hasAttribute(OURS) && c.querySelector(NATIVE_LOCK))
 		: null;
@@ -56,11 +69,20 @@ function sync() {
 		}
 		return;
 	}
+	if (mounted?.accountId === accountId && mounted.node.isConnected) {
+		// Only Actual's lock was re-rendered; keep our button and its state.
+		hiddenLock?.removeAttribute(HIDDEN_LOCK);
+		hiddenLock = lockWrapper;
+		hiddenLock.setAttribute(HIDDEN_LOCK, "");
+		return;
+	}
 	if (mounted?.accountId !== accountId) {
 		cancel();
 		closePanel();
 	}
 	teardown();
+	hiddenLock = lockWrapper;
+	hiddenLock.setAttribute(HIDDEN_LOCK, "");
 
 	const button = mountToNodeWithReturn(ReconcileButton, { accountId });
 	button.node.setAttribute(OURS, "");

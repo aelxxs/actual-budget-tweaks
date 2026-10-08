@@ -18,3 +18,21 @@ export function findUncategorizedButton(): HTMLButtonElement | null {
 	}
 	return null;
 }
+
+const TOOLBAR_SHAPE = "div:has(> div:empty):has(> div > input)";
+
+/**
+ * The account page's toolbar: the last child of the header whose first child holds the account
+ * name, with an empty flex spacer and the search input. Walked up from the name, since the
+ * equivalent :has() selector is costly enough to slow the transaction table.
+ */
+export function findAccountToolbar(): HTMLElement | null {
+	const name = document.querySelector('[data-testid="account-name"]');
+	for (let el = name?.parentElement; el?.parentElement; el = el.parentElement) {
+		const last = el.parentElement.lastElementChild;
+		if (el === el.parentElement.firstElementChild && last?.matches(TOOLBAR_SHAPE)) {
+			return last as HTMLElement;
+		}
+	}
+	return null;
+}
