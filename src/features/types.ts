@@ -29,11 +29,6 @@ export interface BaseSetting<C extends SettingContext> {
 	css?: (ctx: C & { value: unknown }) => string;
 	/** Runs when the setting is activated; return a cleanup for teardown on deactivate. Omit if `css` alone covers the feature. */
 	init?: (ctx: C & { value: unknown }) => Cleanup | Promise<Cleanup>;
-	/**
-	 * @deprecated legacy per-feature lifecycle management. Omit this and return
-	 * a cleanup from `init` instead — the runtime will handle activate/deactivate.
-	 */
-	onChange?: (value: any, ctx: C) => Promise<void> | void;
 }
 
 export interface SelectSetting<C extends SettingContext> extends BaseSetting<C> {
@@ -55,7 +50,6 @@ export interface CustomSetting<C extends SettingContext> {
 	context: C;
 	component?: Component<{ ctx: C }>;
 	init: (ctx: C) => Promise<void> | void;
-	onChange?: never;
 }
 export interface CoreSetting {
 	type: "core";

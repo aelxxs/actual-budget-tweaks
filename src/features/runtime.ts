@@ -16,16 +16,6 @@ function shouldRun(setting: Setting, value: unknown): boolean {
 	return setting.type === "checkbox" ? Boolean(value) : true;
 }
 
-function usesLegacyLifecycle(
-	setting: Setting,
-): setting is Setting & { onChange: NonNullable<unknown> } {
-	return (
-		setting.type !== "core" &&
-		setting.type !== "custom" &&
-		Boolean((setting as { onChange?: unknown }).onChange)
-	);
-}
-
 async function activate(setting: Setting, value: unknown) {
 	if (setting.type === "core" || setting.type === "custom") return;
 
@@ -62,15 +52,6 @@ async function deactivate(key: string, opts?: DeactivateOptions) {
 export async function applySettingChange(setting: Setting, newValue: unknown) {
 	if (setting.type === "core" || setting.type === "custom") return;
 
-	if (usesLegacyLifecycle(setting)) {
-		try {
-			await setting.onChange(newValue, setting.context);
-		} catch (err) {
-			log.error(`legacy onChange threw for "${setting.context.key}"`, err);
-		}
-		return;
-	}
-
 	await setValue(setting.context.key, newValue);
 	const willReactivate = shouldRun(setting, newValue);
 	await deactivate(setting.context.key, { preserveCss: willReactivate });
@@ -92,16 +73,6 @@ async function bootstrapOne(setting: Setting): Promise<void> {
 			await setting.init(setting.context);
 		} catch (err) {
 			log.error(`custom setting "${setting.context.key}" failed to init`, err);
-		}
-		return;
-	}
-
-	if (usesLegacyLifecycle(setting)) {
-		// legacy init() reads storage and checks enabled state internally
-		try {
-			await setting.init?.({ ...setting.context, value: undefined });
-		} catch (err) {
-			log.error(`legacy init threw for "${setting.context.key}"`, err);
 		}
 		return;
 	}
