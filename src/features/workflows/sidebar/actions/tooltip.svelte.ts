@@ -55,10 +55,14 @@ export function tooltip(node: HTMLElement, param: string | TipOpts) {
 		tipTimer = setTimeout(() => placeTip(node, o), TIP_DELAY);
 	};
 	const leave = () => hideTip();
+	// A click focuses the button too; only keyboard focus should bring the tip back.
+	const focus = () => {
+		if (node.matches(":focus-visible") || node.querySelector(":focus-visible")) enter();
+	};
 	node.addEventListener("pointerenter", enter);
 	node.addEventListener("pointerleave", leave);
 	node.addEventListener("pointerdown", leave);
-	node.addEventListener("focusin", enter);
+	node.addEventListener("focusin", focus);
 	node.addEventListener("focusout", leave);
 	return {
 		update(next: string | TipOpts) {
@@ -68,7 +72,7 @@ export function tooltip(node: HTMLElement, param: string | TipOpts) {
 			node.removeEventListener("pointerenter", enter);
 			node.removeEventListener("pointerleave", leave);
 			node.removeEventListener("pointerdown", leave);
-			node.removeEventListener("focusin", enter);
+			node.removeEventListener("focusin", focus);
 			node.removeEventListener("focusout", leave);
 			leave();
 		},
