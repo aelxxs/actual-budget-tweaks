@@ -37,13 +37,7 @@
 	} from "./lib/data";
 	import { isMac } from "./lib/search";
 	import "./styles/layout.css";
-	import "./styles/rail.css";
-	import "./styles/budget-header.css";
-	import "./styles/nav.css";
-	import "./styles/accounts.css";
-	import "./styles/footer.css";
-	import "./styles/tooltip.css";
-	import "./styles/icon-picker.css";
+	import "./styles/shared.css";
 
 	let paletteRef: CommandPalette | undefined = $state();
 	function openPalette(): void {
@@ -539,5 +533,88 @@
 		font-weight: 600;
 		letter-spacing: 0.11px;
 		color: var(--abt-subtle);
+	}
+
+	.divider {
+		height: 1px;
+		width: 100%;
+		background: var(--abt-ink-3);
+		flex-shrink: 0;
+	}
+
+	.tooltip {
+		position: fixed;
+		z-index: 9999999;
+		max-width: 240px;
+		padding: 5px 9px;
+		background: var(--sb-surface);
+		border: 1px solid var(--abt-ink-2);
+		border-radius: 7px;
+		color: var(--abt-ink);
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.35;
+		white-space: nowrap;
+		box-shadow: 0 6px 20px var(--sb-shadow);
+		pointer-events: none;
+		animation: tip-in 0.11s ease;
+	}
+	.tip-right {
+		transform: translateY(-50%);
+	}
+	.tip-left {
+		transform: translate(-100%, -50%);
+	}
+	.tip-top {
+		transform: translate(-50%, -100%);
+	}
+	.tip-bottom {
+		transform: translateX(-50%);
+	}
+	/* little arrow that points back to the anchor */
+	.tooltip::after {
+		content: "";
+		position: absolute;
+		width: 7px;
+		height: 7px;
+		background: var(--sb-surface);
+		border: 1px solid var(--abt-ink-2);
+		transform: rotate(45deg);
+	}
+	.tip-right::after {
+		left: -4.5px;
+		top: 50%;
+		margin-top: -3.5px;
+		border-right: none;
+		border-top: none;
+	}
+	.tip-left::after {
+		right: -4.5px;
+		top: 50%;
+		margin-top: -3.5px;
+		border-left: none;
+		border-bottom: none;
+	}
+	.tip-top::after {
+		bottom: -4.5px;
+		left: 50%;
+		margin-left: -3.5px;
+		border-left: none;
+		border-top: none;
+	}
+	.tip-bottom::after {
+		top: -4.5px;
+		left: 50%;
+		margin-left: -3.5px;
+		border-right: none;
+		border-bottom: none;
+	}
+	@keyframes tip-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 </style>

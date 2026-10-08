@@ -1,0 +1,230 @@
+/* Rules more than one component renders (row headers, the context menu, carets, the active
+   pill, account icons), the overlay-scrollbar thumb its action creates, and keyframes named
+   from scoped styles. Unscoped, so prefixed with `.sidebar` like layout.css. */
+
+.sidebar .group-header {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--sb-row-pad-y, 5px) 8px;
+	border-radius: 6px;
+	text-align: left;
+	cursor: default;
+	transition: background 0.12s ease;
+}
+/* sub-group headers stay a single whole-row toggle */
+.sidebar .group-header.toggleable {
+	cursor: pointer;
+}
+.sidebar .group-header.toggleable:hover {
+	background: var(--abt-ink-3);
+}
+.sidebar .caret {
+	width: 11px;
+	height: 11px;
+	flex-shrink: 0;
+	transition: transform 0.15s ease;
+}
+.sidebar .caret.collapsed {
+	transform: rotate(-90deg);
+}
+.sidebar .group-label {
+	flex: 1 1 auto;
+	font-size: 11px;
+	font-weight: 500;
+	letter-spacing: 0.125px;
+	text-transform: uppercase;
+	color: var(--abt-subtle);
+}
+.sidebar .group-label.dim {
+	color: var(--abt-subtle);
+}
+/* account-count badge next to a category label */
+.sidebar .group-count {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 16px;
+	height: 15px;
+	padding: 0 5px;
+	border-radius: 8px;
+	background: var(--abt-ink-3);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+	color: var(--abt-muted);
+	font-variant-numeric: tabular-nums;
+}
+.sidebar.split .group-header {
+	border-radius: 0;
+	padding-right: calc(8px + var(--sb-panel-room));
+}
+@keyframes abt-orbit {
+	to {
+		transform: rotate(360deg);
+	}
+}
+@keyframes skel-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.4;
+	}
+}
+/* ===== Account context menu ===== */
+.sidebar .ctx {
+	position: fixed;
+	/* Rendered via a body-level portal (portal.ts) — needs to beat Actual's
+	   own stacking contexts, not just other sidebar elements. */
+	z-index: 9999998;
+	min-width: 190px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 5px;
+	background: var(--sb-surface);
+	border: 1px solid var(--abt-ink-2);
+	border-radius: 9px;
+	box-shadow: 0 12px 30px var(--sb-shadow);
+	animation: ctx-in 0.1s ease;
+}
+@keyframes ctx-in {
+	from {
+		opacity: 0;
+		transform: translateX(-4px);
+	}
+}
+.sidebar .ctx-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	padding: 7px 9px;
+	border-radius: 6px;
+	text-align: left;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.13px;
+	color: var(--abt-ink);
+	transition: background 0.1s ease;
+}
+.sidebar .ctx-item:hover {
+	background: var(--abt-ink-3);
+}
+.sidebar .ctx-item svg {
+	width: 15px;
+	height: 15px;
+	flex-shrink: 0;
+	color: var(--abt-soft);
+}
+.sidebar .ctx-item:hover svg {
+	color: var(--abt-ink);
+}
+.sidebar .ctx-item.active,
+.sidebar .ctx-item.active svg {
+	color: var(--abt-accent);
+}
+.sidebar .ctx-item.active {
+	background: var(--abt-accent-2);
+}
+.sidebar .ctx-item.danger {
+	color: var(--sb-danger);
+}
+.sidebar .ctx-item.danger svg {
+	color: var(--sb-danger);
+}
+.sidebar .ctx-item.danger:hover {
+	background: var(--sb-danger-muted);
+}
+.sidebar .ctx-item.danger:hover svg {
+	color: var(--sb-danger);
+}
+.sidebar .ctx-div {
+	height: 1px;
+	margin: 4px 4px;
+	background: var(--abt-ink-3);
+}
+/* ===== active indicator ===== */
+/* a short rounded accent pill just left of the active row's background */
+.sidebar .nav-link,
+.sidebar .section-head {
+	position: relative;
+}
+.sidebar .nav-link.active::before,
+.sidebar .section-head.active::before,
+.sidebar .account.selected::before {
+	content: "";
+	position: absolute;
+	left: -6px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 3px;
+	height: 15px;
+	border-radius: 3px;
+	background: var(--abt-accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.sidebar .nav-link.active::before,
+	.sidebar .section-head.active::before,
+	.sidebar .account.selected::before {
+		animation: active-pop 0.16s ease;
+	}
+}
+@keyframes active-pop {
+	from {
+		opacity: 0;
+		height: 4px;
+	}
+	to {
+		opacity: 1;
+		height: 15px;
+	}
+}
+.sidebar .abt-overlay-thumb {
+	position: absolute;
+	top: 0;
+	right: 2px;
+	width: 6px;
+	border-radius: 3px;
+	background: var(--abt-ink-5);
+	opacity: 0;
+	pointer-events: none;
+	/* Sits inside the sidebar's resize-handle hit area (right: 0, 10px wide,
+	   z-index: 10) — has to out-rank it or dragging the thumb resizes the
+	   sidebar instead. */
+	z-index: 11;
+}
+.sidebar .abt-overlay-thumb.visible {
+	opacity: 1;
+	pointer-events: auto;
+}
+.sidebar .abt-overlay-thumb:hover,
+.sidebar .abt-overlay-thumb:active {
+	background: var(--abt-ink-5);
+}
+@media (prefers-reduced-motion: no-preference) {
+	.sidebar .abt-overlay-thumb {
+		transition: opacity 0.15s ease;
+	}
+}
+/* ===== account icon (avatar), left of the name ===== */
+.sidebar .acct-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	margin-left: -1px;
+}
+.sidebar .acct-icon-img {
+	width: 16px;
+	height: 16px;
+	object-fit: cover;
+	border-radius: 2px;
+}

@@ -36,3 +36,55 @@
 		</svg>
 	{/if}
 </span>
+
+<style>
+	/* Sync-status glyphs (dot grammar) */
+	.status {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 17px;
+		height: 17px;
+		flex-shrink: 0;
+	}
+	.status svg {
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+	.status-synced {
+		color: var(--sb-success);
+	}
+	.status-syncing {
+		color: var(--sb-attention);
+	}
+	.status-error {
+		color: var(--sb-danger);
+	}
+	.status-manual {
+		color: var(--abt-ink-5);
+	}
+	.orbit {
+		transform-origin: 24px 24px;
+		animation: abt-orbit 0.95s linear infinite;
+	}
+	.ring-pulse {
+		transform-origin: center;
+		animation: abt-ring-pulse 1.7s ease-in-out infinite;
+	}
+	@keyframes abt-ring-pulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.35;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.orbit,
+		.ring-pulse {
+			animation: none;
+		}
+	}
+</style>

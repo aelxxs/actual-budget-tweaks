@@ -376,3 +376,191 @@
 		</button>
 	{/if}
 </div>
+
+<style>
+	.rail-avatar {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 9px;
+		background: linear-gradient(135deg, var(--abt-accent), var(--abt-accent));
+		color: #fff;
+		font-size: 12px;
+		font-weight: 800;
+		letter-spacing: 0.3px;
+		overflow: hidden;
+		cursor: pointer;
+		flex-shrink: 0;
+		margin-bottom: 4px;
+	}
+	.rail-avatar.has-icon {
+		background: var(--abt-ink-3);
+		color: var(--abt-ink);
+	}
+	.rail-avatar .budget-icon-emoji {
+		font-size: 20px;
+		line-height: 1;
+	}
+	.rail-avatar .budget-icon-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.rail-spacer {
+		flex: 1 1 auto;
+	}
+	.rail-nav {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 3px;
+		width: 100%;
+	}
+	.rail-divider {
+		width: 40px;
+		height: 1px;
+		flex-shrink: 0;
+		margin: 6px 0;
+		background: var(--abt-ink-3);
+	}
+	.rail-list {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 3px;
+		width: 100%;
+		overflow-y: auto;
+		overflow-x: hidden;
+		scrollbar-width: none;
+		/* Pre-JS fallback — scrollFade (scroll-fade.ts) takes over, same as
+		   .accounts in AccountList. */
+		mask-image: linear-gradient(black 0%, black calc(100% - 34px), transparent 100%);
+		-webkit-mask-image: linear-gradient(black 0%, black calc(100% - 34px), transparent 100%);
+		transition:
+			mask-image 140ms ease,
+			-webkit-mask-image 140ms ease;
+	}
+	.rail-list::-webkit-scrollbar {
+		display: none;
+	}
+	.rail-section {
+		width: 44px;
+		margin: 6px 0 2px;
+		padding: 3px 0;
+		font-size: 8.5px;
+		font-weight: 800;
+		line-height: 1.15;
+		letter-spacing: 0.3px;
+		text-transform: uppercase;
+		text-align: center;
+		color: var(--abt-soft);
+	}
+	.rail-section small {
+		display: block;
+		font-size: 8px;
+		font-weight: 700;
+		color: var(--abt-subtle);
+	}
+	.rtile-wrap {
+		position: relative;
+		width: 40px;
+		height: 40px;
+		flex-shrink: 0;
+		cursor: pointer;
+	}
+	.rtile {
+		position: absolute;
+		inset: 3px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 9px;
+		background: var(--abt-ink-3);
+		color: var(--abt-ink);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.2px;
+		transition: filter 0.12s ease;
+	}
+	.rtile-emoji {
+		font-size: 18px;
+		line-height: 1;
+	}
+	.rtile-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 9px;
+	}
+	.rtile-wrap:hover .rtile {
+		filter: brightness(1.2);
+	}
+	.rtile-wrap.selected .rtile {
+		color: #fff;
+		box-shadow:
+			0 0 0 2px var(--sb-bg),
+			0 0 0 4px var(--abt-accent);
+	}
+	/* Same discord-style accent pill as .account.selected — see "active
+	   indicator" in styles/shared.css — just anchored to the tile's own wrapper since
+	   rail tiles are centered rather than full-width rows. */
+	.rtile-wrap.selected::before {
+		content: "";
+		position: absolute;
+		left: -6px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 3px;
+		height: 15px;
+		border-radius: 3px;
+		background: var(--abt-accent);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.rtile-wrap.selected::before {
+			animation: active-pop 0.16s ease;
+		}
+	}
+	.rail-foot {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 3px;
+		width: 100%;
+		flex-shrink: 0;
+	}
+	.rail-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 9px;
+		color: var(--abt-soft);
+		cursor: pointer;
+		flex-shrink: 0;
+		transition:
+			background 0.12s ease,
+			color 0.12s ease;
+	}
+	.rail-icon:hover {
+		background: var(--abt-ink-2);
+		color: var(--abt-ink);
+	}
+	.rail-icon.active {
+		background: var(--abt-accent-2);
+		color: var(--abt-accent);
+	}
+	.rail-icon :global(svg) {
+		width: 18px;
+		height: 18px;
+	}
+</style>

@@ -488,8 +488,8 @@
 	.eg-tabs {
 		display: flex;
 		gap: 1px;
-		padding-bottom: 4px;
-		border-bottom: 1px solid var(--abt-ink-2);
+		padding-bottom: 6px;
+		border-bottom: 1px solid var(--abt-ink-3);
 	}
 
 	.eg-tab {
@@ -497,20 +497,21 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 3px 0;
+		padding: 4px 0;
 		border: none;
-		border-radius: 4px;
+		border-radius: 5px;
 		background: none;
-		font-size: 13px;
+		font-size: 14px;
+		line-height: 1;
 		cursor: pointer;
-		opacity: 0.45;
+		opacity: 0.5;
 		transition:
 			opacity 0.08s,
 			background 0.08s;
 	}
 
 	.eg-tab:hover {
-		opacity: 0.8;
+		opacity: 0.85;
 		background: var(--abt-ink-2);
 	}
 	.eg-tab.active {
@@ -522,6 +523,7 @@
 		max-height: 220px;
 		overflow-y: auto;
 		scrollbar-width: thin;
+		scrollbar-color: var(--abt-ink-5) transparent;
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
@@ -529,11 +531,11 @@
 
 	.eg-label {
 		font-size: 9px;
-		font-weight: 600;
+		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: var(--color-pageTextSubdued);
-		padding: 4px 2px 2px;
+		color: var(--abt-soft);
+		padding: 4px 2px 3px;
 		position: sticky;
 		top: 0;
 		background: var(--color-menuBackground);
@@ -552,7 +554,7 @@
 		justify-content: center;
 		aspect-ratio: 1;
 		border: none;
-		border-radius: 4px;
+		border-radius: 5px;
 		background: none;
 		font-size: 18px;
 		cursor: pointer;
@@ -562,7 +564,7 @@
 	}
 
 	.eg-btn:hover {
-		background: var(--abt-ink-3);
+		background: var(--abt-ink-4);
 	}
 
 	/* ── Logo ── */
@@ -574,10 +576,10 @@
 		gap: 6px;
 		padding: 12px;
 		border-radius: 8px;
-		border: 1px solid var(--color-tableBorder);
+		border: 1px solid var(--abt-ink-2);
 		background: var(--abt-ink-1);
 		cursor: default;
-		min-height: 80px;
+		min-height: 84px;
 		transition:
 			background 0.15s,
 			border-color 0.15s;
@@ -610,9 +612,9 @@
 
 	/* ── Upload ── */
 	.dropzone {
-		border: 2px dashed var(--color-tableBorder);
-		border-radius: var(--abt-radius-sm);
-		min-height: 100px;
+		border: 2px dashed var(--abt-ink-2);
+		border-radius: 8px;
+		min-height: 104px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;

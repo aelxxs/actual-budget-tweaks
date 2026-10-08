@@ -93,7 +93,7 @@
 }
 
 /* ===== Split layout: icon activity bar + accounts panel =====
-   .activity-bar shares the collapsed rail's layout (see rail.css)
+   .activity-bar shares the collapsed rail's layout (see Rail.svelte)
    — it just lives beside a panel instead of being the
    sidebar's only content. */
 .sidebar.split {
@@ -112,9 +112,6 @@
 	/* Darker than the accounts panel beside it, so the two read as separate. */
 	background-color: color-mix(in oklab, var(--sb-bg), black 10%);
 }
-.sidebar .rail-spacer {
-	flex: 1 1 auto;
-}
 .sidebar .split-panel {
 	/* Extra right-side room on top of each row's own padding; rows stay full-bleed so their
 	   highlight still reaches the edges. */
@@ -125,6 +122,14 @@
 	min-width: 0;
 	height: 100%;
 	overflow: hidden;
+}
+
+/* Collapsed rail and split activity bar: Rail.svelte fills either. */
+.sidebar.collapsed,
+.sidebar .activity-bar {
+	align-items: center;
+	gap: 4px;
+	padding: 12px 0 4px;
 }
 
 /* Resize handle on the right edge */

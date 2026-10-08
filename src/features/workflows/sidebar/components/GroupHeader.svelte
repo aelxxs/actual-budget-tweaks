@@ -82,3 +82,74 @@
 		{#if count}<span class="group-count sub-count">{count}</span>{/if}
 	</button>
 {/if}
+
+<style>
+	.group-header.sub {
+		padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
+		padding-left: 16px;
+		transition:
+			background-color 0.3s ease,
+			color 0.3s ease;
+	}
+	:global(.sidebar) .group-header.sub:hover {
+		background: transparent;
+		color: var(--abt-soft);
+	}
+	.group-header.sub:hover :global(*) {
+		color: var(--abt-soft);
+	}
+	:global(.sidebar) .sub-label {
+		flex: 0 1 auto;
+		font-size: 10.5px;
+		letter-spacing: 0.115px;
+		color: var(--abt-ink-5);
+	}
+	/* sub-category counts appear on hover, or always once collapsed (no rows
+	   visible underneath to show the count some other way) */
+	.sub-count {
+		opacity: 0;
+		transition: opacity 0.12s ease;
+	}
+	.group-header.sub.toggleable:hover .sub-count,
+	.group-header.sub.toggleable.collapsed .sub-count {
+		opacity: 1;
+	}
+	.group-header.sub.toggleable {
+		position: relative;
+	}
+	.group-header.drop-before::after {
+		content: "";
+		position: absolute;
+		left: 8px;
+		right: 8px;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--abt-accent);
+		box-shadow: 0 0 4px var(--abt-accent-4);
+		pointer-events: none;
+	}
+	.group-header.drop-before::after {
+		top: -1px;
+	}
+	/* inline category rename */
+	.group-header.sub.editing-group {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.group-rename {
+		flex: 1 1 auto;
+		min-width: 0;
+		font-family: inherit;
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.115px;
+		text-transform: uppercase;
+		color: var(--abt-ink);
+		background: var(--sb-canvas);
+		border: 1px solid var(--abt-accent);
+		border-radius: 5px;
+		padding: 2px 6px;
+		outline: none;
+	}
+</style>

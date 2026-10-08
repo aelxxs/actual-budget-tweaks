@@ -135,3 +135,88 @@
 		</div>
 	{/if}
 </nav>
+
+<style>
+	.nav {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.nav-link {
+		display: flex;
+		align-items: center;
+		gap: 13px;
+		width: 100%;
+		padding: calc(var(--sb-row-pad-y, 5px) + 2px) 8px;
+		border-radius: 6px;
+		text-align: left;
+		transition: background 0.12s ease;
+	}
+	.nav-link:hover {
+		background: var(--abt-ink-4);
+	}
+	.nav-link.active {
+		background: var(--abt-accent-2);
+	}
+	.nav-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 18px;
+		height: 18px;
+		flex-shrink: 0;
+		color: var(--abt-subtle);
+	}
+	.nav-icon :global(svg) {
+		width: 17px;
+		height: 17px;
+	}
+	.nav-label {
+		font-size: 15px;
+		font-weight: 500;
+		letter-spacing: 0.16px;
+		color: var(--abt-ink);
+	}
+	.nav-link.active .nav-icon {
+		color: var(--abt-accent);
+	}
+	.nav-link.active .nav-label {
+		color: var(--abt-accent);
+	}
+
+	/* "More" disclosure caret + sub-links */
+	.nav-caret {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--abt-ink-5);
+	}
+	.nav .nav-caret :global(.caret) {
+		width: 14px;
+		height: 14px;
+	}
+	.nav-sublist {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		margin: 2px 0 2px 17px;
+		padding-left: 10px;
+		border-left: 1px solid var(--abt-ink-3);
+	}
+	.nav-sublink {
+		gap: 11px;
+		padding: calc(var(--sb-row-pad-y, 5px) + 1px) 8px;
+	}
+	.nav-sublink .nav-icon {
+		width: 16px;
+		height: 16px;
+	}
+	.nav-sublink .nav-icon :global(svg) {
+		width: 15px;
+		height: 15px;
+	}
+	.nav-sublink .nav-label {
+		font-size: 14px;
+	}
+</style>

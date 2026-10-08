@@ -223,3 +223,181 @@
 		>
 	</button>
 {/if}
+
+<style>
+	/* accounts nested under a sub-category sit a touch tighter */
+	:global(.account-list.indented) .account {
+		padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
+	}
+	:global(.split .account-list.indented) .account {
+		padding-left: 22px;
+	}
+	.account {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		width: 100%;
+		box-sizing: border-box;
+		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
+		border-radius: 7px;
+		text-align: left;
+		transition: background 0.12s ease;
+	}
+	.account:hover {
+		background: var(--abt-ink-4);
+	}
+	.account.selected {
+		background: var(--abt-accent-2);
+	}
+	.account.selected .account-name {
+		color: var(--abt-accent);
+	}
+	:global(.split) .account {
+		border-radius: 0;
+		padding-right: calc(8px + var(--sb-panel-room));
+	}
+	.account-name {
+		flex: 1 1 auto;
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.145px;
+		color: var(--abt-ink);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.account-amount {
+		font-size: 12.5px;
+		font-weight: 400;
+		letter-spacing: 0.14px;
+		text-transform: uppercase;
+		color: var(--abt-soft);
+		font-variant-numeric: tabular-nums;
+		flex-shrink: 0;
+	}
+	/* count of uncategorized transactions — amber like the "syncing" status dot,
+		   since both signal "needs your attention" rather than a neutral fact */
+	.account-uncat {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 16px;
+		height: 15px;
+		padding: 0 5px;
+		border-radius: 8px;
+		background: var(--sb-attention-muted);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.2px;
+		color: var(--sb-attention);
+		font-variant-numeric: tabular-nums;
+	}
+	.account-amount.red {
+		color: var(--sb-danger);
+	}
+	/* ===== drag reorder ===== */
+	.account {
+		position: relative;
+	}
+	.account.dragging {
+		opacity: 0.4;
+	}
+	/* The split layout's accounts panel uses a flush-left highlight instead of the accent bar. */
+	:global(.split) .account.selected::before {
+		display: none;
+	}
+	/* blue insertion line above/below the drop target */
+	.account.drop-before::after,
+	.account.drop-after::after {
+		content: "";
+		position: absolute;
+		left: 8px;
+		right: 8px;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--abt-accent);
+		box-shadow: 0 0 4px var(--abt-accent-4);
+		pointer-events: none;
+	}
+	.account.drop-before::after {
+		top: -1px;
+	}
+	.account.drop-after::after {
+		bottom: -1px;
+	}
+	/* inline account rename */
+	.account.editing {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		width: 100%;
+		box-sizing: border-box;
+		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
+		border-radius: 7px;
+		background: var(--abt-accent-1);
+	}
+	.account-rename {
+		flex: 1 1 auto;
+		min-width: 0;
+		font-family: inherit;
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.145px;
+		color: var(--abt-ink);
+		background: var(--sb-canvas);
+		border: 1px solid var(--abt-accent);
+		border-radius: 5px;
+		padding: 2px 6px;
+		outline: none;
+	}
+	/* ===== account leading glyph (status + icon), clickable to set an icon ===== */
+	.acct-glyph {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		flex-shrink: 0;
+		cursor: pointer;
+		outline: none;
+	}
+	/* the edit affordance sits over the status-dot slot only (never over the icon) */
+	.acct-glyph-edit {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 17px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--abt-soft);
+		opacity: 0;
+		transition:
+			opacity 0.1s ease,
+			color 0.1s ease;
+		pointer-events: none;
+	}
+	.acct-glyph-edit :global(svg) {
+		width: 15px;
+		height: 15px;
+	}
+	/* accounts WITHOUT an icon: cross-fade the status dot to the "add icon" affordance */
+	.account:hover .acct-glyph:not(.has-icon) :global(.status) {
+		opacity: 0;
+	}
+	.account:hover .acct-glyph:not(.has-icon) .acct-glyph-edit {
+		opacity: 1;
+	}
+	.acct-glyph:not(.has-icon):hover .acct-glyph-edit {
+		color: var(--abt-ink);
+	}
+	/* accounts WITH an icon: keep it visible, just give it a subtle clickable highlight */
+	.acct-glyph.has-icon .acct-icon {
+		border-radius: 5px;
+		transition: background 0.1s ease;
+	}
+	.acct-glyph.has-icon:hover .acct-icon {
+		background: var(--abt-ink-5);
+	}
+</style>

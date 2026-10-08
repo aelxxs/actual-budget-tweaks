@@ -594,3 +594,312 @@
 {#if hoverAccount}
 	<AccountHoverCard account={hoverAccount} top={hoverTop} left={hoverLeft} flip={hoverFlip} />
 {/if}
+
+<style>
+	/* Wraps .accounts (which scrolls) so split mode's custom scrollbar thumb
+	   (see overlay-scrollbar.ts) has a non-scrolling element to be positioned
+	   against — an absolutely positioned child of .accounts itself would scroll
+	   away with the content it's meant to represent. */
+	.accounts-viewport {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+	.accounts {
+		display: flex;
+		flex-direction: column;
+		gap: 9px;
+		flex: 1 1 auto;
+		min-height: 0;
+		/* 8px overflows into the sidebar's right padding so the scrollbar lives
+		   there instead of squeezing row content; the extra 6px on the left is
+		   a gutter for the active-indicator pill (styles/shared.css). */
+		width: calc(100% + 14px);
+		margin-left: -6px;
+		padding-left: 6px;
+		padding-right: 8px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		scrollbar-width: thin;
+		scrollbar-color: var(--abt-ink-5) transparent;
+		/* Pre-JS fallback — scrollFade (scroll-fade.ts) takes over, fading
+		   whichever edge has more content past it instead of always the bottom. */
+		mask-image: linear-gradient(black 0%, black calc(100% - 34px), transparent 100%);
+		-webkit-mask-image: linear-gradient(black 0%, black calc(100% - 34px), transparent 100%);
+		transition:
+			mask-image 140ms ease,
+			-webkit-mask-image 140ms ease;
+	}
+	.accounts::-webkit-scrollbar {
+		width: 8px;
+	}
+	.accounts::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.accounts::-webkit-scrollbar-thumb {
+		background: var(--abt-ink-4);
+		border-radius: 8px;
+		border: 2px solid transparent;
+		background-clip: padding-box;
+	}
+	.accounts::-webkit-scrollbar-thumb:hover {
+		background: var(--abt-ink-5);
+		background-clip: padding-box;
+	}
+	.all-accounts {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		box-sizing: border-box;
+		height: 32px;
+		padding: 6px;
+		padding-inline: 8px;
+		border-radius: 6px;
+		flex-shrink: 0;
+	}
+	/* grouped/flat account layout toggle — swaps in over the total on hover,
+	   same slot/pattern as .section-add for the category rows */
+	.group-toggle {
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		padding: 0px !important;
+		transform: translateY(-50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 5px;
+		color: var(--abt-ink-5);
+		opacity: 0;
+		pointer-events: none;
+		transition:
+			opacity 0.12s ease,
+			background 0.12s ease,
+			color 0.12s ease;
+	}
+	.all-accounts:hover .group-toggle,
+	.all-accounts:hover .header-add {
+		opacity: 1;
+		pointer-events: auto;
+	}
+	.header-add {
+		position: absolute;
+		right: 28px;
+		top: 50%;
+		padding: 0px !important;
+		transform: translateY(-50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 5px;
+		color: var(--abt-soft);
+		opacity: 0;
+		pointer-events: none;
+		transition:
+			opacity 0.12s ease,
+			background 0.12s ease,
+			color 0.12s ease;
+	}
+	.header-add:hover {
+		background: var(--abt-ink-4);
+		color: var(--abt-ink);
+	}
+	.header-add :global(svg) {
+		width: 15px;
+		height: 15px;
+	}
+	.group-toggle:hover {
+		background: var(--abt-ink-4);
+		color: var(--abt-ink);
+	}
+	.group-toggle.on {
+		color: var(--abt-accent);
+	}
+	.group-toggle :global(svg) {
+		width: 15px;
+		height: 15px;
+	}
+	.section {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		width: 100%;
+	}
+	/* section caret = dedicated collapse button */
+	.caret-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin: -2px 0;
+		height: 16px;
+		width: 16px;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background 0.12s ease;
+	}
+	.caret-btn:hover {
+		background: var(--abt-ink-5);
+	}
+	/* whole section header row navigates; caret (above) is the collapse sub-control */
+	.section-head {
+		cursor: default;
+	}
+	.section-head:hover {
+		background: var(--abt-ink-3);
+	}
+	.section-head.active {
+		background: var(--abt-accent-2);
+	}
+	.section-nav {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 0;
+		background: transparent;
+		text-align: left;
+		cursor: pointer;
+	}
+	.section-nav :global(.group-total) {
+		margin-left: auto;
+	}
+	.section-nav .group-label {
+		flex: 0 0 auto;
+	}
+	.section-head.active .group-label {
+		color: var(--abt-accent);
+	}
+	/* All Accounts reads as the top-level view, not a category — sentence case,
+	   brighter than the muted uppercase category labels */
+	.all-accounts .group-label {
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.42px;
+		text-transform: none;
+		color: var(--abt-ink);
+	}
+	.accounts :global(.group-total) {
+		font-size: 12.5px;
+		font-weight: 500;
+		letter-spacing: 0.125px;
+		text-transform: uppercase;
+		color: var(--abt-ink);
+		font-variant-numeric: tabular-nums;
+	}
+	.account-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0px;
+		width: 100%;
+	}
+	.account-list.indented {
+		padding-left: 9px;
+	}
+	/* Split layout: the indent has to live inside the row (padding), not on
+	   the list container, otherwise a selected nested row's background would
+	   stop 9px short of the panel's left edge instead of reaching it like its
+	   unindented siblings. */
+	:global(.split) .account-list.indented {
+		padding-left: 0;
+	}
+	:global(.split) .all-accounts {
+		border-radius: 0;
+		margin-bottom: -0.75rem;
+		padding-left: 11px;
+		padding-right: calc(8px + var(--sb-panel-room));
+	}
+	:global(.split) .group-toggle,
+	:global(.split) .section-add {
+		right: calc(4px + var(--sb-panel-room));
+	}
+	:global(.split) .header-add {
+		right: calc(28px + var(--sb-panel-room));
+	}
+	:global(.split) .accounts {
+		width: 100%;
+		margin-left: 0;
+		padding-left: 0;
+		padding-right: 0;
+		/* Native scrollbar fully hidden — overlay-scrollbar.ts draws a themed one
+		   that never reserves layout width, since no combination of
+		   scrollbar-width/-color gets Firefox to do that natively (see
+		   overlay-scrollbar.ts). */
+		scrollbar-width: none;
+	}
+	:global(.split) .accounts::-webkit-scrollbar {
+		display: none;
+	}
+	/* ===== category (sub-group) management ===== */
+	/* hover "+" on a section header — swapped with the total, so no layout shift */
+	.section-add {
+		/* Firefox's default button padding would squeeze the icon below its size. */
+		padding: 0;
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 5px;
+		color: var(--abt-soft);
+		opacity: 0;
+		pointer-events: none;
+		transition:
+			opacity 0.12s ease,
+			background 0.12s ease,
+			color 0.12s ease;
+	}
+	.section-add :global(svg) {
+		width: 15px;
+		height: 15px;
+	}
+	.section-head:hover .section-add {
+		opacity: 1;
+		pointer-events: auto;
+	}
+	.section-add:hover {
+		background: var(--abt-ink-4);
+		color: var(--abt-ink);
+	}
+	/* hide the total on hover to make room for the row's hover-revealed button —
+	   "add category" on the category rows, the grouped/flat toggle on All Accounts */
+	.section-head :global(.group-total) {
+		transition: opacity 0.12s ease;
+	}
+	.section-head:hover :global(.group-total) {
+		opacity: 0;
+	}
+	/* empty category placeholder / drop zone */
+	.group-empty-hint {
+		margin: 2px 0 3px 9px;
+		padding: 8px 10px;
+		border: 1px dashed var(--abt-ink-2);
+		border-radius: 7px;
+		font-size: 12px;
+		font-weight: 500;
+		color: var(--abt-subtle);
+		text-align: center;
+		transition:
+			border-color 0.12s ease,
+			color 0.12s ease,
+			background 0.12s ease;
+	}
+	.group-empty-hint.drop-before {
+		border-style: solid;
+		border-color: var(--abt-accent);
+		color: var(--abt-accent);
+		background: var(--abt-accent-1);
+	}
+</style>
