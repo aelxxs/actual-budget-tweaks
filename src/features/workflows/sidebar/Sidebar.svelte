@@ -6,7 +6,7 @@
 	import { setLiveSidebarBudget } from "@features/appearance/sidebar-settings-menu/settings";
 	import { loadCurrency } from "@lib/utilities/currency";
 	import { watchDom } from "@lib/utilities/dom-watcher";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { getValue, setValue, watchValue } from "@lib/utilities/store";
 	import { Search } from "lucide-svelte";
 	import { onMount } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
@@ -21,6 +21,7 @@
 	import Rail from "./components/Rail.svelte";
 	import { invalidateAccountDetail } from "./lib/account-detail";
 	import { loadCurrentBudgetId, loadCurrentBudgetName } from "./lib/budgets";
+	import { SIDEBAR_COLLAPSED_KEY } from "./lib/collapse";
 	import { LAYOUT_KEY, toLayout, type SidebarLayout } from "./lib/layout";
 	import type { SidebarAccount } from "./lib/data";
 	import {
@@ -64,13 +65,16 @@
 	}
 
 	// ---- collapsed rail ----
-	const COLLAPSED_KEY = "experimental-sidebar-collapsed";
+	const COLLAPSED_KEY = SIDEBAR_COLLAPSED_KEY;
 	const RAIL_WIDTH = "4rem"; // matches .activity-bar's width in sidebar.css
 	let collapsed = $state(false);
 
 	// Gates .sidebar.transitions-ready (sidebar.css) so hydrating a persisted
 	// collapsed/width value on mount doesn't itself animate.
 	let transitionsReady = $state(false);
+
+	// Other features (Modern Reconcile) collapse it for a while and put it back.
+	$effect(() => watchValue<boolean>(COLLAPSED_KEY, (v) => (collapsed = !!v)));
 
 	function expandSidebar() {
 		collapsed = false;

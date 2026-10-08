@@ -1,3 +1,4 @@
+import { collapseLiveSidebar } from "@features/workflows/sidebar/lib/collapse";
 import { calculate, navigate, notify, query, send } from "@lib/utilities/actual-api";
 import { whenLock } from "./dom";
 import { isPanelShowing, openPanel } from "./panel";
@@ -109,13 +110,33 @@ export async function clearTransaction(id: string): Promise<void> {
 	await refreshTotals();
 }
 
+/** Resolves to how to put the sidebar back once reconciling ends; null when there's nothing to undo. */
+let sidebarRestore: Promise<(() => void) | null> | null = null;
+
+/** Room for the table beside the panel; put back when reconciling ends or the panel closes. */
+export function collapseSidebar(): void {
+	sidebarRestore ??= collapseLiveSidebar();
+}
+
+function restoreSidebar(): void {
+	const pending = sidebarRestore;
+	sidebarRestore = null;
+	void pending?.then((restore) => restore?.());
+}
+
 export function start(target: number): void {
 	reconcile.target = target;
 	void refreshTotals();
 }
 
+/** Back to the statement balance, still reconciling. */
+export function back(): void {
+	reconcile.target = null;
+}
+
 export function cancel(): void {
 	reconcile.target = null;
+	restoreSidebar();
 }
 
 /** Adds the transaction that closes the gap, cleared and run through rules, as Actual does. */
@@ -175,6 +196,7 @@ export async function finish(): Promise<void> {
 		});
 		reconcile.lastReconciled = lastReconciled;
 		reconcile.target = null;
+		restoreSidebar();
 		await refreshAccountView();
 		const locked = rows.length === 1 ? "1 transaction" : `${rows.length} transactions`;
 		void notify(

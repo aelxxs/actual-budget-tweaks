@@ -3,11 +3,10 @@ import { watchDom } from "@lib/utilities/dom-watcher";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
 import LayoutPicker from "./LayoutPicker.svelte";
+import { SIDEBAR_MOUNT_ATTR as MOUNT_ATTR } from "./lib/collapse";
 import { NATIVE_ROOT_ATTR } from "./lib/data";
 import { LAYOUT_KEY } from "./lib/layout";
 import Sidebar from "./Sidebar.svelte";
-
-const MOUNT_ATTR = "data-abt-live-sidebar";
 
 function findNativeSidebarRoot(): HTMLElement | null {
 	const anchor = document.querySelector('[data-testid="sidebar-all-accounts-balance"]');

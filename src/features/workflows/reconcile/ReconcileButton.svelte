@@ -3,7 +3,7 @@
 	import { calculate, send } from "@lib/utilities/actual-api";
 	import { openPanel } from "./panel";
 	import { relativeTime } from "./relative-time";
-	import { reconcile } from "./state.svelte";
+	import { collapseSidebar, reconcile } from "./state.svelte";
 
 	const { accountId }: { accountId: string } = $props();
 
@@ -63,7 +63,10 @@
 	class:is-active={active}
 	class:is-overdue={overdue && !active}
 	{title}
-	onclick={() => openPanel(accountId)}
+	onclick={() => {
+		collapseSidebar();
+		openPanel(accountId);
+	}}
 >
 	<Icon name="listChecks" size={15} />
 	{#if active}

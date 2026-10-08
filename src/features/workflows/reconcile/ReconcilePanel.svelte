@@ -11,6 +11,7 @@
 	import { relativeTime } from "./relative-time";
 	import {
 		addAdjustment,
+		back,
 		cancel,
 		clearTransaction,
 		finish,
@@ -83,6 +84,12 @@
 	function stop() {
 		cancel();
 		closePanel();
+	}
+
+	function goBack() {
+		text = formatMoneyInput(reconcile.target ?? reconcile.cleared);
+		editing = false;
+		back();
 	}
 
 	function select(node: HTMLInputElement) {
@@ -325,7 +332,12 @@
 
 	{#if started}
 		<footer class="rp__footer">
-			<button type="button" class="abt-btn abt-btn--sm abt-btn--ghost" onclick={stop}>Cancel</button
+			<button type="button" class="abt-btn abt-btn--sm abt-btn--ghost" onclick={goBack}>
+				<Icon name="chevronLeft" size={13} />
+				Back
+			</button>
+			<button type="button" class="abt-btn abt-btn--sm abt-btn--ghost rp__cancel" onclick={stop}
+				>Cancel</button
 			>
 			<button
 				type="button"
@@ -646,9 +658,12 @@
 	.rp__footer {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
 		gap: var(--abt-space-3);
 		padding: var(--abt-space-3) var(--abt-space-4);
 		border-top: 1px solid var(--abt-panel-border);
+	}
+
+	.rp__cancel {
+		margin-left: auto;
 	}
 </style>
