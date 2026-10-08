@@ -19,7 +19,10 @@ const EXTRA_KEYS = [
 	"category-colors",
 	"abt-account-icons",
 	"abt-category-icons",
+	"abt-sidebar-shortcuts",
 ];
+/** Extra keys whose readers watch storage, so adopting them needs no reload. */
+const WATCHED_KEYS = new Set(["abt-sidebar-shortcuts"]);
 
 let applying = false;
 const synced = new Set(EXTRA_KEYS);
@@ -107,7 +110,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			}
 			const setting = live.get(key);
 			if (setting) await reapplySetting(setting, value);
-			else needsReload.push(key);
+			else if (!WATCHED_KEYS.has(key)) needsReload.push(key);
 		}
 		if (needsReload.length) {
 			log.info("synced settings that need a reload", needsReload);
