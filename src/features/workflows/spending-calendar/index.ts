@@ -15,6 +15,7 @@ const CALENDAR_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="non
 let calendarInstance: ReturnType<typeof mount> | null = null;
 let calendarContainer: HTMLElement | null = null;
 let hiddenChildren: { el: HTMLElement; style: string }[] = [];
+let scrollLock: { el: HTMLElement; overflow: string } | null = null;
 
 export function isCalendarOpen(): boolean {
 	return matchesPage(Page.Calendar);
@@ -70,6 +71,12 @@ export function openCalendar(): void {
 		sibling.style.display = "none";
 	}
 
+	// The hidden page still overflows on long pages (e.g. Reports), and the grid is what scrolls;
+	// left scrolled, the calendar would open part-way off screen.
+	scrollLock = { el: target, overflow: target.style.overflowY };
+	target.scrollTop = 0;
+	target.style.overflowY = "hidden";
+
 	calendarContainer = document.createElement("div");
 	calendarContainer.setAttribute(CALENDAR_ATTR, "1");
 	calendarContainer.style.cssText =
@@ -101,6 +108,11 @@ export function closeCalendar(): void {
 		if (el.parentElement) el.setAttribute("style", style);
 	}
 	hiddenChildren = [];
+
+	if (scrollLock) {
+		scrollLock.el.style.overflowY = scrollLock.overflow;
+		scrollLock = null;
+	}
 
 	clearOverlayPage();
 
