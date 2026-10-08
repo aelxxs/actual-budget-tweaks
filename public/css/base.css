@@ -67,12 +67,6 @@ body {
 	margin-bottom: 1rem;
 }
 
-/* /budget -- card padding */
-:has([data-testid="budget-summary"]) {
-	padding: 0px;
-	margin: 0px;
-}
-
 [data-testid="budget-summary"] {
 	flex: 1 1 0%;
 	overflow: hidden;
