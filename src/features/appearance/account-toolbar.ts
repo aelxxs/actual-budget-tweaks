@@ -13,6 +13,8 @@ import { findAccountToolbar } from "@lib/utilities/native-ui";
 const BAR_ATTR = "data-abt-account-toolbar";
 // Set while the toolbar is too narrow for its labels; the actions then show icons only.
 const COMPACT_ATTR = "data-abt-compact";
+// The row holding the balance and its details (cleared, uncleared, selected), behind « / ».
+const DETAILS_ATTR = "data-abt-balance-details";
 // Marks the titles added for compact mode, so they're removed with it.
 const TITLE_ATTR = "data-abt-compact-title";
 // Matched once in JS: as a CSS anchor, these :has() checks ran for every svg in the
@@ -123,6 +125,42 @@ const CSS = `
 		font-size: 0 !important;
 	}
 
+	/* The balance details as stat columns: a small label over each value, split by hairlines. */
+	[${DETAILS_ATTR}] {
+		align-items: center;
+		flex-wrap: wrap;
+		row-gap: var(--abt-space-2);
+	}
+
+	[${DETAILS_ATTR}] > span {
+		display: flex !important;
+		flex-direction: column;
+		gap: 1px;
+		margin: 0 !important;
+		padding: 0 var(--abt-space-5) !important;
+		border-left: 1px solid var(--abt-line);
+		border-radius: 0 !important;
+		background: none !important;
+		color: var(--abt-subtle);
+		font-size: var(--abt-text-2xs) !important;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		line-height: 1.3;
+		text-transform: uppercase;
+	}
+
+	[${DETAILS_ATTR}] > button + span {
+		margin-left: var(--abt-space-3) !important;
+	}
+
+	[${DETAILS_ATTR}] > span > span {
+		color: var(--color-pageText);
+		font-size: var(--abt-text-md) !important;
+		letter-spacing: 0;
+		text-transform: none;
+		font-variant-numeric: tabular-nums;
+	}
+
 	/* Search's look is shared with every search bar (base.css); it shrinks before anything wraps. */
 	${SEARCH} {
 		flex: 0 1 260px;
@@ -210,7 +248,30 @@ export const modernAccountToolbar = defineSetting({
 		const resize = new ResizeObserver(fit);
 		const content = new MutationObserver(fit);
 
+		let details: Element | null = null;
+		// Labels whose colon was dropped, with their text, to put back on teardown.
+		const labels = new Map<Text, string>();
+
+		const tidyDetails = () => {
+			const row = document.querySelector('[data-testid="account-balance"]')?.parentElement ?? null;
+			if (row !== details) {
+				details?.removeAttribute(DETAILS_ATTR);
+				details = row;
+				details?.setAttribute(DETAILS_ATTR, "");
+			}
+			for (const node of labels.keys()) if (!node.isConnected) labels.delete(node);
+			if (!row) return;
+			// "Cleared total:" reads as a heading once it sits above its value.
+			for (const chip of row.children) {
+				const label = chip.firstChild;
+				if (!(label instanceof Text) || !label.data.trimEnd().endsWith(":")) continue;
+				labels.set(label, label.data);
+				label.data = label.data.trimEnd().slice(0, -1);
+			}
+		};
+
 		const unwatch = watchDom(() => {
+			tidyDetails();
 			if (bar?.isConnected) return;
 			resize.disconnect();
 			content.disconnect();
@@ -228,6 +289,10 @@ export const modernAccountToolbar = defineSetting({
 			setCompact(false);
 			bar?.removeAttribute(BAR_ATTR);
 			bar = null;
+			details?.removeAttribute(DETAILS_ATTR);
+			details = null;
+			for (const [node, text] of labels) node.data = text;
+			labels.clear();
 		};
 	},
 });
