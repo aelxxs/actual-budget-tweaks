@@ -510,25 +510,6 @@
 			0 0 0 2px var(--sb-bg),
 			0 0 0 4px var(--abt-accent);
 	}
-	/* Same discord-style accent pill as .account.selected — see "active
-	   indicator" in styles/shared.css — just anchored to the tile's own wrapper since
-	   rail tiles are centered rather than full-width rows. */
-	.rtile-wrap.selected::before {
-		content: "";
-		position: absolute;
-		left: -6px;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 3px;
-		height: 15px;
-		border-radius: 3px;
-		background: var(--abt-accent);
-	}
-	@media (prefers-reduced-motion: no-preference) {
-		.rtile-wrap.selected::before {
-			animation: active-pop 0.16s ease;
-		}
-	}
 	.rail-foot {
 		display: flex;
 		flex-direction: column;

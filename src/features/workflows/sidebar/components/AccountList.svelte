@@ -626,11 +626,8 @@
 		flex: 1 1 auto;
 		min-height: 0;
 		/* 8px overflows into the sidebar's right padding so the scrollbar lives
-		   there instead of squeezing row content; the extra 6px on the left is
-		   a gutter for the active-indicator pill (styles/shared.css). */
-		width: calc(100% + 14px);
-		margin-left: -6px;
-		padding-left: 6px;
+		   there instead of squeezing row content. */
+		width: calc(100% + 8px);
 		padding-right: 8px;
 		overflow-y: auto;
 		overflow-x: hidden;
@@ -670,7 +667,7 @@
 		height: 32px;
 		padding: 6px;
 		padding-inline: 8px;
-		border-radius: var(--abt-radius-sm);
+		border-radius: var(--abt-radius);
 		flex-shrink: 0;
 	}
 	/* grouped/flat account layout toggle — swaps in over the total on hover,
@@ -757,6 +754,10 @@
 		cursor: pointer;
 		transition: background 0.12s ease;
 	}
+	/* same left inset as the account rows, so the caret sits over their status dots */
+	:global(.sidebar:not(.split)) .section-head {
+		padding-left: 5px;
+	}
 	.caret-btn:hover {
 		background: var(--abt-ink-5);
 	}
@@ -814,7 +815,7 @@
 		width: 100%;
 	}
 	.account-list.indented {
-		padding-left: 9px;
+		padding-left: 14px;
 	}
 	/* Split layout: the indent has to live inside the row (padding), not on
 	   the list container, otherwise a selected nested row's background would
@@ -895,7 +896,7 @@
 	}
 	/* empty category placeholder / drop zone */
 	.group-empty-hint {
-		margin: 2px 0 3px 9px;
+		margin: 2px 0 3px 14px;
 		padding: 8px 10px;
 		border: 1px dashed var(--abt-ink-2);
 		border-radius: var(--abt-radius);

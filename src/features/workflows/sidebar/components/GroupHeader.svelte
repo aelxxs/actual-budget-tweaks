@@ -95,10 +95,17 @@
 <style>
 	.group-header.sub {
 		padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
-		padding-left: 16px;
+		padding-left: 5px;
 		transition:
 			background-color 0.3s ease,
 			color 0.3s ease;
+	}
+	/* 17px caret slot, matching the account status icon, so labels line up with names */
+	.group-header.sub :global(.caret) {
+		margin-inline: 3px;
+	}
+	:global(.split) .group-header.sub {
+		padding-left: 8px;
 	}
 	:global(.sidebar) .group-header.sub:hover {
 		background: transparent;

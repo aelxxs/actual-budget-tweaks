@@ -9,7 +9,7 @@
 	width: 100%;
 	box-sizing: border-box;
 	padding: var(--sb-row-pad-y, 5px) 8px;
-	border-radius: var(--abt-radius-sm);
+	border-radius: var(--abt-radius);
 	text-align: left;
 	cursor: default;
 	transition: background 0.12s ease;
@@ -149,41 +149,10 @@
 	margin: 4px 4px;
 	background: var(--abt-ink-3);
 }
-/* ===== active indicator ===== */
-/* a short rounded accent pill just left of the active row's background */
+/* positioning context for the absolutely placed hover controls */
 .sidebar .nav-link,
 .sidebar .section-head {
 	position: relative;
-}
-.sidebar .nav-link.active::before,
-.sidebar .section-head.active::before,
-.sidebar .account.selected::before {
-	content: "";
-	position: absolute;
-	left: -6px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 3px;
-	height: 15px;
-	border-radius: 3px;
-	background: var(--abt-accent);
-}
-@media (prefers-reduced-motion: no-preference) {
-	.sidebar .nav-link.active::before,
-	.sidebar .section-head.active::before,
-	.sidebar .account.selected::before {
-		animation: active-pop 0.16s ease;
-	}
-}
-@keyframes active-pop {
-	from {
-		opacity: 0;
-		height: 4px;
-	}
-	to {
-		opacity: 1;
-		height: 15px;
-	}
 }
 .sidebar .abt-overlay-thumb {
 	position: absolute;

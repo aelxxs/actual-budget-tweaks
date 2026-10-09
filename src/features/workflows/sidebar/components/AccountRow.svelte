@@ -238,7 +238,7 @@
 		gap: 5px;
 		width: 100%;
 		box-sizing: border-box;
-		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
+		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 5px;
 		border-radius: var(--abt-radius);
 		text-align: left;
 		transition: background 0.12s ease;
@@ -254,6 +254,7 @@
 	}
 	:global(.split) .account {
 		border-radius: 0;
+		padding-left: 8px;
 		padding-right: calc(8px + var(--sb-panel-room));
 	}
 	.account-name {
@@ -303,10 +304,6 @@
 	.account.dragging {
 		opacity: 0.4;
 	}
-	/* The split layout's accounts panel uses a flush-left highlight instead of the accent bar. */
-	:global(.split) .account.selected::before {
-		display: none;
-	}
 	/* blue insertion line above/below the drop target */
 	.account.drop-before::after,
 	.account.drop-after::after {
@@ -333,7 +330,7 @@
 		gap: 5px;
 		width: 100%;
 		box-sizing: border-box;
-		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 13px;
+		padding: var(--sb-row-pad-y, 5px) 8px var(--sb-row-pad-y, 5px) 5px;
 		border-radius: var(--abt-radius);
 		background: var(--abt-accent-1);
 	}

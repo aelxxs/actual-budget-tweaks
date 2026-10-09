@@ -148,7 +148,7 @@
 		gap: 13px;
 		width: 100%;
 		padding: calc(var(--sb-row-pad-y, 5px) + 2px) 8px;
-		border-radius: var(--abt-radius-sm);
+		border-radius: var(--abt-radius);
 		text-align: left;
 		transition: background 0.12s ease;
 	}
