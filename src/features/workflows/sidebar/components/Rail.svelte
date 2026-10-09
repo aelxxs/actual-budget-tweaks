@@ -8,23 +8,16 @@
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import { watchDom } from "@lib/utilities/dom-watcher";
-	import { Page, matchesPage } from "@lib/utilities/pages";
+	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
 	import { getValue } from "@lib/utilities/store";
-	import {
-		CalendarDays,
-		Ellipsis,
-		PanelLeftClose,
-		PanelLeftOpen,
-		Plus,
-		Search,
-	} from "lucide-svelte";
+	import { CalendarDays, PanelLeftClose, PanelLeftOpen, Plus, Search } from "lucide-svelte";
 	import { portal } from "../actions/portal";
 	import { scrollFade } from "../actions/scroll-fade";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import type { BudgetIcon } from "../lib/budgets";
 	import { loadBudgetIcon, removeBudgetIcon, setBudgetIcon } from "../lib/budgets";
 	import type { SidebarAccount } from "../lib/data";
-	import { moreItems, navItems } from "../lib/nav";
+	import { navItems, settingsItem, settingsMenu, settingsPages } from "../lib/nav";
 
 	// See PrimaryNav.svelte for why this watches DOM mutations rather than
 	// `watchRoute`/history — cross-world navigation isn't observable there,
@@ -57,7 +50,7 @@
 		if (covered) closeCalendar();
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
 		if (covered && matchesPage(page)) return;
-		navigate(`/${page}`);
+		navigate(pagePath(page));
 	}
 
 	const {
@@ -137,7 +130,7 @@
 
 	let moreX = $state(0);
 	let moreY = $state(0);
-	const moreActive = $derived(Boolean(tick) && moreItems.some((item) => matchesPage(item.page)));
+	const moreActive = $derived(Boolean(tick) && settingsMenu.some((item) => matchesPage(item.page)));
 
 	function toggleMore(e: MouseEvent) {
 		e.stopPropagation();
@@ -257,19 +250,19 @@
 			type="button"
 			class="rail-icon"
 			class:active={moreActive || moreOpen}
-			aria-label="More"
+			aria-label={settingsItem.label}
 			aria-expanded={moreOpen}
 			onclick={toggleMore}
-			use:tooltip={"More"}
+			use:tooltip={settingsItem.label}
 		>
-			<Ellipsis strokeWidth={1.5} />
+			<settingsItem.icon strokeWidth={1.5} />
 		</button>
 	{/if}
 </div>
 {#if !showAccounts}
 	<div class="rail-divider"></div>
 	<div class="rail-nav">
-		{#each moreItems as item (item.page)}
+		{#each [...settingsPages, settingsItem] as item (item.page)}
 			<button
 				type="button"
 				class="rail-icon"
@@ -286,7 +279,7 @@
 
 {#if moreOpen}
 	<div use:portal class="ctx" style="top: {moreY}px; left: {moreX}px">
-		{#each moreItems as item (item.page)}
+		{#each settingsMenu as item (item.page)}
 			<button
 				type="button"
 				class="ctx-item"

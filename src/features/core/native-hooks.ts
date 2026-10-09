@@ -1,4 +1,5 @@
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { Page, matchesPage } from "@lib/utilities/pages";
 
 /** Marks Actual elements that base.css styles but that carry no stable hook of their own. */
 export const nativeHooks = {
@@ -19,8 +20,7 @@ export const nativeHooks = {
 			// Bank sync's and some modals' tables have no table test id; the header row sits two
 			// levels under the frame.
 			const frames = [...document.querySelectorAll('[role="dialog"]')];
-			if (location.pathname === "/bank-sync")
-				frames.push(...document.querySelectorAll('[role="main"]'));
+			if (matchesPage(Page.BankSync)) frames.push(...document.querySelectorAll('[role="main"]'));
 			for (const frame of frames) {
 				const header = frame.querySelector('[data-testid="row"]');
 				if (header && !header.closest('[data-testid="table"]')) {

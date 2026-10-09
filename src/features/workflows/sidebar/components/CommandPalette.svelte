@@ -13,7 +13,7 @@
 	import { themes } from "@lib/design";
 	import { dispatch, navigate, query as queryTable } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import { Page } from "@lib/utilities/pages";
+	import { Page, pagePath } from "@lib/utilities/pages";
 	import { getValue, setValue } from "@lib/utilities/store";
 	import {
 		ArrowLeft,
@@ -331,7 +331,7 @@
 			return;
 		}
 		if (isCalendarOpen()) closeCalendar();
-		if (item.kind === "nav") navigate(`/${item.page}`);
+		if (item.kind === "nav") navigate(pagePath(item.page));
 		else if (item.kind === "account") navigate(`/accounts/${item.account.id}`);
 		else if (item.kind === "report") navigate(`/reports/custom/${item.report.id}`);
 		else if (item.kind === "theme") {

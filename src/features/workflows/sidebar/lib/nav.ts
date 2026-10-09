@@ -8,6 +8,7 @@ import {
 	SlidersHorizontal,
 	Tag,
 	Users,
+	Wrench,
 } from "lucide-svelte";
 
 export const navItems = [
@@ -16,10 +17,17 @@ export const navItems = [
 	{ label: "Schedules", page: Page.Schedules, icon: Calendar },
 ];
 
-export const moreItems = [
+export const settingsItem = { label: "Settings", page: Page.Settings, icon: Settings };
+
+/** The pages Actual groups under Settings, in its order. */
+export const settingsPages = [
 	{ label: "Payees", page: Page.Payees, icon: Users },
-	{ label: "Bank Sync", page: Page.BankSync, icon: Banknote },
-	{ label: "Rules", page: Page.Rules, icon: SlidersHorizontal },
 	{ label: "Tags", page: Page.Tags, icon: Tag },
-	{ label: "Settings", page: Page.Settings, icon: Settings },
+	{ label: "Rules", page: Page.Rules, icon: SlidersHorizontal },
+	{ label: "Bank Sync", page: Page.BankSync, icon: Banknote },
+];
+
+export const settingsMenu = [
+	{ label: "General", page: Page.Settings, icon: Wrench },
+	...settingsPages,
 ];

@@ -6,10 +6,10 @@
 	} from "@features/workflows/spending-calendar";
 	import { navigate } from "@lib/utilities/actual-api";
 	import { watchDom } from "@lib/utilities/dom-watcher";
-	import { Page, matchesPage } from "@lib/utilities/pages";
+	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
 	import { getValue, setValue } from "@lib/utilities/store";
-	import { CalendarDays, ChevronDown, Ellipsis } from "lucide-svelte";
-	import { moreItems, navItems } from "../lib/nav";
+	import { CalendarDays, ChevronDown } from "lucide-svelte";
+	import { navItems, settingsItem, settingsMenu } from "../lib/nav";
 
 	// Only shown if the user has the Spending Calendar feature enabled — reads
 	// its checkbox setting directly (getValue/setValue is a flat 1:1 mapping
@@ -39,7 +39,7 @@
 		if (covered) closeCalendar();
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
 		if (covered && matchesPage(page)) return;
-		navigate(`/${page}`);
+		navigate(pagePath(page));
 	}
 
 	const MORE_KEY = "experimental-sidebar-more-expanded";
@@ -80,6 +80,13 @@
 	function isActive(page: Page): boolean {
 		return Boolean(tick) && matchesPage(page);
 	}
+
+	const inSettings = $derived(settingsMenu.some((item) => isActive(item.page)));
+
+	// Opens on arriving at a settings page, like Actual's own menu; collapsing it there sticks.
+	$effect(() => {
+		if (inSettings) moreExpanded = true;
+	});
 </script>
 
 <nav class="nav">
@@ -107,9 +114,15 @@
 		</button>
 	{/if}
 
-	<button type="button" class="nav-link" aria-expanded={moreExpanded} onclick={toggleMore}>
-		<span class="nav-icon"><Ellipsis strokeWidth={1.5} /></span>
-		<span class="nav-label">More</span>
+	<button
+		type="button"
+		class="nav-link"
+		class:active={!moreExpanded && inSettings}
+		aria-expanded={moreExpanded}
+		onclick={toggleMore}
+	>
+		<span class="nav-icon"><settingsItem.icon strokeWidth={1.5} /></span>
+		<span class="nav-label">{settingsItem.label}</span>
 		<span class="nav-caret">
 			<ChevronDown
 				class={moreExpanded ? "caret" : "caret collapsed"}
@@ -121,7 +134,7 @@
 
 	{#if moreExpanded}
 		<div class="nav-sublist">
-			{#each moreItems as sub (sub.page)}
+			{#each settingsMenu as sub (sub.page)}
 				<button
 					type="button"
 					class="nav-link nav-sublink"
@@ -184,7 +197,7 @@
 		color: var(--abt-accent);
 	}
 
-	/* "More" disclosure caret + sub-links */
+	/* Settings disclosure caret + sub-links */
 	.nav-caret {
 		margin-left: auto;
 		display: flex;
