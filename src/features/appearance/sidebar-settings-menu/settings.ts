@@ -1,4 +1,5 @@
 import { accountIconPicker } from "@features/appearance/account-icon-picker";
+import { sidebarDensity } from "@features/appearance/sidebar-density";
 import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
 import { sidebarSearch } from "@features/appearance/sidebar-search";
 import { sidebarShortcuts, sidebarShortcutsAddTile } from "@features/appearance/sidebar-shortcuts";
@@ -34,7 +35,7 @@ export function openSidebarSettings({ tab }: { tab?: SidebarSettingsTab } = {}):
 				},
 				{
 					heading: "Appearance",
-					settings: [sidebarSearch] as Setting[],
+					settings: [sidebarDensity, sidebarSearch] as Setting[],
 				},
 				{
 					heading: "Accounts",

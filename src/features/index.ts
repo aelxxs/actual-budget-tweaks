@@ -2,6 +2,7 @@ import { accountIconPicker } from "./appearance/account-icon-picker";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
+import { sidebarDensity } from "./appearance/sidebar-density";
 import { sidebarGroupTotals } from "./appearance/sidebar-group-totals";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
@@ -89,6 +90,7 @@ const appearance = [
 	modernToasts,
 	themedScrollbars,
 	privacyStyle,
+	sidebarDensity,
 	sidebarSearch,
 	sidebarGroupTotals,
 	sidebarShortcuts,

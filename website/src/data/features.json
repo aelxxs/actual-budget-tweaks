@@ -190,6 +190,12 @@
 				"group": "General"
 			},
 			{
+				"label": "Sidebar Density",
+				"description": "Adjust the spacing of accounts, nav links, and search in the live sidebar.",
+				"icon": null,
+				"group": "Sidebar"
+			},
+			{
 				"label": "Sidebar Search Bar",
 				"description": "Quickly filter accounts, categories, and pages.",
 				"icon": "search",
