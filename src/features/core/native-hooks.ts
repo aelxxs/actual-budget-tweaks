@@ -1,5 +1,17 @@
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
+import { getCurrentPath } from "@lib/utilities/route-watcher";
+
+// Settings' sub-pages first, so /settings/payees reads as Payees.
+const COLUMN_PAGES = [
+	Page.Payees,
+	Page.Rules,
+	Page.BankSync,
+	Page.Tags,
+	Page.Settings,
+	Page.Accounts,
+	Page.Schedules,
+];
 
 /** Marks Actual elements that base.css styles but that carry no stable hook of their own. */
 export const nativeHooks = {
@@ -27,6 +39,13 @@ export const nativeHooks = {
 					mark(header.parentElement?.parentElement ?? null, "data-abt-card-table");
 				}
 			}
+			// The page's column, named so base.css can give each page's layout the same gutter.
+			const column = document.querySelector<HTMLElement>(
+				"[data-abt-content-grid] > div:nth-child(4)",
+			);
+			const path = getCurrentPath();
+			const page = COLUMN_PAGES.find((p) => path.includes(`/${p}`)) ?? "";
+			if (column && column.dataset.abtPage !== page) column.dataset.abtPage = page;
 			for (const input of document.querySelectorAll("input[data-rac]")) {
 				if (input.previousElementSibling instanceof SVGElement) {
 					mark(input.parentElement, "data-abt-search");

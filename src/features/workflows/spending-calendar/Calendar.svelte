@@ -448,7 +448,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 8px 24px;
+		padding: 8px var(--abt-page-gutter);
 		flex-shrink: 0;
 		/* Matches ABT's other page and panel headers. */
 		box-sizing: border-box;
@@ -511,7 +511,7 @@
 		grid-template-rows: min-content;
 		grid-auto-rows: 1fr;
 		overflow-y: auto;
-		padding: 0 12px 12px;
+		padding: 0 var(--abt-page-gutter) var(--abt-page-gutter);
 	}
 
 	/* Delayed so quick loads don't flicker. */

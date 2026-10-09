@@ -54,13 +54,13 @@ export const reportsHeader = defineSetting({
 			z-index: 10;
 			box-sizing: border-box;
 			min-height: var(--abt-panel-header-height);
-			margin-bottom: var(--abt-space-5);
+			/* The widget grid adds its own 10px, so the first row sits one gutter below. */
+			margin-bottom: calc(var(--abt-page-gutter) - 10px);
 			padding-block: var(--abt-space-3);
 			align-items: center;
 			border-bottom: 1px solid var(--abt-panel-border);
 			background: var(--color-pageBackground);
-			margin-right: 0px;
-			padding-right: 20px;
+			margin-right: 0 !important;
 		}
 
 		/*

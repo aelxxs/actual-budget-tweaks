@@ -42,6 +42,51 @@ body {
 		padding-top: var(--abt-page-pad-top);
 	}
 
+	/* Every page's content sits the budget page's distance from the sidebar, in from Actual's 20px. */
+	[data-abt-page="accounts"] > div:first-of-type {
+		padding-inline: var(--abt-page-gutter, 13px) !important;
+	}
+
+	:is(
+			[data-abt-page="payees"],
+			[data-abt-page="rules"],
+			[data-abt-page="bank-sync"],
+			[data-abt-page="tags"],
+			[data-abt-page="settings"],
+			[data-abt-page="schedules"]
+		)
+		> div:first-of-type {
+		margin-inline: var(--abt-page-gutter, 13px) !important;
+	}
+
+	:is(
+			[data-abt-page="payees"],
+			[data-abt-page="rules"],
+			[data-abt-page="bank-sync"],
+			[data-abt-page="tags"],
+			[data-abt-page="settings"],
+			[data-abt-page="schedules"]
+		)
+		> div:nth-of-type(2) {
+		padding-inline: var(--abt-page-gutter, 13px) !important;
+	}
+
+	[data-testid="reports-page"] > div:not([data-abt-calendar]) > div:first-of-type {
+		padding-right: var(--abt-page-gutter, 13px) !important;
+	}
+
+	[data-testid="reports-page"]
+		> div:not([data-abt-calendar])
+		> div:first-of-type
+		> div:first-of-type {
+		margin-left: var(--abt-page-gutter, 13px) !important;
+	}
+
+	/* The widget grid adds 10px of its own around each widget. */
+	[data-testid="reports-page"] > div:not([data-abt-calendar]) > div:nth-of-type(2) {
+		padding-inline: calc(var(--abt-page-gutter, 13px) - 10px) !important;
+	}
+
 	/* Space under list and settings page titles; the title has no hook, the page body after it does. */
 	[data-abt-content-grid] > div:nth-child(4) > div + [role="main"] {
 		margin-top: 0.5rem;

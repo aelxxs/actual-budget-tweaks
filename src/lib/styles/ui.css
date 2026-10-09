@@ -12,6 +12,8 @@
 	--abt-space-4: 12px;
 	--abt-space-5: 16px;
 	--abt-space-6: 24px;
+	/* How far every page insets its content from the sidebar: the budget page's own inset. */
+	--abt-page-gutter: 13px;
 
 	/* Type scale. Display sizes (emoji, headline figures) stay raw. */
 	--abt-text-2xs: 9px;
