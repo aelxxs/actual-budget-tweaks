@@ -184,6 +184,12 @@
 				"group": "Tools"
 			},
 			{
+				"label": "Quiet Funded Bars",
+				"description": "Leave fully funded categories as an empty track, so the ones still needing money stand out.",
+				"icon": "eyeOff",
+				"group": "Tools"
+			},
+			{
 				"label": "Goal Funding",
 				"description": "Click a category's balance to see its goal progress and assign money to an underfunded goal.",
 				"icon": "interest",
