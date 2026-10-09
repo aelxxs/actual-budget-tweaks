@@ -34,7 +34,7 @@
 		gap: 20px;
 		margin: 0;
 		padding-left: 16px;
-		border-left: 1px solid var(--color-tableBorder);
+		border-left: 1px solid var(--abt-line);
 		transition: opacity 0.15s;
 	}
 	.summary.is-stale {

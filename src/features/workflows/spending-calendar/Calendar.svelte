@@ -450,7 +450,10 @@
 		justify-content: space-between;
 		padding: 8px 24px;
 		flex-shrink: 0;
-		border-bottom: 1px solid var(--color-tableBorder);
+		/* Matches ABT's other page and panel headers. */
+		box-sizing: border-box;
+		min-height: var(--abt-panel-header-height);
+		border-bottom: 1px solid var(--abt-panel-border);
 	}
 
 	.cal-header__left {
@@ -475,7 +478,7 @@
 		width: 1px;
 		height: 18px;
 		margin: 0 2px;
-		background: var(--color-tableBorder);
+		background: var(--abt-line);
 	}
 
 	.cal-filters__title {
