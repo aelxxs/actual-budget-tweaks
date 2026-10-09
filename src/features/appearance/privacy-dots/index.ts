@@ -14,6 +14,9 @@ const ABT_AMOUNTS = `.abt-privacy-enabled .abt-privacy-number,
 	.abt-ib-privacy .abt-ib-private,
 	.abt-ib-privacy .abt-ib-label-amount`;
 
+// Inputs can't draw an ::after mark, so they keep their width and hide each character instead.
+const FIXED_AMOUNTS = ABT_AMOUNTS.replace(".abt-privacy-number", ".abt-privacy-number:not(input)");
+
 /** One dot per character: keeps each amount's shape, hides its digits. */
 const PER_DIGIT = `
 	${ABT_AMOUNTS},
@@ -51,7 +54,7 @@ const PER_DIGIT = `
 function fixed(style: "dots" | "script"): string {
 	const dots = style === "dots";
 	return `
-	${ABT_AMOUNTS},
+	${FIXED_AMOUNTS},
 	${REDACTED_COPY} :not(:has(*)) {
 		position: relative;
 		-webkit-text-fill-color: transparent;
@@ -67,7 +70,7 @@ function fixed(style: "dots" | "script"): string {
 			: ""
 	}
 
-	:is(${ABT_AMOUNTS}, ${REDACTED_COPY} :not(:has(*)))::after {
+	:is(${FIXED_AMOUNTS}, ${REDACTED_COPY} :not(:has(*)))::after {
 		content: "${dots ? "••••" : "0000"}" / "";
 		position: absolute;
 		inset: 0;
@@ -83,14 +86,22 @@ function fixed(style: "dots" | "script"): string {
 	}
 
 	/* ABT's amounts shrink to the mark's measured width, so they sit where the number would. */
-	.abt-privacy-enabled .abt-privacy-number:not(:hover) {
+	.abt-privacy-enabled .abt-privacy-number:not(:hover, input) {
 		width: ${dots ? "2em" : "2.36em"};
 		overflow: hidden;
 		vertical-align: bottom;
 	}
 
-	.abt-privacy-enabled .abt-privacy-number:not(:hover, .rn) {
+	.abt-privacy-enabled .abt-privacy-number:not(:hover, .rn, input) {
 		display: inline-block;
+	}
+
+	${
+		dots
+			? `.abt-privacy-enabled input.abt-privacy-number:not(:hover, :focus) {
+		-webkit-text-security: disc;
+	}`
+			: ""
 	}
 
 	/* !important: the ::after rule above carries the redacted copy's much higher specificity. */
