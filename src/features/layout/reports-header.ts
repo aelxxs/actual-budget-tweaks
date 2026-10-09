@@ -21,10 +21,12 @@ function measureTop() {
 	if (!matchesPage(Page.Reports)) return;
 	const reports = document.querySelector<HTMLElement>(REPORTS);
 	const grid = reports?.closest<HTMLElement>("[data-abt-content-grid]");
-	if (!reports || !grid || reports.style.getPropertyValue(TOP_VAR)) return;
+	if (!reports || !grid) return;
+	// Unrounded and re-read as the page settles: Firefox left a sliver of the widgets showing above a rounded or early value.
 	const top =
 		reports.getBoundingClientRect().top - grid.getBoundingClientRect().top + grid.scrollTop;
-	reports.style.setProperty(TOP_VAR, `${Math.round(top)}px`);
+	const value = `${top}px`;
+	if (reports.style.getPropertyValue(TOP_VAR) !== value) reports.style.setProperty(TOP_VAR, value);
 }
 
 export const reportsHeader = defineSetting({
