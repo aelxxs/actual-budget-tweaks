@@ -1,7 +1,8 @@
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { createLogger } from "@lib/utilities/logger";
 import { getValue, setValue } from "@lib/utilities/store";
-import type { Setting } from "./types";
+import { DESKTOP_QUERY, desktopOnly } from "@lib/utilities/pages";
+import type { Setting, SettingContext } from "./types";
 
 const log = createLogger("runtime");
 
@@ -10,10 +11,34 @@ interface DeactivateOptions {
 	preserveCss?: boolean;
 }
 
-const active = new Map<string, (opts?: DeactivateOptions) => void | Promise<void>>();
+interface Active {
+	setting: Setting;
+	ctx: SettingContext & { value: unknown };
+	/** Set while init has run; null while the window is in Actual's mobile view. */
+	stop: (() => void | Promise<void>) | null;
+}
+
+const active = new Map<string, Active>();
+const desktop = matchMedia(DESKTOP_QUERY);
 
 function shouldRun(setting: Setting, value: unknown): boolean {
 	return setting.type === "checkbox" ? Boolean(value) : true;
+}
+
+function scopedCss(setting: Setting, css: string): string {
+	return "mobile" in setting && setting.mobile ? css : desktopOnly(css);
+}
+
+async function start(entry: Active): Promise<void> {
+	if (entry.setting.type === "core" || entry.setting.type === "custom") return;
+	const cleanup = await entry.setting.init?.(entry.ctx);
+	entry.stop = typeof cleanup === "function" ? cleanup : () => {};
+}
+
+async function stop(entry: Active): Promise<void> {
+	const fn = entry.stop;
+	entry.stop = null;
+	await fn?.();
 }
 
 async function activate(setting: Setting, value: unknown) {
@@ -21,30 +46,43 @@ async function activate(setting: Setting, value: unknown) {
 
 	const ctx = { ...setting.context, value };
 	const key = ctx.key;
+	const entry: Active = { setting, ctx, stop: null };
 
 	try {
-		if (setting.css) applyGlobalCSS(setting.css(ctx), key);
-		const cleanup = await setting.init?.(ctx);
-
-		active.set(key, async (opts) => {
-			if (setting.css && !opts?.preserveCss) applyGlobalCSS("", key);
-			await cleanup?.();
-		});
+		// The media query keeps desktop-only CSS off mobile without a re-render on resize.
+		if (setting.css) applyGlobalCSS(scopedCss(setting, setting.css(ctx)), key);
+		active.set(key, entry);
+		if (setting.mobile || desktop.matches) await start(entry);
 		log.info(`enabled "${key}"`);
 	} catch (err) {
 		log.error(`failed to enable "${key}"`, err);
+		active.delete(key);
 		if (setting.css) applyGlobalCSS("", key);
 	}
 }
 
 async function deactivate(key: string, opts?: DeactivateOptions) {
+	const entry = active.get(key);
+	active.delete(key);
+	if (!entry) return;
 	try {
-		await active.get(key)?.(opts);
+		if (entry.setting.type !== "core" && entry.setting.type !== "custom") {
+			if (entry.setting.css && !opts?.preserveCss) applyGlobalCSS("", key);
+		}
+		await stop(entry);
 		if (!opts?.preserveCss) log.info(`disabled "${key}"`);
 	} catch (err) {
 		log.error(`cleanup threw for "${key}"`, err);
-	} finally {
-		active.delete(key);
+	}
+}
+
+/** Starts or stops desktop-only features as the window crosses Actual's mobile breakpoint. */
+function onViewportChange(): void {
+	for (const [key, entry] of active) {
+		if (entry.setting.type === "core" || entry.setting.type === "custom") continue;
+		if (entry.setting.mobile) continue;
+		const run = desktop.matches ? !entry.stop && start(entry) : entry.stop && stop(entry);
+		if (run) run.catch((err) => log.error(`viewport change failed for "${key}"`, err));
 	}
 }
 
@@ -94,6 +132,7 @@ async function bootstrapOne(setting: Setting): Promise<void> {
  */
 export async function bootstrapSettings(settings: Setting[]) {
 	log.info(`bootstrapping ${settings.length} settings`);
+	desktop.addEventListener("change", onViewportChange);
 	await Promise.all(settings.map(bootstrapOne));
 	log.info("bootstrap complete");
 }

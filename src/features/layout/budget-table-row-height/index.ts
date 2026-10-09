@@ -1,5 +1,6 @@
 import { defineSetting } from "@features/types";
 import { applyGlobalCSS } from "@lib/utilities/dom";
+import { desktopOnly } from "@lib/utilities/pages";
 import { getValue } from "@lib/utilities/store";
 import RowHeightPicker from "./Picker.svelte";
 
@@ -11,7 +12,8 @@ export const budgetTableRowHeight = defineSetting({
 	context: {
 		key: "actual-slimmer-budgetrows",
 		defaultValue: "2.25rem",
-		css: (value: string) => `
+		css: (value: string) =>
+			desktopOnly(`
 			div[data-testid="budget-totals"] + div div[data-testid="row"]:has(div[data-testid="category-name"]) {
 				height: ${value};
 				flex: 0 0 ${value};
@@ -20,7 +22,7 @@ export const budgetTableRowHeight = defineSetting({
 				height: ${value};
 				flex: 0 0 ${value};
 			}
-		`,
+		`),
 	},
 	component: RowHeightPicker,
 	init: async (ctx) => {

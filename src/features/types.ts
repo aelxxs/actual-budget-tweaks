@@ -27,6 +27,8 @@ export interface BaseSetting<C extends SettingContext> {
 	context: C;
 	/** Static/derived CSS applied by the runtime on activate and cleared on deactivate. */
 	css?: (ctx: C & { value: unknown }) => string;
+	/** Also runs in Actual's mobile view. Off by default: most features anchor on desktop markup. */
+	mobile?: boolean;
 	/** Runs when the setting is activated; return a cleanup for teardown on deactivate. Omit if `css` alone covers the feature. */
 	init?: (ctx: C & { value: unknown }) => Cleanup | Promise<Cleanup>;
 }
@@ -48,6 +50,8 @@ export interface CustomSetting<C extends SettingContext> {
 	/** Optional subgroup label — settings sharing the same group render under one subheading within their section. */
 	group?: SettingGroup;
 	context: C;
+	/** Shown in Actual's mobile view; see BaseSetting.mobile. */
+	mobile?: boolean;
 	component?: Component<{ ctx: C }>;
 	init: (ctx: C) => Promise<void> | void;
 }

@@ -85,6 +85,7 @@ export const privacyStyle = defineSetting({
 	description: "How amounts look while privacy mode hides them.",
 	group: "General",
 	icon: "eyeOff",
+	mobile: true,
 	context: {
 		key: "privacy-style",
 		defaultValue: "script",

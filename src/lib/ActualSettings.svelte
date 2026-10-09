@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { scriptSections, scripts } from "../features";
 	import { pushStoredSettings } from "../features/settings-sync";
+	import { DESKTOP_QUERY } from "./utilities/pages";
 	import Icon from "./components/Icon.svelte";
 	import SettingRow from "./components/SettingRow.svelte";
 
@@ -42,17 +43,28 @@
 		closeBugReport();
 	}
 
-	const normalizedQuery = $derived(query.trim().toLowerCase());
-	const filteredSections = $derived.by(() => {
-		if (!normalizedQuery) return scriptSections;
+	// Actual's mobile view only lists the settings that run there.
+	const desktopQuery = matchMedia(DESKTOP_QUERY);
+	let isDesktop = $state(desktopQuery.matches);
+	$effect(() => {
+		const update = () => (isDesktop = desktopQuery.matches);
+		desktopQuery.addEventListener("change", update);
+		return () => desktopQuery.removeEventListener("change", update);
+	});
 
-		return scriptSections
+	const normalizedQuery = $derived(query.trim().toLowerCase());
+	const filteredSections = $derived.by(() =>
+		scriptSections
 			.map((section) => ({
 				...section,
-				items: section.items.filter((item) => item.label.toLowerCase().includes(normalizedQuery)),
+				items: section.items.filter(
+					(item) =>
+						(isDesktop || ("mobile" in item && item.mobile)) &&
+						item.label.toLowerCase().includes(normalizedQuery),
+				),
 			}))
-			.filter((section) => section.items.length > 0);
-	});
+			.filter((section) => section.items.length > 0),
+	);
 
 	const totalVisibleSettings = $derived(
 		filteredSections.reduce((count, section) => count + section.items.length, 0),

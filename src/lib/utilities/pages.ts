@@ -33,3 +33,15 @@ export function matchesPage(page: Page): boolean {
 	if (overlay?.el.isConnected && overlay.path === getCurrentPath()) return page === overlay.page;
 	return getCurrentPath().includes(page);
 }
+
+/** Actual renders its mobile app below its "small" breakpoint (512px), a separate component tree. */
+export const DESKTOP_QUERY = "(min-width: 512px)";
+
+/** Keeps CSS written against desktop markup out of the mobile view. */
+export function desktopOnly(css: string): string {
+	return `@media ${DESKTOP_QUERY} {\n${css}\n}`;
+}
+
+export function isMobileView(): boolean {
+	return !matchMedia(DESKTOP_QUERY).matches;
+}

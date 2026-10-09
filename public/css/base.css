@@ -7,187 +7,6 @@ body {
 	overscroll-behavior: none;
 }
 
-/* Page frame. The side panel marks Actual's content grid on every page (side-panel/index.ts);
-   its children are the header, toasts, the bank-sync banner, then the page. */
-[data-abt-content-grid] > div:nth-child(1) {
-	position: sticky;
-	height: 3.75rem;
-	flex-shrink: 0;
-	padding: 1.5rem 1rem;
-	background-color: var(--color-pageBackground);
-}
-
-[data-abt-content-grid] > div:nth-child(3) {
-	z-index: 1000 !important;
-}
-
-/* A variable so the month header can cancel it whenever it lands (budget-month-header). */
-[data-abt-content-grid] > div:nth-child(4) {
-	--abt-page-pad-top: 1.5rem;
-	padding-top: var(--abt-page-pad-top);
-}
-
-/* Space under list and settings page titles; the title has no hook, the page body after it does. */
-[data-abt-content-grid] > div:nth-child(4) > div + [role="main"] {
-	margin-top: 0.5rem;
-}
-
-/* Reports wraps the page container one level deeper. */
-[data-abt-content-grid] > div[data-testid="reports-page"] {
-	padding-top: 0;
-}
-
-[data-testid="reports-page"] > div:first-child {
-	padding-top: 1.5rem;
-}
-
-/* /budget -- budget cards */
-[data-testid="budget-summary"] {
-	box-shadow: none;
-	border-radius: var(--border-radius);
-}
-
-/* /budget -- table header */
-[data-testid="budget-totals"] {
-	border-radius: var(--border-radius) var(--border-radius) 0px 0px;
-	border-bottom-width: 0px;
-	box-shadow: none;
-	overflow: hidden;
-}
-
-/* /budget -- table body */
-[data-testid="budget-table-scroll-container"] > div > div {
-	box-shadow: none;
-	border-radius: 0 0 var(--border-radius) var(--border-radius);
-	margin-bottom: 1rem;
-}
-
-/* Actual already insets the cards and table 13px; match it above and between them. */
-[data-testid="budget-summary"] {
-	flex: 1 1 0%;
-	overflow: hidden;
-	margin: 13px 0;
-}
-
-/* reports borders */
-.react-grid-item {
-	border-radius: var(--border-radius);
-}
-
-/* The widget's card paints square corners; clip it inside the item's 1px border. */
-.react-grid-item > :first-child {
-	border-radius: max(0px, calc(var(--border-radius) - 1px));
-	overflow: hidden;
-}
-
-.recharts-surface {
-	border-bottom-left-radius: var(--border-radius);
-	border-bottom-right-radius: var(--border-radius);
-}
-
-/* /settings -- card gap */
-[data-testid="settings"] {
-	gap: 1.25rem;
-}
-
-/* /settings -- cards (the last child is the advanced-settings toggle) */
-[data-testid="settings"] > div:not(:last-child) {
-	border-radius: var(--border-radius);
-	border: var(--border);
-}
-
-/* List-page tables and search boxes, marked by core/native-hooks.ts */
-[data-abt-table] {
-	border-top-left-radius: var(--border-radius);
-	border-top-right-radius: var(--border-radius);
-}
-
-/* /bank-sync -- provider cards and the account table, which is bordered on all sides */
-[data-abt-content-grid] [data-testid^="bank-sync-provider-"],
-[data-abt-content-grid] [data-abt-card-table] {
-	border-radius: var(--border-radius);
-}
-
-/* Tables in modals (e.g. a schedule's matching transactions, found schedules) */
-[role="dialog"] [data-testid="table"],
-[role="dialog"] [data-abt-card-table] {
-	border-radius: calc(var(--border-radius) / 1.5);
-}
-
-[data-abt-search] {
-	color: var(--color-formInputText);
-	border-radius: calc(var(--border-radius) / 1.5);
-	border: var(--border);
-	padding: 0.25rem;
-	height: 2.35rem;
-}
-
-/* select checkbox padding */
-[data-testid="select"] {
-	padding-inline: 1rem;
-}
-
-/* textareas */
-textarea {
-	color: var(--color-formInputText);
-	border-radius: calc(var(--border-radius) / 1.5);
-	border: var(--border);
-	/* background-color: var(--ctp-mantle); */
-	padding: 0.25rem;
-	height: 2.35rem;
-}
-
-/* consistent popups/modals */
-[role="tooltip"],
-[role="dialog"],
-[data-placement]:not(:has([role="dialog"])) {
-	box-shadow: none;
-	border-radius: var(--border-radius);
-	border: var(--border) !important;
-	overflow: auto;
-}
-
-[data-placement]:has([role="dialog"]) {
-	border-radius: var(--border-radius);
-	border-width: 0px;
-}
-
-/* reports */
-[id="custom-report-content"] {
-	border-top-left-radius: var(--border-radius);
-	border-left: var(--border);
-	border-top: var(--border);
-}
-
-/* charts */
-.recharts-cartesian-axis-line,
-.recharts-cartesian-grid-vertical line,
-.recharts-cartesian-grid-horizontal line {
-	stroke: #a3aac5;
-}
-
-.recharts-tooltip-wrapper {
-	border-radius: var(--border-radius);
-	border: var(--border);
-	overflow: hidden;
-}
-
-/* green balance */
-[data-testid="balance"] {
-	color: var(--color-noticeTextLight);
-}
-
-/* red negative balance */
-[data-testid="balance"][data-cellname^="-"] {
-	color: var(--color-errorText);
-	font-weight: bold;
-}
-
-/* svg icon in button */
-[data-testid="category-month-spent"] * {
-	flex-shrink: 0;
-}
-
 /* ── Privacy mode font ─────────────────────────────────────────────── */
 .abt-privacy-enabled .abt-privacy-number {
 	font-family: "Redacted Script", cursive !important;
@@ -200,11 +19,196 @@ textarea {
 	filter: none;
 }
 
-.abt-side-drawer-sidebar {
-	border-top: var(--border);
-	border-top-left-radius: var(--border-radius);
-}
+/* Actual's mobile view (under 512px) is a different component tree these anchors don't describe;
+   keep in step with DESKTOP_QUERY in src/lib/utilities/pages.ts. */
+@media (min-width: 512px) {
+	/* Page frame. The side panel marks Actual's content grid on every page (side-panel/index.ts);
+	   its children are the header, toasts, the bank-sync banner, then the page. */
+	[data-abt-content-grid] > div:nth-child(1) {
+		position: sticky;
+		height: 3.75rem;
+		flex-shrink: 0;
+		padding: 1.5rem 1rem;
+		background-color: var(--color-pageBackground);
+	}
 
-[data-testid="spent"] svg {
-	color: var(--color-pageTextLight) !important;
+	[data-abt-content-grid] > div:nth-child(3) {
+		z-index: 1000 !important;
+	}
+
+	/* A variable so the month header can cancel it whenever it lands (budget-month-header). */
+	[data-abt-content-grid] > div:nth-child(4) {
+		--abt-page-pad-top: 1.5rem;
+		padding-top: var(--abt-page-pad-top);
+	}
+
+	/* Space under list and settings page titles; the title has no hook, the page body after it does. */
+	[data-abt-content-grid] > div:nth-child(4) > div + [role="main"] {
+		margin-top: 0.5rem;
+	}
+
+	/* Reports wraps the page container one level deeper. */
+	[data-abt-content-grid] > div[data-testid="reports-page"] {
+		padding-top: 0;
+	}
+
+	[data-testid="reports-page"] > div:first-child {
+		padding-top: 1.5rem;
+	}
+
+	/* /budget -- budget cards */
+	[data-testid="budget-summary"] {
+		box-shadow: none;
+		border-radius: var(--border-radius);
+	}
+
+	/* /budget -- table header */
+	[data-testid="budget-totals"] {
+		border-radius: var(--border-radius) var(--border-radius) 0px 0px;
+		border-bottom-width: 0px;
+		box-shadow: none;
+		overflow: hidden;
+	}
+
+	/* /budget -- table body */
+	[data-testid="budget-table-scroll-container"] > div > div {
+		box-shadow: none;
+		border-radius: 0 0 var(--border-radius) var(--border-radius);
+		margin-bottom: 1rem;
+	}
+
+	/* Actual already insets the cards and table 13px; match it above and between them. */
+	[data-testid="budget-summary"] {
+		flex: 1 1 0%;
+		overflow: hidden;
+		margin: 13px 0;
+	}
+
+	/* reports borders */
+	.react-grid-item {
+		border-radius: var(--border-radius);
+	}
+
+	/* The widget's card paints square corners; clip it inside the item's 1px border. */
+	.react-grid-item > :first-child {
+		border-radius: max(0px, calc(var(--border-radius) - 1px));
+		overflow: hidden;
+	}
+
+	.recharts-surface {
+		border-bottom-left-radius: var(--border-radius);
+		border-bottom-right-radius: var(--border-radius);
+	}
+
+	/* /settings -- card gap */
+	[data-testid="settings"] {
+		gap: 1.25rem;
+	}
+
+	/* /settings -- cards (the last child is the advanced-settings toggle) */
+	[data-testid="settings"] > div:not(:last-child) {
+		border-radius: var(--border-radius);
+		border: var(--border);
+	}
+
+	/* List-page tables and search boxes, marked by core/native-hooks.ts */
+	[data-abt-table] {
+		border-top-left-radius: var(--border-radius);
+		border-top-right-radius: var(--border-radius);
+	}
+
+	/* /bank-sync -- provider cards and the account table, which is bordered on all sides */
+	[data-abt-content-grid] [data-testid^="bank-sync-provider-"],
+	[data-abt-content-grid] [data-abt-card-table] {
+		border-radius: var(--border-radius);
+	}
+
+	/* Tables in modals (e.g. a schedule's matching transactions, found schedules) */
+	[role="dialog"] [data-testid="table"],
+	[role="dialog"] [data-abt-card-table] {
+		border-radius: calc(var(--border-radius) / 1.5);
+	}
+
+	[data-abt-search] {
+		color: var(--color-formInputText);
+		border-radius: calc(var(--border-radius) / 1.5);
+		border: var(--border);
+		padding: 0.25rem;
+		height: 2.35rem;
+	}
+
+	/* select checkbox padding */
+	[data-testid="select"] {
+		padding-inline: 1rem;
+	}
+
+	/* textareas */
+	textarea {
+		color: var(--color-formInputText);
+		border-radius: calc(var(--border-radius) / 1.5);
+		border: var(--border);
+		/* background-color: var(--ctp-mantle); */
+		padding: 0.25rem;
+		height: 2.35rem;
+	}
+
+	/* consistent popups/modals */
+	[role="tooltip"],
+	[role="dialog"],
+	[data-placement]:not(:has([role="dialog"])) {
+		box-shadow: none;
+		border-radius: var(--border-radius);
+		border: var(--border) !important;
+		overflow: auto;
+	}
+
+	[data-placement]:has([role="dialog"]) {
+		border-radius: var(--border-radius);
+		border-width: 0px;
+	}
+
+	/* reports */
+	[id="custom-report-content"] {
+		border-top-left-radius: var(--border-radius);
+		border-left: var(--border);
+		border-top: var(--border);
+	}
+
+	/* charts */
+	.recharts-cartesian-axis-line,
+	.recharts-cartesian-grid-vertical line,
+	.recharts-cartesian-grid-horizontal line {
+		stroke: #a3aac5;
+	}
+
+	.recharts-tooltip-wrapper {
+		border-radius: var(--border-radius);
+		border: var(--border);
+		overflow: hidden;
+	}
+
+	/* green balance */
+	[data-testid="balance"] {
+		color: var(--color-noticeTextLight);
+	}
+
+	/* red negative balance */
+	[data-testid="balance"][data-cellname^="-"] {
+		color: var(--color-errorText);
+		font-weight: bold;
+	}
+
+	/* svg icon in button */
+	[data-testid="category-month-spent"] * {
+		flex-shrink: 0;
+	}
+
+	.abt-side-drawer-sidebar {
+		border-top: var(--border);
+		border-top-left-radius: var(--border-radius);
+	}
+
+	[data-testid="spent"] svg {
+		color: var(--color-pageTextLight) !important;
+	}
 }

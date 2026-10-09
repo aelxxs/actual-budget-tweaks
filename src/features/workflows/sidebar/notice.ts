@@ -1,11 +1,14 @@
 import { applySettingChange } from "@features/runtime";
 import { notify } from "@lib/utilities/actual-api";
+import { isMobileView } from "@lib/utilities/pages";
 import { getValue, hasValue, setValue } from "@lib/utilities/store";
 import { experimentalSidebar } from "./index";
 
 const SEEN_KEY = "live-sidebar-notice-seen";
 
 async function maybeShow(): Promise<void> {
+	// Actual's mobile view has no sidebar; it waits for the next desktop visit.
+	if (isMobileView()) return;
 	const { key } = experimentalSidebar.context;
 	// Only people who turned it off; everyone else already has it by default.
 	if (!(await hasValue(key)) || (await getValue(key, true))) return;
