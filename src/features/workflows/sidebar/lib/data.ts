@@ -25,16 +25,16 @@ function toSyncStatus(syncStatus: string | null | undefined): SyncStatus {
 }
 
 // Mirrors the native sidebar's own `get-cell` lookup rather than summing
-// transactions ourselves.
-async function loadBalance(accountId: string): Promise<number> {
+// transactions ourselves. Null when the sheet isn't ready yet, as just after a load.
+async function loadBalance(accountId: string): Promise<number | null> {
 	try {
 		const cell = await send<{ value: number }>("get-cell", {
 			sheetName: "__global",
 			name: `balance-${accountId}`,
 		});
-		return typeof cell?.value === "number" ? cell.value : 0;
+		return typeof cell?.value === "number" ? cell.value : null;
 	} catch {
-		return 0;
+		return null;
 	}
 }
 
@@ -63,23 +63,29 @@ export async function loadSidebarAccounts(
 		type: a.type,
 		offbudget: a.offbudget,
 		closed: a.closed,
-		balance: balances[i],
+		balance: balances[i] ?? 0,
 		uncategorized: prevUncategorized.get(a.id) ?? 0,
 		status: toSyncStatus(a.sync_status ?? a.bank_sync_status),
 	}));
 }
 
-export async function refreshBalances(accounts: SidebarAccount[]): Promise<string[]> {
-	if (!accounts.length) return [];
-	const balances = await Promise.all(accounts.map((a) => loadBalance(a.id)));
+/** Returns the ids whose balance changed, and those that couldn't be read to retry later. */
+export async function refreshBalances(
+	accounts: SidebarAccount[],
+): Promise<{ changed: string[]; failed: string[] }> {
 	const changed: string[] = [];
+	const failed: string[] = [];
+	if (!accounts.length) return { changed, failed };
+	const balances = await Promise.all(accounts.map((a) => loadBalance(a.id)));
 	accounts.forEach((account, i) => {
-		if (balances[i] !== account.balance) {
-			account.balance = balances[i];
+		const balance = balances[i];
+		if (balance == null) failed.push(account.id);
+		else if (balance !== account.balance) {
+			account.balance = balance;
 			changed.push(account.id);
 		}
 	});
-	return changed;
+	return { changed, failed };
 }
 
 // Re-polls just sync_status for these accounts (no push event exists for

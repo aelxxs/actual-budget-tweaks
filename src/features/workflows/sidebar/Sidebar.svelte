@@ -25,7 +25,7 @@
 	import Rail from "./components/Rail.svelte";
 	import { invalidateAccountDetail } from "./lib/account-detail";
 	import { loadCurrentBudgetId, loadCurrentBudgetName } from "./lib/budgets";
-	import { SIDEBAR_COLLAPSED_KEY } from "./lib/collapse";
+	import { clearAutoCollapse, SIDEBAR_COLLAPSED_KEY, undoAutoCollapse } from "./lib/collapse";
 	import { LAYOUT_KEY, toLayout, type SidebarLayout } from "./lib/layout";
 	import type { SidebarAccount } from "./lib/data";
 	import {
@@ -104,6 +104,7 @@
 		}
 		collapsed = false;
 		setValue(COLLAPSED_KEY, false);
+		clearAutoCollapse();
 	}
 	function collapseSidebar() {
 		if (narrow) {
@@ -112,6 +113,7 @@
 		}
 		collapsed = true;
 		setValue(COLLAPSED_KEY, true);
+		clearAutoCollapse();
 	}
 
 	// ---- layout: "standard" (text nav + accounts, the original design) vs
@@ -264,26 +266,23 @@
 		});
 	});
 
-	// null until the first run, which just seeds the baseline.
-	let lastBalanceTexts: Map<string, string> | null = null;
+	// Each account's native balance text when we last read its balance. An account counts as
+	// changed the first time it's seen too, since the first load can run before the sheet is ready.
+	const lastBalanceTexts = new Map<string, string>();
 
 	$effect(() => {
 		return watchDom(() => {
 			const nowTexts = readNativeAccountBalanceTexts();
-			if (!lastBalanceTexts) {
-				lastBalanceTexts = nowTexts;
-				return;
-			}
-			const prevTexts = lastBalanceTexts;
-			lastBalanceTexts = nowTexts;
-
 			const changedAccounts = accounts.filter((a) => {
 				const text = nowTexts.get(a.id);
-				return text !== undefined && prevTexts.get(a.id) !== text;
+				return text !== undefined && lastBalanceTexts.get(a.id) !== text;
 			});
 			if (!changedAccounts.length) return;
-			refreshBalances(changedAccounts).then((changed) => {
+			for (const a of changedAccounts) lastBalanceTexts.set(a.id, nowTexts.get(a.id)!);
+			refreshBalances(changedAccounts).then(({ changed, failed }) => {
 				for (const id of changed) invalidateAccountDetail(id);
+				// Forgotten, so the next DOM change tries again.
+				for (const id of failed) lastBalanceTexts.delete(id);
 			});
 		});
 	});
@@ -341,6 +340,8 @@
 	}
 
 	onMount(async () => {
+		// Panels don't survive a reload, so a fold one made is undone here.
+		await undoAutoCollapse();
 		const [storedCollapsed, storedWidth, storedGroupMode, storedLayoutMode, loadedIcons] =
 			await Promise.all([
 				getValue<boolean>(COLLAPSED_KEY, false),
