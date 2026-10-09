@@ -33,6 +33,7 @@
 	const {
 		accounts,
 		icons,
+		iconPicker = true,
 		groupAccounts,
 		budgetId,
 		split = false,
@@ -42,6 +43,7 @@
 	}: {
 		accounts: SidebarAccount[];
 		icons: Record<string, AccountIconData>;
+		iconPicker?: boolean;
 		groupAccounts: boolean;
 		budgetId: string | undefined;
 		split?: boolean;
@@ -451,6 +453,7 @@
 								<AccountRow
 									{account}
 									icon={icons[account.id]}
+									{iconPicker}
 									dragging={dragSrcId === account.id}
 									dropPos={overId === account.id ? overPos : null}
 									editing={editingAccountId === account.id}
@@ -475,6 +478,7 @@
 									<AccountRow
 										{account}
 										icon={icons[account.id]}
+										{iconPicker}
 										dragging={dragSrcId === account.id}
 										dropPos={overId === account.id ? overPos : null}
 										editing={editingAccountId === account.id}
@@ -519,6 +523,7 @@
 											<AccountRow
 												{account}
 												icon={icons[account.id]}
+												{iconPicker}
 												dragging={dragSrcId === account.id}
 												dropPos={overId === account.id ? overPos : null}
 												editing={editingAccountId === account.id}

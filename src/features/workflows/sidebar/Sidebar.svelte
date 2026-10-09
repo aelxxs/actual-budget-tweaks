@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
-	import { loadIconCache } from "@features/appearance/account-icon-picker";
+	import { accountIconPicker, loadIconCache } from "@features/appearance/account-icon-picker";
 	import { sidebarSearch } from "@features/appearance/sidebar-search";
 	import { sidebarShortcuts } from "@features/appearance/sidebar-shortcuts";
 	import {
@@ -177,13 +177,17 @@
 	// The features' own keys and defaults, so a changed default reaches the Live sidebar too.
 	const { key: SEARCH_KEY, defaultValue: SEARCH_DEFAULT } = sidebarSearch.context;
 	const { key: SHORTCUTS_KEY, defaultValue: SHORTCUTS_DEFAULT } = sidebarShortcuts.context;
+	const { key: ICONS_KEY, defaultValue: ICONS_DEFAULT } = accountIconPicker.context;
 
 	let shortcutsFeatureEnabled = $state(SHORTCUTS_DEFAULT);
 	let searchEnabled = $state(SEARCH_DEFAULT);
+	let iconsEnabled = $state(ICONS_DEFAULT);
+	const shownIcons = $derived(iconsEnabled ? icons : {});
 
 	$effect(() => {
 		getValue<boolean>(SHORTCUTS_KEY, SHORTCUTS_DEFAULT).then((v) => (shortcutsFeatureEnabled = v));
 		getValue<boolean>(SEARCH_KEY, SEARCH_DEFAULT).then((v) => (searchEnabled = v));
+		getValue<boolean>(ICONS_KEY, ICONS_DEFAULT).then((v) => (iconsEnabled = v));
 
 		const onStorageChange = (changes: Record<string, { newValue?: unknown }>, areaName: string) => {
 			if (areaName !== "local") return;
@@ -193,6 +197,8 @@
 				);
 			if (`local:${SEARCH_KEY}` in changes)
 				searchEnabled = Boolean(changes[`local:${SEARCH_KEY}`].newValue ?? SEARCH_DEFAULT);
+			if (`local:${ICONS_KEY}` in changes)
+				iconsEnabled = Boolean(changes[`local:${ICONS_KEY}`].newValue ?? ICONS_DEFAULT);
 			if (`local:${LAYOUT_KEY}` in changes) {
 				layoutMode = toLayout(changes[`local:${LAYOUT_KEY}`].newValue);
 				if (!widthStored) sidebarWidth = defaultWidth(layoutMode);
@@ -408,7 +414,7 @@
 				{budgetName}
 				{budgetId}
 				{accounts}
-				{icons}
+				icons={shownIcons}
 				onExpand={expandSidebar}
 				onSearch={openPalette}
 				split
@@ -448,7 +454,8 @@
 				{:else}
 					<AccountList
 						{accounts}
-						{icons}
+						icons={shownIcons}
+						iconPicker={iconsEnabled}
 						{groupAccounts}
 						{budgetId}
 						split
@@ -465,7 +472,7 @@
 			{budgetName}
 			{budgetId}
 			{accounts}
-			{icons}
+			icons={shownIcons}
 			onExpand={expandSidebar}
 			onSearch={openPalette}
 		/>
@@ -493,7 +500,8 @@
 			{:else}
 				<AccountList
 					{accounts}
-					{icons}
+					icons={shownIcons}
+					iconPicker={iconsEnabled}
 					{groupAccounts}
 					{budgetId}
 					onToggleGroupMode={toggleGroupMode}
@@ -522,7 +530,7 @@
 		</div>
 	{/if}
 
-	<CommandPalette bind:this={paletteRef} {accounts} {icons} />
+	<CommandPalette bind:this={paletteRef} {accounts} icons={shownIcons} />
 
 	{#if tipState.value}
 		<div

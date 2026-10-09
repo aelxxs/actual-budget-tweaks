@@ -28,6 +28,7 @@
 	const {
 		account,
 		icon,
+		iconPicker = true,
 		dragging = false,
 		dropPos = null,
 		editing = false,
@@ -44,6 +45,7 @@
 	}: {
 		account: SidebarAccount;
 		icon: AccountIconData | undefined;
+		iconPicker?: boolean;
 		dragging?: boolean;
 		dropPos?: "before" | "after" | null;
 		editing?: boolean;
@@ -78,7 +80,9 @@
 	// reflects the change immediately without waiting for a full reload of
 	// the icon cache from the parent.
 	let iconOverride = $state<AccountIconData | null | undefined>(undefined);
-	const effectiveIcon = $derived(iconOverride !== undefined ? iconOverride : icon);
+	const effectiveIcon = $derived(
+		!iconPicker ? undefined : iconOverride !== undefined ? iconOverride : icon,
+	);
 
 	// Reads `tick` so this recomputes on route change (see the watchDom effect
 	// above) without needing a `{#key}` block, which would tear down and
@@ -179,41 +183,45 @@
 		onmouseenter={onRowMouseEnter}
 		onmouseleave={onRowMouseLeave}
 	>
-		<span
-			class="acct-glyph"
-			class:has-icon={!!effectiveIcon}
-			role="button"
-			tabindex="-1"
-			aria-label="Change icon"
-			use:tooltip={{ text: "Change icon", placement: "right" }}
-			onclick={(e) => {
-				e.stopPropagation();
-				openIconPicker((e.currentTarget as HTMLElement).getBoundingClientRect());
-			}}
-			onkeydown={(e) => {
-				if (e.key === "Enter" || e.key === " ") {
-					e.preventDefault();
+		{#if !iconPicker}
+			<StatusIcon status={account.status} />
+		{:else}
+			<span
+				class="acct-glyph"
+				class:has-icon={!!effectiveIcon}
+				role="button"
+				tabindex="-1"
+				aria-label="Change icon"
+				use:tooltip={{ text: "Change icon", placement: "right" }}
+				onclick={(e) => {
 					e.stopPropagation();
 					openIconPicker((e.currentTarget as HTMLElement).getBoundingClientRect());
-				}
-			}}
-		>
-			<StatusIcon status={account.status} />
-			{#if effectiveIcon}
-				<span class="acct-icon">
-					{#if effectiveIcon.type === "emoji"}
-						<img
-							class="acct-icon-img"
-							src={getEmojiAssetUrl(effectiveIcon.value)}
-							alt={effectiveIcon.value}
-						/>
-					{:else}
-						<img class="acct-icon-img" src={effectiveIcon.value} alt="" />
-					{/if}
-				</span>
-			{/if}
-			<span class="acct-glyph-edit" aria-hidden="true"><Smile strokeWidth={1.5} /></span>
-		</span>
+				}}
+				onkeydown={(e) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						e.stopPropagation();
+						openIconPicker((e.currentTarget as HTMLElement).getBoundingClientRect());
+					}
+				}}
+			>
+				<StatusIcon status={account.status} />
+				{#if effectiveIcon}
+					<span class="acct-icon">
+						{#if effectiveIcon.type === "emoji"}
+							<img
+								class="acct-icon-img"
+								src={getEmojiAssetUrl(effectiveIcon.value)}
+								alt={effectiveIcon.value}
+							/>
+						{:else}
+							<img class="acct-icon-img" src={effectiveIcon.value} alt="" />
+						{/if}
+					</span>
+				{/if}
+				<span class="acct-glyph-edit" aria-hidden="true"><Smile strokeWidth={1.5} /></span>
+			</span>
+		{/if}
 		<span class="account-name">{account.name}</span>
 		{#if account.uncategorized > 0}
 			<span class="account-uncat">{account.uncategorized}</span>
