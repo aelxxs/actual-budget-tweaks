@@ -33,10 +33,6 @@ const CSS = `
 		opacity: 1;
 		background: color-mix(in srgb, currentColor 12%, transparent);
 	}
-	/* The month header carries the settings button when it's on. */
-	body:has([data-abt-native-month-header]) .${GROUP_CLASS} > .${GROUP_CLASS}__settings {
-		display: none;
-	}
 `;
 
 const insightsSetting: CheckboxSetting<any> = categoryTemplateInsights;
@@ -66,7 +62,6 @@ function injectControl(): void {
 
 	const settings = document.createElement("button");
 	settings.type = "button";
-	settings.className = `${GROUP_CLASS}__settings`;
 	settings.title = "Budget settings";
 	settings.setAttribute("aria-label", "Budget settings");
 	settings.innerHTML = icon("sliders", { size: 15 });
