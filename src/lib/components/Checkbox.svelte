@@ -4,6 +4,7 @@
 	import { applySettingChange } from "../../features/runtime";
 	import { getValue, watchValue } from "../utilities/store";
 	import Icon from "./Icon.svelte";
+	import PreviewToggle from "./PreviewToggle.svelte";
 	import Switch from "./Switch.svelte";
 	import type { IconName } from "../icons";
 
@@ -14,6 +15,8 @@
 	}: { labelText: string; setting: CheckboxSetting<any>; icon?: IconName } = $props();
 	const ctx = setting.context;
 	let value = $state(false);
+	// The row's label points at the switch, not the first control inside it (the preview button).
+	const switchId = $props.id();
 
 	onMount(async () => {
 		const saved = await getValue(ctx.key, ctx.defaultValue);
@@ -29,7 +32,7 @@
 	}
 </script>
 
-<label class="abt-setting switch-row" data-testid={ctx.key}>
+<label class="abt-setting switch-row" for={switchId} data-testid={ctx.key}>
 	{#if icon}
 		<span class="abt-setting__icon"><Icon name={icon} size={15} /></span>
 	{/if}
@@ -39,7 +42,10 @@
 			<span class="abt-setting__desc">{setting.description}</span>
 		{/if}
 	</span>
-	<Switch checked={value} onCheckedChange={handleChange} />
+	{#if setting.preview}
+		<PreviewToggle settingKey={ctx.key} />
+	{/if}
+	<Switch id={switchId} checked={value} onCheckedChange={handleChange} />
 </label>
 
 <style>

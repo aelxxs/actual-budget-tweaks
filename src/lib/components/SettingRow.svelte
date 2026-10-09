@@ -1,10 +1,15 @@
 <script lang="ts">
 	import type { Setting } from "../../features/types";
 	import CheckboxOption from "./Checkbox.svelte";
+	import { previewState } from "./preview.svelte";
 	import SelectOption from "./Select.svelte";
 
 	/** One ABT setting, rendered the same wherever it's shown: settings page or dialogs. */
 	const { setting, label }: { setting: Setting; label?: string } = $props();
+
+	const Preview = $derived(
+		setting.type === "checkbox" || setting.type === "select" ? setting.preview : undefined,
+	);
 </script>
 
 {#if setting.type === "select"}
@@ -31,4 +36,10 @@
 	{/if}
 {:else if setting.type === "checkbox"}
 	<CheckboxOption labelText={label ?? setting.label} {setting} icon={setting.icon} />
+{/if}
+
+{#if Preview && setting.type !== "core" && previewState.open === setting.context.key}
+	<div class="abt-setting-preview">
+		<Preview />
+	</div>
 {/if}

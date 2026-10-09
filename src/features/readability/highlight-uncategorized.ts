@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import HighlightUncategorizedPreview from "./previews/HighlightUncategorized.svelte";
 import { watchDom } from "@lib/utilities/dom-watcher";
 
 const CSS = `
@@ -32,6 +33,7 @@ export const highlightUncategorized = defineSetting({
 	description: "Flag transactions that are missing a category.",
 	group: "Transactions",
 	icon: "star",
+	preview: HighlightUncategorizedPreview,
 	context: {
 		key: "highlight-uncategorized",
 		defaultValue: true,

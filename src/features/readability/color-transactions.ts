@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import ColorTransactionsPreview from "./previews/ColorTransactions.svelte";
 import { watchDom } from "@lib/utilities/dom-watcher";
 
 function colorUpcomingRows() {
@@ -39,6 +40,7 @@ export const colorTransactions = defineSetting({
 	description: "Color negative and positive transactions.",
 	group: "Transactions",
 	icon: "palette",
+	preview: ColorTransactionsPreview,
 	context: {
 		key: "actual-amountcolors",
 		defaultValue: true,

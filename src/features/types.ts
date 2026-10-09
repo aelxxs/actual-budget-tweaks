@@ -27,6 +27,8 @@ export interface BaseSetting<C extends SettingContext> {
 	context: C;
 	/** Static/derived CSS applied by the runtime on activate and cleared on deactivate. */
 	css?: (ctx: C & { value: unknown }) => string;
+	/** Optional mock of the tweak, opened from an eye button on the setting's row. */
+	preview?: Component;
 	/** Also runs in Actual's mobile view. Off by default: most features anchor on desktop markup. */
 	mobile?: boolean;
 	/** Runs when the setting is activated; return a cleanup for teardown on deactivate. Omit if `css` alone covers the feature. */

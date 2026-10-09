@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import CategoryProgressPreview from "../previews/CategoryProgress.svelte";
 import { goalFunding } from "@features/workflows/goal-funding";
 import { icon } from "@lib/icons";
 import { loadCurrency } from "@lib/utilities/currency";
@@ -83,6 +84,7 @@ export const categoryProgress = defineSetting({
 	description: "A progress ring next to each budget balance — hover for spending details.",
 	group: "Budget",
 	icon: "gauge",
+	preview: CategoryProgressPreview,
 	context: {
 		key: "category-progress-indicators",
 		defaultValue: false,

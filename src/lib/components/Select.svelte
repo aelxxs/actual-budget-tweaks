@@ -4,6 +4,7 @@
 	import { applySettingChange } from "../../features/runtime";
 	import { getValue, watchValue } from "../utilities/store";
 	import Icon from "./Icon.svelte";
+	import PreviewToggle from "./PreviewToggle.svelte";
 	import type { IconName } from "../icons";
 
 	const { labelText, options, setting, icon } = $props<{
@@ -50,6 +51,9 @@
 			{/if}
 		</span>
 	</span>
+	{#if setting.preview}
+		<PreviewToggle settingKey={ctx.key} />
+	{/if}
 	{#if Picker}
 		<Picker {options} selected={value} onPick={pick} />
 	{:else}

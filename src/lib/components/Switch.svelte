@@ -3,10 +3,12 @@
 		checked,
 		onCheckedChange,
 		disabled = false,
+		id,
 	}: {
 		checked: boolean;
 		onCheckedChange: (checked: boolean) => void;
 		disabled?: boolean;
+		id?: string;
 	} = $props();
 </script>
 
@@ -14,6 +16,7 @@
 	<input
 		type="checkbox"
 		class="switch__input"
+		{id}
 		{checked}
 		{disabled}
 		onchange={(e) => onCheckedChange(e.currentTarget.checked)}

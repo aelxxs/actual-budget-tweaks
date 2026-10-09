@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import DimReconciledPreview from "./previews/DimReconciled.svelte";
 
 const RECONCILED_ROW = '[data-testid="row"]:has([data-testid="cleared"] svg[viewBox="0 0 20 20"])';
 const DIMMED_CELLS = [
@@ -24,6 +25,7 @@ export const dimReconciled = defineSetting({
 	description: "Fade reconciled rows in the transaction table.",
 	group: "Transactions",
 	icon: "eyeOff",
+	preview: DimReconciledPreview,
 	context: {
 		key: "dim-reconciled",
 		defaultValue: true,

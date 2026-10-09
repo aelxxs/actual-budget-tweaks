@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import AlternatingRowsPreview from "./previews/AlternatingRows.svelte";
 
 // Actual (v26.6+) paints odd rows with this token and layers selection/hover on top.
 // Doubled :root outranks the theme stylesheet's own :root default.
@@ -18,6 +19,7 @@ export const alternatingTransactionRows = defineSetting({
 	description: "Zebra-stripe the transaction table for easier scanning.",
 	group: "Transactions",
 	icon: "rows",
+	preview: AlternatingRowsPreview,
 	context: {
 		key: "alternating-transaction-rows",
 		defaultValue: false,

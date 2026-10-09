@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import BalancePillsPreview from "../previews/BalancePills.svelte";
 import {
 	BALANCE_CELL_RE,
 	BALANCE_WATCH_OPTIONS,
@@ -109,6 +110,7 @@ export const balancePills = defineSetting({
 	description: "Show goal balances as funded, underfunded or overspent pills.",
 	group: "Budget",
 	icon: "gauge",
+	preview: BalancePillsPreview,
 	context: {
 		key: "balance-status-pills",
 		defaultValue: false,

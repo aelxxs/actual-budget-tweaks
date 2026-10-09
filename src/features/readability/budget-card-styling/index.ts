@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import BudgetCardStylingPreview from "../previews/BudgetCardStyling.svelte";
 import { send } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
@@ -142,6 +143,7 @@ export const budgetCardStyling = defineSetting({
 	description: "Add a spending flow bar to the current month's budget card.",
 	group: "Budget",
 	icon: "networth",
+	preview: BudgetCardStylingPreview,
 	context: {
 		key: "budget-card-styling",
 		defaultValue: true,

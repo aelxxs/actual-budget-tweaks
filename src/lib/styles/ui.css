@@ -610,3 +610,12 @@ select.abt-input {
 	font-size: var(--abt-text-sm);
 	color: var(--color-pageTextSubdued);
 }
+
+/* A setting's mock, opened under its row from the eye button. */
+.abt-setting-preview {
+	margin-bottom: var(--abt-space-3);
+	padding: var(--abt-space-4);
+	border-radius: var(--abt-radius);
+	background: var(--color-tableBackground);
+	border: 1px solid var(--abt-line);
+}

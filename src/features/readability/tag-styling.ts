@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import TagStylingPreview from "./previews/TagStyling.svelte";
 import { watchDom } from "@lib/utilities/dom-watcher";
 
 const STORAGE_KEY = "tag-styling";
@@ -145,6 +146,7 @@ export const tagStyling = defineSetting({
 	description: "Color #tags in notes and transaction fields.",
 	group: "Transactions",
 	icon: "palette",
+	preview: TagStylingPreview,
 	context: {
 		key: STORAGE_KEY,
 		defaultValue: true,
