@@ -150,6 +150,17 @@ export const scriptSections: SettingsSection[] = [
 	},
 ];
 
+// Settings that only do something while another (a checkbox) is on; the page dims them otherwise.
+export const settingRequires = new Map<PageSetting, PageSetting>([
+	[experimentalSidebarLayout, experimentalSidebar],
+	[sidebarDensity, experimentalSidebar],
+	[sidebarSearch, experimentalSidebar],
+	[sidebarShortcuts, experimentalSidebar],
+	[sidebarGroupTotals, experimentalSidebar],
+	[accountIconPicker, experimentalSidebar],
+	[nextMonthCoverageMethod, templatePlan],
+]);
+
 export function sectionItems(section: SettingsSection): PageSetting[] {
 	return section.groups.flatMap((group) => group.items);
 }

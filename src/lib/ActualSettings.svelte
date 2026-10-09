@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { ExternalLink, X } from "lucide-svelte";
 	import { tick } from "svelte";
-	import { scriptSections, scripts, sectionItems, type PageSetting } from "../features";
+	import {
+		scriptSections,
+		scripts,
+		sectionItems,
+		settingRequires,
+		type PageSetting,
+	} from "../features";
 	import { pushStoredSettings } from "../features/settings-sync";
 	import Icon from "./components/Icon.svelte";
 	import SettingRow from "./components/SettingRow.svelte";
@@ -77,6 +83,13 @@
 		const key = `local:${item.context.key}`;
 		if (stored[key] === undefined) return false;
 		return JSON.stringify(stored[key]) !== JSON.stringify(item.context.defaultValue);
+	}
+
+	function isUnmet(item: PageSetting): PageSetting | undefined {
+		const parent = settingRequires.get(item);
+		if (!parent) return undefined;
+		const value = stored[`local:${parent.context.key}`] ?? parent.context.defaultValue;
+		return value === false ? parent : undefined;
 	}
 
 	const normalizedQuery = $derived(query.trim().toLowerCase());
@@ -456,7 +469,15 @@
 								{/if}
 								<div>
 									{#each group.items as item (item.context.key)}
-										<SettingRow setting={item} />
+										{@const unmet = isUnmet(item)}
+										{#if unmet}
+											<div class="setting-unmet">
+												<div inert><SettingRow setting={item} /></div>
+												<p class="setting-unmet__note">Turn on {unmet.label} to use this.</p>
+											</div>
+										{:else}
+											<SettingRow setting={item} />
+										{/if}
 									{/each}
 								</div>
 							</div>
@@ -796,6 +817,16 @@
 
 	.settings-subgroup h4 {
 		margin: 0;
+	}
+
+	.setting-unmet > div {
+		opacity: 0.45;
+	}
+
+	.setting-unmet__note {
+		margin: calc(-1 * var(--abt-space-2)) 0 var(--abt-space-2);
+		font-size: var(--abt-text-xs);
+		color: var(--color-pageTextSubdued);
 	}
 
 	.empty {
