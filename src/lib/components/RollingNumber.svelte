@@ -79,7 +79,9 @@
 
 <style>
 	.rn {
-		--rn-h: 1lh;
+		/* Whole pixels: a fractional line height snaps each digit's offset differently, so the
+		   digits (and privacy dots) sit at uneven heights. */
+		--rn-h: round(1lh, 1px);
 		display: inline-flex;
 		position: relative;
 		font-variant-numeric: tabular-nums;
