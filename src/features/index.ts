@@ -52,6 +52,7 @@ import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/side
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { syncRecap } from "./workflows/sync-recap";
+import { transactionInspector } from "./workflows/transaction-inspector";
 import { templatePlan } from "./workflows/template-plan";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 
@@ -139,7 +140,10 @@ export const scriptSections: SettingsSection[] = [
 					resizableTransactionColumns,
 				],
 			},
-			{ label: "Accounts", items: [modernAccountToolbar, modernReconcile, syncRecap] },
+			{
+				label: "Accounts",
+				items: [modernAccountToolbar, modernReconcile, syncRecap, transactionInspector],
+			},
 		],
 	},
 	{
