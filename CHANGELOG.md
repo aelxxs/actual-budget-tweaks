@@ -1,6 +1,53 @@
 # Changelog
 
 
+## v0.1.86
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.85...v0.1.86)
+
+### 🚀 Enhancements
+
+- Thin scrollbars tinted to match the theme ([23250cd](https://github.com/aelxxs/actual-budget-tweaks/commit/23250cd))
+- Keep desktop-only features and styles out of Actual's mobile view ([201b838](https://github.com/aelxxs/actual-budget-tweaks/commit/201b838))
+- Optional totals on the live sidebar's account groups ([608fc68](https://github.com/aelxxs/actual-budget-tweaks/commit/608fc68))
+- Group Payees, Tags, Rules and Bank Sync under Settings, ready for Actual's new settings pages ([c354ee2](https://github.com/aelxxs/actual-budget-tweaks/commit/c354ee2))
+- Open sidebar settings from the budget menu, right-click or command palette instead of the footer ([34592ff](https://github.com/aelxxs/actual-budget-tweaks/commit/34592ff))
+- Settings page grouped by where tweaks show up, with section jump, Changed filter and reset ([250fb8a](https://github.com/aelxxs/actual-budget-tweaks/commit/250fb8a))
+- Clearer light and dark theme slots when matching the system, and a real preview for Actual's own theme ([3f4ed37](https://github.com/aelxxs/actual-budget-tweaks/commit/3f4ed37))
+- Pick a privacy style by preview, with a same-length option for scribbles and dots ([8d2cb85](https://github.com/aelxxs/actual-budget-tweaks/commit/8d2cb85))
+- Dim settings that need Live sidebar or Budget Insights while those are off ([7bc2c71](https://github.com/aelxxs/actual-budget-tweaks/commit/7bc2c71))
+- Preview what a tweak does from its settings row, for nine readability tweaks ([00fb35d](https://github.com/aelxxs/actual-budget-tweaks/commit/00fb35d))
+- Measure template bars against Actual's monthly target, read live, with a redesigned popover and Hide Funded Bars ([3628646](https://github.com/aelxxs/actual-budget-tweaks/commit/3628646))
+
+### 🩹 Fixes
+
+- Readable icon picker when opened from the sidebar in light themes ([179b4e1](https://github.com/aelxxs/actual-budget-tweaks/commit/179b4e1))
+- Bring back Sidebar Density for the live sidebar ([615e474](https://github.com/aelxxs/actual-budget-tweaks/commit/615e474))
+- Hide account icons in the live sidebar when Account Icon Picker is off ([52d15f6](https://github.com/aelxxs/actual-budget-tweaks/commit/52d15f6))
+- Keep rolling number digits level by snapping their rows to whole pixels ([f8f6309](https://github.com/aelxxs/actual-budget-tweaks/commit/f8f6309))
+- Keep text fields full width under fixed-length privacy styles ([1043c29](https://github.com/aelxxs/actual-budget-tweaks/commit/1043c29))
+
+### 💅 Refactors
+
+- Keep the Budget settings button in the category column header only ([c9aed42](https://github.com/aelxxs/actual-budget-tweaks/commit/c9aed42))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.85 ([4fa2c85](https://github.com/aelxxs/actual-budget-tweaks/commit/4fa2c85))
+
+### 🎨 Styles
+
+- Align live sidebar rows under their headers, rounder corners, no active pill ([6d169a9](https://github.com/aelxxs/actual-budget-tweaks/commit/6d169a9))
+- Fit the server status chip's hover to its label, keeping its reserved width on the wrapper ([471e99d](https://github.com/aelxxs/actual-budget-tweaks/commit/471e99d))
+- Keep the empty category drop hint off the panel edge in split mode ([5d09294](https://github.com/aelxxs/actual-budget-tweaks/commit/5d09294))
+- Give every search bar the account toolbar's search look ([22d1ade](https://github.com/aelxxs/actual-budget-tweaks/commit/22d1ade))
+- Centre nested account dots between the sub-category caret and label, and lift carets to the caps ([ff14f09](https://github.com/aelxxs/actual-budget-tweaks/commit/ff14f09))
+- Make the settings sub-links a step smaller than the top-level links ([99f5166](https://github.com/aelxxs/actual-budget-tweaks/commit/99f5166))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.85
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.84...v0.1.85)
