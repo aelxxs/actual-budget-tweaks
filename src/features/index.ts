@@ -46,6 +46,7 @@ import { budgetMonthHeader } from "./workflows/budget-month-header";
 import { budgetSummaryRow } from "./workflows/budget-summary-row";
 import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
+import { hideFundedTemplateBars } from "./workflows/category-template-insights/hide-funded";
 import { goalFunding } from "./workflows/goal-funding";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
@@ -113,7 +114,13 @@ export const scriptSections: SettingsSection[] = [
 			{ label: "Categories", items: [categoryColorDots, categoryEmojiPicker] },
 			{
 				label: "Tools",
-				items: [templatePlan, nextMonthCoverageMethod, categoryTemplateInsights, goalFunding],
+				items: [
+					templatePlan,
+					nextMonthCoverageMethod,
+					categoryTemplateInsights,
+					hideFundedTemplateBars,
+					goalFunding,
+				],
 			},
 		],
 	},
@@ -159,6 +166,7 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[sidebarGroupTotals, experimentalSidebar],
 	[accountIconPicker, experimentalSidebar],
 	[nextMonthCoverageMethod, templatePlan],
+	[hideFundedTemplateBars, categoryTemplateInsights],
 ]);
 
 export function sectionItems(section: SettingsSection): PageSetting[] {

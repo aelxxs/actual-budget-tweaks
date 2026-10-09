@@ -15,14 +15,9 @@ export function getCategoryName(id: string): string | null {
 	return categoryNameById.get(id) ?? null;
 }
 
-export function invalidateCache() {
-	goalCache.clear();
-}
-
 export function resetData() {
 	insights = null;
 	loading = null;
-	goalCache.clear();
 }
 
 /**
@@ -169,53 +164,44 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 	return loading;
 }
 
-export function scheduleTotalCents(entry: CategoryInsight): number {
-	let total = 0;
-	for (const { schedule } of entry.linkedSchedules) {
-		const amt = parseScheduleAmount(schedule);
-		if (amt != null) total += Math.abs(amt);
-	}
-	return total;
-}
-
-const goalCache = new Map<string, number | null>();
-
-function getCurrentSheetName(): string | null {
+export function getCurrentSheetName(): string | null {
 	const el = document.querySelector('[data-testid^="budget2"][data-testid*="!sum-amount-"]');
 	if (!el) return null;
 	const m = (el.getAttribute("data-testid") || "").match(/^(budget\d{6})!/);
 	return m ? m[1] : null;
 }
 
-async function fetchGoalCents(catId: string): Promise<number | null> {
-	if (goalCache.has(catId)) return goalCache.get(catId)!;
-	const sheet = getCurrentSheetName();
-	if (!sheet) return null;
+async function fetchCell(sheet: string, name: string): Promise<number | null> {
 	try {
-		const res = await send<{ value?: number }>("get-cell", {
-			sheetName: sheet,
-			name: "goal-" + catId,
-		});
-		const value = res && typeof res.value === "number" ? res.value : null;
-		goalCache.set(catId, value);
-		return value;
+		const res = await send<{ value?: unknown }>("get-cell", { sheetName: sheet, name });
+		return typeof res?.value === "number" ? res.value : null;
 	} catch {
 		return null;
 	}
 }
 
-async function fetchLeftoverCents(catId: string): Promise<number | null> {
-	const sheet = getCurrentSheetName();
-	if (!sheet) return null;
-	try {
-		const res = await send<{ value?: number }>("get-cell", {
-			sheetName: sheet,
-			name: "leftover-" + catId,
-		});
-		return res && typeof res.value === "number" ? res.value : null;
-	} catch {
-		return null;
-	}
+/**
+ * Actual's own target for one month: `goal` is what the templates ask for, `long-goal` marks a
+ * #goal, which is met by the balance rather than by the month's budget.
+ */
+export interface MonthValues {
+	sheet: string;
+	cells: Map<string, { goal: number | null; isLongGoal: boolean; balance: number | null }>;
+}
+
+export async function loadMonthValues(sheet: string, ids: Iterable<string>): Promise<MonthValues> {
+	const cells: MonthValues["cells"] = new Map();
+	await Promise.all(
+		[...ids].map(async (id) => {
+			const [goal, longGoal, balance] = await Promise.all([
+				fetchCell(sheet, `goal-${id}`),
+				fetchCell(sheet, `long-goal-${id}`),
+				fetchCell(sheet, `leftover-${id}`),
+			]);
+			cells.set(id, { goal, isLongGoal: longGoal === 1, balance });
+		}),
+	);
+	return { sheet, cells };
 }
 
 function getBudgetedCents(row: HTMLElement): number | null {
@@ -229,68 +215,32 @@ function getBudgetedCents(row: HTMLElement): number | null {
 	return Math.round(n * 100);
 }
 
-/**
- * Derives the goal amount directly from an unambiguous "simple"/monthly
- * "periodic"/"limit" directive set, in cents. Returns null for anything
- * else (average, percentage, by, spend, copy, remainder, a non-monthly
- * periodic/limit cadence, or multiple mixed directives) since those
- * targets can only be computed by Actual's budget engine — the caller
- * falls back to the sheet cell in that case. Limit+refill never reaches
- * here; getProgressCents handles it as a balance-vs-cap comparison.
- */
-function directGoalCents(entry: CategoryInsight): number | null {
-	const nonSchedule = entry.directives.filter((d) => d.type !== "schedule");
-
-	if (nonSchedule.length !== 1) return null;
-	const d = nonSchedule[0];
-	if (d.type === "simple") {
-		if (d.limit) return Math.round(d.limit.amount * 100);
-		if (d.monthly != null) return Math.round(d.monthly * 100);
-		return null;
-	}
-	if (d.type === "periodic" && d.period.period === "month" && d.period.amount === 1) {
-		return Math.round(d.amount * 100);
-	}
-	if (d.type === "limit" && d.period === "monthly") {
-		return Math.round(d.amount * 100);
-	}
-	return null;
-}
-
-export async function getProgressCents(
+/** How far the month's budget meets the templates, measured the way Actual colours the balance. */
+export function progressFor(
 	row: HTMLElement,
 	entry: CategoryInsight,
-): Promise<ProgressInfo> {
-	const schedTotal = scheduleTotalCents(entry);
-	if (schedTotal > 0) {
-		const leftover = await fetchLeftoverCents(entry.id);
-		const num = leftover == null ? null : Math.max(0, leftover);
-		return { numerator: num, denominator: schedTotal, source: "schedule" };
+	values: MonthValues | null,
+): ProgressInfo {
+	const cell = values?.cells.get(entry.id);
+	if (!cell || cell.goal == null || cell.goal <= 0) {
+		return { numerator: null, denominator: null, isLongGoal: cell?.isLongGoal ?? false };
 	}
-
-	// A "goal" directive overrides the indicator to compare the category's
-	// current balance (not its budgeted amount) against a target amount.
-	const goalDirective = entry.directives.find((d) => d.type === "goal");
-	if (goalDirective) {
-		const leftover = await fetchLeftoverCents(entry.id);
-		const num = leftover == null ? null : Math.max(0, leftover);
-		return { numerator: num, denominator: Math.round(goalDirective.amount * 100), source: "goal" };
-	}
-
-	// "Refill to limit" only budgets the top-up needed to bring the balance
-	// back to the cap, so budgeted-vs-goal underreports whenever funds carry
-	// over. The funded state is balance == limit, so compare balances too.
-	const limitDirective = entry.directives.find((d) => d.type === "limit");
-	const hasRefill = entry.directives.some((d) => d.type === "refill");
-	if (hasRefill && limitDirective?.type === "limit") {
-		const leftover = await fetchLeftoverCents(entry.id);
-		const num = leftover == null ? null : Math.max(0, leftover);
-		return { numerator: num, denominator: Math.round(limitDirective.amount * 100), source: "goal" };
-	}
-
-	const budgetedCents = getBudgetedCents(row);
-	const goalCents = directGoalCents(entry) ?? (await fetchGoalCents(entry.id));
-	return { numerator: budgetedCents, denominator: goalCents, source: "goal" };
+	const numerator = cell.isLongGoal ? cell.balance : getBudgetedCents(row);
+	return {
+		numerator: numerator == null ? null : Math.max(0, numerator),
+		denominator: cell.goal,
+		isLongGoal: cell.isLongGoal,
+	};
 }
 
 export { parseScheduleAmount };
+
+export type ProgressState = "under" | "near" | "full" | "paid";
+
+export function progressState(entry: CategoryInsight, ratio: number): ProgressState {
+	if (entry.linkedSchedules.length > 0 && entry.linkedSchedules.every((ls) => ls.paid))
+		return "paid";
+	if (ratio >= 1) return "full";
+	if (ratio >= 0.8) return "near";
+	return "under";
+}

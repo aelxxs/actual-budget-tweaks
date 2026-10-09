@@ -13,6 +13,7 @@ import { budgetCategoryFilter } from "@features/workflows/budget-category-filter
 import { budgetMonthHeader } from "@features/workflows/budget-month-header";
 import { budgetSummaryRow } from "@features/workflows/budget-summary-row";
 import { categoryTemplateInsights } from "@features/workflows/category-template-insights";
+import { hideFundedTemplateBars } from "@features/workflows/category-template-insights/hide-funded";
 import { templatePlan } from "@features/workflows/template-plan";
 import { nextMonthCoverageMethod } from "@features/workflows/template-plan/coverage-method";
 import SettingsDialog, { type SettingsTab } from "@lib/components/SettingsDialog.svelte";
@@ -28,7 +29,12 @@ export function openBudgetSettings(): void {
 			groups: [
 				{
 					heading: "On each category",
-					settings: [categoryTemplateInsights, categoryProgress, balancePills] as Setting[],
+					settings: [
+						categoryTemplateInsights,
+						hideFundedTemplateBars,
+						categoryProgress,
+						balancePills,
+					] as Setting[],
 				},
 				{
 					heading: "Colors & icons",

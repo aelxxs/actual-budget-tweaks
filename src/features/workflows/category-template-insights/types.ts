@@ -28,5 +28,6 @@ export interface RawSchedule {
 export interface ProgressInfo {
 	numerator: number | null;
 	denominator: number | null;
-	source: "schedule" | "goal";
+	/** A #goal, met by the balance; everything else is met by this month's budget. */
+	isLongGoal: boolean;
 }
