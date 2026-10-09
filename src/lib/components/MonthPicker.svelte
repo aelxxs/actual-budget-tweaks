@@ -325,9 +325,13 @@
 		height: 5px;
 	}
 
+	/* The same height as the toolbar controls beside it, whatever the text's line height. */
 	.title.is-compact {
+		box-sizing: border-box;
+		height: var(--abt-control-h);
 		margin: 0;
-		padding: 4px 10px;
+		padding: 0 10px;
+		line-height: 1;
 		border-radius: var(--abt-radius);
 		font-size: 17px;
 		font-weight: 650;
