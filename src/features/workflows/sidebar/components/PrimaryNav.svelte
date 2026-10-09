@@ -217,19 +217,20 @@
 		padding-left: 10px;
 		border-left: 1px solid var(--abt-ink-3);
 	}
+	/* A step down from the top-level links, so they read as children of Settings. */
 	.nav-sublink {
-		gap: 11px;
-		padding: calc(var(--sb-row-pad-y, 5px) + 1px) 8px;
+		gap: 10px;
+		padding: var(--sb-row-pad-y, 5px) 8px;
 	}
 	.nav-sublink .nav-icon {
-		width: 16px;
-		height: 16px;
-	}
-	.nav-sublink .nav-icon :global(svg) {
 		width: 15px;
 		height: 15px;
 	}
+	.nav-sublink .nav-icon :global(svg) {
+		width: 14px;
+		height: 14px;
+	}
 	.nav-sublink .nav-label {
-		font-size: var(--abt-text-lg);
+		font-size: var(--abt-text-md);
 	}
 </style>
