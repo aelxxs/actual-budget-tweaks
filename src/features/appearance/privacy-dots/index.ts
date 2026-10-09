@@ -89,6 +89,8 @@ function fixed(style: "dots" | "script"): string {
 	.abt-privacy-enabled .abt-privacy-number:not(:hover, input) {
 		width: ${dots ? "2em" : "2.36em"};
 		overflow: hidden;
+		/* Otherwise longer text, like a transaction's notes, wraps into a tall column. */
+		white-space: nowrap;
 		vertical-align: bottom;
 	}
 
