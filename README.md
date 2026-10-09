@@ -55,11 +55,24 @@
 
 ## About The Project
 
-[![Screenshot][product-screenshot]](https://abt.alexis.lol)
-
-![Screenshot](images/screenshot-2.png)
+<a href="https://abt.alexis.lol">
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="images/budget-light.png">
+  <img src="images/budget-dark.png" alt="The budget page with ABT's sidebar, month cards and Insights panel">
+</picture>
+</a>
 
 Adds user-configurable interface options to Actual Budget — dynamic themes, layout adjustments, readability tweaks, and workflow additions — without altering core app behavior.
+
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="images/calendar-light.png">
+  <img src="images/calendar-dark.png" alt="A spending calendar of the month's transactions and upcoming schedules">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="images/settings-light.png">
+  <img src="images/settings-dark.png" alt="ABT's settings, grouped into tabs, with the theme picker open" width="60%">
+</picture>
 
 Built with [Svelte 5][Svelte-url] on [WXT][WXT-url].
 
@@ -113,6 +126,5 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for the full text.
 [issues-url]: https://github.com/aelxxs/actual-budget-tweaks/issues
 [license-shield]: https://img.shields.io/github/license/aelxxs/actual-budget-tweaks.svg?style=for-the-badge
 [license-url]: https://github.com/aelxxs/actual-budget-tweaks/blob/main/LICENSE
-[product-screenshot]: images/screenshot-1.png
 [Svelte-url]: https://svelte.dev/
 [WXT-url]: https://wxt.dev/
