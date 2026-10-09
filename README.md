@@ -1,7 +1,3 @@
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
-
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -55,6 +51,17 @@
 
 ## About The Project
 
+Adds user-configurable interface options to Actual Budget — dynamic themes, layout adjustments, readability tweaks, and workflow additions — without altering core app behavior.
+
+- **Themes:** browse community themes, or build your own in the palette editor, with separate light and dark picks.
+- **Live sidebar:** live balances, account groups, search and pinned shortcuts, as a standard sidebar or an icon bar.
+- **Budget Insights:** a side panel with the month's breakdown, spending pace, next month coverage and priority planning.
+- **Spending Calendar:** daily spending and upcoming schedules on a month calendar.
+- **Modern Reconcile and Sync recap:** reconcile in a side panel, and review and categorize what a bank sync brought in.
+- **Privacy styles:** hide amounts as scribbles or dots, at their real length or a fixed one.
+
+[See all features →](https://abt.alexis.lol/#features)
+
 <a href="https://abt.alexis.lol">
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="images/budget-light.png">
@@ -62,19 +69,10 @@
 </picture>
 </a>
 
-Adds user-configurable interface options to Actual Budget — dynamic themes, layout adjustments, readability tweaks, and workflow additions — without altering core app behavior.
-
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="images/calendar-light.png">
   <img src="images/calendar-dark.png" alt="A spending calendar of the month's transactions and upcoming schedules">
 </picture>
-
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="images/settings-light.png">
-  <img src="images/settings-dark.png" alt="ABT's settings, grouped into tabs, with the theme picker open" width="60%">
-</picture>
-
-Built with [Svelte 5][Svelte-url] on [WXT][WXT-url].
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -84,6 +82,28 @@ Built with [Svelte 5][Svelte-url] on [WXT][WXT-url].
 
 - **Firefox:** [Download the latest release (.xpi)](https://github.com/aelxxs/actual-budget-tweaks/releases/latest)
 - **Chrome:** [Install from Chrome Web Store](https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm)
+
+**Or self-host it as a sidecar,** a small proxy in front of your Actual server that adds Tweaks to every browser that opens it, with no extension needed. Add it next to Actual in your `docker-compose.yml`:
+
+```yaml
+services:
+  actual:
+    image: actualbudget/actual-server:latest
+    restart: unless-stopped
+    volumes:
+      - ./actual-data:/data
+  abt:
+    image: ghcr.io/aelxxs/abt-sidecar:latest
+    restart: unless-stopped
+    environment:
+      ACTUAL_ORIGIN: http://actual:5006
+    ports:
+      - "3005:3005"
+    depends_on:
+      - actual
+```
+
+Then run `docker compose up -d` and open `http://your-server:3005`. Use either the extension or the sidecar for a given Actual address, not both. See [Self-hosting](https://abt.alexis.lol/self-hosting/) for reverse proxies, updating and security.
 
 <!-- CONTRIBUTING -->
 
@@ -126,5 +146,3 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for the full text.
 [issues-url]: https://github.com/aelxxs/actual-budget-tweaks/issues
 [license-shield]: https://img.shields.io/github/license/aelxxs/actual-budget-tweaks.svg?style=for-the-badge
 [license-url]: https://github.com/aelxxs/actual-budget-tweaks/blob/main/LICENSE
-[Svelte-url]: https://svelte.dev/
-[WXT-url]: https://wxt.dev/
