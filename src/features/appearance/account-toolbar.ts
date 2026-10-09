@@ -11,6 +11,10 @@ import { findAccountToolbar } from "@lib/utilities/native-ui";
  * Actual's glyphs are told apart by the start of their path.
  */
 const BAR_ATTR = "data-abt-account-toolbar";
+// Set while the toolbar is too narrow for its labels; the actions then show icons only.
+const COMPACT_ATTR = "data-abt-compact";
+// Marks the titles added for compact mode, so they're removed with it.
+const TITLE_ATTR = "data-abt-compact-title";
 // Matched once in JS: as a CSS anchor, these :has() checks ran for every svg in the
 // transaction rows on each scroll frame, and Firefox blanked the table while restyling.
 const BAR = `[${BAR_ATTR}]`;
@@ -111,9 +115,18 @@ const CSS = `
 		transform: none !important;
 	}
 
-	/* Search's look is shared with every search bar (base.css). */
+	${BAR}[${COMPACT_ATTR}] :is(${ACTIONS}) {
+		gap: 0;
+		min-width: var(--abt-control-h);
+		padding: 0 var(--abt-space-2) !important;
+		/* Hides the label, a bare text node beside the icon; the icon has its own size. */
+		font-size: 0 !important;
+	}
+
+	/* Search's look is shared with every search bar (base.css); it shrinks before anything wraps. */
 	${SEARCH} {
-		width: 260px;
+		flex: 0 1 260px;
+		min-width: 140px;
 	}
 
 	/* The icon buttons sit behind a hairline after search, drawn by search since what follows can be hidden. */
@@ -144,6 +157,16 @@ const CSS = `
 	}
 `;
 
+/** True when the toolbar's items no longer fit on one line. */
+function wraps(bar: HTMLElement): boolean {
+	// Actual's empty spacer has no height, so it's skipped; an item starting below another's bottom is on a new line.
+	const boxes = [...bar.children]
+		.map((c) => c.getBoundingClientRect())
+		.filter((r) => r.width > 0 && r.height > 0);
+	const firstBottom = Math.min(...boxes.map((r) => r.bottom));
+	return boxes.some((r) => r.top >= firstBottom - 1);
+}
+
 export const modernAccountToolbar = defineSetting({
 	type: "checkbox",
 	label: "Modern Account Toolbar",
@@ -156,16 +179,53 @@ export const modernAccountToolbar = defineSetting({
 	},
 	css: () => CSS,
 	init: () => {
-		let bar: Element | null = null;
+		let bar: HTMLElement | null = null;
+
+		const setCompact = (on: boolean) => {
+			if (!bar) return;
+			bar.toggleAttribute(COMPACT_ATTR, on);
+			for (const button of bar.querySelectorAll<HTMLElement>(
+				":scope > button, :scope > div button",
+			)) {
+				if (on && !button.title && button.textContent?.trim()) {
+					button.title = button.textContent.trim();
+					button.setAttribute(TITLE_ATTR, "");
+				} else if (!on && button.hasAttribute(TITLE_ATTR)) {
+					button.removeAttribute("title");
+					button.removeAttribute(TITLE_ATTR);
+				}
+			}
+		};
+
+		// Tries the labels and keeps them if nothing wraps; both states are measured before a paint.
+		const fit = () => {
+			if (!bar) return;
+			const wasCompact = bar.hasAttribute(COMPACT_ATTR);
+			bar.removeAttribute(COMPACT_ATTR);
+			const compact = wraps(bar);
+			if (compact !== wasCompact) setCompact(compact);
+			else if (compact) bar.setAttribute(COMPACT_ATTR, "");
+		};
+		// Width changes, and buttons coming and going (the selection menu, Bank Sync's spinner).
+		const resize = new ResizeObserver(fit);
+		const content = new MutationObserver(fit);
 
 		const unwatch = watchDom(() => {
 			if (bar?.isConnected) return;
+			resize.disconnect();
+			content.disconnect();
 			bar = findAccountToolbar();
-			bar?.setAttribute(BAR_ATTR, "");
+			if (!bar) return;
+			bar.setAttribute(BAR_ATTR, "");
+			resize.observe(bar);
+			content.observe(bar, { childList: true, subtree: true, characterData: true });
 		});
 
 		return () => {
 			unwatch();
+			resize.disconnect();
+			content.disconnect();
+			setCompact(false);
 			bar?.removeAttribute(BAR_ATTR);
 			bar = null;
 		};
