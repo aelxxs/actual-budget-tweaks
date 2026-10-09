@@ -4,7 +4,8 @@
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { watchDom } from "@lib/utilities/dom-watcher";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { getValue, setValue, watchValue } from "@lib/utilities/store";
+	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
 	import { ChevronDown, List, ListTree, Plus } from "lucide-svelte";
 	import { overlayScrollbar } from "../actions/overlay-scrollbar";
 	import { portal } from "../actions/portal";
@@ -64,6 +65,12 @@
 
 	$effect(() => {
 		getValue<Record<string, boolean>>(STORAGE_KEY, {}).then((stored) => (collapsed = stored));
+	});
+	const { key: TOTALS_KEY, defaultValue: TOTALS_DEFAULT } = sidebarGroupTotals.context;
+	let showGroupTotals = $state(TOTALS_DEFAULT);
+	$effect(() => {
+		getValue<boolean>(TOTALS_KEY, TOTALS_DEFAULT).then((v) => (showGroupTotals = v));
+		return watchValue<boolean>(TOTALS_KEY, (v) => (showGroupTotals = v ?? TOTALS_DEFAULT));
 	});
 	$effect(() => {
 		getValue<Record<string, boolean>>(COLLAPSED_GROUPS_KEY, {}).then(
@@ -490,6 +497,10 @@
 							<GroupHeader
 								{group}
 								count={itemsInGroup.length}
+								total={showGroupTotals && itemsInGroup.length
+									? itemsInGroup.reduce((sum, a) => sum + a.balance, 0)
+									: null}
+								{budgetId}
 								open={!collapsedGroups[group.id]}
 								editing={editingGroupId === group.id}
 								dropActive={overGroupId === group.id}

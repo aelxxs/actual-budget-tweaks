@@ -196,6 +196,12 @@
 				"group": "Sidebar"
 			},
 			{
+				"label": "Account Group Totals",
+				"description": "Show each account group's combined balance beside its name.",
+				"icon": "calculator",
+				"group": "Sidebar"
+			},
+			{
 				"label": "Sidebar Shortcuts",
 				"description": "Pin quick links and tools to the sidebar.",
 				"icon": "star",

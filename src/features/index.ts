@@ -2,6 +2,7 @@ import { accountIconPicker } from "./appearance/account-icon-picker";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
+import { sidebarGroupTotals } from "./appearance/sidebar-group-totals";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
 import { modernTitlebar } from "./appearance/titlebar";
@@ -89,6 +90,7 @@ const appearance = [
 	themedScrollbars,
 	privacyStyle,
 	sidebarSearch,
+	sidebarGroupTotals,
 	sidebarShortcuts,
 	accountIconPicker,
 	categoryColorDots,

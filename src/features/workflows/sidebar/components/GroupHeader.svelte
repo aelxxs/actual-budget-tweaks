@@ -1,4 +1,5 @@
 <script lang="ts">
+	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { ChevronDown } from "lucide-svelte";
 	import { autofocus } from "../actions/autofocus";
 	import type { AccountGroup } from "../lib/groups";
@@ -6,6 +7,8 @@
 	const {
 		group,
 		count,
+		total = null,
+		budgetId,
 		open,
 		editing,
 		dropActive = false,
@@ -19,6 +22,9 @@
 	}: {
 		group: AccountGroup;
 		count: number;
+		/** The group's combined balance, or null when group totals are off. */
+		total?: number | null;
+		budgetId: string | undefined;
 		open: boolean;
 		editing: boolean;
 		dropActive?: boolean;
@@ -80,6 +86,9 @@
 		/>
 		<span class="group-label sub-label">{group.label}</span>
 		{#if count}<span class="group-count sub-count">{count}</span>{/if}
+		{#if total !== null}
+			<RollingNumber value={total} resetKey={budgetId} class="sub-total abt-privacy-number" />
+		{/if}
 	</button>
 {/if}
 
@@ -130,6 +139,13 @@
 	}
 	.group-header.drop-before::after {
 		top: -1px;
+	}
+	.group-header.sub :global(.sub-total) {
+		margin-left: auto;
+		font-size: var(--abt-text-sm);
+		font-weight: 500;
+		color: var(--abt-ink-5);
+		font-variant-numeric: tabular-nums;
 	}
 	/* inline category rename */
 	.group-header.sub.editing-group {

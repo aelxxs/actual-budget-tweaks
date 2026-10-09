@@ -1,4 +1,5 @@
 import { accountIconPicker } from "@features/appearance/account-icon-picker";
+import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
 import { sidebarSearch } from "@features/appearance/sidebar-search";
 import { sidebarShortcuts, sidebarShortcutsAddTile } from "@features/appearance/sidebar-shortcuts";
 import ShortcutsEditor from "@features/appearance/sidebar-shortcuts/components/ShortcutsEditor.svelte";
@@ -37,7 +38,7 @@ export function openSidebarSettings({ tab }: { tab?: SidebarSettingsTab } = {}):
 				},
 				{
 					heading: "Accounts",
-					settings: [accountIconPicker, colorNegativeBalances] as Setting[],
+					settings: [accountIconPicker, sidebarGroupTotals, colorNegativeBalances] as Setting[],
 				},
 			],
 		},
