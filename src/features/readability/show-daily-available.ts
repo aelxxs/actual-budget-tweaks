@@ -31,7 +31,10 @@ function displayDailyBalance() {
 	let dailyNode = document.querySelector<HTMLElement>(`#${DAILY_ID}`);
 	if (!balanceBtn) return;
 
-	const cents = parseCents(balanceBtn.textContent ?? "");
+	// Without privacy mode's redacted copy of the amount, which sits beside the real one.
+	const shown = balanceBtn.cloneNode(true) as Element;
+	for (const copy of shown.querySelectorAll('[aria-hidden="true"]')) copy.remove();
+	const cents = parseCents(shown.textContent ?? "");
 	const daily = cents == null ? null : dailyAllowance(cents);
 	// Shown with Actual's own balance details, as a copy of the first one.
 	const template = (dailyNode ?? balanceBtn).nextElementSibling;
@@ -49,9 +52,15 @@ function displayDailyBalance() {
 	const value = fmtMoney(daily.perDay);
 	const title = `${value} a day for the ${daily.days} ${daily.days === 1 ? "day" : "days"} left this month`;
 	if (dailyNode.childNodes[0]?.textContent !== label) dailyNode.childNodes[0].textContent = label;
-	if (dailyNode.lastChild && dailyNode.lastChild.textContent !== value) {
-		dailyNode.lastChild.textContent = value;
+	// Our own amount in place of the copied one, whose privacy wrapper Actual no longer updates.
+	const amount = dailyNode.lastElementChild;
+	let number = amount?.querySelector(":scope > .abt-privacy-number");
+	if (amount && !number) {
+		number = document.createElement("span");
+		number.className = "abt-privacy-number";
+		amount.replaceChildren(number);
 	}
+	if (number && number.textContent !== value) number.textContent = value;
 	if (dailyNode.title !== title) dailyNode.title = title;
 }
 
