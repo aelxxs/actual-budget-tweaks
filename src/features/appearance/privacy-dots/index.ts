@@ -85,6 +85,11 @@ function fixed(style: "dots" | "script"): string {
 		-webkit-text-fill-color: inherit;
 	}
 
+	/* The account header's balance is a button, which centres its text; the amount reads from the left. */
+	.abt-privacy-enabled [data-testid="account-balance"] div[aria-hidden="true"] :not(:has(*))::after {
+		text-align: left !important;
+	}
+
 	/* ABT's amounts shrink to the mark's measured width, so they sit where the number would. */
 	.abt-privacy-enabled .abt-privacy-number:not(:hover, input) {
 		width: ${dots ? "2em" : "2.36em"};
