@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import PrivacyPicker from "./Picker.svelte";
 
 /*
  * How hidden amounts look in privacy mode, for ABT's numbers and Actual's own. Actual's privacy
@@ -44,10 +45,12 @@ const PER_DIGIT = `
 `;
 
 /**
- * The same four dots for every amount, so their length doesn't hint at their size. Drawn over
- * the hidden text, aligned like it; four tight dots fit even the narrowest amount ("0.00").
+ * The same mark for every amount, so its length doesn't hint at its size. Drawn over the hidden
+ * text, aligned like it; four characters fit even the narrowest amount ("0.00").
  */
-const FIXED = `
+function fixed(style: "dots" | "script"): string {
+	const dots = style === "dots";
+	return `
 	${ABT_AMOUNTS},
 	${REDACTED_COPY} :not(:has(*)) {
 		position: relative;
@@ -55,18 +58,23 @@ const FIXED = `
 		user-select: none;
 	}
 
+	${
+		dots
+			? `${ABT_AMOUNTS},
 	${REDACTED_COPY} {
 		font-family: inherit !important;
+	}`
+			: ""
 	}
 
 	:is(${ABT_AMOUNTS}, ${REDACTED_COPY} :not(:has(*)))::after {
-		content: "••••" / "";
+		content: "${dots ? "••••" : "0000"}" / "";
 		position: absolute;
 		inset: 0;
 		overflow: hidden;
 		text-align: inherit;
 		white-space: nowrap;
-		letter-spacing: -0.06em;
+		letter-spacing: ${dots ? "-0.06em" : "normal"};
 		-webkit-text-fill-color: currentColor;
 	}
 
@@ -74,10 +82,31 @@ const FIXED = `
 		-webkit-text-fill-color: inherit;
 	}
 
+	/* ABT's amounts shrink to the mark's measured width, so they sit where the number would. */
+	.abt-privacy-enabled .abt-privacy-number:not(:hover) {
+		width: ${dots ? "2em" : "2.36em"};
+		overflow: hidden;
+		vertical-align: bottom;
+	}
+
+	.abt-privacy-enabled .abt-privacy-number:not(:hover, .rn) {
+		display: inline-block;
+	}
+
+	/* !important: the ::after rule above carries the redacted copy's much higher specificity. */
 	.abt-privacy-enabled .abt-privacy-number:hover::after {
-		content: none;
+		content: none !important;
 	}
 `;
+}
+
+const STYLES: Record<string, string> = {
+	script: "",
+	dots: PER_DIGIT,
+	"script-fixed": fixed("script"),
+	// "fixed" predates fixed scribbles; kept so saved choices carry over.
+	fixed: fixed("dots"),
+};
 
 export const privacyStyle = defineSetting({
 	type: "select",
@@ -91,9 +120,11 @@ export const privacyStyle = defineSetting({
 		defaultValue: "script",
 	},
 	options: [
-		{ value: "dots", label: "Dots per digit" },
-		// { value: "fixed", label: "Fixed dots (hides length)" },
-		{ value: "script", label: "Scribbled (Actual's default)" },
+		{ value: "script", label: "Scribbled" },
+		{ value: "dots", label: "Dots" },
+		{ value: "script-fixed", label: "Scribbled, fixed length" },
+		{ value: "fixed", label: "Dots, fixed length" },
 	],
-	css: ({ value }) => (value === "fixed" ? FIXED : value === "script" ? "" : PER_DIGIT),
+	picker: PrivacyPicker,
+	css: ({ value }) => STYLES[value as string] ?? "",
 });

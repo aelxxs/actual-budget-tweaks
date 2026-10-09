@@ -30,14 +30,15 @@
 		}),
 	);
 
-	async function handleChange(event: Event) {
-		const newValue = (event.target as HTMLSelectElement).value;
-		await applySettingChange(setting, newValue);
-		value = newValue;
+	async function pick(next: string) {
+		await applySettingChange(setting, next);
+		value = next;
 	}
+
+	const Picker = $derived(setting.picker);
 </script>
 
-<div class="abt-setting" data-testid={ctx.key}>
+<div class="abt-setting" class:abt-setting--stacked={Picker} data-testid={ctx.key}>
 	<span class="abt-setting__head">
 		{#if icon}
 			<span class="abt-setting__icon"><Icon name={icon} size={15} /></span>
@@ -49,9 +50,17 @@
 			{/if}
 		</span>
 	</span>
-	<select bind:value class="abt-input abt-setting__select" onchange={handleChange}>
-		{#each options as option (option.value)}
-			<option value={option.value}>{option.label}</option>
-		{/each}
-	</select>
+	{#if Picker}
+		<Picker {options} selected={value} onPick={pick} />
+	{:else}
+		<select
+			bind:value
+			class="abt-input abt-setting__select"
+			onchange={(e) => pick(e.currentTarget.value)}
+		>
+			{#each options as option (option.value)}
+				<option value={option.value}>{option.label}</option>
+			{/each}
+		</select>
+	{/if}
 </div>

@@ -36,6 +36,12 @@ export interface BaseSetting<C extends SettingContext> {
 export interface SelectSetting<C extends SettingContext> extends BaseSetting<C> {
 	type: "select";
 	options: { value: string; label: string }[];
+	/** Optional visual picker shown in place of the dropdown; the runtime still applies `css`. */
+	picker?: Component<{
+		options: { value: string; label: string }[];
+		selected: string;
+		onPick: (value: string) => void;
+	}>;
 }
 
 export interface CheckboxSetting<C extends SettingContext> extends BaseSetting<C> {
