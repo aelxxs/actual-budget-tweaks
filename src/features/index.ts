@@ -40,7 +40,7 @@ import { tagStyling } from "./readability/tag-styling";
 import { headerBorder } from "./readability/top-nav-border";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/themeLoader";
-import type { Setting } from "./types";
+import type { CoreSetting, Setting } from "./types";
 import { budgetCategoryFilter } from "./workflows/budget-category-filter";
 import { budgetMonthHeader } from "./workflows/budget-month-header";
 import { budgetSummaryRow } from "./workflows/budget-summary-row";
@@ -54,61 +54,105 @@ import { syncRecap } from "./workflows/sync-recap";
 import { templatePlan } from "./workflows/template-plan";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 
-const layoutAndDensity = [
-	backgroundPattern,
-	borderRadius,
-	budgetTableRowHeight,
-	reportWidgetBackgroundColor,
-	hideMonthOnScroll,
-	resizableTransactionColumns,
+export type PageSetting = Exclude<Setting<any>, CoreSetting>;
+
+export interface SettingsSection {
+	title: string;
+	groups: { label: string | null; items: PageSetting[] }[];
+}
+
+// Grouped by where each tweak shows up in Actual, which is how people look for them.
+export const scriptSections: SettingsSection[] = [
+	{
+		title: "Theme",
+		groups: [{ label: null, items: [themeSelector] }],
+	},
+	{
+		title: "General",
+		groups: [
+			{
+				label: "Style",
+				items: [borderRadius, backgroundPattern, themedScrollbars, headerBorder, privacyStyle],
+			},
+			{ label: "Components", items: [modernTitlebar, modernToasts] },
+		],
+	},
+	{
+		title: "Sidebar",
+		groups: [
+			{
+				label: "Live sidebar",
+				items: [
+					experimentalSidebar,
+					experimentalSidebarLayout,
+					sidebarDensity,
+					sidebarSearch,
+					sidebarShortcuts,
+				],
+			},
+			{
+				label: "Accounts",
+				items: [accountIconPicker, sidebarGroupTotals, colorNegativeBalances],
+			},
+		],
+	},
+	{
+		title: "Budget",
+		groups: [
+			{ label: "Layout", items: [budgetTableRowHeight, hideMonthOnScroll, budgetPageBorders] },
+			{
+				label: "Readability",
+				items: [
+					budgetCardStyling,
+					categoryProgress,
+					balancePills,
+					showDailyAvailable,
+					budgetTotalsLabelStyling,
+				],
+			},
+			{ label: "Categories", items: [categoryColorDots, categoryEmojiPicker] },
+			{
+				label: "Tools",
+				items: [templatePlan, nextMonthCoverageMethod, categoryTemplateInsights, goalFunding],
+			},
+		],
+	},
+	{
+		title: "Accounts & Transactions",
+		groups: [
+			{
+				label: "Transactions",
+				items: [
+					alternatingTransactionRows,
+					colorTransactions,
+					dimReconciled,
+					highlightUncategorized,
+					newTransactionStyle,
+					tagStyling,
+					resizableTransactionColumns,
+				],
+			},
+			{ label: "Accounts", items: [modernAccountToolbar, modernReconcile, syncRecap] },
+		],
+	},
+	{
+		title: "Reports",
+		groups: [
+			{
+				label: null,
+				items: [reportWidgetBackgroundColor, reportCardBorders, spendingCalendar],
+			},
+		],
+	},
+	{
+		title: "Experimental",
+		groups: [{ label: null, items: [budgetMonthHeader, budgetSummaryRow, budgetCategoryFilter] }],
+	},
 ];
 
-const readability = [
-	alternatingTransactionRows,
-	budgetCardStyling,
-	categoryProgress,
-	balancePills,
-	colorNegativeBalances,
-	colorTransactions,
-	dimReconciled,
-	showDailyAvailable,
-	highlightUncategorized,
-	newTransactionStyle,
-	tagStyling,
-	headerBorder,
-	reportCardBorders,
-	budgetPageBorders,
-	budgetTotalsLabelStyling,
-];
-
-const appearance = [
-	experimentalSidebar,
-	experimentalSidebarLayout,
-	modernTitlebar,
-	modernAccountToolbar,
-	modernReconcile,
-	modernToasts,
-	themedScrollbars,
-	privacyStyle,
-	sidebarDensity,
-	sidebarSearch,
-	sidebarGroupTotals,
-	sidebarShortcuts,
-	accountIconPicker,
-	categoryColorDots,
-	categoryEmojiPicker,
-];
-
-const workflows = [
-	categoryTemplateInsights,
-	goalFunding,
-	templatePlan,
-	nextMonthCoverageMethod,
-	spendingCalendar,
-	syncRecap,
-];
-
-const experimental = [budgetMonthHeader, budgetSummaryRow, budgetCategoryFilter];
+export function sectionItems(section: SettingsSection): PageSetting[] {
+	return section.groups.flatMap((group) => group.items);
+}
 
 export const coreScripts = [
 	sidePanel,
@@ -121,51 +165,7 @@ export const coreScripts = [
 	liveSidebarNotice,
 ];
 
-export const scriptSections = [
-	{
-		title: "Theme",
-		description: "Core visual identity for the app",
-		items: [themeSelector],
-	},
-	{
-		title: "Layout and Density",
-		description: "Spacing, borders, columns, and overall compactness",
-		items: layoutAndDensity,
-	},
-	{
-		title: "Readability",
-		description: "Highlights, contrast, and visual clarity",
-		items: readability,
-	},
-	{
-		title: "Appearance",
-		description: "UI chrome and personalization",
-		items: appearance,
-	},
-	{
-		title: "Workflows",
-		description: "Behavioral and workflow improvements",
-		items: workflows,
-	},
-	{
-		title: "Experimental",
-		description: "Early previews of in-progress features",
-		items: experimental,
-	},
-];
-
-// Bootstrap-only settings with no dedicated settings-panel card (no `group`),
-// so they don't appear in `scriptSections` but still need to be activated.
+// Bootstrap-only settings with no settings-page row (no `group`), still activated.
 const hiddenScripts = [themeLoader];
 
-// Derived from the same category arrays that build `scriptSections` above, so
-// a feature only needs to be added to one place instead of two.
-export const scripts: Setting<any>[][] = [
-	[themeSelector],
-	layoutAndDensity,
-	readability,
-	appearance,
-	workflows,
-	experimental,
-	hiddenScripts,
-];
+export const scripts: Setting<any>[][] = [...scriptSections.map(sectionItems), hiddenScripts];

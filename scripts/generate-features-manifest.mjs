@@ -154,16 +154,21 @@ function main() {
 		.map((sectionLiteral) => {
 			const title = stringLiteralValue(findProperty(sectionLiteral, "title")) ?? "";
 			const description = stringLiteralValue(findProperty(sectionLiteral, "description")) ?? null;
-			const itemsArray = resolveItemsArray(findProperty(sectionLiteral, "items"));
+			const groupsNode = findProperty(sectionLiteral, "groups");
 
+			// Each item takes its sub-group's label as `group`, which the website groups by.
 			const items = [];
-			if (itemsArray) {
-				for (const el of itemsArray.elements) {
+			const groups =
+				groupsNode && ts.isArrayLiteralExpression(groupsNode) ? groupsNode.elements : [];
+			for (const groupLiteral of groups.filter(ts.isObjectLiteralExpression)) {
+				const label = stringLiteralValue(findProperty(groupLiteral, "label")) ?? null;
+				const itemsArray = resolveItemsArray(findProperty(groupLiteral, "items"));
+				for (const el of itemsArray?.elements ?? []) {
 					if (!ts.isIdentifier(el)) continue;
 					const filePath = importMap.get(el.text);
 					if (!filePath) continue;
 					const meta = extractSettingMeta(filePath, el.text);
-					if (meta && meta.label) items.push(meta);
+					if (meta && meta.label) items.push({ ...meta, group: label });
 				}
 			}
 

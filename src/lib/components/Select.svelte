@@ -37,7 +37,7 @@
 	}
 </script>
 
-<div class="abt-setting abt-setting--stacked" data-testid={ctx.key}>
+<div class="abt-setting" data-testid={ctx.key}>
 	<span class="abt-setting__head">
 		{#if icon}
 			<span class="abt-setting__icon"><Icon name={icon} size={15} /></span>
@@ -49,7 +49,7 @@
 			{/if}
 		</span>
 	</span>
-	<select bind:value class="abt-input" onchange={handleChange}>
+	<select bind:value class="abt-input abt-setting__select" onchange={handleChange}>
 		{#each options as option (option.value)}
 			<option value={option.value}>{option.label}</option>
 		{/each}

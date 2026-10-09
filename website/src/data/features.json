@@ -1,79 +1,205 @@
 [
 	{
-		"title": "Layout and Density",
-		"description": "Spacing, borders, columns, and overall compactness",
+		"title": "General",
+		"description": null,
 		"items": [
-			{
-				"label": "Background Pattern",
-				"description": "A subtle pattern behind the app background.",
-				"icon": null,
-				"group": "General"
-			},
 			{
 				"label": "Border Radius",
 				"description": "Corner roundness for cards and buttons app-wide.",
 				"icon": null,
-				"group": "General"
+				"group": "Style"
 			},
 			{
-				"label": "Budget Table Row Height",
-				"description": "Adjust how tall each budget table row is.",
+				"label": "Background Pattern",
+				"description": "A subtle pattern behind the app background.",
 				"icon": null,
-				"group": "Budget"
+				"group": "Style"
 			},
 			{
-				"label": "Dark Report Cards",
-				"description": "Use a darker background for widget cards on the Reports page.",
-				"icon": "palette",
-				"group": "Reports"
+				"label": "Themed Scrollbars",
+				"description": "Thin scrollbars tinted to match the theme.",
+				"icon": "sliders",
+				"group": "Style"
 			},
 			{
-				"label": "Hide Month Selection On Scroll",
-				"description": "Collapse the month navigation row while scrolling the budget table.",
-				"icon": "calendar",
-				"group": "Budget"
+				"label": "Header Border",
+				"description": "Add a border under the top navigation bar.",
+				"icon": "square",
+				"group": "Style"
 			},
 			{
-				"label": "Resizable Transaction Columns",
-				"description": "Drag column edges to resize the transaction table.",
+				"label": "Privacy Style",
+				"description": "How amounts look while privacy mode hides them.",
+				"icon": "eyeOff",
+				"group": "Style"
+			},
+			{
+				"label": "Modern Titlebar",
+				"description": "Restyles the top bar's buttons with matching icons and status chips.",
 				"icon": "layout",
-				"group": "Transactions"
+				"group": "Components"
+			},
+			{
+				"label": "Modern Toasts",
+				"description": "Restyles notifications as compact cards with a coloured accent.",
+				"icon": "layout",
+				"group": "Components"
 			}
 		]
 	},
 	{
-		"title": "Readability",
-		"description": "Highlights, contrast, and visual clarity",
+		"title": "Sidebar",
+		"description": null,
 		"items": [
 			{
-				"label": "Alternating Transaction Row Colors",
-				"description": "Zebra-stripe the transaction table for easier scanning.",
-				"icon": "rows",
-				"group": "Transactions"
+				"label": "Live sidebar",
+				"description": "ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
+				"icon": null,
+				"group": "Live sidebar"
 			},
 			{
-				"label": "Budget Card Styling",
-				"description": "Add a spending flow bar to the current month's budget card.",
-				"icon": "networth",
-				"group": "Budget"
+				"label": "Live sidebar layout",
+				"description": "Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
+				"icon": null,
+				"group": "Live sidebar"
 			},
 			{
-				"label": "Category Progress Indicators",
-				"description": "A progress ring next to each budget balance — hover for spending details.",
-				"icon": "gauge",
-				"group": "Budget"
+				"label": "Sidebar Density",
+				"description": "Adjust the spacing of accounts, nav links, and search in the live sidebar.",
+				"icon": null,
+				"group": "Live sidebar"
 			},
 			{
-				"label": "Balance Status Pills",
-				"description": "Show goal balances as funded, underfunded or overspent pills.",
-				"icon": "gauge",
-				"group": "Budget"
+				"label": "Sidebar Search Bar",
+				"description": "Quickly filter accounts, categories, and pages.",
+				"icon": "search",
+				"group": "Live sidebar"
+			},
+			{
+				"label": "Sidebar Shortcuts",
+				"description": "Pin quick links and tools to the sidebar.",
+				"icon": "star",
+				"group": "Live sidebar"
+			},
+			{
+				"label": "Account Icon Picker",
+				"description": "Set a custom favicon or emoji icon per account.",
+				"icon": "image",
+				"group": "Accounts"
+			},
+			{
+				"label": "Account Group Totals",
+				"description": "Show each account group's combined balance beside its name.",
+				"icon": "calculator",
+				"group": "Accounts"
 			},
 			{
 				"label": "Color Negative Account Balances",
 				"description": "Highlight negative account balances in red.",
 				"icon": "palette",
 				"group": "Accounts"
+			}
+		]
+	},
+	{
+		"title": "Budget",
+		"description": null,
+		"items": [
+			{
+				"label": "Budget Table Row Height",
+				"description": "Adjust how tall each budget table row is.",
+				"icon": null,
+				"group": "Layout"
+			},
+			{
+				"label": "Hide Month Selection On Scroll",
+				"description": "Collapse the month navigation row while scrolling the budget table.",
+				"icon": "calendar",
+				"group": "Layout"
+			},
+			{
+				"label": "Budget Page Borders",
+				"description": "Add borders around sections of the budget table.",
+				"icon": "square",
+				"group": "Layout"
+			},
+			{
+				"label": "Budget Card Styling",
+				"description": "Add a spending flow bar to the current month's budget card.",
+				"icon": "networth",
+				"group": "Readability"
+			},
+			{
+				"label": "Category Progress Indicators",
+				"description": "A progress ring next to each budget balance — hover for spending details.",
+				"icon": "gauge",
+				"group": "Readability"
+			},
+			{
+				"label": "Balance Status Pills",
+				"description": "Show goal balances as funded, underfunded or overspent pills.",
+				"icon": "gauge",
+				"group": "Readability"
+			},
+			{
+				"label": "Show Daily Available",
+				"description": "Show a daily spending allowance under To Budget.",
+				"icon": "calculator",
+				"group": "Readability"
+			},
+			{
+				"label": "Budget Totals Label Styling",
+				"description": "Mute and uppercase the Budgeted/Spent/Balance labels.",
+				"icon": "layout",
+				"group": "Readability"
+			},
+			{
+				"label": "Category Color Dots",
+				"description": "Show a colored dot for each transaction's category.",
+				"icon": "palette",
+				"group": "Categories"
+			},
+			{
+				"label": "Category Emoji Picker",
+				"description": "Set a custom emoji icon for each category.",
+				"icon": "image",
+				"group": "Categories"
+			},
+			{
+				"label": "Budget Insights",
+				"description": "Month summary, template breakdowns, and priority planning in a side panel.",
+				"icon": "layout",
+				"group": "Tools"
+			},
+			{
+				"label": "Next Month Coverage Method",
+				"description": "Choose the target used by Next Month Coverage in Plan → Overview.",
+				"icon": "layout",
+				"group": "Tools"
+			},
+			{
+				"label": "Category Template Insights",
+				"description": "Progress bars showing how funded each category's template is.",
+				"icon": "interest",
+				"group": "Tools"
+			},
+			{
+				"label": "Goal Funding",
+				"description": "Click a category's balance to see its goal progress and assign money to an underfunded goal.",
+				"icon": "interest",
+				"group": "Tools"
+			}
+		]
+	},
+	{
+		"title": "Accounts & Transactions",
+		"description": null,
+		"items": [
+			{
+				"label": "Alternating Transaction Row Colors",
+				"description": "Zebra-stripe the transaction table for easier scanning.",
+				"icon": "rows",
+				"group": "Transactions"
 			},
 			{
 				"label": "Color Transactions",
@@ -86,12 +212,6 @@
 				"description": "Fade reconciled rows in the transaction table.",
 				"icon": "eyeOff",
 				"group": "Transactions"
-			},
-			{
-				"label": "Show Daily Available",
-				"description": "Show a daily spending allowance under To Budget.",
-				"icon": "calculator",
-				"group": "Budget"
 			},
 			{
 				"label": "Highlight Uncategorized Transactions",
@@ -112,160 +232,22 @@
 				"group": "Transactions"
 			},
 			{
-				"label": "Header Border",
-				"description": "Add a border under the top navigation bar.",
-				"icon": "square",
-				"group": "General"
-			},
-			{
-				"label": "Report Card Borders",
-				"description": "Add borders around widget cards on the Reports page.",
-				"icon": "square",
-				"group": "Reports"
-			},
-			{
-				"label": "Budget Page Borders",
-				"description": "Add borders around sections of the budget table.",
-				"icon": "square",
-				"group": "Budget"
-			},
-			{
-				"label": "Budget Totals Label Styling",
-				"description": "Mute and uppercase the Budgeted/Spent/Balance labels.",
+				"label": "Resizable Transaction Columns",
+				"description": "Drag column edges to resize the transaction table.",
 				"icon": "layout",
-				"group": "Budget"
-			}
-		]
-	},
-	{
-		"title": "Appearance",
-		"description": "UI chrome and personalization",
-		"items": [
-			{
-				"label": "Live sidebar",
-				"description": "ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
-				"icon": null,
-				"group": "Sidebar"
-			},
-			{
-				"label": "Live sidebar layout",
-				"description": "Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
-				"icon": null,
-				"group": "Sidebar"
-			},
-			{
-				"label": "Modern Titlebar",
-				"description": "Restyles the top bar's buttons with matching icons and status chips.",
-				"icon": "layout",
-				"group": "General"
+				"group": "Transactions"
 			},
 			{
 				"label": "Modern Account Toolbar",
 				"description": "Restyles the account page's actions, search and icon buttons with matching icons.",
 				"icon": "layout",
-				"group": "General"
+				"group": "Accounts"
 			},
 			{
 				"label": "Modern Reconcile",
 				"description": "Reconcile in a side panel: live balances, clear transactions from a list, one-click adjustment and undo.",
 				"icon": "shield",
-				"group": "General"
-			},
-			{
-				"label": "Modern Toasts",
-				"description": "Restyles notifications as compact cards with a coloured accent.",
-				"icon": "layout",
-				"group": "General"
-			},
-			{
-				"label": "Themed Scrollbars",
-				"description": "Thin scrollbars tinted to match the theme.",
-				"icon": "sliders",
-				"group": "General"
-			},
-			{
-				"label": "Privacy Style",
-				"description": "How amounts look while privacy mode hides them.",
-				"icon": "eyeOff",
-				"group": "General"
-			},
-			{
-				"label": "Sidebar Density",
-				"description": "Adjust the spacing of accounts, nav links, and search in the live sidebar.",
-				"icon": null,
-				"group": "Sidebar"
-			},
-			{
-				"label": "Sidebar Search Bar",
-				"description": "Quickly filter accounts, categories, and pages.",
-				"icon": "search",
-				"group": "Sidebar"
-			},
-			{
-				"label": "Account Group Totals",
-				"description": "Show each account group's combined balance beside its name.",
-				"icon": "calculator",
-				"group": "Sidebar"
-			},
-			{
-				"label": "Sidebar Shortcuts",
-				"description": "Pin quick links and tools to the sidebar.",
-				"icon": "star",
-				"group": "Sidebar"
-			},
-			{
-				"label": "Account Icon Picker",
-				"description": "Set a custom favicon or emoji icon per account.",
-				"icon": "image",
-				"group": "Sidebar"
-			},
-			{
-				"label": "Category Color Dots",
-				"description": "Show a colored dot for each transaction's category.",
-				"icon": "palette",
-				"group": "Categories"
-			},
-			{
-				"label": "Category Emoji Picker",
-				"description": "Set a custom emoji icon for each category.",
-				"icon": "image",
-				"group": "Categories"
-			}
-		]
-	},
-	{
-		"title": "Workflows",
-		"description": "Behavioral and workflow improvements",
-		"items": [
-			{
-				"label": "Category Template Insights",
-				"description": "Progress bars showing how funded each category's template is.",
-				"icon": "interest",
-				"group": null
-			},
-			{
-				"label": "Goal Funding",
-				"description": "Click a category's balance to see its goal progress and assign money to an underfunded goal.",
-				"icon": "interest",
-				"group": null
-			},
-			{
-				"label": "Budget Insights",
-				"description": "Month summary, template breakdowns, and priority planning in a side panel.",
-				"icon": "layout",
-				"group": "Budget"
-			},
-			{
-				"label": "Next Month Coverage Method",
-				"description": "Choose the target used by Next Month Coverage in Plan → Overview.",
-				"icon": "layout",
-				"group": "Budget"
-			},
-			{
-				"label": "Spending Calendar",
-				"description": "A calendar view of daily spending, added to the sidebar.",
-				"icon": "calendar",
-				"group": null
+				"group": "Accounts"
 			},
 			{
 				"label": "Sync recap",
@@ -276,26 +258,50 @@
 		]
 	},
 	{
+		"title": "Reports",
+		"description": null,
+		"items": [
+			{
+				"label": "Dark Report Cards",
+				"description": "Use a darker background for widget cards on the Reports page.",
+				"icon": "palette",
+				"group": null
+			},
+			{
+				"label": "Report Card Borders",
+				"description": "Add borders around widget cards on the Reports page.",
+				"icon": "square",
+				"group": null
+			},
+			{
+				"label": "Spending Calendar",
+				"description": "A calendar view of daily spending, added to the sidebar.",
+				"icon": "calendar",
+				"group": null
+			}
+		]
+	},
+	{
 		"title": "Experimental",
-		"description": "Early previews of in-progress features",
+		"description": null,
 		"items": [
 			{
 				"label": "Month header (experimental)",
 				"description": "Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",
 				"icon": "calendar",
-				"group": "Budget"
+				"group": null
 			},
 			{
 				"label": "Month cards (experimental)",
 				"description": "Compact month headers when several months are shown; with one, a full-width row of To Budget, spending, targets, and quick budget actions.",
 				"icon": "sparkles",
-				"group": "Budget"
+				"group": null
 			},
 			{
 				"label": "Category filter (experimental)",
 				"description": "Filter the budget table to categories that need attention (overspent or short of their target) or are funded.",
 				"icon": "filter",
-				"group": "Budget"
+				"group": null
 			}
 		]
 	}

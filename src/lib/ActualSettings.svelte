@@ -1,9 +1,12 @@
 <script lang="ts">
-	import { scriptSections, scripts } from "../features";
+	import { ExternalLink, X } from "lucide-svelte";
+	import { tick } from "svelte";
+	import { scriptSections, scripts, sectionItems, type PageSetting } from "../features";
 	import { pushStoredSettings } from "../features/settings-sync";
-	import { DESKTOP_QUERY } from "./utilities/pages";
 	import Icon from "./components/Icon.svelte";
 	import SettingRow from "./components/SettingRow.svelte";
+	import { watchDom } from "./utilities/dom-watcher";
+	import { DESKTOP_QUERY } from "./utilities/pages";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
 	const version = browser.runtime.getManifest().version;
@@ -11,11 +14,15 @@
 
 	let query = $state("");
 	let collapsed = $state<Record<string, boolean>>({});
+	let changedOnly = $state(false);
+	let activeSection = $state(scriptSections[0]?.title ?? "");
 
 	let showBugModal = $state(false);
 	let bugFeature = $state("");
 	let bugDescription = $state("");
 	let importStatus = $state<"" | "success" | "error">("");
+	let showResetDialog = $state(false);
+	let resetting = $state(false);
 
 	function openBugReport() {
 		bugFeature = "";
@@ -52,22 +59,49 @@
 		return () => desktopQuery.removeEventListener("change", update);
 	});
 
+	// Stored values, kept live, so "Changed" reflects toggles made on this page or elsewhere.
+	let stored = $state<Record<string, unknown>>({});
+	$effect(() => {
+		browser.storage.local.get(null).then((all) => (stored = all));
+		const onChanged = (changes: Record<string, { newValue?: unknown }>, area: string) => {
+			if (area !== "local") return;
+			const next = { ...stored };
+			for (const [key, change] of Object.entries(changes)) next[key] = change.newValue;
+			stored = next;
+		};
+		browser.storage.onChanged.addListener(onChanged);
+		return () => browser.storage.onChanged.removeListener(onChanged);
+	});
+
+	function isChanged(item: PageSetting): boolean {
+		const key = `local:${item.context.key}`;
+		if (stored[key] === undefined) return false;
+		return JSON.stringify(stored[key]) !== JSON.stringify(item.context.defaultValue);
+	}
+
 	const normalizedQuery = $derived(query.trim().toLowerCase());
+
+	function isVisible(item: PageSetting): boolean {
+		if (!isDesktop && !("mobile" in item && item.mobile)) return false;
+		if (changedOnly && !isChanged(item)) return false;
+		if (!normalizedQuery) return true;
+		const text = `${item.label} ${"description" in item ? (item.description ?? "") : ""}`;
+		return text.toLowerCase().includes(normalizedQuery);
+	}
+
 	const filteredSections = $derived.by(() =>
 		scriptSections
 			.map((section) => ({
 				...section,
-				items: section.items.filter(
-					(item) =>
-						(isDesktop || ("mobile" in item && item.mobile)) &&
-						item.label.toLowerCase().includes(normalizedQuery),
-				),
+				groups: section.groups
+					.map((group) => ({ ...group, items: group.items.filter(isVisible) }))
+					.filter((group) => group.items.length > 0),
 			}))
-			.filter((section) => section.items.length > 0),
+			.filter((section) => section.groups.length > 0),
 	);
 
 	const totalVisibleSettings = $derived(
-		filteredSections.reduce((count, section) => count + section.items.length, 0),
+		filteredSections.reduce((count, section) => count + sectionItems(section).length, 0),
 	);
 
 	function toggleSection(title: string) {
@@ -75,36 +109,128 @@
 	}
 
 	function isSectionCollapsed(title: string) {
-		// When searching, force all sections open
-		return !normalizedQuery && !!collapsed[title];
+		// Searching or filtering shows every match, so nothing stays collapsed.
+		return !normalizedQuery && !changedOnly && !!collapsed[title];
 	}
 
-	function groupSectionItems(items: any[]): { label: string | null; items: any[] }[] {
-		const hasAnyGroup = items.some((item) => item.group);
-		if (!hasAnyGroup) return [{ label: null, items }];
+	// Actual's titlebar strip is sticky too, so the toolbar pins just below it.
+	let stickyTop = $state(0);
+	$effect(() => {
+		let strip: Element | null = null;
+		const observer = new ResizeObserver(() => (stickyTop = (strip as HTMLElement).offsetHeight));
+		// The titlebar can render after this page, so keep looking until it appears.
+		const stop = watchDom(() => {
+			const found = document.querySelector("[data-abt-content-grid] > div:first-of-type");
+			if (found === strip) return;
+			if (strip) observer.unobserve(strip);
+			strip = found;
+			if (strip) observer.observe(strip);
+		});
+		return () => {
+			stop();
+			observer.disconnect();
+		};
+	});
 
-		const order: string[] = [];
-		const buckets = new Map<string, any[]>();
-		const ungrouped: any[] = [];
-		for (const item of items) {
-			const g = item.group as string | undefined;
-			if (!g) {
-				ungrouped.push(item);
-				continue;
-			}
-			if (!buckets.has(g)) {
-				buckets.set(g, []);
-				order.push(g);
-			}
-			buckets.get(g)!.push(item);
-		}
-		const result: { label: string | null; items: any[] }[] = order.map((g) => ({
-			label: g,
-			items: buckets.get(g)!,
-		}));
-		if (ungrouped.length) result.push({ label: null, items: ungrouped });
-		return result;
+	const sectionEls: Record<string, HTMLElement> = {};
+
+	let toolbarEl = $state<HTMLElement>();
+	let navEl = $state<HTMLElement>();
+	let navOverflows = $state(false);
+
+	// Fades the chip row's right edge only while more chips sit past it.
+	$effect(() => {
+		const nav = navEl;
+		if (!nav) return;
+		const update = () => (navOverflows = nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1);
+		const observer = new ResizeObserver(update);
+		observer.observe(nav);
+		nav.addEventListener("scroll", update, { passive: true });
+		update();
+		return () => {
+			observer.disconnect();
+			nav.removeEventListener("scroll", update);
+		};
+	});
+
+	// Keeps the active chip in view as the page scrolls past later sections.
+	$effect(() => {
+		if (!activeSection) return;
+		const chip = navEl?.querySelector<HTMLElement>(".section-chip.active");
+		if (!navEl || !chip) return;
+		const left = chip.offsetLeft - navEl.offsetLeft;
+		const right = left + chip.offsetWidth;
+		if (left < navEl.scrollLeft) navEl.scrollTo({ left, behavior: "smooth" });
+		else if (right > navEl.scrollLeft + navEl.clientWidth)
+			navEl.scrollTo({ left: right - navEl.clientWidth + 32, behavior: "smooth" });
+	});
+	let scroller: HTMLElement | null = null;
+	let jumping = false;
+
+	function getScroller(): HTMLElement | null {
+		if (scroller?.isConnected) return scroller;
+		let el = toolbarEl?.parentElement ?? null;
+		while (el && !/(auto|scroll)/.test(getComputedStyle(el).overflowY)) el = el.parentElement;
+		scroller = el;
+		return el;
 	}
+
+	/** Where a section's top lands: just under the toolbar once it's pinned, wherever it is now. */
+	function pinnedBottom(sc: HTMLElement): number {
+		return sc.getBoundingClientRect().top + stickyTop + (toolbarEl?.offsetHeight ?? 0) + 8;
+	}
+
+	async function jumpTo(title: string) {
+		collapsed[title] = false;
+		activeSection = title;
+		await tick();
+		const el = sectionEls[title];
+		const sc = getScroller();
+		if (!el || !sc) return;
+		jumping = true;
+		const done = () => {
+			if (!jumping) return;
+			jumping = false;
+			sc.removeEventListener("scrollend", done);
+			// Content above can still resize mid-scroll; settle on the exact spot.
+			const off = el.getBoundingClientRect().top - pinnedBottom(sc);
+			if (Math.abs(off) > 2) sc.scrollBy({ top: off });
+		};
+		sc.addEventListener("scrollend", done);
+		// No scroll happens if it's already in place, so don't wait on scrollend forever.
+		setTimeout(done, 1000);
+		sc.scrollTo({
+			top: sc.scrollTop + el.getBoundingClientRect().top - pinnedBottom(sc),
+			behavior: "smooth",
+		});
+	}
+
+	// The active section is the last one whose top has passed under the toolbar.
+	$effect(() => {
+		const titles = filteredSections.map((section) => section.title);
+		const sc = getScroller();
+		if (!sc) return;
+		let frame = 0;
+		const update = () => {
+			frame = 0;
+			if (jumping) return;
+			const line = pinnedBottom(sc) + 1;
+			const atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2;
+			let current = titles[0];
+			for (const title of titles) {
+				const el = sectionEls[title];
+				if (el?.isConnected && el.getBoundingClientRect().top <= line) current = title;
+			}
+			activeSection = atBottom ? titles[titles.length - 1] : current;
+		};
+		const onScroll = () => (frame ||= requestAnimationFrame(update));
+		sc.addEventListener("scroll", onScroll, { passive: true });
+		update();
+		return () => {
+			sc.removeEventListener("scroll", onScroll);
+			cancelAnimationFrame(frame);
+		};
+	});
 
 	const AUX_DEFAULTS: Record<string, unknown> = {
 		"local:category-colors": {},
@@ -174,6 +300,19 @@
 		input.click();
 	}
 
+	// Writes each default rather than removing the key: removed keys would come back from the
+	// budget's synced copy. Icons, colours, groups, shortcuts and custom themes are untouched.
+	async function resetSettings() {
+		resetting = true;
+		const defaults: Record<string, unknown> = {};
+		for (const item of scripts.flat()) {
+			if (item.type !== "core") defaults[`local:${item.context.key}`] = item.context.defaultValue;
+		}
+		await browser.storage.local.set(defaults);
+		await pushStoredSettings();
+		location.reload();
+	}
+
 	function portal(node: HTMLElement) {
 		document.body.appendChild(node);
 		return {
@@ -184,86 +323,138 @@
 	}
 </script>
 
-<div class="settings-page stack" style="--space: 1rem;">
-	<div class="header stack" style="--space: 0.6rem;">
-		<div
-			class="title-row cluster"
-			style="--gutter: 0.5rem; --align: center; --justify: space-between;"
-		>
-			<span class="title-brand">
-				<img class="title-logo" src={logoUrl} alt="" />
-				<strong>Actual Budget Tweaks</strong> — Configure Actual
-				<span class="version-tag">v{version}</span>
-			</span>
-			<div class="header-actions cluster" style="--gutter: 0.25rem; --align: center;">
-				{#if importStatus === "success"}
-					<span class="import-status import-status--ok">Imported — reloading...</span>
-				{:else if importStatus === "error"}
-					<span class="import-status import-status--err">Invalid settings file</span>
-				{/if}
-				<button
-					class="header-action-btn"
-					onclick={exportSettings}
-					title="Export settings"
-					aria-label="Export settings"
-				>
-					<Icon name="upload" size={14} strokeWidth={1.5} />
-				</button>
-				<button
-					class="header-action-btn"
-					onclick={importSettings}
-					title="Import settings"
-					aria-label="Import settings"
-				>
-					<Icon name="download" size={14} strokeWidth={1.5} />
-				</button>
-				<button
-					class="bug-report-btn"
-					onclick={openBugReport}
-					title="Report a bug"
-					aria-label="Report a bug"
-				>
-					<Icon name="bug" size={14} />
-				</button>
-			</div>
+<svelte:window
+	onkeydown={(e) => {
+		if (e.key !== "Escape") return;
+		showBugModal = false;
+		if (!resetting) showResetDialog = false;
+	}}
+/>
+
+<div class="settings-page">
+	<header class="page-header">
+		<div class="page-title">
+			<img class="title-logo" src={logoUrl} alt="" />
+			<h2>Actual Budget Tweaks</h2>
+			<span class="version-tag">v{version}</span>
 		</div>
-		<div class="search-row cluster" style="--gutter: 0.5rem; --align: center;">
+		<div class="header-actions">
+			{#if importStatus === "success"}
+				<span class="import-status import-status--ok">Imported, reloading…</span>
+			{:else if importStatus === "error"}
+				<span class="import-status import-status--err">Invalid settings file</span>
+			{/if}
+			<button
+				type="button"
+				class="abt-btn abt-btn--icon abt-btn--sm"
+				onclick={exportSettings}
+				title="Export settings"
+				aria-label="Export settings"
+			>
+				<Icon name="upload" size={14} strokeWidth={1.5} />
+			</button>
+			<button
+				type="button"
+				class="abt-btn abt-btn--icon abt-btn--sm"
+				onclick={importSettings}
+				title="Import settings"
+				aria-label="Import settings"
+			>
+				<Icon name="download" size={14} strokeWidth={1.5} />
+			</button>
+			<button
+				type="button"
+				class="abt-btn abt-btn--icon abt-btn--sm"
+				onclick={() => (showResetDialog = true)}
+				title="Reset to defaults"
+				aria-label="Reset to defaults"
+			>
+				<Icon name="rotateCcw" size={14} strokeWidth={1.5} />
+			</button>
+			<button
+				type="button"
+				class="abt-btn abt-btn--icon abt-btn--sm bug-btn"
+				onclick={openBugReport}
+				title="Report a bug"
+				aria-label="Report a bug"
+			>
+				<Icon name="bug" size={14} />
+			</button>
+		</div>
+	</header>
+
+	<div class="settings-toolbar" bind:this={toolbarEl} style="top: {stickyTop}px;">
+		<div class="search-row">
 			<input
 				type="search"
-				class="search-input"
+				class="abt-input search-input"
 				placeholder="Filter settings"
 				bind:value={query}
 				aria-label="Filter settings"
 			/>
+			<button
+				type="button"
+				class="abt-btn abt-btn--sm abt-btn--pill"
+				class:abt-tone-accent={changedOnly}
+				aria-pressed={changedOnly}
+				onclick={() => (changedOnly = !changedOnly)}
+			>
+				Changed
+			</button>
 			<span class="search-meta">{totalVisibleSettings} visible</span>
 		</div>
+		<nav
+			class="section-nav"
+			class:overflows={navOverflows}
+			bind:this={navEl}
+			aria-label="Settings sections"
+		>
+			{#each filteredSections as section (section.title)}
+				<button
+					type="button"
+					class="abt-btn abt-btn--sm abt-btn--pill abt-btn--ghost section-chip"
+					class:active={activeSection === section.title}
+					onclick={() => jumpTo(section.title)}
+				>
+					{section.title}
+					<span class="section-chip-count abt-num">{sectionItems(section).length}</span>
+				</button>
+			{/each}
+		</nav>
 	</div>
 
 	{#if filteredSections.length === 0}
-		<p class="empty">No settings matched "{query}".</p>
+		<p class="empty">
+			{changedOnly && !normalizedQuery
+				? "Nothing has been changed from its default yet."
+				: `No settings matched "${query}".`}
+		</p>
 	{:else}
 		{#each filteredSections as section (section.title)}
 			{@const isCollapsed = isSectionCollapsed(section.title)}
-			<section class="settings-section" class:collapsed={isCollapsed}>
+			<section
+				class="settings-section abt-card"
+				class:collapsed={isCollapsed}
+				data-section={section.title}
+				bind:this={sectionEls[section.title]}
+			>
 				<button
+					type="button"
 					class="section-toggle"
 					onclick={() => toggleSection(section.title)}
 					aria-expanded={!isCollapsed}
 				>
-					<div class="section-header">
-						<h3>{section.title}</h3>
-						<p>{section.description}</p>
-					</div>
+					<h3 class="section-title">{section.title}</h3>
 					<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
 				</button>
 				{#if !isCollapsed}
-					<div class="settings-list stack" style="--space: 0.9rem;">
-						{#each groupSectionItems(section.items) as group (group.label ?? "__ungrouped__")}
+					<div class="settings-list">
+						{#each section.groups as group (group.label ?? "__ungrouped__")}
 							<div class="settings-subgroup">
 								{#if group.label}
-									<div class="subgroup-label">{group.label}</div>
+									<h4 class="abt-label">{group.label}</h4>
 								{/if}
-								<div class="stack" style="--space: 0;">
+								<div>
 									{#each group.items as item (item.context.key)}
 										<SettingRow setting={item} />
 									{/each}
@@ -277,57 +468,111 @@
 	{/if}
 </div>
 
-{#if showBugModal}
-	<div class="bug-modal" use:portal>
-		<div class="bug-backdrop" role="presentation" onclick={closeBugReport}></div>
-		<div class="bug-content">
-			<button class="bug-close" onclick={closeBugReport}>&times;</button>
-			<h3 class="bug-title">Report a Bug</h3>
-
-			<label class="bug-label" for="bug-feature">Affected Feature</label>
-			<select id="bug-feature" class="bug-select" bind:value={bugFeature}>
-				<option value="">General / Not sure</option>
-				{#each scriptSections as section, i (i)}
-					<optgroup label={section.title}>
-						{#each section.items as item, i (i)}
-							{#if item.label}
-								<option value={item.label}>{item.label}</option>
-							{:else}
-								<option value={section.title}>{section.title}</option>
-							{/if}
-						{/each}
-					</optgroup>
-				{/each}
-			</select>
-
-			<label class="bug-label" for="bug-description">What happened?</label>
-			<textarea
-				id="bug-description"
-				class="bug-textarea"
-				rows="4"
-				placeholder="Describe what you expected vs. what actually happened..."
-				bind:value={bugDescription}></textarea>
-
-			<div class="bug-actions">
-				<button class="bug-cancel" onclick={closeBugReport}>Cancel</button>
-				<button class="bug-submit" onclick={submitBugReport}>
-					Open on GitHub
-					<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-						<path
-							d="M4.5 2.5h9m0 0v9m0-9L4 12"
-							stroke="currentColor"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-				</button>
+{#if showResetDialog}
+	<div
+		class="abt-dialog-backdrop"
+		role="presentation"
+		use:portal
+		onclick={(e) => e.target === e.currentTarget && !resetting && (showResetDialog = false)}
+	>
+		<div
+			class="abt-dialog abt-popover abt-controls-quiet"
+			role="alertdialog"
+			aria-modal="true"
+			aria-label="Reset to defaults"
+		>
+			<header class="abt-dialog__header">
+				<h3 class="abt-dialog__title">Reset to defaults?</h3>
+			</header>
+			<div class="abt-dialog__body dialog-text">
+				<p>
+					Every ABT setting goes back to its default, in this browser and in the budget's synced
+					copy. Account icons, category colours, account groups, shortcuts and custom themes stay.
+				</p>
+				<p>Export your settings first if you might want them back. The page reloads afterwards.</p>
 			</div>
+			<footer class="abt-dialog__footer">
+				<button
+					type="button"
+					class="abt-btn"
+					disabled={resetting}
+					onclick={() => (showResetDialog = false)}
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					class="abt-btn abt-tone-danger"
+					disabled={resetting}
+					onclick={resetSettings}
+				>
+					{resetting ? "Resetting…" : "Reset settings"}
+				</button>
+			</footer>
+		</div>
+	</div>
+{/if}
+
+{#if showBugModal}
+	<div
+		class="abt-dialog-backdrop"
+		role="presentation"
+		use:portal
+		onclick={(e) => e.target === e.currentTarget && closeBugReport()}
+	>
+		<div
+			class="abt-dialog abt-popover abt-controls-quiet"
+			role="dialog"
+			aria-modal="true"
+			aria-label="Report a bug"
+		>
+			<header class="abt-dialog__header">
+				<h3 class="abt-dialog__title">Report a bug</h3>
+				<button
+					type="button"
+					class="abt-btn abt-btn--icon abt-btn--ghost"
+					aria-label="Close"
+					onclick={closeBugReport}
+				>
+					<X size={16} strokeWidth={1.75} />
+				</button>
+			</header>
+			<div class="abt-dialog__body bug-form">
+				<label class="bug-field">
+					<span class="abt-label">Affected feature</span>
+					<select class="abt-input" bind:value={bugFeature}>
+						<option value="">General / Not sure</option>
+						{#each scriptSections as section (section.title)}
+							<optgroup label={section.title}>
+								{#each sectionItems(section) as item (item.context.key)}
+									<option value={item.label}>{item.label}</option>
+								{/each}
+							</optgroup>
+						{/each}
+					</select>
+				</label>
+				<label class="bug-field">
+					<span class="abt-label">What happened?</span>
+					<textarea
+						class="abt-input bug-textarea"
+						rows="4"
+						placeholder="Describe what you expected vs. what actually happened…"
+						bind:value={bugDescription}></textarea>
+				</label>
+			</div>
+			<footer class="abt-dialog__footer">
+				<button type="button" class="abt-btn" onclick={closeBugReport}>Cancel</button>
+				<button type="button" class="abt-btn abt-tone-accent" onclick={submitBugReport}>
+					Open on GitHub
+					<ExternalLink size={13} strokeWidth={1.5} />
+				</button>
+			</footer>
 		</div>
 	</div>
 {/if}
 
 <style>
+	/* Layout helpers other features' components rely on while this page is open. */
 	:global {
 		.cluster {
 			display: flex;
@@ -350,348 +595,243 @@
 		.stack > * + * {
 			margin-block-start: var(--space, 0.5rem);
 		}
+	}
 
-		.settings-page {
-			width: 100%;
-			box-sizing: border-box;
-			color: var(--color-pageText);
-		}
+	/* `inherit` passes the host card's own background down to the pinned toolbar, whatever
+	   colour the active theme gives that card. */
+	.settings-page {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-4);
+		width: 100%;
+		box-sizing: border-box;
+		color: var(--color-pageText);
+		background: inherit;
+	}
 
-		.search-input {
-			min-width: min(420px, 100%);
-			width: min(420px, 100%);
-			padding: 0.45rem 0.7rem;
-			font-size: 0.95rem;
-			border-radius: var(--abt-radius-sm);
-			border: var(--border);
-			background: var(--color-formInputBackground);
-			color: var(--color-formInputText);
-		}
+	.page-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--abt-space-3);
+		flex-wrap: wrap;
+	}
 
-		.search-input::placeholder {
-			color: var(--color-formInputTextPlaceholder);
-		}
+	.page-title {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-2);
+	}
 
-		.search-input:focus-visible {
-			outline: none;
-			border-color: var(--color-formInputBorderSelected);
-			box-shadow: 0 0 0 1px var(--color-formInputBorderSelected);
-		}
+	.page-title h2 {
+		margin: 0;
+		font-size: var(--abt-text-lg);
+		font-weight: 600;
+	}
 
-		.search-meta {
-			color: var(--color-pageTextSubdued);
-			font-size: 0.85rem;
-		}
+	.title-logo {
+		width: 18px;
+		height: 18px;
+		flex-shrink: 0;
+		border-radius: var(--abt-radius-sm);
+	}
 
-		.title-brand {
-			display: inline-flex;
-			align-items: center;
-			gap: 0.4rem;
-			flex-wrap: wrap;
-		}
+	.version-tag {
+		padding: 1px var(--abt-space-2);
+		border: 1px solid var(--abt-accent-3);
+		border-radius: var(--abt-radius-pill);
+		background: var(--abt-accent-2);
+		color: var(--abt-accent);
+		font-size: var(--abt-text-xs);
+		font-weight: 600;
+	}
 
-		.title-logo {
-			width: 16px;
-			height: 16px;
-			flex-shrink: 0;
-			border-radius: var(--abt-radius-sm);
-		}
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-2);
+		margin-left: auto;
+	}
 
-		.header-actions {
-			flex-shrink: 0;
-			margin-left: auto;
-		}
+	.bug-btn:hover:not(:disabled) {
+		color: var(--color-errorText);
+	}
 
-		.version-tag {
-			font-size: 0.7rem;
-			font-weight: 700;
-			letter-spacing: 0.02em;
-			color: var(--abt-accent);
-			background: var(--abt-accent-2);
-			border: 1px solid var(--abt-accent-3);
-			border-radius: var(--abt-radius-sm);
-			padding: 1px 6px;
-			margin-left: 2px;
-		}
+	.import-status {
+		font-size: var(--abt-text-sm);
+		font-weight: 500;
+	}
 
-		.settings-section {
-			padding: 0;
-			width: 100%;
-			box-sizing: border-box;
-			border-radius: var(--border-radius);
-			border: var(--border);
-			background: var(--color-cardBackground);
-			overflow: hidden;
-		}
+	.import-status--ok {
+		color: var(--color-noticeTextLight);
+	}
 
-		.section-toggle {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			width: 100%;
-			padding: 0.85rem 1rem;
-			background: none;
-			border: none;
-			cursor: pointer;
-			text-align: left;
-			color: inherit;
-			gap: 0.5rem;
-		}
+	.import-status--err {
+		color: var(--color-errorText);
+	}
 
-		.section-toggle:hover {
-			background: var(--abt-fill-hover);
-		}
+	/* Pinned while scrolling. */
+	.settings-toolbar {
+		position: sticky;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-4);
+		padding-block: var(--abt-space-3) var(--abt-space-4);
+		/* Its own bottom padding stands in for most of the page gap below it. */
+		margin-bottom: calc(-1 * var(--abt-space-4));
+		background: inherit;
+	}
 
-		.section-header {
-			display: flex;
-			flex-direction: column;
-			gap: 0.2rem;
-			flex: 1;
-			min-width: 0;
-		}
+	.search-row {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
+	}
 
-		.section-header h3 {
-			font-size: 1rem;
-			font-weight: 600;
-			margin: 0;
-		}
+	.search-input {
+		flex: 1 1 auto;
+	}
 
-		.section-header p {
-			font-size: 0.85rem;
-			color: var(--color-pageTextSubdued);
-			margin: 0;
-		}
+	.search-meta {
+		flex-shrink: 0;
+		white-space: nowrap;
+		font-size: var(--abt-text-sm);
+		color: var(--color-pageTextSubdued);
+	}
 
-		.settings-section .chevron {
-			width: 16px;
-			height: 16px;
-			flex-shrink: 0;
-			color: var(--color-pageTextSubdued);
-			transition: transform 0.15s ease;
-		}
+	/* One row that scrolls sideways, so the pinned bar stays short. */
+	.section-nav {
+		display: flex;
+		gap: var(--abt-space-2);
+		overflow-x: auto;
+		/* Room for a chip's focus ring, which the sideways scroll would otherwise clip. */
+		padding: 2px;
+		margin: -2px;
+		scrollbar-width: none;
+	}
 
-		.settings-section.collapsed .chevron {
-			transform: rotate(-90deg);
-		}
+	.section-nav.overflows {
+		mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+	}
 
-		.settings-list {
-			padding: 0 1rem 0.85rem;
-		}
+	.section-nav::-webkit-scrollbar {
+		display: none;
+	}
 
-		.settings-subgroup {
-			display: flex;
-			flex-direction: column;
-			gap: 0.3rem;
-		}
+	.section-chip {
+		flex-shrink: 0;
+		color: var(--abt-btn-fg, var(--abt-muted));
+	}
 
-		.subgroup-label {
-			font-size: var(--abt-text-xs);
-			font-weight: 600;
-			text-transform: uppercase;
-			letter-spacing: 0.06em;
-			color: var(--color-pageTextSubdued);
-			margin-bottom: 0.1rem;
-		}
+	/* Ghost buttons drop their fill, so the active one sets its own. */
+	.section-chip.active {
+		--abt-btn-bg: var(--abt-accent-2);
+		--abt-btn-bg-hover: var(--abt-accent-2);
+		--abt-btn-fg: var(--abt-accent);
+	}
 
-		.header-actions {
-			margin-left: auto;
-		}
+	.section-chip-count {
+		font-size: var(--abt-text-xs);
+		opacity: 0.7;
+	}
 
-		.header-action-btn {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			color: var(--color-pageTextSubdued);
-			padding: 0.4rem;
-			border-radius: var(--abt-radius-sm);
-			border: var(--border);
-			background: none;
-			cursor: pointer;
-			transition:
-				color 0.15s,
-				border-color 0.15s;
-		}
+	.settings-section {
+		--abt-pad: 0;
+		overflow: hidden;
+	}
 
-		.header-action-btn:hover {
-			color: var(--color-pageText);
-			border-color: var(--color-pageTextSubdued);
-		}
+	.section-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--abt-space-3);
+		width: 100%;
+		padding: var(--abt-space-4) var(--abt-space-5);
+		border: none;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: background-color 0.1s;
+	}
 
-		.import-status {
-			font-size: 0.8rem;
-			font-weight: 500;
-		}
+	.section-toggle:hover {
+		background: var(--abt-fill-hover);
+	}
 
-		.import-status--ok {
-			color: var(--color-noticeTextLight);
-		}
+	.section-title {
+		flex: 1;
+		min-width: 0;
+		margin: 0;
+		font-size: var(--abt-text-lg);
+		font-weight: 600;
+	}
 
-		.import-status--err {
-			color: var(--color-errorText);
-		}
+	.settings-section :global(.chevron) {
+		width: 16px;
+		height: 16px;
+		flex-shrink: 0;
+		color: var(--color-pageTextSubdued);
+		transition: transform 0.15s ease;
+	}
 
-		.bug-report-btn {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			color: var(--color-pageTextSubdued);
-			padding: 0.4rem;
-			border-radius: var(--abt-radius-sm);
-			border: var(--border);
-			background: none;
-			cursor: pointer;
-			transition:
-				color 0.15s,
-				border-color 0.15s;
-		}
+	.settings-section.collapsed :global(.chevron) {
+		transform: rotate(-90deg);
+	}
 
-		.bug-report-btn:hover {
-			color: var(--color-errorText);
-			border-color: var(--color-errorBorder);
-		}
+	.settings-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-4);
+		padding: 0 var(--abt-space-5) var(--abt-space-4);
+	}
 
-		.bug-modal {
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			z-index: 10000;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
+	.settings-subgroup {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-1);
+	}
 
-		.bug-backdrop {
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(0, 0, 0, 0.3);
-		}
+	.settings-subgroup h4 {
+		margin: 0;
+	}
 
-		.bug-content {
-			position: relative;
-			background: var(--color-modalBackground);
-			border: var(--border);
-			border-radius: var(--border-radius);
-			padding: 1.5rem;
-			width: 460px;
-			max-height: 80vh;
-			overflow-y: auto;
-			z-index: 10001;
-			display: flex;
-			flex-direction: column;
-			gap: 0.75rem;
-		}
+	.empty {
+		margin: 0;
+		font-size: var(--abt-text-md);
+		color: var(--color-pageTextSubdued);
+	}
 
-		.bug-close {
-			position: absolute;
-			top: 0.75rem;
-			right: 0.75rem;
-			width: 24px;
-			height: 24px;
-			padding: 0;
-			border: 0;
-			background: transparent;
-			color: var(--color-pageTextSubdued);
-			font-size: 18px;
-			cursor: pointer;
-		}
+	.dialog-text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-3);
+		font-size: var(--abt-text-md);
+		line-height: 1.5;
+	}
 
-		.bug-close:hover {
-			color: var(--color-pageText);
-		}
+	.dialog-text p {
+		margin: 0;
+	}
 
-		.bug-title {
-			margin: 0;
-			font-size: 1.05rem;
-			font-weight: 600;
-			color: var(--color-pageText);
-		}
+	.bug-form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-4);
+	}
 
-		.bug-label {
-			font-size: 0.85rem;
-			font-weight: 500;
-			color: var(--color-pageText);
-		}
+	.bug-field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-2);
+	}
 
-		.bug-select,
-		.bug-textarea {
-			width: 100%;
-			padding: 0.45rem 0.7rem;
-			font-size: 0.9rem;
-			border-radius: var(--abt-radius-sm);
-			border: var(--border);
-			background: var(--color-formInputBackground);
-			color: var(--color-formInputText);
-			font-family: inherit;
-			box-sizing: border-box;
-		}
-
-		.bug-select:focus-visible,
-		.bug-textarea:focus-visible {
-			outline: none;
-			border-color: var(--color-formInputBorderSelected);
-			box-shadow: 0 0 0 1px var(--color-formInputBorderSelected);
-		}
-
-		.bug-textarea {
-			resize: vertical;
-			min-height: 80px;
-		}
-
-		.bug-textarea::placeholder {
-			color: var(--color-formInputTextPlaceholder);
-		}
-
-		.bug-actions {
-			display: flex;
-			justify-content: flex-end;
-			gap: 0.5rem;
-			margin-top: 0.25rem;
-		}
-
-		.bug-cancel,
-		.bug-submit {
-			padding: 0.4rem 0.8rem;
-			font-size: 0.85rem;
-			border-radius: var(--abt-radius-sm);
-			cursor: pointer;
-			border: var(--border);
-		}
-
-		.bug-cancel {
-			background: none;
-			color: var(--color-pageText);
-		}
-
-		.bug-cancel:hover {
-			background: var(--abt-fill-hover);
-		}
-
-		.bug-submit {
-			display: inline-flex;
-			align-items: center;
-			gap: 0.35rem;
-			background: var(--color-buttonPrimaryBackground);
-			color: var(--color-buttonPrimaryText);
-			border-color: var(--color-buttonPrimaryBackground);
-		}
-
-		.bug-submit:hover {
-			filter: brightness(1.1);
-		}
-
-		.bug-submit svg {
-			width: 13px;
-			height: 13px;
-		}
-
-		.empty {
-			font-size: 0.95rem;
-			color: var(--color-pageTextSubdued);
-		}
+	.bug-textarea {
+		height: auto;
+		min-height: 88px;
+		padding-block: var(--abt-space-2);
+		resize: vertical;
 	}
 </style>

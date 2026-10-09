@@ -431,6 +431,21 @@
 	transition: border-color 0.1s;
 }
 
+/* Native select arrows sit flush with the edge in Chrome; draw one with room to breathe. */
+select.abt-input {
+	appearance: none;
+	padding-right: calc(var(--abt-space-3) + 14px);
+	background-image:
+		linear-gradient(45deg, transparent 50%, var(--abt-muted) 50%),
+		linear-gradient(135deg, var(--abt-muted) 50%, transparent 50%);
+	background-position:
+		calc(100% - 15px) 50%,
+		calc(100% - 10px) 50%;
+	background-size: 5px 5px;
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
 .abt-input::placeholder {
 	color: var(--color-pageTextSubdued);
 }
@@ -541,23 +556,24 @@
 /* ── Settings rows ──────────────────────────────────────────────────────── */
 
 /* One setting in a list: icon, label and description, then its control. Rows bleed past the
-   list's edge so the hover reads as a row, and are divided by a hairline. */
+   list's edge so the hover reads as a row. */
 .abt-setting {
 	display: flex;
 	align-items: center;
 	gap: var(--abt-space-3);
 	padding: var(--abt-space-3);
 	margin: 0 calc(-1 * var(--abt-space-3));
-	border-top: 1px solid var(--abt-ink-2);
 	border-radius: var(--abt-radius-sm);
 	transition: background-color 0.15s;
 }
 
-.abt-setting:first-child {
-	border-top: none;
+/* A dropdown on the right of the row, like a switch, sized to its options. */
+.abt-setting__select {
+	flex: 0 1 auto;
+	max-width: 50%;
 }
 
-/* Control below the text, for selects and custom pickers. */
+/* Control below the text, for custom pickers. */
 .abt-setting--stacked {
 	flex-direction: column;
 	align-items: stretch;
