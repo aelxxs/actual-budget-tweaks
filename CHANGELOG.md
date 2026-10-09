@@ -1,6 +1,44 @@
 # Changelog
 
 
+## v0.1.87
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.86...v0.1.87)
+
+### 🚀 Enhancements
+
+- Add a Transaction Inspector side panel showing the selected transaction's payee history, rules and schedule ([6e1a8f2](https://github.com/aelxxs/actual-budget-tweaks/commit/6e1a8f2))
+- Switch the account toolbar's actions to icons when their labels don't fit on one line ([e635d68](https://github.com/aelxxs/actual-budget-tweaks/commit/e635d68))
+- Keep the Reports header in view with a border and a breadcrumb title ([4b88b40](https://github.com/aelxxs/actual-budget-tweaks/commit/4b88b40))
+
+### 🩹 Fixes
+
+- Keep fixed-length privacy amounts on one line so long notes don't wrap into a tall column ([a82a7ce](https://github.com/aelxxs/actual-budget-tweaks/commit/a82a7ce))
+- Hide only the amounts in the Insights coverage and pace lines so their words stay readable in fixed-length privacy ([8aaa240](https://github.com/aelxxs/actual-budget-tweaks/commit/8aaa240))
+- Keep the account search's clear button small instead of sizing it like the toolbar's icon buttons ([5bf667d](https://github.com/aelxxs/actual-budget-tweaks/commit/5bf667d))
+- Left-align the fixed-length privacy mark on the account header balance ([f9fd41b](https://github.com/aelxxs/actual-budget-tweaks/commit/f9fd41b))
+- Retry live sidebar balances that fail to load instead of showing 0, and unfold the sidebar after a reload drops the panel that folded it ([dcb47e1](https://github.com/aelxxs/actual-budget-tweaks/commit/dcb47e1))
+- Compute Daily Available from the balance in any number format, and hide it when there's nothing to spread ([eefe4fe](https://github.com/aelxxs/actual-budget-tweaks/commit/eefe4fe))
+- Give the month header's month picker the same height as the controls beside it ([4568845](https://github.com/aelxxs/actual-budget-tweaks/commit/4568845))
+- Keep the live sidebar folded until both Reconcile and the Inspector have closed ([0d6d347](https://github.com/aelxxs/actual-budget-tweaks/commit/0d6d347))
+- Close the gap above the sticky Reports header in Firefox ([3ba47ac](https://github.com/aelxxs/actual-budget-tweaks/commit/3ba47ac))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.86 ([dd8cffc](https://github.com/aelxxs/actual-budget-tweaks/commit/dd8cffc))
+- Refresh the README screenshots, showing light or dark to match the reader's GitHub theme ([af45a16](https://github.com/aelxxs/actual-budget-tweaks/commit/af45a16))
+- Refresh the website hero and theme demo ([e8b6980](https://github.com/aelxxs/actual-budget-tweaks/commit/e8b6980))
+- Tighten the README with feature highlights and sidecar setup, and drop the settings shot ([f5e2cbb](https://github.com/aelxxs/actual-budget-tweaks/commit/f5e2cbb))
+
+### 🎨 Styles
+
+- Show the account balance details as labelled stat columns instead of boxed chips ([84c4baa](https://github.com/aelxxs/actual-budget-tweaks/commit/84c4baa))
+- Give the calendar header ABT's header border and divider colors ([93873fc](https://github.com/aelxxs/actual-budget-tweaks/commit/93873fc))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.86
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.85...v0.1.86)
