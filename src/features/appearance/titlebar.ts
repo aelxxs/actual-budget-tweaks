@@ -16,6 +16,8 @@ const BAR = `[${BAR_ATTR}]`;
 const HELP = `${BAR} > div > [data-testid="help-menu-button"]`;
 const UNCATEGORIZED = `${BAR} > button:not(:has(svg))`;
 const STATUS = `${BAR} > div > div > button:not(:has(svg))`;
+// :has() can't nest, so the status's wrapper is told apart as the one with a button two levels down.
+const STATUS_SLOT = `${BAR} > div:has(> div > button):not(:has([data-testid="notifications-button"]))`;
 // While syncing, Actual swaps the status for a bare "Connecting…" that fades in after a delay.
 const CONNECTING = `${BAR} > span`;
 const SYNC = `${BAR} > div > button:has(> div > svg)`;
@@ -152,12 +154,21 @@ const CSS = `
 		margin-right: auto;
 	}
 
-	${STATUS},
+	/* Fits "Server online", "Server offline" and "Connecting…", so swapping between them doesn't
+	   nudge the row; min-width rather than width so longer translations aren't clipped. Reserved
+	   on the status's wrapper, so its hover background hugs the label. */
+	${STATUS_SLOT},
 	${CONNECTING} {
-		/* Fits "Server online", "Server offline" and "Connecting…", so swapping between them doesn't
-		   nudge the row; min-width rather than width so longer translations aren't clipped. */
 		min-width: 116px;
 		box-sizing: border-box;
+	}
+
+	${STATUS_SLOT} {
+		display: flex;
+	}
+
+	${STATUS},
+	${CONNECTING} {
 		justify-content: flex-start !important;
 		color: var(--abt-muted);
 	}
