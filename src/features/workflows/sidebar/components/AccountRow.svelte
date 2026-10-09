@@ -238,7 +238,7 @@
 		padding-block: calc(var(--sb-row-pad-y, 5px) - 2px);
 	}
 	:global(.split .account-list.indented) .account {
-		padding-left: 22px;
+		padding-left: 17.5px;
 	}
 	.account {
 		display: flex;

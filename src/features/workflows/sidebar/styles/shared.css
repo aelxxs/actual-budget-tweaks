@@ -25,6 +25,8 @@
 	width: 11px;
 	height: 11px;
 	flex-shrink: 0;
+	/* On a 2x screen the svg snaps half a pixel below the caps it sits beside. */
+	translate: 0 -0.5px;
 	transition: transform 0.15s ease;
 }
 .sidebar .caret.collapsed {

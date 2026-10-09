@@ -819,8 +819,9 @@
 		gap: 0px;
 		width: 100%;
 	}
+	/* Centres a nested row's status dot between its sub-category's caret and label. */
 	.account-list.indented {
-		padding-left: 14px;
+		padding-left: 9.5px;
 	}
 	/* Split layout: the indent has to live inside the row (padding), not on
 	   the list container, otherwise a selected nested row's background would
