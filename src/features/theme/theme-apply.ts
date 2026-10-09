@@ -429,6 +429,43 @@ export function getBuiltinPreviewColors(key: string): string[] {
 	].filter(Boolean) as string[];
 }
 
+const NATIVE_PREVIEW_TOKENS = [
+	"--color-pageBackground",
+	"--color-tableBackground",
+	"--color-sidebarBackground",
+	"--color-pageText",
+	"--color-buttonPrimaryBackground",
+	"--color-pageTextLink",
+];
+
+/**
+ * Actual's own colours for its current theme setting. Read from Actual's theme rule, whose
+ * `var(--palette-*)` values ABT themes never override, so it's right under any ABT theme.
+ */
+export function getNativePreviewColors(): string[] {
+	const root = getComputedStyle(document.documentElement);
+	for (const sheet of document.styleSheets) {
+		const owner = sheet.ownerNode;
+		if (!(owner instanceof HTMLStyleElement) || owner.id.startsWith("ABT-")) continue;
+		let rules: CSSRuleList;
+		try {
+			rules = sheet.cssRules;
+		} catch {
+			continue;
+		}
+		for (const rule of rules) {
+			if (!(rule instanceof CSSStyleRule) || rule.selectorText !== ":root") continue;
+			if (!rule.style.getPropertyValue("--color-pageBackground")) continue;
+			return NATIVE_PREVIEW_TOKENS.map((token) => {
+				const value = rule.style.getPropertyValue(token).trim();
+				const ref = value.match(/^var\((--[\w-]+)\)$/)?.[1];
+				return ref ? root.getPropertyValue(ref).trim() : value;
+			}).filter(Boolean);
+		}
+	}
+	return [];
+}
+
 export async function fetchCommunityCSS(repo: string): Promise<string> {
 	const branches = ["main", "master"];
 	for (const branch of branches) {

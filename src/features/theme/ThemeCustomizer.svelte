@@ -14,6 +14,7 @@
 		applyUserPaletteTheme,
 		fetchCommunityThemeCatalog,
 		getBuiltinPreviewColors,
+		getNativePreviewColors,
 		isCommunityTheme,
 		NATIVE_THEME_KEY,
 		type RemoteTheme,
@@ -72,14 +73,42 @@
 		return key;
 	}
 
-	async function toggleAutoSwitch() {
-		autoSwitch = !autoSwitch;
-		await setValue("theme-auto-switch", autoSwitch);
-		if (autoSwitch) {
+	let nativeColors = $state<string[]>([]);
+
+	/** In Match system, the slot that clicking a theme fills. */
+	let slot = $state<"light" | "dark">("dark");
+	const slotKey = $derived(slot === "dark" ? autoDarkKey : autoLightKey);
+	/** The theme cards mark as chosen: the slot's theme in Match system, else the applied one. */
+	const selectedKey = $derived(autoSwitch ? slotKey : activeThemeKey);
+
+	async function setMatchSystem(on: boolean) {
+		if (on === autoSwitch) return;
+		autoSwitch = on;
+		await setValue("theme-auto-switch", on);
+		if (on) {
+			slot = systemIsDark ? "dark" : "light";
 			const key = systemIsDark ? autoDarkKey : autoLightKey;
 			activeThemeKey = key;
 			await applyThemeByKey(key, ctx.defaultValue);
+		} else {
+			// Keeps what's on screen as the one theme.
+			await setValue(ctx.key, activeThemeKey);
 		}
+	}
+
+	function pickSlot(mode: "light" | "dark") {
+		slot = mode;
+		themeFilter = mode;
+	}
+
+	function slotPreview(key: string): string[] {
+		if (key === NATIVE_THEME_KEY) return nativeColors.slice(0, 4);
+		if (isUserTheme(key)) {
+			const theme = userThemeState.themes[key];
+			return theme ? getPreviewColorsFromTheme(theme).slice(0, 4) : [];
+		}
+		const remote = remoteThemes.find((t) => t.repo === key);
+		return (remote?.colors ?? getBuiltinPreviewColors(key)).slice(0, 4);
 	}
 
 	async function setAutoTheme(mode: "dark" | "light", key: string) {
@@ -136,14 +165,15 @@
 	async function selectTheme(key: string) {
 		if (applyingTheme) return;
 		applyingTheme = key;
-		activeThemeKey = key;
 		try {
+			// setAutoTheme applies it only when the slot matches the system's current mode.
 			if (autoSwitch) {
-				await setAutoTheme(systemIsDark ? "dark" : "light", key);
+				await setAutoTheme(slot, key);
 			} else {
+				activeThemeKey = key;
 				await setValue(ctx.key, key);
+				await applyThemeByKey(key, ctx.defaultValue);
 			}
-			await applyThemeByKey(key, ctx.defaultValue);
 		} finally {
 			applyingTheme = null;
 		}
@@ -299,25 +329,7 @@
 	}
 
 	async function selectUserTheme(id: string) {
-		if (applyingTheme) return;
-		const theme = userThemeState.themes[id];
-		if (!theme) return;
-		applyingTheme = id;
-		activeThemeKey = id;
-		try {
-			if (autoSwitch) {
-				await setAutoTheme(systemIsDark ? "dark" : "light", id);
-			} else {
-				await setValue(ctx.key, id);
-			}
-			if (theme.type === "palette" && theme.keys) {
-				applyUserPaletteTheme(id, theme.keys);
-			} else if (theme.type === "css" && theme.css) {
-				applyUserCSSTheme(id, theme.css);
-			}
-		} finally {
-			applyingTheme = null;
-		}
+		if (userThemeState.themes[id]) await selectTheme(id);
 	}
 
 	async function handleDeleteFromCard(id: string, e: Event) {
@@ -326,12 +338,14 @@
 	}
 
 	onMount(async () => {
+		nativeColors = getNativePreviewColors();
 		await loadUserThemes();
 
 		autoSwitch = await getValue<boolean>("theme-auto-switch", false);
 		autoDarkKey = (await getValue<string>("theme-auto-dark", DEFAULT_THEME)) as string;
 		autoLightKey = (await getValue<string>("theme-auto-light", "latte")) as string;
 
+		slot = systemIsDark ? "dark" : "light";
 		if (autoSwitch) {
 			activeThemeKey = systemIsDark ? autoDarkKey : autoLightKey;
 		} else {
@@ -350,77 +364,83 @@
 </script>
 
 <div class="customizer">
-	<div class="auto-switch">
-		<button class="auto-switch__toggle" onclick={toggleAutoSwitch}>
-			<div class="auto-switch__label">
-				<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
-					><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1.5a5.5 5.5 0 0 1 0 11V2.5Z" /></svg
-				>
-				Match system theme
-			</div>
-			<div class="auto-switch__pill" class:is-on={autoSwitch}>
-				<div class="auto-switch__knob"></div>
-			</div>
-		</button>
+	<div class="mode">
+		<div class="abt-seg" role="group" aria-label="Theme mode">
+			<button type="button" aria-pressed={!autoSwitch} onclick={() => setMatchSystem(false)}>
+				One theme
+			</button>
+			<button type="button" aria-pressed={autoSwitch} onclick={() => setMatchSystem(true)}>
+				Match system
+			</button>
+		</div>
 		{#if autoSwitch}
-			<div class="auto-switch__assignments">
-				<div class="auto-switch__row">
-					<span class="auto-switch__mode" class:is-active={systemIsDark}>
-						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
-							><path
-								d="M6.2 1.7a.75.75 0 0 0-1.1-.5A7 7 0 1 0 14.8 10.9a.75.75 0 0 0-.5-1.1 5.5 5.5 0 0 1-8.1-8.1Z"
-							/></svg
-						>
-						Dark
-					</span>
-					<span class="auto-switch__theme-name">{getThemeName(autoDarkKey)}</span>
-				</div>
-				<div class="auto-switch__row">
-					<span class="auto-switch__mode" class:is-active={!systemIsDark}>
-						<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
-							><path
-								d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1Zm0 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5.66-5.66a.75.75 0 0 1 0 1.06l-1.06 1.06a.75.75 0 0 1-1.06-1.06l1.06-1.06a.75.75 0 0 1 1.06 0ZM15 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 15 8Zm-1.34 5.66a.75.75 0 0 1-1.06 0l-1.06-1.06a.75.75 0 0 1 1.06-1.06l1.06 1.06a.75.75 0 0 1 0 1.06ZM8 13a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13Zm-5.66-1.34a.75.75 0 0 1 0-1.06l1.06-1.06a.75.75 0 0 1 1.06 1.06L3.4 11.66a.75.75 0 0 1-1.06 0ZM1 8a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 1 8Zm1.34-5.66a.75.75 0 0 1 1.06 0l1.06 1.06a.75.75 0 0 1-1.06 1.06L2.34 3.4a.75.75 0 0 1 0-1.06Z"
-							/></svg
-						>
-						Light
-					</span>
-					<span class="auto-switch__theme-name">{getThemeName(autoLightKey)}</span>
-				</div>
-				<div class="auto-switch__hint">
-					Select a theme below to assign it to {systemIsDark ? "dark" : "light"} mode
-				</div>
+			<div class="slots">
+				{#each [{ mode: "light", label: "Light", key: autoLightKey }, { mode: "dark", label: "Dark", key: autoDarkKey }] as s (s.mode)}
+					{@const mode = s.mode as "light" | "dark"}
+					<button
+						type="button"
+						class="slot"
+						class:slot--target={slot === mode}
+						aria-pressed={slot === mode}
+						onclick={() => pickSlot(mode)}
+					>
+						<span class="slot__swatches" aria-hidden="true">
+							{#each slotPreview(s.key) as color, i (i)}
+								<span style="background: {color}"></span>
+							{/each}
+						</span>
+						<span class="slot__text">
+							<span class="slot__mode">
+								{s.label}
+								{#if (mode === "dark") === systemIsDark}<span class="slot__now">Now</span>{/if}
+							</span>
+							<span class="slot__name">{getThemeName(s.key)}</span>
+						</span>
+					</button>
+				{/each}
 			</div>
+			<p class="mode__hint">
+				Choosing a theme below sets your {slot} theme.
+			</p>
 		{/if}
 	</div>
 
 	<div class="controls">
 		<input
-			class="controls__search"
+			class="abt-input controls__search"
 			type="search"
 			placeholder="Search themes…"
 			bind:value={searchQuery}
 		/>
-		<select class="controls__creator" bind:value={creatorFilter}>
-			<option value="all">All creators</option>
-			{#each availableCreators as creator, i (i)}
-				<option value={creator}>{creator === "ABT" ? "ABT (Built-in)" : creator}</option>
+		<div class="abt-seg" role="group" aria-label="Theme kind">
+			{#each [["all", "All"], ["dark", "Dark"], ["light", "Light"]] as [value, label] (value)}
+				<button
+					type="button"
+					aria-pressed={themeFilter === value}
+					onclick={() => (themeFilter = value)}
+				>
+					{label}
+				</button>
 			{/each}
-		</select>
-		<select class="controls__creator" bind:value={themeFilter}>
-			<option value="all">All themes</option>
-			<option value="dark">Dark</option>
-			<option value="light">Light</option>
-		</select>
-	</div>
-
-	<button class="create-theme-btn" onclick={() => openCreator()}>
-		<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
-			><path
-				d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"
-			/></svg
+		</div>
+		{#if availableCreators.length > 2}
+			<select class="abt-input" bind:value={creatorFilter} aria-label="Creator">
+				<option value="all">All creators</option>
+				{#each availableCreators as creator, i (i)}
+					<option value={creator}>{creator === "ABT" ? "ABT (Built-in)" : creator}</option>
+				{/each}
+			</select>
+		{/if}
+		<button
+			type="button"
+			class="abt-btn controls__new"
+			onclick={() => openCreator()}
+			title="Create a theme"
 		>
-		Create Theme
-	</button>
+			<Icon name="plus" size={14} strokeWidth={2} />
+			New
+		</button>
+	</div>
 
 	<div class="gallery">
 		{#if isEmpty}
@@ -431,7 +451,7 @@
 					<div class="gallery__section-label">My Themes</div>
 					<div class="gallery__grid">
 						{#each Object.values(userThemeState.themes) as uTheme (uTheme.id)}
-							{@const isActive = activeThemeKey === uTheme.id}
+							{@const isActive = selectedKey === uTheme.id}
 							{@const previewColors = getPreviewColorsFromTheme(uTheme)}
 							<button
 								class="card"
@@ -538,25 +558,32 @@
 						{#if showNative}
 							<button
 								class="card"
-								class:card--active={activeThemeKey === NATIVE_THEME_KEY}
+								class:card--active={selectedKey === NATIVE_THEME_KEY}
 								onclick={() => selectTheme(NATIVE_THEME_KEY)}
 								title="Use Actual Budget's default theme"
 							>
-								<div class="card__swatches card__swatches--placeholder">
-									<div class="swatch" style="background: var(--color-pageBackground);"></div>
+								<div class="card__swatches">
+									{#each nativeColors as color, i (i)}
+										<div class="swatch" style="background: {color};"></div>
+									{/each}
 								</div>
 								<div class="card__body">
 									<div class="card__name">Actual default</div>
-									<div class="card__meta"><span class="card__source">No theme</span></div>
+									<div class="card__badges">
+										<span class="badge badge--creator">Actual</span>
+									</div>
+									<div class="card__meta">
+										<span class="card__source">Follows Actual's own theme setting</span>
+									</div>
 								</div>
-								{#if activeThemeKey === NATIVE_THEME_KEY}
+								{#if selectedKey === NATIVE_THEME_KEY}
 									<div class="card__check" aria-label="Active theme">✓</div>
 								{/if}
 							</button>
 						{/if}
 						{#each filteredBuiltin as [key, theme] (key)}
 							{@const previewColors = getBuiltinPreviewColors(key)}
-							{@const isActive = activeThemeKey === key}
+							{@const isActive = selectedKey === key}
 							<button
 								class="card"
 								class:card--active={isActive}
@@ -631,7 +658,7 @@
 					{:else}
 						<div class="gallery__grid">
 							{#each filteredCommunity as theme, i (i)}
-								{@const isActive = activeThemeKey === theme.repo}
+								{@const isActive = selectedKey === theme.repo}
 								{@const isLoading = applyingTheme === theme.repo}
 								<button
 									class="card"
@@ -719,198 +746,122 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		gap: 8px;
+		gap: var(--abt-space-4);
 	}
 
-	/* ── Auto Switch ─────────────────────────────────────────────────── */
+	/* ── Mode and slots ─────────────────────────────────────────────── */
 
-	.auto-switch {
+	.mode {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		padding: 10px 12px;
+		gap: var(--abt-space-3);
+	}
+
+	.mode > .abt-seg {
+		align-self: flex-start;
+	}
+
+	.slots {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--abt-space-3);
+	}
+
+	.slot {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-4);
+		padding: var(--abt-space-3);
+		border: 1px solid var(--abt-line);
 		border-radius: var(--abt-radius);
-		background: var(--abt-ink-1);
-		border: var(--border);
-	}
-
-	.auto-switch__toggle {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-		background: none;
-		border: none;
-		padding: 0;
-		cursor: pointer;
-		font-family: inherit;
-		color: var(--color-pageText);
-	}
-
-	.auto-switch__label {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: var(--abt-text-base);
-		font-weight: 600;
-	}
-
-	.auto-switch__label svg {
-		width: 14px;
-		height: 14px;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.auto-switch__pill {
-		width: 32px;
-		height: 18px;
-		border-radius: var(--abt-radius-pill);
-		background: var(--color-pageTextSubdued);
-		position: relative;
-		transition: background 0.15s;
-		flex-shrink: 0;
-	}
-
-	.auto-switch__pill.is-on {
-		background: var(--abt-accent);
-	}
-
-	.auto-switch__knob {
-		position: absolute;
-		top: 2px;
-		left: 2px;
-		width: 14px;
-		height: 14px;
-		border-radius: var(--abt-radius-pill);
-		background: var(--color-pageBackground);
-		transition: transform 0.15s;
-	}
-
-	.auto-switch__pill.is-on .auto-switch__knob {
-		transform: translateX(14px);
-	}
-
-	.auto-switch__assignments {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		padding-top: 8px;
-		border-top: 1px solid var(--abt-ink-2);
-	}
-
-	.auto-switch__row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-	}
-
-	.auto-switch__mode {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		font-size: var(--abt-text-sm);
-		font-weight: 500;
-		color: var(--color-pageTextSubdued);
-		min-width: 52px;
-	}
-
-	.auto-switch__mode.is-active {
-		color: var(--abt-accent);
-	}
-
-	.auto-switch__mode svg {
-		width: 12px;
-		height: 12px;
-	}
-
-	.auto-switch__theme-name {
-		font-size: var(--abt-text-sm);
-		color: var(--color-pageText);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.auto-switch__hint {
-		font-size: var(--abt-text-xs);
-		color: var(--color-pageTextSubdued);
-		font-style: italic;
-	}
-
-	/* ── Create Theme Button ─────────────────────────────────────────── */
-
-	.create-theme-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		width: 100%;
-		font-family: inherit;
-		font-size: var(--abt-text-sm);
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		padding: 7px 12px;
-		border-radius: var(--abt-radius-sm);
-		border: 1px dashed var(--abt-accent-4);
-		background: var(--abt-accent-1);
-		color: var(--abt-accent);
+		background: var(--abt-fill);
+		color: inherit;
+		font: inherit;
+		text-align: left;
 		cursor: pointer;
 		transition:
-			background 0.15s,
-			border-color 0.15s;
+			border-color 0.1s,
+			background 0.1s;
 	}
 
-	.create-theme-btn:hover {
-		background: var(--abt-accent-2);
+	.slot:hover {
+		background: var(--abt-fill-hover);
+	}
+
+	.slot--target {
 		border-color: var(--abt-accent);
+		background: var(--abt-accent-1);
 	}
 
-	.create-theme-btn svg {
-		width: 14px;
-		height: 14px;
-	}
-
-	/* ── Controls ─────────────────────────────────────────────────────── */
-
-	.controls {
-		display: flex;
-		gap: 6px;
-	}
-
-	.controls__search,
-	.controls__creator {
-		font-family: inherit;
-		font-size: var(--abt-text-base);
-		padding: 5px 8px;
+	.slot__swatches {
+		display: grid;
+		grid-template-columns: repeat(2, 16px);
+		grid-auto-rows: 16px;
+		flex-shrink: 0;
+		overflow: hidden;
 		border-radius: var(--abt-radius-sm);
-		border: var(--border);
-		background: var(--color-formInputBackground);
-		color: var(--color-formInputText);
-		outline: none;
-		transition: border-color 0.15s;
+		border: 1px solid var(--abt-line);
 	}
 
-	.controls__search {
-		flex: 1;
+	.slot__text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-1);
 		min-width: 0;
 	}
 
-	.controls__search::placeholder {
-		color: var(--color-formInputTextPlaceholder);
+	.slot__mode {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-2);
+		font-size: var(--abt-text-sm);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--color-pageTextSubdued);
 	}
 
-	.controls__search:focus,
-	.controls__creator:focus {
-		border-color: var(--color-formInputBorderSelected);
+	.slot__now {
+		padding: 1px var(--abt-space-2);
+		border-radius: var(--abt-radius-pill);
+		font-size: var(--abt-text-xs);
+		background: var(--abt-accent-2);
+		color: var(--abt-accent);
+		letter-spacing: 0;
+		text-transform: none;
 	}
 
-	.controls__creator {
-		flex-shrink: 0;
-		cursor: pointer;
+	.slot__name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--abt-text-lg);
+		font-weight: 500;
 	}
 
-	/* ── Gallery ──────────────────────────────────────────────────────── */
+	.mode__hint {
+		margin: 0;
+		font-size: var(--abt-text-md);
+		color: var(--color-pageTextSubdued);
+	}
+
+	/* ── Filters ────────────────────────────────────────────────────── */
+
+	.controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--abt-space-3);
+	}
+
+	/* Search gets its own line; the filters and New share the one below. */
+	.controls__search {
+		flex: 1 1 100%;
+	}
+
+	.controls__new {
+		margin-left: auto;
+	}
 
 	.gallery {
 		max-height: 440px;
@@ -931,8 +882,8 @@
 		position: sticky;
 		top: 0;
 		z-index: 1;
-		/* Matches the settings section card this gallery sits in. */
-		background: var(--color-cardBackground);
+		/* The settings section's card surface (.abt-card). */
+		background: var(--abt-panel-surface);
 		padding: 4px 0;
 		margin: -4px 0 4px;
 	}
