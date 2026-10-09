@@ -35,6 +35,7 @@ import { dimReconciled } from "./readability/dim-reconciled";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { newTransactionStyle } from "./readability/new-transactions";
 import { reportCardBorders } from "./readability/report-card-borders";
+import { reportsHeader } from "./layout/reports-header";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
 import { headerBorder } from "./readability/top-nav-border";
@@ -151,7 +152,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: null,
-				items: [reportWidgetBackgroundColor, reportCardBorders, spendingCalendar],
+				items: [reportWidgetBackgroundColor, reportCardBorders, reportsHeader, spendingCalendar],
 			},
 		],
 	},
