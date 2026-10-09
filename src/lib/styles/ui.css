@@ -55,7 +55,8 @@
 
 /* Tints. Declared again wherever the ink changes, since a custom property mixes where it's declared. */
 :root,
-.sidebar {
+.sidebar,
+.abt-popover {
 	--abt-ink-1: color-mix(in srgb, var(--abt-ink) 4%, transparent);
 	--abt-ink-2: color-mix(in srgb, var(--abt-ink) 8%, transparent);
 	--abt-ink-3: color-mix(in srgb, var(--abt-ink) 12%, transparent);
@@ -178,6 +179,8 @@
 
 /* Floating surfaces: tooltips, menus, toasts. Sticky children paint `--abt-popover-bg`. */
 .abt-popover {
+	/* Its own ink: a popover opened from the sidebar sits on the tooltip background, not the sidebar's. */
+	--abt-ink: var(--color-tooltipText, var(--color-pageText));
 	--abt-popover-bg: var(--color-tooltipBackground, var(--color-pageBackground));
 	border: 1px solid var(--color-tableBorder);
 	border-radius: var(--abt-radius);
