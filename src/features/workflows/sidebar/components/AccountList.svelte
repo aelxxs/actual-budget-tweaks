@@ -914,6 +914,9 @@
 			color 0.12s ease,
 			background 0.12s ease;
 	}
+	:global(.split) .group-empty-hint {
+		margin-right: calc(8px + var(--sb-panel-room));
+	}
 	.group-empty-hint.drop-before {
 		border-style: solid;
 		border-color: var(--abt-accent);
