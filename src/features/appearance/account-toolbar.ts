@@ -18,7 +18,7 @@ const ACTIONS = `${BAR} > button:has(~ div:empty), ${BAR} > div:has(~ div:empty)
 // The account menu's dots; an overflow menu reads last, after ABT's column reset.
 const MENU = `${BAR} > div:has(path[d^="M10 12a2 2 0 1 1"])`;
 const SEARCH = `${BAR} > div:empty ~ div:has(> input)`;
-const ICONS = `${BAR} > div:empty ~ button, ${BAR} > div:empty ~ div button`;
+const ICONS = `${BAR} > div:empty ~ button, ${BAR} > div:empty ~ div:not(:has(> input)) button`;
 
 const GLYPHS: [string, IconName][] = [
 	['path[d^="M10 3v2a5 5"]', "refreshCw"],
@@ -120,6 +120,17 @@ const CSS = `
 	${SEARCH} {
 		position: relative;
 		margin-right: var(--abt-space-4) !important;
+	}
+
+	/* Search's clear button sits inside the field, smaller than the toolbar's icons. */
+	${SEARCH} button {
+		padding: var(--abt-space-1) !important;
+		border-radius: var(--abt-radius-sm) !important;
+	}
+
+	${SEARCH} button svg {
+		width: 10px !important;
+		height: 10px !important;
 	}
 
 	${SEARCH}::after {
