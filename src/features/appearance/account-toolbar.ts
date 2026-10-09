@@ -111,31 +111,9 @@ const CSS = `
 		transform: none !important;
 	}
 
+	/* Search's look is shared with every search bar (base.css). */
 	${SEARCH} {
-		box-sizing: border-box;
 		width: 260px;
-		height: var(--abt-control-h);
-		padding: 0 var(--abt-space-3) !important;
-		gap: var(--abt-space-3);
-		border: 1px solid var(--abt-line) !important;
-		border-radius: var(--abt-radius) !important;
-		background: var(--abt-fill) !important;
-		box-shadow: none !important;
-		color: var(--abt-muted);
-		transition:
-			border-color 0.1s,
-			box-shadow 0.1s;
-	}
-
-	${SEARCH}:focus-within {
-		border-color: var(--abt-accent-4) !important;
-		box-shadow: 0 0 0 3px var(--abt-accent-2) !important;
-	}
-
-	${SEARCH} input {
-		padding: 0 !important;
-		background: transparent !important;
-		font-size: var(--abt-text-base) !important;
 	}
 
 	/* The icon buttons sit behind a hairline after search, drawn by search since what follows can be hidden. */
