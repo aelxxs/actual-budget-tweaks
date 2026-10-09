@@ -178,6 +178,12 @@
 				"group": "General"
 			},
 			{
+				"label": "Themed Scrollbars",
+				"description": "Thin scrollbars tinted to match the theme.",
+				"icon": "sliders",
+				"group": "General"
+			},
+			{
 				"label": "Privacy Style",
 				"description": "How amounts look while privacy mode hides them.",
 				"icon": "eyeOff",

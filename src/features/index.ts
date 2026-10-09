@@ -7,6 +7,7 @@ import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
 import { modernTitlebar } from "./appearance/titlebar";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { modernReconcile } from "./workflows/reconcile";
+import { themedScrollbars } from "./appearance/scrollbars";
 import { modernToasts } from "./appearance/toasts";
 import { nativeHooks } from "./core/native-hooks";
 import { privacyMode } from "./core/privacy-mode";
@@ -85,6 +86,7 @@ const appearance = [
 	modernAccountToolbar,
 	modernReconcile,
 	modernToasts,
+	themedScrollbars,
 	privacyStyle,
 	sidebarSearch,
 	sidebarShortcuts,
