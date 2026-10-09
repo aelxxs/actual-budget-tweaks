@@ -218,8 +218,9 @@
 				></div>
 			</div>
 			<div class="abt-tab-overview-pace-footer">
-				<span class="abt-privacy-number"
-					>{fmtMoney(data.totalSpent)} of {fmtMoney(data.totalBudgeted)}</span
+				<span
+					><span class="abt-privacy-number">{fmtMoney(data.totalSpent)}</span> of
+					<span class="abt-privacy-number">{fmtMoney(data.totalBudgeted)}</span></span
 				>
 				{#if isCurrentMonth && daysLeft > 0}
 					<span>{daysLeft}d left</span>
@@ -250,12 +251,12 @@
 			</div>
 
 			{#if nextOver >= 0}
-				<div class="abt-tab-overview-pill abt-privacy-number" data-status="ok">
-					+{fmtMoney(nextOver)} over target
+				<div class="abt-tab-overview-pill" data-status="ok">
+					<span class="abt-privacy-number">+{fmtMoney(nextOver)}</span> over target
 				</div>
 			{:else}
-				<div class="abt-tab-overview-pill abt-privacy-number" data-status="warn">
-					{fmtMoney(nextOver)} short
+				<div class="abt-tab-overview-pill" data-status="warn">
+					<span class="abt-privacy-number">{fmtMoney(nextOver)}</span> short
 				</div>
 			{/if}
 
@@ -267,15 +268,18 @@
 				></div>
 			</div>
 
-			<div class="abt-tab-overview-next-amounts abt-privacy-number">
-				{fmtMoney(data.nextMonthToBudget)} of {fmtMoney(coverageTarget)}
+			<div class="abt-tab-overview-next-amounts">
+				<span class="abt-privacy-number">{fmtMoney(data.nextMonthToBudget)}</span> of
+				<span class="abt-privacy-number">{fmtMoney(coverageTarget)}</span>
 			</div>
 
-			<div class="abt-tab-overview-next-summary abt-privacy-number">
+			<div class="abt-tab-overview-next-summary">
 				{#if nextOver >= 0}
-					Fully prepared for {longMonth(data.nextMonthKey)} — {fmtMoney(nextOver)} over target.
+					Fully prepared for {longMonth(data.nextMonthKey)} —
+					<span class="abt-privacy-number">{fmtMoney(nextOver)}</span> over target.
 				{:else}
-					{fmtMoney(Math.abs(nextOver))} more needed to fully cover {longMonth(data.nextMonthKey)}.
+					<span class="abt-privacy-number">{fmtMoney(Math.abs(nextOver))}</span> more needed to
+					fully cover {longMonth(data.nextMonthKey)}.
 				{/if}
 			</div>
 
