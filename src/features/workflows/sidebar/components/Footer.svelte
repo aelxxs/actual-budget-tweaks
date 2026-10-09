@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Account } from "@lib/types/actual-schema";
 	import { dispatch, query } from "@lib/utilities/actual-api";
-	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
-	import { PanelLeftClose, Redo2, RefreshCw, SlidersHorizontal, Undo2 } from "lucide-svelte";
+	import { PanelLeftClose, Redo2, RefreshCw, Undo2 } from "lucide-svelte";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import { syncAllAccounts, type SidebarAccount } from "../lib/data";
 	import { isMac } from "../lib/search";
@@ -75,7 +74,7 @@
 	}
 </script>
 
-<div class="footer">
+<div class="footer" class:solo={!linked.length && !onCollapse}>
 	<div class="undo-group" role="group" aria-label="History">
 		<button
 			type="button"
@@ -95,15 +94,6 @@
 		</button>
 	</div>
 	<div class="footer-actions">
-		<button
-			type="button"
-			class="footer-settings"
-			aria-label="Sidebar settings"
-			use:tooltip={{ text: "Sidebar settings", placement: "top" }}
-			onclick={() => openSidebarSettings()}
-		>
-			<SlidersHorizontal strokeWidth={1.8} />
-		</button>
 		{#if linked.length}
 			<button
 				type="button"
@@ -146,6 +136,10 @@
 		border-top: 1px solid var(--abt-ink-2);
 		flex-shrink: 0;
 	}
+	/* Nothing on the right (split layout, no linked accounts): undo/redo takes its place. */
+	.footer.solo {
+		justify-content: flex-end;
+	}
 	/* In the single-panel layout the body's own bottom padding would add to the footer's. */
 	:global(.sidebar > .body) > .footer {
 		margin-bottom: -0.75rem;
@@ -182,32 +176,6 @@
 		background: var(--abt-ink-2);
 	}
 	.undo-group :global(svg) {
-		width: 15px;
-		height: 15px;
-	}
-	/* Sidebar settings: an icon-only box matching the Sync button beside it. */
-	.footer-settings {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 26px;
-		height: 26px;
-		padding: 0;
-		border: 1px solid var(--abt-ink-2);
-		border-radius: var(--abt-radius);
-		background: var(--sb-surface);
-		color: var(--abt-soft);
-		transition:
-			background 0.12s ease,
-			border-color 0.12s ease,
-			color 0.12s ease;
-	}
-	.footer-settings:hover {
-		background: var(--sb-surface-hover);
-		border-color: var(--abt-ink-5);
-		color: var(--abt-ink);
-	}
-	.footer-settings :global(svg) {
 		width: 15px;
 		height: 15px;
 	}

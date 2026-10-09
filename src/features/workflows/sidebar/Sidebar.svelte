@@ -3,11 +3,15 @@
 	import { loadIconCache } from "@features/appearance/account-icon-picker";
 	import { sidebarSearch } from "@features/appearance/sidebar-search";
 	import { sidebarShortcuts } from "@features/appearance/sidebar-shortcuts";
-	import { setLiveSidebarBudget } from "@features/appearance/sidebar-settings-menu/settings";
+	import {
+		openSidebarSettings,
+		setLiveSidebarBudget,
+		type SidebarSettingsTab,
+	} from "@features/appearance/sidebar-settings-menu/settings";
 	import { loadCurrency } from "@lib/utilities/currency";
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { getValue, setValue, watchValue } from "@lib/utilities/store";
-	import { Search } from "lucide-svelte";
+	import { FolderTree, LayoutGrid, Search, SlidersHorizontal } from "lucide-svelte";
 	import { onMount } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
 	import { portal } from "./actions/portal";
@@ -366,7 +370,26 @@
 			loading = false;
 		}
 	});
+
+	// Right-click anywhere without a menu of its own (accounts and groups stop the event).
+	let settingsMenu = $state<{ x: number; y: number } | null>(null);
+
+	function openSettingsMenu(e: MouseEvent) {
+		if ((e.target as Element).closest("input, textarea")) return;
+		e.preventDefault();
+		settingsMenu = {
+			x: Math.min(e.clientX, window.innerWidth - 208),
+			y: Math.min(e.clientY, window.innerHeight - 120),
+		};
+	}
+
+	function openSettingsTab(tab: SidebarSettingsTab) {
+		settingsMenu = null;
+		openSidebarSettings({ tab });
+	}
 </script>
+
+<svelte:window onclick={() => (settingsMenu = null)} />
 
 <div
 	class="sidebar"
@@ -376,6 +399,8 @@
 	class:collapsed={isCollapsed && layoutMode === "standard"}
 	bind:this={sidebarEl}
 	style="width: {sidebarTotalWidth}"
+	oncontextmenu={openSettingsMenu}
+	role="presentation"
 >
 	{#if layoutMode === "split"}
 		<div class="activity-bar">
@@ -510,6 +535,25 @@
 		</div>
 	{/if}
 </div>
+
+{#if settingsMenu}
+	<div use:portal class="ctx" style="top: {settingsMenu.y}px; left: {settingsMenu.x}px">
+		<button type="button" class="ctx-item" onclick={() => openSettingsTab("general")}>
+			<SlidersHorizontal strokeWidth={1.5} />
+			<span>Sidebar settings…</span>
+		</button>
+		{#if budgetId}
+			<button type="button" class="ctx-item" onclick={() => openSettingsTab("groups")}>
+				<FolderTree strokeWidth={1.5} />
+				<span>Edit groups…</span>
+			</button>
+		{/if}
+		<button type="button" class="ctx-item" onclick={() => openSettingsTab("shortcuts")}>
+			<LayoutGrid strokeWidth={1.5} />
+			<span>Edit shortcuts…</span>
+		</button>
+	</div>
+{/if}
 
 <style>
 	.load-status {

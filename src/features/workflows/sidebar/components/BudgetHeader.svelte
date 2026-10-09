@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
+	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
 	import {
 		Check,
 		ChevronsUpDown,
@@ -9,6 +10,7 @@
 		CloudOff,
 		LogOut,
 		Pencil,
+		SlidersHorizontal,
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
 	import { autofocus } from "../actions/autofocus";
@@ -345,6 +347,17 @@
 				</button>
 			{/each}
 			<div class="budget-menu-divider"></div>
+			<button
+				type="button"
+				class="budget-exit"
+				onclick={() => {
+					closeMenu();
+					openSidebarSettings();
+				}}
+			>
+				<SlidersHorizontal strokeWidth={1.5} />
+				<span>Sidebar settings…</span>
+			</button>
 			<button type="button" class="budget-exit" onclick={onCloseFile}>
 				<LogOut strokeWidth={1.5} />
 				<span>Close file</span>

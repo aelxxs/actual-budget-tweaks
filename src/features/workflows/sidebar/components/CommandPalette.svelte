@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
+	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
 	import { getPrivacyMode } from "@features/core/privacy-mode";
 	import {
 		applyThemeByKey,
@@ -94,6 +95,7 @@
 			label: "Sync all accounts",
 			run: () => syncAllAccounts(accounts),
 		},
+		{ icon: SlidersHorizontal, label: "Sidebar settings", run: () => openSidebarSettings() },
 		{
 			icon: Plus,
 			label: "Add new account",
