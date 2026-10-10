@@ -23,8 +23,9 @@ body {
    keep in step with DESKTOP_QUERY in src/lib/utilities/pages.ts. */
 @media (min-width: 512px) {
 	/* Page frame. The side panel marks Actual's content grid on every page (side-panel/index.ts);
-	   its children are the header, toasts, the bank-sync banner, then the page. */
-	[data-abt-content-grid] > div:nth-child(1) {
+	   its children are the header, toasts, the bank-sync banner, then the page. The header is
+	   marked on its own (native-hooks.ts), since the grid is only known once a page renders. */
+	[data-abt-header] {
 		position: sticky;
 		height: 3.75rem;
 		flex-shrink: 0;

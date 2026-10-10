@@ -1,4 +1,4 @@
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getCurrentPath } from "@lib/utilities/route-watcher";
 
@@ -13,26 +13,44 @@ const COLUMN_PAGES = [
 	Page.Schedules,
 ];
 
+const HELP = '[data-testid="help-menu-button"]';
+
 /** Marks Actual elements that base.css styles but that carry no stable hook of their own. */
 export const nativeHooks = {
 	type: "core" as const,
 	init: () => {
+		// The titlebar renders before the budget loads, but the content grid holding it is only
+		// told apart once a page has rendered; found from Help (Titlebar > cluster > wrapper > button).
+		watchElement(HELP, () => {
+			const header = document.querySelector(HELP)?.parentElement?.parentElement?.parentElement;
+			if (header && header.parentElement?.firstElementChild === header) {
+				mark(header, "data-abt-header");
+			}
+		});
 		watchDom(() => {
 			// List pages (not the transaction table) wrap a header row and the table, which some
 			// pages nest in a single-child div.
 			if (!location.pathname.startsWith("/accounts")) {
 				for (const table of document.querySelectorAll('[data-testid="table"]')) {
-					if (table.closest('[role="dialog"]')) continue;
+					if (table.closest('[role="dialog"]')) {
+						continue;
+					}
 					let el: Element = table;
-					while (el.parentElement?.childElementCount === 1) el = el.parentElement;
+					while (el.parentElement?.childElementCount === 1) {
+						el = el.parentElement;
+					}
 					const wrap = el.parentElement;
-					if (wrap && wrap.firstElementChild !== el) mark(wrap, "data-abt-table");
+					if (wrap && wrap.firstElementChild !== el) {
+						mark(wrap, "data-abt-table");
+					}
 				}
 			}
 			// Bank sync's and some modals' tables have no table test id; the header row sits two
 			// levels under the frame.
 			const frames = [...document.querySelectorAll('[role="dialog"]')];
-			if (matchesPage(Page.BankSync)) frames.push(...document.querySelectorAll('[role="main"]'));
+			if (matchesPage(Page.BankSync)) {
+				frames.push(...document.querySelectorAll('[role="main"]'));
+			}
 			for (const frame of frames) {
 				const header = frame.querySelector('[data-testid="row"]');
 				if (header && !header.closest('[data-testid="table"]')) {
@@ -45,7 +63,9 @@ export const nativeHooks = {
 			);
 			const path = getCurrentPath();
 			const page = COLUMN_PAGES.find((p) => path.includes(`/${p}`)) ?? "";
-			if (column && column.dataset.abtPage !== page) column.dataset.abtPage = page;
+			if (column && column.dataset.abtPage !== page) {
+				column.dataset.abtPage = page;
+			}
 			for (const input of document.querySelectorAll("input[data-rac]")) {
 				if (input.previousElementSibling instanceof SVGElement) {
 					mark(input.parentElement, "data-abt-search");
@@ -56,5 +76,7 @@ export const nativeHooks = {
 };
 
 function mark(el: Element | null, attr: string): void {
-	if (el && !el.hasAttribute(attr)) el.setAttribute(attr, "");
+	if (el && !el.hasAttribute(attr)) {
+		el.setAttribute(attr, "");
+	}
 }

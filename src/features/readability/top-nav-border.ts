@@ -11,7 +11,7 @@ export const headerBorder = defineSetting({
 		defaultValue: true,
 	},
 	css: () => `
-		[data-abt-content-grid] > div:nth-child(1) {
+		[data-abt-header] {
 			border-bottom: 1px solid var(--abt-panel-border);
 		}
 		.abt-side-drawer-sidebar {

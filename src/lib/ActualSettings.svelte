@@ -50,8 +50,12 @@
 			title: bugFeature ? `[Bug]: ${bugFeature}` : "[Bug]: ",
 			version,
 		});
-		if (bugFeature) params.set("feature", bugFeature);
-		if (bugDescription) params.set("description", bugDescription);
+		if (bugFeature) {
+			params.set("feature", bugFeature);
+		}
+		if (bugDescription) {
+			params.set("description", bugDescription);
+		}
 
 		window.open(`${REPO_URL}/issues/new?${params}`, "_blank", "noopener,noreferrer");
 		closeBugReport();
@@ -71,9 +75,13 @@
 	$effect(() => {
 		browser.storage.local.get(null).then((all) => (stored = all));
 		const onChanged = (changes: Record<string, { newValue?: unknown }>, area: string) => {
-			if (area !== "local") return;
+			if (area !== "local") {
+				return;
+			}
 			const next = { ...stored };
-			for (const [key, change] of Object.entries(changes)) next[key] = change.newValue;
+			for (const [key, change] of Object.entries(changes)) {
+				next[key] = change.newValue;
+			}
 			stored = next;
 		};
 		browser.storage.onChanged.addListener(onChanged);
@@ -82,13 +90,17 @@
 
 	function isChanged(item: PageSetting): boolean {
 		const key = `local:${item.context.key}`;
-		if (stored[key] === undefined) return false;
+		if (stored[key] === undefined) {
+			return false;
+		}
 		return JSON.stringify(stored[key]) !== JSON.stringify(item.context.defaultValue);
 	}
 
 	function isUnmet(item: PageSetting): PageSetting | undefined {
 		const parent = settingRequires.get(item);
-		if (!parent) return undefined;
+		if (!parent) {
+			return undefined;
+		}
 		const value = stored[`local:${parent.context.key}`] ?? parent.context.defaultValue;
 		return value === false ? parent : undefined;
 	}
@@ -96,9 +108,15 @@
 	const normalizedQuery = $derived(query.trim().toLowerCase());
 
 	function isVisible(item: PageSetting): boolean {
-		if (!isDesktop && !("mobile" in item && item.mobile)) return false;
-		if (changedOnly && !isChanged(item)) return false;
-		if (!normalizedQuery) return true;
+		if (!isDesktop && !("mobile" in item && item.mobile)) {
+			return false;
+		}
+		if (changedOnly && !isChanged(item)) {
+			return false;
+		}
+		if (!normalizedQuery) {
+			return true;
+		}
 		const text = `${item.label} ${"description" in item ? (item.description ?? "") : ""}`;
 		return text.toLowerCase().includes(normalizedQuery);
 	}
@@ -134,11 +152,17 @@
 		const observer = new ResizeObserver(() => (stickyTop = (strip as HTMLElement).offsetHeight));
 		// The titlebar can render after this page, so keep looking until it appears.
 		const stop = watchDom(() => {
-			const found = document.querySelector("[data-abt-content-grid] > div:first-of-type");
-			if (found === strip) return;
-			if (strip) observer.unobserve(strip);
+			const found = document.querySelector("[data-abt-header]");
+			if (found === strip) {
+				return;
+			}
+			if (strip) {
+				observer.unobserve(strip);
+			}
 			strip = found;
-			if (strip) observer.observe(strip);
+			if (strip) {
+				observer.observe(strip);
+			}
 		});
 		return () => {
 			stop();
@@ -155,7 +179,9 @@
 	// Fades the chip row's right edge only while more chips sit past it.
 	$effect(() => {
 		const nav = navEl;
-		if (!nav) return;
+		if (!nav) {
+			return;
+		}
 		const update = () => (navOverflows = nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1);
 		const observer = new ResizeObserver(update);
 		observer.observe(nav);
@@ -169,22 +195,32 @@
 
 	// Keeps the active chip in view as the page scrolls past later sections.
 	$effect(() => {
-		if (!activeSection) return;
+		if (!activeSection) {
+			return;
+		}
 		const chip = navEl?.querySelector<HTMLElement>(".section-chip.active");
-		if (!navEl || !chip) return;
+		if (!navEl || !chip) {
+			return;
+		}
 		const left = chip.offsetLeft - navEl.offsetLeft;
 		const right = left + chip.offsetWidth;
-		if (left < navEl.scrollLeft) navEl.scrollTo({ left, behavior: "smooth" });
-		else if (right > navEl.scrollLeft + navEl.clientWidth)
+		if (left < navEl.scrollLeft) {
+			navEl.scrollTo({ left, behavior: "smooth" });
+		} else if (right > navEl.scrollLeft + navEl.clientWidth) {
 			navEl.scrollTo({ left: right - navEl.clientWidth + 32, behavior: "smooth" });
+		}
 	});
 	let scroller: HTMLElement | null = null;
 	let jumping = false;
 
 	function getScroller(): HTMLElement | null {
-		if (scroller?.isConnected) return scroller;
+		if (scroller?.isConnected) {
+			return scroller;
+		}
 		let el = toolbarEl?.parentElement ?? null;
-		while (el && !/(auto|scroll)/.test(getComputedStyle(el).overflowY)) el = el.parentElement;
+		while (el && !/(auto|scroll)/.test(getComputedStyle(el).overflowY)) {
+			el = el.parentElement;
+		}
 		scroller = el;
 		return el;
 	}
@@ -200,15 +236,21 @@
 		await tick();
 		const el = sectionEls[title];
 		const sc = getScroller();
-		if (!el || !sc) return;
+		if (!el || !sc) {
+			return;
+		}
 		jumping = true;
 		const done = () => {
-			if (!jumping) return;
+			if (!jumping) {
+				return;
+			}
 			jumping = false;
 			sc.removeEventListener("scrollend", done);
 			// Content above can still resize mid-scroll; settle on the exact spot.
 			const off = el.getBoundingClientRect().top - pinnedBottom(sc);
-			if (Math.abs(off) > 2) sc.scrollBy({ top: off });
+			if (Math.abs(off) > 2) {
+				sc.scrollBy({ top: off });
+			}
 		};
 		sc.addEventListener("scrollend", done);
 		// No scroll happens if it's already in place, so don't wait on scrollend forever.
@@ -223,17 +265,23 @@
 	$effect(() => {
 		const titles = filteredSections.map((section) => section.title);
 		const sc = getScroller();
-		if (!sc) return;
+		if (!sc) {
+			return;
+		}
 		let frame = 0;
 		const update = () => {
 			frame = 0;
-			if (jumping) return;
+			if (jumping) {
+				return;
+			}
 			const line = pinnedBottom(sc) + 1;
 			const atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2;
 			let current = titles[0];
 			for (const title of titles) {
 				const el = sectionEls[title];
-				if (el?.isConnected && el.getBoundingClientRect().top <= line) current = title;
+				if (el?.isConnected && el.getBoundingClientRect().top <= line) {
+					current = title;
+				}
 			}
 			activeSection = atBottom ? titles[titles.length - 1] : current;
 		};
@@ -290,7 +338,9 @@
 		input.onchange = async () => {
 			const file = input.files?.[0];
 			input.remove();
-			if (!file) return;
+			if (!file) {
+				return;
+			}
 			try {
 				const text = await file.text();
 				const data = JSON.parse(text);
@@ -320,7 +370,9 @@
 		resetting = true;
 		const defaults: Record<string, unknown> = {};
 		for (const item of scripts.flat()) {
-			if (item.type !== "core") defaults[`local:${item.context.key}`] = item.context.defaultValue;
+			if (item.type !== "core") {
+				defaults[`local:${item.context.key}`] = item.context.defaultValue;
+			}
 		}
 		await browser.storage.local.set(defaults);
 		await pushStoredSettings();
@@ -339,9 +391,13 @@
 
 <svelte:window
 	onkeydown={(e) => {
-		if (e.key !== "Escape") return;
+		if (e.key !== "Escape") {
+			return;
+		}
 		showBugModal = false;
-		if (!resetting) showResetDialog = false;
+		if (!resetting) {
+			showResetDialog = false;
+		}
 	}}
 />
 
