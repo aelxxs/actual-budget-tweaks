@@ -44,7 +44,7 @@ const compose = `services:
 						<tr><td>Install</td><td>Once per browser</td><td>Once per server</td></tr>
 						<tr><td>Works in</td><td>Chrome and Firefox</td><td>Any browser that opens your Actual address</td></tr>
 						<tr><td>Updates</td><td>Automatic, through the browser</td><td>When you pull a new image</td></tr>
-						<tr><td>Settings saved</td><td>In the extension</td><td>In each browser's site storage</td></tr>
+						<tr><td>Settings</td><td>Synced with each budget</td><td>Synced with each budget</td></tr>
 					</tbody>
 				</table>
 			</div>
@@ -104,7 +104,11 @@ const compose = `services:
 		<section class="docs__section">
 			<h2>Where your settings live</h2>
 			<ul>
-				<li>Tweaks settings are saved in each browser's storage for your Actual address. They don't sync between devices, and clearing site data resets them.</li>
+				<li>Tweaks settings are saved in the budget itself, through Actual's synced preferences, so they follow it to every device and browser that opens it. Switching between the extension and the sidecar keeps them.</li>
+				<li>Each budget has its own settings. A budget opened for the first time starts from the settings this browser already has.</li>
+				<li>Changes from another device apply when you come back to the tab. A few settings ask you to reload.</li>
+				<li>Each browser keeps a copy to load from. Clearing site data only clears that copy; the budget's settings come back the next time you open it.</li>
+				<li>Local-only budgets, not synced to a server, keep their settings on that device.</li>
 				<li>The sidecar stores nothing. Your budget data stays in Actual.</li>
 			</ul>
 		</section>

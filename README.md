@@ -74,6 +74,10 @@ Adds user-configurable interface options to Actual Budget — dynamic themes, la
   <img src="images/calendar-dark.png" alt="A spending calendar of the month's transactions and upcoming schedules">
 </picture>
 
+### Built with AI
+
+Most of the code is written with Claude, and changes are checked in a running instance of Actual with Playwright. The design, the architecture and the rules every feature follows ([AGENTS.md](AGENTS.md)) are mine, and I review and test each change on a test budget, never real financial data. ABT only changes your budget when you click to, and every tweak can be turned off.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Installation

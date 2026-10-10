@@ -2,7 +2,7 @@
 const faqs = [
 	{
 		q: "Does this access my financial data?",
-		a: "No. ABT only reads the DOM to apply visual changes. It has no access to your budget data, server, or sync. All settings are stored locally in your browser.",
+		a: "ABT reads your budget through Actual itself, in your browser, for features like the Inspector and Sync recap. It only changes your budget when you click to, and nothing is sent anywhere else. Its own settings are saved in your budget's synced preferences, so they follow you to every device.",
 	},
 	{
 		q: "Will it break when Actual Budget updates?",
@@ -18,7 +18,7 @@ const faqs = [
 	},
 	{
 		q: "Does this work on mobile?",
-		a: "Not at the moment. ABT is a browser extension for Chrome and Firefox on desktop. Mobile browsers don't support the extension APIs needed, so it's not available in their stores.",
+		a: "The extension is desktop only, for Chrome and Firefox. If you self-host, the sidecar adds ABT to any browser that opens your Actual address, mobile included, though ABT is designed for desktop layouts.",
 	},
 ];
 ---
@@ -31,13 +31,13 @@ const faqs = [
 				<h2 class="trust__heading">Built to layer,<br />not to replace</h2>
 				<p class="trust__body">
 					ABT is a browser extension, not a fork. It reads Actual Budget's existing
-					DOM and layers interface changes on top. Your data, sync, and server stay
-					untouched. Disable any setting and the original UI returns instantly.
+					DOM and layers interface changes on top. Your budget only changes when you
+					ask it to. Disable any setting and the original UI returns instantly.
 				</p>
 				<ul class="trust__checks stack stack--xs">
 					<li>Designed to feel built-in, not bolted on</li>
 					<li>Works with any self-hosted Actual instance</li>
-					<li>Zero data access — all settings stored locally</li>
+					<li>Settings sync with your budget across devices</li>
 					<li>Open source, always</li>
 				</ul>
 			</div>
