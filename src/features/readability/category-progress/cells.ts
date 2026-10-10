@@ -32,43 +32,10 @@ const inflight = new Map<string, { promise: Promise<CatCells>; startedAt: number
 /** When each month's cells last changed; anything fetched before then is out of date. */
 const staleSince = new Map<string, number>();
 
-const SHEET_RE = /^(budget\d{6})!/;
-
 /** Marks months whose cells changed, so the next read of them fetches fresh values. */
 export function markSheetsStale(sheets: Iterable<string>): void {
 	const now = Date.now();
 	for (const sheet of sheets) staleSince.set(sheet, now);
-}
-
-/**
- * The months a batch of table mutations touched, from the cells' names (`budget202609!...`):
- * an edit rewrites its own and later months' balances; navigating adds the new month's cells.
- */
-export function sheetsInMutations(
-	records: MutationRecord[],
-	/** The months shown before this batch, when navigation changed them. */
-	movedFrom?: string[],
-): Set<string> {
-	const sheets = new Set<string>();
-	const add = (el: Element | null | undefined) => {
-		// ABT's own overlays inside Actual's cells (the rolling To Budget) aren't data changes.
-		if (el?.closest("[data-abt-owned]")) return;
-		const match = el?.closest("[data-cellname]")?.getAttribute("data-cellname")?.match(SHEET_RE);
-		if (match) sheets.add(match[1]);
-	};
-	for (const record of records) {
-		const target = record.target;
-		add(target instanceof Element ? target : target.parentElement);
-		for (const node of record.addedNodes) {
-			if (!(node instanceof Element)) continue;
-			add(node);
-			for (const cell of node.querySelectorAll("[data-cellname]")) add(cell);
-		}
-	}
-	// Navigating reuses Actual's columns, rewriting months that stay on screen without
-	// changing their values; only the months coming into view are new.
-	if (movedFrom) for (const sheet of movedFrom) sheets.delete(sheet);
-	return sheets;
 }
 
 export async function cellValue(sheet: string, name: string): Promise<number> {

@@ -2,10 +2,15 @@ import {
 	BALANCE_CELL_RE,
 	fetchCells,
 	markSheetsStale,
-	sheetsInMutations,
 } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
+import {
+	type BudgetTableChange,
+	collectChanges,
+	shownSheets,
+	watchBudgetTable,
+} from "@lib/utilities/budget-cells";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { unmount } from "svelte";
@@ -13,14 +18,15 @@ import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import FilterControl from "./FilterControl.svelte";
 import { filterState, type CategoryFilter } from "./state.svelte";
 
-const SELECTED_CELL = '[data-testid="selected-budget-month"][data-month]';
 const HIDDEN_ATTR = "data-abt-filter-hidden";
 const CONTROL_ATTR = "data-abt-category-filter";
 const HEADER_SLOT = "[data-abt-month-header-slot]";
 const REFRESH_MS = 250;
 
 let control: { node: HTMLElement; instance: unknown } | null = null;
-let observed: { table: HTMLElement; observer: MutationObserver } | null = null;
+// The table sync() last set up on the budget page; its edits refresh the counts.
+let tableShown: HTMLElement | null = null;
+let changes: ReturnType<typeof collectChanges> | null = null;
 let shownKey = "";
 /**
  * The rows the active filter shows, fixed when it's picked: funding a category under
@@ -33,12 +39,6 @@ let pendingEdit: MutationObserver | null = null;
 interface Status {
 	attention: boolean;
 	funded: boolean;
-}
-
-function shownSheets(table: HTMLElement): string[] {
-	return [...(table.parentElement?.querySelectorAll<HTMLElement>(SELECTED_CELL) ?? [])].map(
-		(cell) => `budget${cell.dataset.month!.replace("-", "")}`,
-	);
 }
 
 /** The id of a category row, from its balance cell; null for groups, income, and headers. */
@@ -56,7 +56,9 @@ async function loadStatuses(table: HTMLElement): Promise<Map<string, Status>> {
 	const ids = new Set<string>();
 	for (const row of table.querySelectorAll('[data-testid="row"]')) {
 		const id = rowCategory(row);
-		if (id) ids.add(id);
+		if (id) {
+			ids.add(id);
+		}
 	}
 	const sheets = shownSheets(table);
 	const statuses = new Map<string, Status>();
@@ -76,8 +78,12 @@ function countStatuses(statuses: Map<string, Status>): void {
 	let attention = 0;
 	let funded = 0;
 	for (const s of statuses.values()) {
-		if (s.attention) attention++;
-		if (s.funded) funded++;
+		if (s.attention) {
+			attention++;
+		}
+		if (s.funded) {
+			funded++;
+		}
 	}
 	if (attention !== filterState.counts.attention || funded !== filterState.counts.funded) {
 		filterState.counts = { attention, funded };
@@ -86,26 +92,36 @@ function countStatuses(statuses: Map<string, Status>): void {
 
 function matching(statuses: Map<string, Status>, filter: CategoryFilter): Set<string> {
 	const ids = new Set<string>();
-	for (const [id, s] of statuses) if (filter === "funded" ? s.funded : s.attention) ids.add(id);
+	for (const [id, s] of statuses) {
+		if (filter === "funded" ? s.funded : s.attention) {
+			ids.add(id);
+		}
+	}
 	return ids;
 }
 
 function setHidden(row: Element, hidden: boolean): void {
 	// Actual wraps each row in its own box; hiding the box drops its spacing too.
 	const box = row.parentElement?.childElementCount === 1 ? row.parentElement : row;
-	if (box.hasAttribute(HIDDEN_ATTR) !== hidden) box.toggleAttribute(HIDDEN_ATTR, hidden);
+	if (box.hasAttribute(HIDDEN_ATTR) !== hidden) {
+		box.toggleAttribute(HIDDEN_ATTR, hidden);
+	}
 }
 
 function applyRows(table: HTMLElement): void {
 	const rows = [...table.querySelectorAll('[data-testid="row"]')];
 	if (!visible) {
-		for (const row of rows) setHidden(row, false);
+		for (const row of rows) {
+			setHidden(row, false);
+		}
 		return;
 	}
 	let group: { row: Element; children: number; shown: number } | null = null;
 	const closeGroup = () => {
 		// A collapsed group's categories aren't rendered, so it can't be ruled out.
-		if (group) setHidden(group.row, group.children > 0 && group.shown === 0);
+		if (group) {
+			setHidden(group.row, group.children > 0 && group.shown === 0);
+		}
 		group = null;
 	};
 	for (const row of rows) {
@@ -115,7 +131,9 @@ function applyRows(table: HTMLElement): void {
 			setHidden(row, !show);
 			if (group) {
 				group.children++;
-				if (show) group.shown++;
+				if (show) {
+					group.shown++;
+				}
 			}
 		} else if (isExpenseGroup(row)) {
 			closeGroup();
@@ -132,7 +150,9 @@ function applyRows(table: HTMLElement): void {
 async function refresh(table: HTMLElement, refreeze: boolean): Promise<void> {
 	const seq = ++runSeq;
 	const statuses = await loadStatuses(table);
-	if (seq !== runSeq) return;
+	if (seq !== runSeq) {
+		return;
+	}
 	countStatuses(statuses);
 	if (refreeze) {
 		visible = filterState.filter === "all" ? null : matching(statuses, filterState.filter);
@@ -148,7 +168,9 @@ async function refresh(table: HTMLElement, refreeze: boolean): Promise<void> {
 function pick(filter: CategoryFilter): void {
 	const table = document.querySelector<HTMLElement>('[data-testid="budget-table"]');
 	filterState.filter = filter;
-	if (!table) return;
+	if (!table) {
+		return;
+	}
 	void refresh(table, true);
 }
 
@@ -157,45 +179,44 @@ function mountControl(table: HTMLElement): void {
 	const slot = document.querySelector(HEADER_SLOT);
 	const bar = table.querySelector('[data-testid="budget-totals"]')?.firstElementChild;
 	const parent = slot ?? bar;
-	if (!parent || control?.node.parentElement === parent) return;
+	if (!parent || control?.node.parentElement === parent) {
+		return;
+	}
 	unmountControl();
 	const { node, instance } = mountToNodeWithReturn(FilterControl, {
 		onpick: pick,
 		size: slot ? "md" : "sm",
 	});
 	node.setAttribute(CONTROL_ATTR, "");
-	if (slot) slot.append(node);
+	if (slot) {
+		slot.append(node);
+	}
 	// Before ABT's view options when present, else before Actual's ⋮ menu.
-	else bar!.insertBefore(node, bar!.querySelector(".abt-view-options") ?? bar!.lastElementChild);
+	else {
+		bar!.insertBefore(node, bar!.querySelector(".abt-view-options") ?? bar!.lastElementChild);
+	}
 	control = { node, instance };
 }
 
 function unmountControl(): void {
-	if (!control) return;
+	if (!control) {
+		return;
+	}
 	unmount(control.instance as never);
 	control.node.remove();
 	control = null;
 }
 
-function observe(table: HTMLElement): void {
-	if (observed?.table === table) return;
-	observed?.observer.disconnect();
-	// Edits change the counts; the shown rows stay until another filter is picked.
-	let timer: ReturnType<typeof setTimeout> | undefined;
-	let before = shownSheets(table);
-	const observer = new MutationObserver((records) => {
-		// Only edits to a shown month change the counts; navigating is handled by sync().
-		const shown = shownSheets(table);
-		const moved = shown.join() !== before.join();
-		const sheets = sheetsInMutations(records, moved ? before : undefined);
-		before = shown;
-		markSheetsStale(sheets);
-		if (![...sheets].some((sheet) => shown.includes(sheet))) return;
-		clearTimeout(timer);
-		timer = setTimeout(() => void refresh(table, false), REFRESH_MS);
-	});
-	observer.observe(table, { childList: true, subtree: true, characterData: true });
-	observed = { table, observer };
+// Edits change the counts; the shown rows stay until another filter is picked.
+function onTableChange({ table, shown, changed }: BudgetTableChange): void {
+	if (table !== tableShown) {
+		return;
+	}
+	markSheetsStale(changed);
+	// Only edits to a shown month change the counts; navigating is handled by sync().
+	if ([...changed].some((sheet) => shown.includes(sheet))) {
+		changes?.add(changed);
+	}
 }
 
 /** Drag-to-reorder would drop categories among rows the filter hides. */
@@ -221,19 +242,27 @@ function press(el: Element): void {
  * row. Editing then moves on, the same way, to the next row the filter shows.
  */
 function skipHiddenRows(e: KeyboardEvent): void {
-	if (!visible || (e.key !== "Enter" && e.key !== "Tab")) return;
+	if (!visible || (e.key !== "Enter" && e.key !== "Tab")) {
+		return;
+	}
 	const table = (e.target as Element | null)?.closest?.('[data-testid="budget-table"]');
 	const origin = (e.target as Element).closest('[data-testid="row"]');
-	if (!table || !origin) return;
+	if (!table || !origin) {
+		return;
+	}
 	// Waits for Actual to render the next editor, then moves it on if it landed in a hidden row.
 	pendingEdit?.disconnect();
 	pendingEdit = new MutationObserver(() => {
 		const input = table.querySelector<HTMLInputElement>('[data-testid="budget"] input');
-		if (!input || input === e.target) return;
+		if (!input || input === e.target) {
+			return;
+		}
 		pendingEdit?.disconnect();
 		pendingEdit = null;
 		const landed = input.closest('[data-testid="row"]');
-		if (landed && isHiddenRow(landed)) moveEditor(table, origin, landed, input);
+		if (landed && isHiddenRow(landed)) {
+			moveEditor(table, origin, landed, input);
+		}
 	});
 	pendingEdit.observe(table, { childList: true, subtree: true });
 }
@@ -253,7 +282,9 @@ function moveEditor(table: Element, origin: Element, landed: Element, input: Ele
 	}
 	// Past the last shown row, pressing the row it came from closes the editor.
 	const cell = target.querySelectorAll('[data-testid="budget"]')[column];
-	if (cell) press(cell.firstElementChild ?? cell);
+	if (cell) {
+		press(cell.firstElementChild ?? cell);
+	}
 }
 
 function reset(): void {
@@ -262,24 +293,31 @@ function reset(): void {
 	pendingEdit = null;
 	visible = null;
 	filterState.filter = "all";
-	for (const el of document.querySelectorAll(`[${HIDDEN_ATTR}]`)) el.removeAttribute(HIDDEN_ATTR);
-	observed?.observer.disconnect();
-	observed = null;
+	for (const el of document.querySelectorAll(`[${HIDDEN_ATTR}]`)) {
+		el.removeAttribute(HIDDEN_ATTR);
+	}
+	tableShown = null;
 	shownKey = "";
 }
 
 function sync(): void {
 	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
-	if (isCalendarOpen()) return;
+	if (isCalendarOpen()) {
+		return;
+	}
 	if (!matchesPage(Page.Budget)) {
 		unmountControl();
-		if (observed) reset();
+		if (tableShown) {
+			reset();
+		}
 		return;
 	}
 	const table = document.querySelector<HTMLElement>('[data-testid="budget-table"]');
-	if (!table) return;
+	if (!table) {
+		return;
+	}
 	mountControl(table);
-	observe(table);
+	tableShown = table;
 	const key = shownSheets(table).join();
 	if (key !== shownKey) {
 		shownKey = key;
@@ -307,8 +345,14 @@ export const budgetCategoryFilter = defineSetting({
 		[data-testid="budget-totals"] [${CONTROL_ATTR}] > * { margin-right: var(--abt-space-2); }
 	`,
 	init: () => {
+		changes = collectChanges(REFRESH_MS, () => {
+			if (tableShown) {
+				void refresh(tableShown, false);
+			}
+		});
 		const unwatch = watchDom(sync);
 		const unwatchTable = watchElement('[data-testid="budget-table"]', sync);
+		const unwatchCells = watchBudgetTable(onTableChange);
 		const unwatchSlot = watchElement(HEADER_SLOT, sync);
 		document.addEventListener("dragstart", blockDrag, true);
 		document.addEventListener("keydown", skipHiddenRows, true);
@@ -316,6 +360,9 @@ export const budgetCategoryFilter = defineSetting({
 			unwatch();
 			unwatchTable();
 			unwatchSlot();
+			unwatchCells();
+			changes?.stop();
+			changes = null;
 			document.removeEventListener("dragstart", blockDrag, true);
 			document.removeEventListener("keydown", skipHiddenRows, true);
 			unmountControl();

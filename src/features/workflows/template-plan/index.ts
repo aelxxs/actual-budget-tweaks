@@ -1,12 +1,14 @@
 import { isPanelPersistedOpen, sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
-import { sheetsInMutations } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { icon } from "@lib/icons";
 import type { Schedule } from "@lib/types/actual-schema";
 import { loadCurrentBudgetId, notify, query, send } from "@lib/utilities/actual-api";
-import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
+import {
+	type BudgetTableChange,
+	collectChanges,
+	watchBudgetTable,
+} from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
-import { createDebouncedObserver } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, removeValue, setValue } from "@lib/utilities/store";
@@ -551,75 +553,35 @@ function refreshOpenTab(): void {
 // ── Live edits ────────────────────────────────────────────────────────
 // Long enough to fold one edit's burst of cell updates into a single re-read.
 const LIVE_REFRESH_MS = 50;
-const BUDGET_TABLE = '[data-testid="budget-table"]';
-let cellWatch: { table: Element; observer: MutationObserver } | null = null;
-let liveSheet: string | null = null;
-let liveRefresh: ReturnType<typeof setTimeout> | undefined;
-let heldRefresh = false;
-let stopBulkWatch: (() => void) | null = null;
-
-function refreshLive(): void {
-	// A bulk edit's steps are re-read once, when it finishes.
-	if (isBulkEditing()) {
-		heldRefresh = true;
-		return;
-	}
-	refreshOverview({ quiet: true });
-}
+let stopTable: (() => void) | null = null;
+let liveEdits: ReturnType<typeof collectChanges> | null = null;
 
 /**
- * Re-reads the Overview when the shown month's cells change (assigning, a synced
- * transaction), so it stays current without a refresh. Month changes are left to
- * checkSheetChange.
+ * Follows the month shown, and re-reads the Overview when its cells change (assigning, a
+ * synced transaction), so it stays current without a refresh.
  */
-function watchCells(): void {
-	const table = document.querySelector(BUDGET_TABLE);
-	if (!table || cellWatch?.table === table) {
+function onTableChange({ changed }: BudgetTableChange): void {
+	// Every batch, not only `moved` ones: the cells' sheet names can settle a render after the header.
+	checkSheetChange();
+	if (!drawerOpen || templatePlanState.activeTab !== "overview") {
 		return;
 	}
-	cellWatch?.observer.disconnect();
-	const observer = new MutationObserver((records) => {
-		if (!drawerOpen || templatePlanState.activeTab !== "overview") {
-			return;
-		}
-		const sheet = getCurrentSheet();
-		if (!sheet) {
-			return;
-		}
-		if (sheet !== liveSheet) {
-			liveSheet = sheet;
-			return;
-		}
-		if (!sheetsInMutations(records).has(sheet)) {
-			return;
-		}
-		clearTimeout(liveRefresh);
-		liveRefresh = setTimeout(refreshLive, LIVE_REFRESH_MS);
-	});
-	stopBulkWatch?.();
-	stopBulkWatch = onBulkEditEnd(() => {
-		if (!heldRefresh) {
-			return;
-		}
-		heldRefresh = false;
-		refreshLive();
-	});
-	observer.observe(table.parentElement ?? table, {
-		childList: true,
-		subtree: true,
-		characterData: true,
-	});
-	cellWatch = { table, observer };
-	liveSheet = getCurrentSheet();
+	const sheet = getCurrentSheet();
+	if (sheet && changed.has(sheet)) {
+		liveEdits?.add(changed);
+	}
+}
+
+function watchCells(): void {
+	liveEdits ??= collectChanges(LIVE_REFRESH_MS, () => refreshOverview({ quiet: true }));
+	stopTable ??= watchBudgetTable(onTableChange);
 }
 
 function stopWatchingCells(): void {
-	cellWatch?.observer.disconnect();
-	cellWatch = null;
-	clearTimeout(liveRefresh);
-	stopBulkWatch?.();
-	stopBulkWatch = null;
-	heldRefresh = false;
+	stopTable?.();
+	stopTable = null;
+	liveEdits?.stop();
+	liveEdits = null;
 }
 
 // ── Page gating ────────────────────────────────────────────────────────
@@ -721,19 +683,6 @@ export const templatePlan = defineSetting({
 		const stopClickListener = installClickListener();
 		const stopKeyboard = installKeyboard();
 		const unwatch = watchDom(tick);
-		// Navigating rewrites the cells' data-testid in place, which a childList watcher misses.
-		const monthWatch = createDebouncedObserver(checkSheetChange, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			attributeFilter: ["data-testid"],
-		});
-		monthWatch.observe(document.body);
-
-		if (matchesPage(Page.Budget)) {
-			wasOnBudgetPage = true;
-			reopenIfPersisted();
-		}
 
 		return () => {
 			controller.abort();
@@ -742,7 +691,6 @@ export const templatePlan = defineSetting({
 			unwatch();
 			stopClickListener();
 			stopKeyboard();
-			monthWatch.disconnect();
 			stopWatchingCells();
 			clearTimeout(monthRefresh);
 			removeTriggerButton();

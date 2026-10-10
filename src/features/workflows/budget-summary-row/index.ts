@@ -1,8 +1,12 @@
-import { markSheetsStale, sheetsInMutations } from "@features/readability/category-progress/cells";
+import { markSheetsStale } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
 import { iconMask } from "@lib/icons";
-import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
+import {
+	type BudgetTableChange,
+	collectChanges,
+	watchBudgetTable,
+} from "@lib/utilities/budget-cells";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
@@ -40,8 +44,9 @@ interface Mounted {
 
 let summary: (Mounted & { card: HTMLElement }) | null = null;
 const metas = new Map<HTMLElement, Mounted>();
-let observed: { table: HTMLElement; observer: MutationObserver } | null = null;
-let stopBulkFlush: (() => void) | null = null;
+// The table sync() last set up on the budget page; its changes are followed until it's dropped.
+let tableShown: HTMLElement | null = null;
+let changes: ReturnType<typeof collectChanges> | null = null;
 
 function drop(mounted: Mounted): void {
 	unmount(mounted.instance as never);
@@ -49,13 +54,17 @@ function drop(mounted: Mounted): void {
 }
 
 function unmountSummary(): void {
-	if (summary) drop(summary);
+	if (summary) {
+		drop(summary);
+	}
 	summary = null;
 }
 
 function unmountMetas(keep?: (card: HTMLElement) => boolean): void {
 	for (const [card, meta] of metas) {
-		if (keep?.(card)) continue;
+		if (keep?.(card)) {
+			continue;
+		}
 		drop(meta);
 		metas.delete(card);
 	}
@@ -66,8 +75,7 @@ function unmountAll(): void {
 	unmountMetas();
 	carouselResize?.observer.disconnect();
 	carouselResize = null;
-	observed?.observer.disconnect();
-	observed = null;
+	tableShown = null;
 }
 
 function restoreNative(): void {
@@ -84,12 +92,11 @@ function restoreNative(): void {
 		RESIZING_ATTR,
 		CURRENT_MONTH_ATTR,
 	]) {
-		for (const el of document.querySelectorAll(`[${attr}]`)) el.removeAttribute(attr);
+		for (const el of document.querySelectorAll(`[${attr}]`)) {
+			el.removeAttribute(attr);
+		}
 	}
 }
-
-const shownSheets = (table: HTMLElement) =>
-	shownMonths(table).map((month) => `budget${month.replace("-", "")}`);
 
 function shownMonths(table: HTMLElement): string[] {
 	// Actual's month header (hidden by the month header feature, but still mounted).
@@ -109,7 +116,9 @@ function applyMode(table: HTMLElement): { months: string[]; cards: HTMLElement[]
 	if (months.length && months.length !== shownCount) {
 		const changed = shownCount > 0;
 		shownCount = months.length;
-		if (changed) holdCarousel(table);
+		if (changed) {
+			holdCarousel(table);
+		}
 	}
 	// Per table: Actual replaces the table when the page comes back from the calendar.
 	if (shownCount && table.style.getPropertyValue("--abt-months") !== String(shownCount)) {
@@ -136,10 +145,14 @@ function applyMode(table: HTMLElement): { months: string[]; cards: HTMLElement[]
 function holdCarousel(table: HTMLElement): void {
 	releaseCarousel();
 	const row = carouselRow(table);
-	if (!row || carouselSettled(table)) return;
+	if (!row || carouselSettled(table)) {
+		return;
+	}
 	table.setAttribute(RESIZING_ATTR, "");
 	carouselHold = new MutationObserver(() => {
-		if (carouselSettled(table)) releaseCarousel();
+		if (carouselSettled(table)) {
+			releaseCarousel();
+		}
 	});
 	carouselHold.observe(row, { attributes: true, attributeFilter: ["style"] });
 }
@@ -150,12 +163,16 @@ function holdCarousel(table: HTMLElement): void {
  */
 function watchCarouselWidth(table: HTMLElement): void {
 	const box = carouselRow(table)?.parentElement;
-	if (!box || carouselResize?.box === box) return;
+	if (!box || carouselResize?.box === box) {
+		return;
+	}
 	carouselResize?.observer.disconnect();
 	let width = 0;
 	const observer = new ResizeObserver(([entry]) => {
 		const next = entry.contentRect.width;
-		if (width && next !== width) holdCarousel(table);
+		if (width && next !== width) {
+			holdCarousel(table);
+		}
 		width = next;
 	});
 	observer.observe(box);
@@ -175,7 +192,9 @@ const carouselRow = (table: HTMLElement) =>
 function carouselSettled(table: HTMLElement): boolean {
 	const row = carouselRow(table);
 	const parent = row?.parentElement;
-	if (!row || !parent || !shownCount) return true;
+	if (!row || !parent || !shownCount) {
+		return true;
+	}
 	const width = parseFloat(row.style.width);
 	const offset = parseFloat(row.style.transform.match(/translateX\((-?[\d.]+)px\)/)?.[1] ?? "");
 	return (
@@ -188,49 +207,22 @@ function carouselSettled(table: HTMLElement): boolean {
  * Re-marks the mode and mounts its parts before the browser paints, since Actual renders
  * the new month count a frame before the debounced sync() would; and refreshes the totals.
  */
-function observe(table: HTMLElement): void {
-	if (observed?.table === table) return;
-	observed?.observer.disconnect();
-	let timer: ReturnType<typeof setTimeout> | undefined;
-	const changed = new Set<string>();
-	let shown = shownSheets(table);
-	const observer = new MutationObserver((records) => {
-		// Actual drops the table when the page is hidden (the calendar). Its cards are never
-		// kept once detached, so syncing them would remount them forever; sync() finds the new one.
-		if (!table.isConnected) {
-			unmountAll();
-			return;
-		}
-		syncParts(table);
-		// Only the months whose cells changed re-read; our own renders change none.
-		const now = shownSheets(table);
-		const moved = now.join() !== shown.join();
-		const sheets = sheetsInMutations(records, moved ? shown : undefined);
-		shown = now;
-		if (!sheets.size) return;
-		markSheetsStale(sheets);
-		for (const sheet of sheets) changed.add(sheet);
-		clearTimeout(timer);
-		timer = setTimeout(flush, REFRESH_MS);
-	});
-	function flush() {
-		// A bulk edit's steps are re-read once, when it finishes.
-		if (isBulkEditing()) return;
-		for (const sheet of changed) {
-			summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
-		}
-		changed.clear();
+function onTableChange({ table, changed }: BudgetTableChange): void {
+	// Actual drops the table when the page is hidden (the calendar). Its cards are never
+	// kept once detached, so syncing them would remount them forever; sync() finds the new one.
+	if (!table.isConnected) {
+		unmountAll();
+		return;
 	}
-	stopBulkFlush?.();
-	stopBulkFlush = onBulkEditEnd(flush);
-	observer.observe(table.parentElement ?? table, {
-		childList: true,
-		subtree: true,
-		characterData: true,
-		attributes: true,
-		attributeFilter: ["data-testid", "data-month"],
-	});
-	observed = { table, observer };
+	if (table !== tableShown) {
+		return;
+	}
+	syncParts(table);
+	// Only the months whose cells changed re-read; our own renders change none.
+	if (changed.size) {
+		markSheetsStale(changed);
+		changes?.add(changed);
+	}
 }
 
 /**
@@ -239,10 +231,14 @@ function observe(table: HTMLElement): void {
  */
 function syncSummary(cards: HTMLElement[], month: string | undefined): void {
 	const card = month ? cards.find((c) => c.dataset.month === month) : undefined;
-	if (summary && summary.card === card && summary.node.isConnected) return;
+	if (summary && summary.card === card && summary.node.isConnected) {
+		return;
+	}
 	unmountSummary();
 	const toBudget = card?.lastElementChild;
-	if (!card || !toBudget || !month) return;
+	if (!card || !toBudget || !month) {
+		return;
+	}
 	const { node, instance } = mountToNodeWithReturn(SummaryRow, {
 		sheet: `budget${month.replace("-", "")}`,
 	});
@@ -257,10 +253,14 @@ function syncSummary(cards: HTMLElement[], month: string | undefined): void {
  */
 function syncMetas(cards: HTMLElement[], multi: boolean): void {
 	unmountMetas((card) => multi && card.isConnected && !!metas.get(card)?.node.isConnected);
-	if (!multi) return;
+	if (!multi) {
+		return;
+	}
 	for (const card of cards) {
 		const toBudget = card.lastElementChild;
-		if (metas.has(card) || !card.dataset.month || !toBudget) continue;
+		if (metas.has(card) || !card.dataset.month || !toBudget) {
+			continue;
+		}
 		const { node, instance } = mountToNodeWithReturn(MonthMeta, {
 			card,
 			month: card.dataset.month,
@@ -273,18 +273,24 @@ function syncMetas(cards: HTMLElement[], multi: boolean): void {
 
 function sync(): void {
 	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
-	if (isCalendarOpen()) return;
+	if (isCalendarOpen()) {
+		return;
+	}
 	if (!matchesPage(Page.Budget)) {
 		unmountAll();
 		return;
 	}
 	const table = document.querySelector<HTMLElement>(BUDGET_TABLE);
-	if (!table?.parentElement) return;
-	const fresh = observed?.table !== table;
-	observe(table);
+	if (!table?.parentElement) {
+		return;
+	}
+	const fresh = tableShown !== table;
+	tableShown = table;
 	syncParts(table);
 	// A new table's carousel starts at zero width and slides into place over a few frames.
-	if (fresh) holdCarousel(table);
+	if (fresh) {
+		holdCarousel(table);
+	}
 }
 
 /** Marks the mode and mounts its parts; idempotent, so it's safe on every mutation. */
@@ -578,11 +584,20 @@ export const budgetSummaryRow = defineSetting({
 		}
 	`,
 	init: () => {
+		changes = collectChanges(REFRESH_MS, (sheets) => {
+			for (const sheet of sheets) {
+				summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
+			}
+		});
 		const unwatch = watchDom(sync);
 		const unwatchTable = watchElement(BUDGET_TABLE, sync);
+		const unwatchCells = watchBudgetTable(onTableChange);
 		return () => {
 			unwatch();
 			unwatchTable();
+			unwatchCells();
+			changes?.stop();
+			changes = null;
 			restoreNative();
 		};
 	},
