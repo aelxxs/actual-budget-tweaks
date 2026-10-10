@@ -1,9 +1,8 @@
 import { defineSetting } from "@features/types";
-import { rowCategoryId } from "@lib/utilities/budget-cells";
+import { rowCategoryId, watchBudgetTable } from "@lib/utilities/budget-cells";
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 import { notify, send } from "@lib/utilities/actual-api";
-import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, setValue } from "@lib/utilities/store";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
@@ -265,11 +264,8 @@ export const categoryEmojiPicker = defineSetting({
 	css: () => CSS,
 	init: async () => {
 		await loadCategoryIcons();
-		const unwatch = watchDom(scanRows, document.body, {
-			childList: true,
-			subtree: true,
-			characterData: true,
-		});
+		// Category names only change inside the budget table.
+		const unwatch = watchBudgetTable(scanRows);
 
 		return () => {
 			unwatch();

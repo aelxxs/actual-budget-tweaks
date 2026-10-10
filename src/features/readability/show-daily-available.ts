@@ -80,11 +80,7 @@ export const showDailyAvailable = defineSetting({
 	},
 	init: () => {
 		void loadCurrency().then(displayDailyBalance);
-		const unwatch = watchDom(displayDailyBalance, undefined, {
-			childList: true,
-			subtree: true,
-			characterData: true,
-		});
+		const unwatch = watchDom(displayDailyBalance);
 
 		return () => {
 			unwatch();

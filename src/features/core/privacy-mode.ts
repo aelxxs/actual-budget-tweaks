@@ -1,4 +1,5 @@
 import { query } from "@lib/utilities/actual-api";
+import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 
 const PRIVACY_CLASS = "abt-privacy-enabled";
 const BALANCE_SELECTOR = '[data-testid="sidebar-all-accounts-balance"]';
@@ -26,29 +27,27 @@ export function getPrivacyMode(): boolean {
 	return privacyModeEnabled;
 }
 
-// The sidebar's all-accounts balance node re-renders whenever the user
-// toggles privacy mode elsewhere in the app, so watching it for mutations
-// lets us pick up the change without polling the preferences table.
+// The sidebar's all-accounts balance re-renders whenever privacy mode is toggled anywhere in
+// the app, so watching it picks up the change without polling the preferences table.
 function observeSidebarBalance(callback: () => void): void {
-	let attached = false;
-	function tryAttach() {
-		if (attached) return;
+	let stop: (() => void) | null = null;
+	// Re-attached whenever Actual renders a new balance: opening or switching budgets.
+	const attach = () => {
+		stop?.();
+		stop = null;
 		const target = document.querySelector(BALANCE_SELECTOR);
-		if (!target) {
-			setTimeout(tryAttach, 200);
-			return;
+		if (target) {
+			stop = watchDom(callback, target, { childList: true, subtree: true, characterData: true });
 		}
-		const observer = new MutationObserver(callback);
-		observer.observe(target, { childList: true, subtree: true, characterData: true });
-		attached = true;
-	}
-	tryAttach();
+	};
+	watchElement(BALANCE_SELECTOR, attach);
+	attach();
 }
 
 export const privacyMode = {
 	type: "core" as const,
 	init: () => {
-		refreshPrivacyMode();
-		observeSidebarBalance(refreshPrivacyMode);
+		void refreshPrivacyMode();
+		observeSidebarBalance(() => void refreshPrivacyMode());
 	},
 };

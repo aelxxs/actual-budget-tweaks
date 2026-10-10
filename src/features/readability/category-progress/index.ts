@@ -2,7 +2,7 @@ import { defineSetting } from "@features/types";
 import CategoryProgressPreview from "../previews/CategoryProgress.svelte";
 import { goalFunding } from "@features/workflows/goal-funding";
 import { icon } from "@lib/icons";
-import { readCell } from "@lib/utilities/budget-cells";
+import { readCell, watchBudgetTable } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { watchDom } from "@lib/utilities/dom-watcher";
@@ -10,13 +10,7 @@ import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
 import { getValue } from "@lib/utilities/store";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
-import {
-	BALANCE_CELL_RE,
-	BALANCE_WATCH_OPTIONS,
-	clearCellCache,
-	fetchCells,
-	type CatCells,
-} from "./cells";
+import { BALANCE_CELL_RE, clearCellCache, fetchCells, type CatCells } from "./cells";
 import ProgressPopover from "./ProgressPopover.svelte";
 
 const RING_CLASS = "abt-catprog-ring";
@@ -93,9 +87,17 @@ export const categoryProgress = defineSetting({
 	css: () => CSS,
 	init: () => {
 		loadCurrency();
-		const unwatch = watchDom(scanAndDecorate, document.body, BALANCE_WATCH_OPTIONS);
+		// Balances only change inside the budget table; leaving the page takes the rings down.
+		const unwatchTable = watchBudgetTable(scanAndDecorate);
+		const unwatchPage = watchDom(() => {
+			if (!matchesPage(Page.Budget)) {
+				undecorateAll();
+				closePopover(true);
+			}
+		});
 		return () => {
-			unwatch();
+			unwatchTable();
+			unwatchPage();
 			undecorateAll();
 			closePopover(true);
 			clearCellCache();

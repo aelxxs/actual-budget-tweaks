@@ -2,10 +2,10 @@ import { defineSetting } from "@features/types";
 import BalancePillsPreview from "../previews/BalancePills.svelte";
 import {
 	BALANCE_CELL_RE,
-	BALANCE_WATCH_OPTIONS,
 	fetchCells,
 	type CatCells,
 } from "@features/readability/category-progress/cells";
+import { watchBudgetTable } from "@lib/utilities/budget-cells";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 
@@ -64,8 +64,12 @@ const CSS = (Object.keys(TONES) as Status[])
 
 // Same states as Actual's own goal colouring; categories without a goal keep its plain balance.
 function statusFor(data: CatCells): Status | null {
-	if (!data.hasGoal) return null;
-	if (data.balance < 0) return "overspent";
+	if (!data.hasGoal) {
+		return null;
+	}
+	if (data.balance < 0) {
+		return "overspent";
+	}
 	return data.goalShortfall > 0 ? "underfunded" : "funded";
 }
 
@@ -78,7 +82,9 @@ function scan(): void {
 		'[data-testid="balance"] span[data-cellname]',
 	)) {
 		const match = span.getAttribute("data-cellname")?.match(BALANCE_CELL_RE);
-		if (!match) continue;
+		if (!match) {
+			continue;
+		}
 		const [, sheet, catId] = match;
 		const cellName = span.getAttribute("data-cellname");
 
@@ -89,10 +95,15 @@ function scan(): void {
 
 		void fetchCells(sheet, catId, force).then((data) => {
 			// React reuses these nodes across months; only paint if it's still this cell.
-			if (!span.isConnected || span.getAttribute("data-cellname") !== cellName) return;
+			if (!span.isConnected || span.getAttribute("data-cellname") !== cellName) {
+				return;
+			}
 			const status = statusFor(data);
-			if (status) span.setAttribute(STATUS_ATTR, status);
-			else span.removeAttribute(STATUS_ATTR);
+			if (status) {
+				span.setAttribute(STATUS_ATTR, status);
+			} else {
+				span.removeAttribute(STATUS_ATTR);
+			}
 		});
 	}
 }
@@ -117,9 +128,16 @@ export const balancePills = defineSetting({
 	},
 	css: () => CSS,
 	init: () => {
-		const unwatch = watchDom(scan, document.body, BALANCE_WATCH_OPTIONS);
+		// Balances only change inside the budget table; leaving the page clears the marks.
+		const unwatchTable = watchBudgetTable(scan);
+		const unwatchPage = watchDom(() => {
+			if (!matchesPage(Page.Budget)) {
+				clearAll();
+			}
+		});
 		return () => {
-			unwatch();
+			unwatchTable();
+			unwatchPage();
 			clearAll();
 		};
 	},

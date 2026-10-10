@@ -8,10 +8,11 @@ interface Entry {
 }
 
 const bodyEntry: Entry = { observer: null, listeners: new Set() };
-const scoped = new Map<Node, Entry>();
 
 function dispatch(entry: Entry) {
-	for (const listener of entry.listeners) listener();
+	for (const listener of entry.listeners) {
+		listener();
+	}
 }
 
 function subscribe(entry: Entry, target: Node, listener: Listener, options?: MutationObserverInit) {
@@ -40,15 +41,21 @@ export function watchElement(selector: string, listener: Listener): () => void {
 	elementObserver ??= new MutationObserver(() => {
 		for (const [sel, watcher] of elementWatchers) {
 			const el = document.querySelector(sel);
-			if (el === watcher.current) continue;
+			if (el === watcher.current) {
+				continue;
+			}
 			watcher.current = el;
-			for (const l of watcher.listeners) l();
+			for (const l of watcher.listeners) {
+				l();
+			}
 		}
 	});
 	elementObserver.observe(document.body, { childList: true, subtree: true });
 	return () => {
 		entry!.listeners.delete(listener);
-		if (entry!.listeners.size === 0) elementWatchers.delete(selector);
+		if (entry!.listeners.size === 0) {
+			elementWatchers.delete(selector);
+		}
 		if (elementWatchers.size === 0) {
 			elementObserver?.disconnect();
 			elementObserver = null;
@@ -57,11 +64,16 @@ export function watchElement(selector: string, listener: Listener): () => void {
 }
 
 /**
- * Subscribes to DOM changes, invoking `listener` immediately and again on every
- * subsequent mutation. Without a `target`, all callers share one observer on
- * `document.body`. Passing a `target` gets that node its own dedicated observer
- * (deduped by target — the first caller's `options` win if targets collide).
+ * Subscribes to DOM changes, invoking `listener` immediately and again on every later batch,
+ * once per frame. Without a `target`, all callers share one childList observer on the body;
+ * a `target` gets its own observer with `options`.
  */
+export function watchDom(listener: Listener): () => void;
+export function watchDom(
+	listener: Listener,
+	target: Node,
+	options?: MutationObserverInit,
+): () => void;
 export function watchDom(
 	listener: Listener,
 	target?: Node,
@@ -77,19 +89,7 @@ export function watchDom(
 			}
 		};
 	}
-
-	let entry = scoped.get(target);
-	if (!entry) {
-		entry = { observer: null, listeners: new Set() };
-		scoped.set(target, entry);
-	}
+	const entry: Entry = { observer: null, listeners: new Set() };
 	subscribe(entry, target, listener, options);
-
-	return () => {
-		entry!.listeners.delete(listener);
-		if (entry!.listeners.size === 0) {
-			entry!.observer?.disconnect();
-			scoped.delete(target);
-		}
-	};
+	return () => entry.observer?.disconnect();
 }

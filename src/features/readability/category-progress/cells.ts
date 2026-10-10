@@ -6,17 +6,6 @@ import { UUID } from "@lib/utilities/ids";
 export const BALANCE_CELL_RE = new RegExp(`^(budget\\d{6})!leftover-(${UUID})$`);
 const CACHE_MS = 15000;
 
-/**
- * React updates a changed balance by rewriting its text node, which a plain
- * childList watcher never sees; observing text too makes pills and rings
- * repaint as soon as a budget edit or assignment lands.
- */
-export const BALANCE_WATCH_OPTIONS: MutationObserverInit = {
-	childList: true,
-	subtree: true,
-	characterData: true,
-};
-
 export interface CatCells {
 	budgeted: number;
 	spent: number; // positive cents
