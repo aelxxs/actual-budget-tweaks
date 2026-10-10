@@ -5,6 +5,7 @@
 	import { getValue, watchValue } from "../utilities/store";
 	import Icon from "./Icon.svelte";
 	import PreviewToggle from "./PreviewToggle.svelte";
+	import WritesMark from "./WritesMark.svelte";
 	import type { IconName } from "../icons";
 
 	const { labelText, options, setting, icon } = $props<{
@@ -45,7 +46,9 @@
 			<span class="abt-setting__icon"><Icon name={icon} size={15} /></span>
 		{/if}
 		<span class="abt-setting__text">
-			<span class="abt-setting__label">{labelText}</span>
+			<span class="abt-setting__label"
+				>{labelText}{#if setting.writes}<WritesMark writes={setting.writes} />{/if}</span
+			>
 			{#if setting.description}
 				<span class="abt-setting__desc">{setting.description}</span>
 			{/if}

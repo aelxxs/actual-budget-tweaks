@@ -110,6 +110,7 @@ export const goalFunding = defineSetting({
 	description:
 		"Click a category's balance to see its goal progress and assign money to an underfunded goal.",
 	icon: "interest",
+	writes: "Budgets the rest of a goal to its category when you click Assign.",
 	context: {
 		key: "goal-funding",
 		defaultValue: true,

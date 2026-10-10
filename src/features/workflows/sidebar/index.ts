@@ -45,6 +45,7 @@ export const experimentalSidebar = defineSetting({
 	description:
 		"ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
 	group: "Sidebar",
+	writes: "Renames an account or runs its bank sync when you do so from the sidebar.",
 	context: {
 		key: "experimental-sidebar",
 		defaultValue: true,

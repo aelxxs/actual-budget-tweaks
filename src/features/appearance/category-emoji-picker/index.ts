@@ -259,6 +259,7 @@ export const categoryEmojiPicker = defineSetting({
 	description: "Set a custom emoji icon for each category.",
 	group: "Categories",
 	icon: "image",
+	writes: "Adds the emoji you pick to the category's name.",
 	context: {
 		key: STORAGE_KEY,
 		defaultValue: true,

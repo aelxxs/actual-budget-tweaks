@@ -604,6 +604,9 @@ select.abt-input {
 }
 
 .abt-setting__label {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
 	font-size: var(--abt-text-md);
 	font-weight: 500;
 }
@@ -611,6 +614,23 @@ select.abt-input {
 .abt-setting__desc {
 	font-size: var(--abt-text-sm);
 	color: var(--color-pageTextSubdued);
+}
+
+/* Beside the label of a setting that can change the budget. */
+.abt-setting__writes {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--abt-space-2);
+	margin-left: var(--abt-space-3);
+	padding: 1px var(--abt-space-3);
+	border-radius: var(--abt-radius-pill);
+	background: var(--abt-fill);
+	color: var(--abt-muted);
+	font-size: var(--abt-text-xs);
+	font-weight: 500;
+	line-height: 1.5;
+	white-space: nowrap;
+	cursor: help;
 }
 
 /* A setting's mock, opened under its row from the eye button. */

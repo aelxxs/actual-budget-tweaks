@@ -24,6 +24,8 @@ export interface BaseSetting<C extends SettingContext> {
 	icon?: IconName;
 	/** Optional subgroup label — settings sharing the same group render under one subheading within their section. */
 	group?: SettingGroup;
+	/** What this tweak can change in the budget, and on which action. Marks it in settings and on the website. */
+	writes?: string;
 	context: C;
 	/** Static/derived CSS applied by the runtime on activate and cleared on deactivate. */
 	css?: (ctx: C & { value: unknown }) => string;
@@ -72,7 +74,7 @@ export type Setting<C extends SettingContext = SettingContext> =
 	SelectSetting<C> | CheckboxSetting<C> | CustomSetting<C> | CoreSetting;
 
 /**
- * `label`/`description`/`icon`/`group` must be plain string literals in the
+ * `label`/`description`/`icon`/`group`/`writes` must be plain string literals in the
  * object passed here, not computed expressions — `scripts/generate-features-manifest.mjs`
  * reads them via AST parsing (to build the website's features list without
  * importing Svelte/browser code into a Node script), and a non-literal value

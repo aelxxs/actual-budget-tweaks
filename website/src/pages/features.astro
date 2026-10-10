@@ -7,6 +7,7 @@ interface FeatureItem {
 	description: string | null;
 	icon: string | null;
 	group: string | null;
+	writes: string | null;
 }
 
 interface FeatureSection {
@@ -53,6 +54,10 @@ function groupItems(items: FeatureItem[]): { label: string | null; items: Featur
 			<p class="features-page__subtitle">
 				Every setting Actual Budget Tweaks offers — {totalCount} in total. Turn on what you want, ignore the rest.
 			</p>
+			<p class="features-page__note">
+				Tweaks marked <span class="writes-mark writes-mark--inline">✎ Edits budget</span> can change
+				your budget, only when you click to. Changes go through Actual, so its undo works as usual.
+			</p>
 		</header>
 
 		{
@@ -69,7 +74,12 @@ function groupItems(items: FeatureItem[]): { label: string | null; items: Featur
 								<ul class="settings-list">
 									{group.items.map((item) => (
 										<li class="settings-list__item">
-											<span class="settings-list__label">{item.label}</span>
+											<span class="settings-list__label">
+												{item.label}
+												{item.writes && (
+													<span class="writes-mark" title={item.writes}>✎ Edits budget</span>
+												)}
+											</span>
 											{item.description && (
 												<span class="settings-list__desc">{item.description}</span>
 											)}
@@ -178,6 +188,31 @@ function groupItems(items: FeatureItem[]): { label: string | null; items: Featur
 	.settings-list__desc {
 		font-size: 0.82rem;
 		color: var(--text-secondary);
+	}
+
+	.features-page__note {
+		color: var(--text-secondary);
+		font-size: 0.85rem;
+		max-inline-size: 60ch;
+	}
+
+	.writes-mark {
+		display: inline-block;
+		margin-inline-start: 0.4em;
+		padding: 0.05em 0.55em;
+		border-radius: 999px;
+		background: var(--bg-alt);
+		color: var(--text-secondary);
+		font-size: 0.72rem;
+		font-weight: 500;
+		vertical-align: 0.1em;
+		white-space: nowrap;
+		cursor: help;
+	}
+
+	.writes-mark--inline {
+		margin-inline: 0.1em;
+		cursor: default;
 	}
 
 	.features-page__footer-cta {

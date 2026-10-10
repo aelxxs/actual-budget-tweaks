@@ -98,6 +98,7 @@ export const syncRecap = defineSetting({
 		"After a bank sync or import, review what came in and categorize it in the side panel.",
 	icon: "download",
 	group: "Accounts",
+	writes: "Sets a transaction's category when you pick one in the recap.",
 	context: {
 		key: "sync-recap",
 		defaultValue: true,

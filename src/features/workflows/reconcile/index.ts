@@ -100,6 +100,8 @@ export const modernReconcile = defineSetting({
 		"Reconcile in a side panel: live balances, clear transactions from a list, one-click adjustment and undo.",
 	group: "General",
 	icon: "shield",
+	writes:
+		"Clears transactions you tick, adds an adjustment if you ask, and locks them when you finish.",
 	context: {
 		key: "modern-reconcile",
 		defaultValue: false,

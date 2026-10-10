@@ -719,6 +719,7 @@ export const templatePlan = defineSetting({
 	description: "Month summary, template breakdowns, and priority planning in a side panel.",
 	icon: "layout",
 	group: "Budget",
+	writes: "Applies the month's budget templates when you click Apply.",
 	context: {
 		key: "actual-template-apply-breakdown",
 		defaultValue: true,

@@ -302,6 +302,7 @@ export const budgetSummaryRow = defineSetting({
 		"Compact month headers when several months are shown; with one, a full-width row of To Budget, spending, targets, and quick budget actions.",
 	icon: "sparkles",
 	group: "Budget",
+	writes: "Applies budget templates or covers overspending when you click those actions.",
 	context: {
 		key: "budget-summary-row",
 		defaultValue: false,
