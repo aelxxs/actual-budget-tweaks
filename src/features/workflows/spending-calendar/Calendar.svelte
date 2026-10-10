@@ -454,6 +454,8 @@
 		box-sizing: border-box;
 		min-height: var(--abt-panel-header-height);
 		border-bottom: 1px solid var(--abt-panel-border);
+		/* The month reads as this page's title, sized like the Reports title it opens over. */
+		--abt-month-title-size: 20px; /* raw: no type token this large */
 	}
 
 	.cal-header__left {

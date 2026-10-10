@@ -60,7 +60,7 @@ export const reportsHeader = defineSetting({
 			align-items: center;
 			border-bottom: 1px solid var(--abt-panel-border);
 			background: var(--color-pageBackground);
-			margin-right: 0 !important;
+			margin-inline: 0 !important;
 		}
 
 		/*
