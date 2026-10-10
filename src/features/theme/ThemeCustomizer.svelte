@@ -2,8 +2,8 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { themes } from "@lib/design";
 	import { getValue, setValue } from "@lib/utilities/store";
-	import { mountToNode, mountToPanelBody } from "@lib/utilities/svelte";
-	import { onDestroy, onMount } from "svelte";
+	import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
+	import { type Component, onDestroy, onMount } from "svelte";
 	import { sidepanel } from "../core/side-panel";
 	import { DEFAULT_THEME } from "./defaults";
 	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
@@ -61,6 +61,21 @@
 	}
 	mql.addEventListener("change", onSchemeChange);
 	onDestroy(() => mql.removeEventListener("change", onSchemeChange));
+	onDestroy(() => {
+		for (const mounted of [editor, editorHeader, creator, creatorHeader]) {
+			mounted?.destroy();
+		}
+	});
+
+	// A panel header row, laid out like the side panel's own.
+	function mountHeader<T extends Record<string, unknown>>(
+		component: Component<T>,
+		props: T,
+	): Mounted {
+		const header = mountToNodeWithReturn(component, props);
+		header.node.style.cssText = "display: flex; flex: 1;";
+		return header;
+	}
 
 	function getThemeName(key: string): string {
 		if (key === NATIVE_THEME_KEY) return "Actual default";
@@ -125,28 +140,28 @@
 		}
 	}
 
-	let editorNode: Node | null = null;
-	let headerNode: Node | null = null;
+	let editor: Mounted | null = null;
+	let editorHeader: Mounted | null = null;
 
 	let exportFn: (() => string) | null = null;
 
 	const openColorEditor = () => {
-		if (!editorNode) {
-			editorNode = mountToPanelBody(ThemeColorEditor, {
+		if (!editor) {
+			editor = mountToPanelBody(ThemeColorEditor, {
 				onReady: ({ reset, getExportCSS }: { reset: () => void; getExportCSS: () => string }) => {
 					setResetFn(reset);
 					exportFn = getExportCSS;
 				},
-			}).node;
-			headerNode = mountToNode(ThemeEditorHeader, {
+			});
+			editorHeader = mountHeader(ThemeEditorHeader, {
 				onReset: () => resetFn(),
 				onExport: () => exportFn?.() ?? "",
 			});
 		}
 		sidepanel.open({
 			title: "Color Editor",
-			bodyNode: editorNode,
-			headerNode: headerNode,
+			bodyNode: editor.node,
+			headerNode: editorHeader!.node,
 		});
 	};
 
@@ -239,8 +254,8 @@
 		!showNative && filteredBuiltin.length === 0 && filteredCommunity.length === 0 && !loadingRemote,
 	);
 
-	let creatorNode: Node | null = null;
-	let creatorHeaderNode: Node | null = null;
+	let creator: Mounted | null = null;
+	let creatorHeader: Mounted | null = null;
 	let creatorThemeId = "";
 	let creatorThemeName = "My Theme";
 	let creatorThemeMode: "dark" | "light" = "dark";
@@ -261,7 +276,9 @@
 			applyUserPaletteTheme(existing.id, existing.keys);
 		}
 
-		creatorNode = mountToPanelBody(ThemeCreator, {
+		creator?.destroy();
+		creatorHeader?.destroy();
+		creator = mountToPanelBody(ThemeCreator, {
 			initialKeys: creatorPaletteKeys,
 			initialCss: creatorCss,
 			initialTab: creatorType,
@@ -274,8 +291,8 @@
 				creatorType = "css";
 				applyUserCSSTheme(creatorThemeId, css);
 			},
-		}).node;
-		creatorHeaderNode = mountToNode(ThemeCreatorHeader, {
+		});
+		creatorHeader = mountHeader(ThemeCreatorHeader, {
 			themeName: creatorThemeName,
 			mode: creatorThemeMode,
 			isEditing: !!existing,
@@ -290,8 +307,8 @@
 		});
 		sidepanel.open({
 			title: "Create Theme",
-			bodyNode: creatorNode,
-			headerNode: creatorHeaderNode,
+			bodyNode: creator.node,
+			headerNode: creatorHeader.node,
 		});
 	}
 

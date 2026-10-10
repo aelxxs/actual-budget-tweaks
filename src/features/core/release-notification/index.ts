@@ -1,7 +1,7 @@
 import { fetchReleaseNotes } from "@lib/utilities/changelog";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { getValue, setValue } from "@lib/utilities/store";
-import { mountToNode } from "@lib/utilities/svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import ReleaseNotification from "./ReleaseNotification.svelte";
 
 const PENDING_KEY = "release-notes-pending-version";
@@ -24,24 +24,31 @@ export const releaseNotification = {
 		applyGlobalCSS(CSS, "release-notification");
 
 		const optedOut = await getValue(OPT_OUT_KEY, false);
-		if (optedOut) return;
+		if (optedOut) {
+			return;
+		}
 
 		const version = await getValue<string | null>(PENDING_KEY, null);
-		if (!version) return;
+		if (!version) {
+			return;
+		}
 
 		const sections = await fetchReleaseNotes(version);
 
-		const wrap = mountToNode(ReleaseNotification, {
+		let toast: Mounted | null = null;
+		toast = mountToNodeWithReturn(ReleaseNotification, {
 			version,
 			sections,
 			releaseUrl: `${RELEASES_BASE_URL}/v${version}`,
 			onClose: async (dontShowAgain: boolean) => {
 				await setValue(PENDING_KEY, null);
-				if (dontShowAgain) await setValue(OPT_OUT_KEY, true);
-				wrap.remove();
+				if (dontShowAgain) {
+					await setValue(OPT_OUT_KEY, true);
+				}
+				toast?.destroy();
 			},
 		});
-		wrap.className = WRAP_CLASS;
-		document.body.appendChild(wrap);
+		toast.node.className = WRAP_CLASS;
+		document.body.appendChild(toast.node);
 	},
 };

@@ -4,7 +4,7 @@ import { readCell } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { watchRoute } from "@lib/utilities/route-watcher";
-import { mountToNode } from "@lib/utilities/svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import FlowBar from "./FlowBar.svelte";
 
 const CSS = `
@@ -48,12 +48,39 @@ function getSheetName(card: HTMLElement): string | null {
 	return null;
 }
 
+interface FlowProps {
+	available: number;
+	budgeted: number;
+	overspent: number;
+	forNext: number;
+}
+
+// Each card's flow bar, by card; replaced when the card's numbers change.
+const flows = new Map<HTMLElement, Mounted>();
+
+function removeFlow(card: HTMLElement): void {
+	flows.get(card)?.destroy();
+	flows.delete(card);
+	card.querySelector(".abt-flow-hidden")?.classList.remove("abt-flow-hidden");
+}
+
+function mountFlow(card: HTMLElement, after: HTMLElement, props: FlowProps, fp?: string): void {
+	flows.get(card)?.destroy();
+	const flow = mountToNodeWithReturn(FlowBar, props);
+	flow.node.className = "abt-flow-mount";
+	flow.node.style.cssText = "display: block; flex: 1;";
+	if (fp) {
+		flow.node.dataset.fp = fp;
+	}
+	after.after(flow.node);
+	flows.set(card, flow);
+}
+
 async function processCard(card: HTMLElement) {
 	const sheetName = getSheetName(card);
 
 	if (!sheetName) {
-		card.querySelector(".abt-flow-mount")?.remove();
-		card.querySelector(".abt-flow-hidden")?.classList.remove("abt-flow-hidden");
+		removeFlow(card);
 		return;
 	}
 
@@ -83,13 +110,9 @@ async function processCard(card: HTMLElement) {
 	}
 
 	// Mount immediately with zeros — no flash
-	const existing = card.querySelector<HTMLElement>(".abt-flow-mount");
-	if (!existing) {
+	if (!flows.get(card)?.node.isConnected) {
 		breakdown.classList.add("abt-flow-hidden");
-		const wrapper = mountToNode(FlowBar, { available: 0, budgeted: 0, overspent: 0, forNext: 0 });
-		wrapper.className = "abt-flow-mount";
-		wrapper.style.display = "block";
-		breakdown.after(wrapper);
+		mountFlow(card, breakdown, { available: 0, budgeted: 0, overspent: 0, forNext: 0 });
 	}
 
 	try {
@@ -106,32 +129,28 @@ async function processCard(card: HTMLElement) {
 		const avail = available;
 
 		const fp = `${avail}|${absBudgeted}|${absOverspent}|${absForNext}`;
-		const mount = card.querySelector<HTMLElement>(".abt-flow-mount");
-		if (mount?.dataset.fp === fp) {
+		if (flows.get(card)?.node.dataset.fp === fp) {
 			return;
 		}
-		if (mount) {
-			mount.dataset.fp = fp;
-		}
-
-		// Re-mount with real values — FlowBar is already visible so swap is seamless
-		mount?.remove();
-		const wrapper = mountToNode(FlowBar, {
-			available: avail,
-			budgeted: absBudgeted,
-			overspent: absOverspent,
-			forNext: absForNext,
-		});
-		wrapper.className = "abt-flow-mount";
-		wrapper.style.display = "block";
-		wrapper.dataset.fp = fp;
-		breakdown.after(wrapper);
+		// Re-mounted with the real values; the zeros were already showing, so the swap is seamless.
+		mountFlow(
+			card,
+			breakdown,
+			{ available: avail, budgeted: absBudgeted, overspent: absOverspent, forNext: absForNext },
+			fp,
+		);
 	} catch {
 		// Leave zeros visible if data fetch failed
 	}
 }
 
 function processCards() {
+	// Actual drops cards on navigating; their bars go with them.
+	for (const card of [...flows.keys()]) {
+		if (!card.isConnected) {
+			removeFlow(card);
+		}
+	}
 	for (const card of document.querySelectorAll<HTMLElement>('[data-testid="budget-summary"]')) {
 		processCard(card);
 	}
@@ -140,8 +159,10 @@ function processCards() {
 function cleanupCards() {
 	for (const card of document.querySelectorAll<HTMLElement>('[data-testid="budget-summary"]')) {
 		card.classList.remove("abt-current-month");
-		card.querySelector(".abt-flow-mount")?.remove();
 		card.querySelector(".abt-flow-hidden")?.classList.remove("abt-flow-hidden");
+	}
+	for (const card of [...flows.keys()]) {
+		removeFlow(card);
 	}
 }
 

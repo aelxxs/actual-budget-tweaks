@@ -1,30 +1,6 @@
 import { mount, unmount, type Component } from "svelte";
 import { createElement } from "./dom";
 
-export function mountToNode<T extends Record<string, unknown>>(
-	component: Component<T>,
-	props: T,
-	target?: HTMLElement,
-): HTMLDivElement;
-export function mountToNode(
-	component: Component,
-	props?: undefined,
-	target?: HTMLElement,
-): HTMLDivElement;
-export function mountToNode(
-	component: Component,
-	props?: Record<string, unknown>,
-	target?: HTMLElement,
-): HTMLDivElement {
-	const container =
-		target ??
-		createElement("div", {
-			style: { display: "flex", flex: "1" },
-		});
-	mount(component, { target: container, props: props as never });
-	return container as HTMLDivElement;
-}
-
 /** A mounted component and its node; `destroy` unmounts it and removes the node. */
 export interface Mounted {
 	node: HTMLDivElement;

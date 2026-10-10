@@ -8,7 +8,7 @@ import {
 } from "@lib/utilities/category-colors";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
-import { mountToNode } from "@lib/utilities/svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import ColorPicker from "./ColorPicker.svelte";
 
 const STORAGE_KEY = "category-color-dots";
@@ -70,16 +70,14 @@ const CSS = `
 	}
 `;
 
-let popoverEl: HTMLElement | null = null;
+let popover: Mounted | null = null;
 let stopOutsideClick: (() => void) | null = null;
 
 function closePopover() {
 	stopOutsideClick?.();
 	stopOutsideClick = null;
-	if (popoverEl) {
-		popoverEl.remove();
-		popoverEl = null;
-	}
+	popover?.destroy();
+	popover = null;
 }
 
 function openColorPicker(anchor: HTMLElement, catId: string) {
@@ -87,7 +85,7 @@ function openColorPicker(anchor: HTMLElement, catId: string) {
 
 	const currentColor = getCategoryColor(catId);
 
-	const wrap = mountToNode(ColorPicker, {
+	popover = mountToNodeWithReturn(ColorPicker, {
 		currentColor,
 		onSelect: async (color: string) => {
 			await setCategoryColor(catId, color);
@@ -97,10 +95,10 @@ function openColorPicker(anchor: HTMLElement, catId: string) {
 		onClose: closePopover,
 	});
 
+	const wrap = popover.node;
 	wrap.className = "abt-color-popover";
 	wrap.style.display = "block";
 	document.body.appendChild(wrap);
-	popoverEl = wrap;
 
 	positionPopover(wrap, anchor);
 	stopOutsideClick = onOutsideClick([wrap, anchor], closePopover);

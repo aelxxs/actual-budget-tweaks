@@ -9,7 +9,7 @@ import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
 import { getValue } from "@lib/utilities/store";
-import { mountToNode } from "@lib/utilities/svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import {
 	BALANCE_CELL_RE,
 	BALANCE_WATCH_OPTIONS,
@@ -242,7 +242,7 @@ function undecorateAll() {
 
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
-let popoverWrap: HTMLElement | null = null;
+let popover: Mounted | null = null;
 let popoverRing: HTMLElement | null = null;
 
 function onRingEnter(e: Event) {
@@ -296,7 +296,7 @@ async function openPopover(ring: HTMLElement) {
 
 	closePopover(true);
 
-	const wrap = mountToNode(ProgressPopover, {
+	popover = mountToNodeWithReturn(ProgressPopover, {
 		name,
 		month: sheetMonthLabel(sheet),
 		budgeted: data.budgeted,
@@ -307,6 +307,7 @@ async function openPopover(ring: HTMLElement) {
 		avgSpent,
 		daysLeft: daysLeftInMonth(sheet),
 	});
+	const wrap = popover.node;
 	wrap.className = POPOVER_CLASS;
 	wrap.style.display = "block";
 	wrap.addEventListener("mouseenter", () => {
@@ -316,7 +317,6 @@ async function openPopover(ring: HTMLElement) {
 	});
 	wrap.addEventListener("mouseleave", scheduleClose);
 	document.body.appendChild(wrap);
-	popoverWrap = wrap;
 	popoverRing = ring;
 
 	positionPopover(wrap, ring, { gap: 6, align: "right" });
@@ -326,9 +326,7 @@ function closePopover(immediate?: boolean) {
 	if (immediate && closeTimer) {
 		clearTimeout(closeTimer);
 	}
-	if (popoverWrap) {
-		popoverWrap.remove();
-		popoverWrap = null;
-	}
+	popover?.destroy();
+	popover = null;
 	popoverRing = null;
 }
