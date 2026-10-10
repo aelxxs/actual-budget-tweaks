@@ -1,6 +1,41 @@
 # Changelog
 
 
+## v0.1.89
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.88...v0.1.89)
+
+### 🩹 Fixes
+
+- Keep each budget's template breakdown to itself, and split the Insights overview maths out ([80f1af8](https://github.com/aelxxs/actual-budget-tweaks/commit/80f1af8))
+- Unmount flow bars, theme panels, popovers and the release toast instead of only removing their nodes ([c95812e](https://github.com/aelxxs/actual-budget-tweaks/commit/c95812e))
+- Bring back the Income Breakdown widget as its own setting, without polling ([50441ed](https://github.com/aelxxs/actual-budget-tweaks/commit/50441ed))
+- Inject the API bridge when ABT is enabled on an already open page ([08c042a](https://github.com/aelxxs/actual-budget-tweaks/commit/08c042a))
+- Follow privacy mode from Actual's store, so ABT's amounts hide when the sidebar balance isn't rendered ([5d3a6b3](https://github.com/aelxxs/actual-budget-tweaks/commit/5d3a6b3))
+- Keep sidebar shortcuts and tickers with the budget they were added in ([9875783](https://github.com/aelxxs/actual-budget-tweaks/commit/9875783))
+
+### 💅 Refactors
+
+- Share loadCurrentBudgetId through the API bridge ([10f7a31](https://github.com/aelxxs/actual-budget-tweaks/commit/10f7a31))
+- Share one budget table watcher across Month cards, Category filter, template insights and Insights ([252f39c](https://github.com/aelxxs/actual-budget-tweaks/commit/252f39c))
+- Share budget cell reads and month helpers, dating the sidebar trend and upcoming schedules in local time ([df6d8af](https://github.com/aelxxs/actual-budget-tweaks/commit/df6d8af))
+- Follow routes for column widths through the shared DOM watcher instead of polling ([47a3712](https://github.com/aelxxs/actual-budget-tweaks/commit/47a3712))
+- Share mount teardown, side panel bodies and Actual's id pattern ([f96f16e](https://github.com/aelxxs/actual-budget-tweaks/commit/f96f16e))
+- Move row scanners onto the budget table watcher and stop privacy mode polling ([51645de](https://github.com/aelxxs/actual-budget-tweaks/commit/51645de))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.88 ([16a7367](https://github.com/aelxxs/actual-budget-tweaks/commit/16a7367))
+
+### 🎨 Styles
+
+- Give Schedules a clipboard icon so it stands apart from the Spending Calendar ([8e132e6](https://github.com/aelxxs/actual-budget-tweaks/commit/8e132e6))
+- Size the calendar's month like the Reports title and zero the Reports header's inline margins ([bf84863](https://github.com/aelxxs/actual-budget-tweaks/commit/bf84863))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.88
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.87...v0.1.88)
