@@ -80,11 +80,16 @@ export interface BreakdownContext {
 export interface BreakdownState {
 	diff: BreakdownDiff;
 	ctx: BreakdownContext;
+	/** The budget it was applied in; another budget opening drops it. */
+	budgetId?: string;
 }
+
+export const INSIGHTS_TABS = ["overview", "breakdown", "priority"] as const;
+export type InsightsTab = (typeof INSIGHTS_TABS)[number];
 
 export const templatePlanState = $state({
 	coverageMethod: "goal-templates" as "goal-templates" | "spending-average",
-	activeTab: "overview" as "breakdown" | "priority" | "overview",
+	activeTab: "overview" as InsightsTab,
 	/** Whether the Insights feature is on, for other features that link into it. */
 	enabled: false,
 	/** Whether the Insights trigger should show, wherever it's drawn. */
@@ -100,6 +105,6 @@ export const templatePlanState = $state({
 	overviewData: null as OverviewData | null,
 	overviewLoading: false,
 	// Callbacks registered by index.ts.
-	onTabChange: null as ((tab: string) => void) | null,
+	onTabChange: null as ((tab: InsightsTab) => void) | null,
 	applyTemplates: null as (() => Promise<void>) | null,
 });
