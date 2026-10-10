@@ -1,6 +1,31 @@
 # Changelog
 
 
+## v0.1.88
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.87...v0.1.88)
+
+### 🚀 Enhancements
+
+- Mark the tweaks that can change your budget ([abf38cc](https://github.com/aelxxs/actual-budget-tweaks/commit/abf38cc))
+
+### 🩹 Fixes
+
+- Hide Daily Available in privacy mode and read the balance without its redacted copy ([53e3dbe](https://github.com/aelxxs/actual-budget-tweaks/commit/53e3dbe))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.87 ([2b55c6c](https://github.com/aelxxs/actual-budget-tweaks/commit/2b55c6c))
+- Document settings sync and AI use ([9584269](https://github.com/aelxxs/actual-budget-tweaks/commit/9584269))
+
+### 🎨 Styles
+
+- Inset every page's content by the budget page's 13px gutter ([d155251](https://github.com/aelxxs/actual-budget-tweaks/commit/d155251))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.87
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.86...v0.1.87)
