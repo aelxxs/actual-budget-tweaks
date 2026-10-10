@@ -95,8 +95,8 @@ let observedRouteKey = "";
 let observedHeaderRow: HTMLElement | null = null;
 let observedHeaderCellCount = 0;
 let stopInitialAttach: (() => void) | null = null;
-let routePollInterval: number | null = null;
 let stopWatchingRoute: (() => void) | null = null;
+let stopWatchingDom: (() => void) | null = null;
 
 function markBudgetPage(): void {
 	document.documentElement.toggleAttribute(ROOT_BUDGET_ATTR, matchesPage(Page.Budget));
@@ -338,22 +338,20 @@ function observeHeaderRow(headerRow: HTMLElement | null): void {
 }
 
 function installRouteListeners(): void {
-	if (stopWatchingRoute) return;
-
-	stopWatchingRoute = watchRoute(onRouteSignal);
-	if (routePollInterval === null) {
-		routePollInterval = window.setInterval(onRouteSignal, 250);
+	if (stopWatchingRoute) {
+		return;
 	}
+	stopWatchingRoute = watchRoute(onRouteSignal);
+	// Actual's own navigations call its world's pushState, which the route watcher can't patch
+	// from here; the new page's render is caught instead, a frame before it paints.
+	stopWatchingDom = watchDom(onRouteSignal);
 }
 
 function uninstallRouteListeners(): void {
 	stopWatchingRoute?.();
 	stopWatchingRoute = null;
-
-	if (routePollInterval !== null) {
-		window.clearInterval(routePollInterval);
-		routePollInterval = null;
-	}
+	stopWatchingDom?.();
+	stopWatchingDom = null;
 }
 
 function removeHandles(): void {
