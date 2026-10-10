@@ -17,14 +17,20 @@ const COMPACT_ATTR = "data-abt-compact";
 const DETAILS_ATTR = "data-abt-balance-details";
 // Marks the titles added for compact mode, so they're removed with it.
 const TITLE_ATTR = "data-abt-compact-title";
-// Matched once in JS: as a CSS anchor, these :has() checks ran for every svg in the
-// transaction rows on each scroll frame, and Firefox blanked the table while restyling.
+/*
+ * Each part is classified in JS. As :has() and :empty rules these were rechecked on every DOM
+ * change anywhere: one inserted node on the budget page cost ~50ms, and Firefox blanked the
+ * transaction table while restyling.
+ */
+const PART_ATTR = "data-abt-toolbar-part";
+const GLYPH_ATTR = "data-abt-glyph";
 const BAR = `[${BAR_ATTR}]`;
-const ACTIONS = `${BAR} > button:has(~ div:empty), ${BAR} > div:has(~ div:empty) button`;
+const ACTIONS = `${BAR} [${PART_ATTR}="action"]`;
 // The account menu's dots; an overflow menu reads last, after ABT's column reset.
-const MENU = `${BAR} > div:has(path[d^="M10 12a2 2 0 1 1"])`;
-const SEARCH = `${BAR} > div:empty ~ div:has(> input)`;
-const ICONS = `${BAR} > div:empty ~ button, ${BAR} > div:empty ~ div:not(:has(> input)) button`;
+const MENU = `${BAR} [${PART_ATTR}="menu"]`;
+const SEARCH = `${BAR} [${PART_ATTR}="search"]`;
+const ICONS = `${BAR} [${PART_ATTR}="icon"]`;
+const DOTS = 'path[d^="M10 12a2 2 0 1 1"]';
 
 const GLYPHS: [string, IconName][] = [
 	['path[d^="M10 3v2a5 5"]', "refreshCw"],
@@ -41,15 +47,59 @@ const GLYPHS: [string, IconName][] = [
 
 // Swaps a native glyph for ours by masking the svg itself, so React keeps owning its nodes.
 const swaps = GLYPHS.map(
-	([path, name]) => `
-	${BAR} svg:has(${path}) {
+	([, name]) => `
+	${BAR} svg[${GLYPH_ATTR}="${name}"] {
 		background: currentColor;
 		mask: ${iconMask(name)} center / contain no-repeat;
 	}
-	${BAR} svg:has(${path}) > * {
+	${BAR} svg[${GLYPH_ATTR}="${name}"] > * {
 		display: none;
 	}`,
 ).join("");
+
+function mark(el: Element, attr: string, value: string): void {
+	if (el.getAttribute(attr) !== value) {
+		el.setAttribute(attr, value);
+	}
+}
+
+/** Marks the toolbar's parts: actions before Actual's empty spacer, search and icons after it. */
+function classify(bar: HTMLElement): void {
+	let afterSpacer = false;
+	for (const child of bar.children) {
+		if (child.tagName === "DIV" && !child.childNodes.length) {
+			afterSpacer = true;
+			continue;
+		}
+		const isSearch = afterSpacer && !!child.querySelector(":scope > input");
+		const role = isSearch ? "search" : afterSpacer ? "icon" : "action";
+		if (child.tagName === "BUTTON") {
+			mark(child, PART_ATTR, role);
+		} else if (isSearch) {
+			mark(child, PART_ATTR, "search");
+		} else {
+			if (child.querySelector(DOTS)) {
+				mark(child, PART_ATTR, "menu");
+			}
+			for (const button of child.querySelectorAll("button")) {
+				mark(button, PART_ATTR, role);
+			}
+		}
+	}
+	for (const svg of bar.querySelectorAll("svg")) {
+		const glyph = GLYPHS.find(([path]) => svg.querySelector(path))?.[1] ?? "";
+		if (svg.querySelector("path")) {
+			mark(svg, GLYPH_ATTR, glyph);
+		}
+	}
+}
+
+function unclassify(bar: HTMLElement): void {
+	for (const el of bar.querySelectorAll(`[${PART_ATTR}], [${GLYPH_ATTR}]`)) {
+		el.removeAttribute(PART_ATTR);
+		el.removeAttribute(GLYPH_ATTR);
+	}
+}
 
 const CSS = `
 	${BAR} {
@@ -97,7 +147,7 @@ const CSS = `
 		order: 1;
 	}
 
-	${BAR} svg:has(path) {
+	${BAR} svg[${GLYPH_ATTR}] {
 		width: 15px !important;
 		height: 15px !important;
 		margin: 0 !important;
@@ -107,13 +157,13 @@ const CSS = `
 	${swaps}
 
 	/* The selected-transactions menu's caret: a dropdown chevron, smaller than the icons. */
-	${BAR} svg:has(path[d^="M24.483.576"]) {
+	${BAR} svg[${GLYPH_ATTR}="chevronDown"] {
 		width: 12px !important;
 		height: 12px !important;
 	}
 
 	/* Actual turns its dots upright; ours already read across. Only these, so Bank Sync still spins. */
-	${BAR} svg:has(path[d^="M10 12a2 2 0 1 1"]) {
+	${BAR} svg[${GLYPH_ATTR}="moreHorizontal"] {
 		transform: none !important;
 	}
 
@@ -220,7 +270,9 @@ export const modernAccountToolbar = defineSetting({
 		let bar: HTMLElement | null = null;
 
 		const setCompact = (on: boolean) => {
-			if (!bar) return;
+			if (!bar) {
+				return;
+			}
 			bar.toggleAttribute(COMPACT_ATTR, on);
 			for (const button of bar.querySelectorAll<HTMLElement>(
 				":scope > button, :scope > div button",
@@ -237,16 +289,26 @@ export const modernAccountToolbar = defineSetting({
 
 		// Tries the labels and keeps them if nothing wraps; both states are measured before a paint.
 		const fit = () => {
-			if (!bar) return;
+			if (!bar) {
+				return;
+			}
 			const wasCompact = bar.hasAttribute(COMPACT_ATTR);
 			bar.removeAttribute(COMPACT_ATTR);
 			const compact = wraps(bar);
-			if (compact !== wasCompact) setCompact(compact);
-			else if (compact) bar.setAttribute(COMPACT_ATTR, "");
+			if (compact !== wasCompact) {
+				setCompact(compact);
+			} else if (compact) {
+				bar.setAttribute(COMPACT_ATTR, "");
+			}
 		};
 		// Width changes, and buttons coming and going (the selection menu, Bank Sync's spinner).
 		const resize = new ResizeObserver(fit);
-		const content = new MutationObserver(fit);
+		const content = new MutationObserver(() => {
+			if (bar) {
+				classify(bar);
+			}
+			fit();
+		});
 
 		let details: Element | null = null;
 		// Labels whose colon was dropped, with their text, to put back on teardown.
@@ -259,12 +321,20 @@ export const modernAccountToolbar = defineSetting({
 				details = row;
 				details?.setAttribute(DETAILS_ATTR, "");
 			}
-			for (const node of labels.keys()) if (!node.isConnected) labels.delete(node);
-			if (!row) return;
+			for (const node of labels.keys()) {
+				if (!node.isConnected) {
+					labels.delete(node);
+				}
+			}
+			if (!row) {
+				return;
+			}
 			// "Cleared total:" reads as a heading once it sits above its value.
 			for (const chip of row.children) {
 				const label = chip.firstChild;
-				if (!(label instanceof Text) || !label.data.trimEnd().endsWith(":")) continue;
+				if (!(label instanceof Text) || !label.data.trimEnd().endsWith(":")) {
+					continue;
+				}
 				labels.set(label, label.data);
 				label.data = label.data.trimEnd().slice(0, -1);
 			}
@@ -272,12 +342,17 @@ export const modernAccountToolbar = defineSetting({
 
 		const unwatch = watchDom(() => {
 			tidyDetails();
-			if (bar?.isConnected) return;
+			if (bar?.isConnected) {
+				return;
+			}
 			resize.disconnect();
 			content.disconnect();
 			bar = findAccountToolbar();
-			if (!bar) return;
+			if (!bar) {
+				return;
+			}
 			bar.setAttribute(BAR_ATTR, "");
+			classify(bar);
 			resize.observe(bar);
 			content.observe(bar, { childList: true, subtree: true, characterData: true });
 		});
@@ -287,11 +362,16 @@ export const modernAccountToolbar = defineSetting({
 			resize.disconnect();
 			content.disconnect();
 			setCompact(false);
+			if (bar) {
+				unclassify(bar);
+			}
 			bar?.removeAttribute(BAR_ATTR);
 			bar = null;
 			details?.removeAttribute(DETAILS_ATTR);
 			details = null;
-			for (const [node, text] of labels) node.data = text;
+			for (const [node, text] of labels) {
+				node.data = text;
+			}
 			labels.clear();
 		};
 	},

@@ -14,11 +14,7 @@ export const budgetTableRowHeight = defineSetting({
 		defaultValue: "2.25rem",
 		css: (value: string) =>
 			desktopOnly(`
-			div[data-testid="budget-totals"] + div div[data-testid="row"]:has(div[data-testid="category-name"]) {
-				height: ${value};
-				flex: 0 0 ${value};
-			}
-			div[data-testid="budget-totals"] + div div[data-testid="row"]:not(:has(div[data-testid="category-name"])) {
+			div[data-testid="budget-totals"] + div div[data-testid="row"] {
 				height: ${value};
 				flex: 0 0 ${value};
 			}

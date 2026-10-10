@@ -39,6 +39,8 @@ function isDomNodeLike(value: unknown): value is Node {
 }
 
 const GRID_ATTR = "data-abt-content-grid";
+// Set in JS: as `:has([drawer])` on the grid, every change in the page restyled the whole page.
+const OPEN_ATTR = "data-abt-panel-open";
 
 /**
  * Marked once found: CONTENT_GRID only matches once a page's content has rendered, and the
@@ -46,7 +48,9 @@ const GRID_ATTR = "data-abt-content-grid";
  */
 function getBodyElement() {
 	const marked = document.querySelector<HTMLElement>(`[${GRID_ATTR}]`);
-	if (marked) return marked;
+	if (marked) {
+		return marked;
+	}
 	const grid = document.querySelector<HTMLElement>(CONTENT_GRID);
 	grid?.setAttribute(GRID_ATTR, "");
 	return grid;
@@ -56,7 +60,9 @@ function getBodyElement() {
 // panelState's nodes into it, leaving the visible drawer blank.
 let content: ReturnType<typeof mount> | null = null;
 function destroyContent() {
-	if (content) unmount(content);
+	if (content) {
+		unmount(content);
+	}
 	content = null;
 }
 
@@ -86,23 +92,23 @@ const CSS = `
 		from { opacity: 1; transform: translateX(0); }
 		to { opacity: 0; transform: translateX(14px); }
 	}
-	[${GRID_ATTR}]:has([${SIDEBAR_ATTR}]) {
+	[${GRID_ATTR}][${OPEN_ATTR}] {
 		display: grid;
 		height: 100vh;
 		grid-template-rows: auto 1fr;
 		grid-template-columns: 1fr ${DEFAULT_SIDEBAR_WIDTH}px;
 		grid-template-areas: "header header" "body sidebar";
 	}
-	[${GRID_ATTR}]:has([${SIDEBAR_ATTR}]) > div:nth-child(1) {
+	[${GRID_ATTR}][${OPEN_ATTR}] > div:nth-child(1) {
 		grid-area: header;
 	}
-	[${GRID_ATTR}]:has([${SIDEBAR_ATTR}]) > div:nth-child(2) {
+	[${GRID_ATTR}][${OPEN_ATTR}] > div:nth-child(2) {
 		position: absolute;
 		bottom: 1rem;
 		right: 1rem;
 		z-index: 1000;
 	}
-	[${GRID_ATTR}]:has([${SIDEBAR_ATTR}]) > div:nth-child(3) {
+	[${GRID_ATTR}][${OPEN_ATTR}] > div:nth-child(3) {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -110,7 +116,7 @@ const CSS = `
 		z-index: 1000;
 	}
 	/* By identity, not position: a page that renders after the panel lands after it. */
-	[${GRID_ATTR}]:has([${SIDEBAR_ATTR}]) > div:nth-child(n + 4):not([${SIDEBAR_ATTR}]) {
+	[${GRID_ATTR}][${OPEN_ATTR}] > div:nth-child(n + 4):not([${SIDEBAR_ATTR}]) {
 		grid-area: body;
 		overflow-y: auto;
 		min-height: 0;
@@ -154,7 +160,9 @@ export const sidePanel = {
 		// details) mustn't forget that Insights was left open on the budget page.
 		let showingPersisted = isOpen;
 		const forgetPersisted = () => {
-			if (showingPersisted) setPersistedRoute(null);
+			if (showingPersisted) {
+				setPersistedRoute(null);
+			}
 			showingPersisted = false;
 		};
 		// Panels opened with `stack` keep the ones underneath, restored as each closes.
@@ -169,7 +177,9 @@ export const sidePanel = {
 		let currentKey: string | undefined;
 		const restoreUnder = (): boolean => {
 			const prev = under.pop();
-			if (!prev) return false;
+			if (!prev) {
+				return false;
+			}
 			panelState.title = prev.title;
 			panelState.bodyNode = prev.bodyNode;
 			panelState.headerNode = prev.headerNode;
@@ -181,7 +191,17 @@ export const sidePanel = {
 		let requestedWidth = DEFAULT_SIDEBAR_WIDTH;
 		let sidebarWidth = clamp(Math.round(storedWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
 
+		const markOpen = () => {
+			const grid = document.querySelector(`[${GRID_ATTR}]`);
+			grid?.toggleAttribute(OPEN_ATTR, !!grid.querySelector(`:scope > [${SIDEBAR_ATTR}]`));
+		};
+
 		const sync = () => {
+			place();
+			markOpen();
+		};
+
+		const place = () => {
 			getBodyElement();
 			if (!isOpen) {
 				removeSideDrawerLayout();
@@ -206,7 +226,9 @@ export const sidePanel = {
 
 			const sidebar = createElement("div", { className: "abt-side-drawer-sidebar" });
 			sidebar.setAttribute(SIDEBAR_ATTR, "true");
-			if (!animateNext) sidebar.style.animation = "none";
+			if (!animateNext) {
+				sidebar.style.animation = "none";
+			}
 			animateNext = true;
 			destroyContent();
 			const container = createElement("div", {
@@ -253,8 +275,9 @@ export const sidePanel = {
 			const detail: OpenOptions = (event as CustomEvent).detail ?? {};
 			// Already mounted — panelState below flows into the live component, no teardown/remount needed.
 			const alreadyOpen = isOpen && !!document.querySelector(`[${SIDEBAR_ATTR}]`);
-			if (!detail.stack) under = [];
-			else if (alreadyOpen && panelState.bodyNode && (!detail.key || detail.key !== currentKey)) {
+			if (!detail.stack) {
+				under = [];
+			} else if (alreadyOpen && panelState.bodyNode && (!detail.key || detail.key !== currentKey)) {
 				under.push({
 					key: currentKey,
 					title: panelState.title,
@@ -289,7 +312,9 @@ export const sidePanel = {
 		});
 
 		document.addEventListener(PANEL_CLOSE_EVENT, () => {
-			if (restoreUnder()) return;
+			if (restoreUnder()) {
+				return;
+			}
 			isOpen = false;
 			forgetPersisted();
 			sync();
@@ -325,13 +350,19 @@ export const sidePanel = {
 		document.addEventListener(PANEL_SET_TITLE_EVENT, (event) => {
 			const { title } = (event as CustomEvent).detail ?? {};
 			// Only base panels (Insights, reconcile) set titles; one stacked on top keeps its own.
-			if (under.length) under[0].title = getSafeTitle(title, under[0].title);
-			else panelState.title = getSafeTitle(title, panelState.title);
+			if (under.length) {
+				under[0].title = getSafeTitle(title, under[0].title);
+			} else {
+				panelState.title = getSafeTitle(title, panelState.title);
+			}
 		});
 
 		const unwatch = watchDom(sync);
 
-		return () => unwatch();
+		return () => {
+			unwatch();
+			document.querySelector(`[${GRID_ATTR}]`)?.removeAttribute(OPEN_ATTR);
+		};
 	},
 };
 

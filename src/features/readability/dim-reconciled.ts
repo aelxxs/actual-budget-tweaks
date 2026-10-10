@@ -1,7 +1,10 @@
 import { defineSetting } from "@features/types";
+import { watchDom } from "@lib/utilities/dom-watcher";
 import DimReconciledPreview from "./previews/DimReconciled.svelte";
 
-const RECONCILED_ROW = '[data-testid="row"]:has([data-testid="cleared"] svg[viewBox="0 0 20 20"])';
+// Marked in JS: as `row:has(<lock>)`, every test id Actual rewrote anywhere restyled the page.
+const RECONCILED_ATTR = "data-abt-reconciled";
+const LOCK = 'svg[viewBox="0 0 20 20"]';
 const DIMMED_CELLS = [
 	"date",
 	"account",
@@ -16,8 +19,16 @@ const DIMMED_CELLS = [
 	"balance",
 	"cleared",
 ]
-	.map((id) => `${RECONCILED_ROW} [data-testid="${id}"]`)
+	.map((id) => `[${RECONCILED_ATTR}] [data-testid="${id}"]`)
 	.join(",\n\t\t\t");
+
+function markRows() {
+	for (const cleared of document.querySelectorAll('[data-testid="row"] [data-testid="cleared"]')) {
+		cleared
+			.closest('[data-testid="row"]')
+			?.toggleAttribute(RECONCILED_ATTR, !!cleared.querySelector(LOCK));
+	}
+}
 
 export const dimReconciled = defineSetting({
 	type: "checkbox",
@@ -35,4 +46,13 @@ export const dimReconciled = defineSetting({
 			opacity: 0.45;
 		}
 	`,
+	init: () => {
+		const unwatch = watchDom(markRows);
+		return () => {
+			unwatch();
+			for (const row of document.querySelectorAll(`[${RECONCILED_ATTR}]`)) {
+				row.removeAttribute(RECONCILED_ATTR);
+			}
+		};
+	},
 });

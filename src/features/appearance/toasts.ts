@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import { watchDom } from "@lib/utilities/dom-watcher";
 
 /*
  * Adapter CSS for Actual's notification toasts. role="alert" is unique to them; the card is its
@@ -10,6 +11,9 @@ const CARD = `${TOAST} > div`;
 const CLOSE = `${CARD} > button:first-child`;
 const CONTENT = `${CARD} > div`;
 const ACTION = `${CONTENT} button`;
+// Rows are classified in JS: as :has() rules they were tested against every div on the page.
+const ROW_ATTR = "data-abt-toast-row";
+const UNTITLED_ATTR = "data-abt-toast-untitled";
 
 const CSS = `
 	${CARD} {
@@ -47,7 +51,7 @@ const CSS = `
 	}
 
 	/* The message row: text and action button share a centre line, button or not. */
-	${CONTENT} > div:has(> div:first-child > div) {
+	${CONTENT} > [${ROW_ATTR}="message"] {
 		min-height: 26px;
 		align-items: center !important;
 	}
@@ -58,7 +62,7 @@ const CSS = `
 	}
 
 	/* The title is the only text-only row; it keeps the kind's colour. */
-	${CONTENT} > div:first-child:not(:has(div)) {
+	${CONTENT} > [${ROW_ATTR}="title"] {
 		color: inherit;
 		font-weight: 600 !important;
 	}
@@ -78,7 +82,7 @@ const CSS = `
 	}
 
 	/* Without a title, centred on the message row. */
-	${CARD}:has(> div > div:first-child > div:first-child > div) > button:first-child {
+	${CARD}[${UNTITLED_ATTR}] > button:first-child {
 		top: 13px !important;
 	}
 
@@ -113,4 +117,37 @@ export const modernToasts = defineSetting({
 		defaultValue: true,
 	},
 	css: () => CSS,
+	init: () => {
+		const unwatch = watchDom(markToasts);
+		return () => {
+			unwatch();
+			for (const el of document.querySelectorAll(`[${ROW_ATTR}], [${UNTITLED_ATTR}]`)) {
+				el.removeAttribute(ROW_ATTR);
+				el.removeAttribute(UNTITLED_ATTR);
+			}
+		};
+	},
 });
+
+function markToasts(): void {
+	for (const card of document.querySelectorAll(CARD)) {
+		const content = card.querySelector(":scope > div");
+		if (!content) {
+			continue;
+		}
+		const rows = [...content.children];
+		for (const row of rows) {
+			const kind = row.querySelector(":scope > div:first-child > div")
+				? "message"
+				: row === rows[0] && !row.querySelector("div")
+					? "title"
+					: null;
+			if (kind) {
+				row.setAttribute(ROW_ATTR, kind);
+			} else {
+				row.removeAttribute(ROW_ATTR);
+			}
+		}
+		card.toggleAttribute(UNTITLED_ATTR, !!rows[0]?.querySelector(":scope > div:first-child > div"));
+	}
+}
