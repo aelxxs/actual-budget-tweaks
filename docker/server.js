@@ -53,7 +53,6 @@ const INJECTION = `
 		<link rel="stylesheet" href="/abt/content-scripts/content.css">
 		<script src="/abt/content-scripts/actual-api-bridge.js"></script>
 		<script src="/abt/content-scripts/content.js"></script>
-		<script src="/abt/content-scripts/income-breakdown.js"></script>
 	</body>`;
 
 const CSP = [

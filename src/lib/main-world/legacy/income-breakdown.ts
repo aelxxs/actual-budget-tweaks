@@ -16,7 +16,6 @@ import { dashboardWidgetUtils } from "./dashboard-widget-utils";
 	const DEFAULT_WIDGET_HEIGHT = 4;
 	const DASHBOARD_QUERY_KEY = ["dashboards", "lists"];
 	const NON_DRAGGABLE_CLASS = "non-draggable-area";
-	const POLL_INTERVAL = 1500;
 	const DEBOUNCE_MS = 300;
 	const INCOME_BREAKDOWN_WIDGET = dashboardWidgetUtils.createMarkdownWidgetDefinition({
 		key: "income-breakdown",
@@ -168,6 +167,7 @@ import { dashboardWidgetUtils } from "./dashboard-widget-utils";
 	let isInjecting = false;
 	let activeMenu = null;
 	const resizeObservers = new Map();
+	const hiddenPlaceholders = new Set();
 
 	// ── Helpers ───────────────────────────────────────────────────────────
 	function formatCurrency(amountInCents) {
@@ -1427,6 +1427,7 @@ import { dashboardWidgetUtils } from "./dashboard-widget-utils";
 			}
 			if (target) {
 				target.style.visibility = "hidden";
+				hiddenPlaceholders.add(target);
 			}
 			return;
 		}
@@ -1442,7 +1443,7 @@ import { dashboardWidgetUtils } from "./dashboard-widget-utils";
 	}
 
 	async function injectWidgets() {
-		if (!isReportsPage()) return;
+		if (!running || !isReportsPage()) return;
 		if (isInjecting) return;
 		if (!window.$q || !window.$query) return;
 
@@ -1530,23 +1531,25 @@ import { dashboardWidgetUtils } from "./dashboard-widget-utils";
 		}
 	}
 
+	// One scan a frame, however many mutations land in it.
+	let scanQueued = false;
 	const observer = new MutationObserver(() => {
-		if (isReportsPage()) {
+		if (scanQueued || !isReportsPage()) return;
+		scanQueued = true;
+		requestAnimationFrame(() => {
+			scanQueued = false;
+			if (!running || !isReportsPage()) return;
 			syncWidgetModeClasses();
 			enhanceAddWidgetMenu();
 			void injectWidgets();
-		}
+		});
 	});
 
 	function waitForBackendReady() {
 		return new Promise((resolve) => {
 			function check() {
-				if (
-					window.$q &&
-					window.$query &&
-					document.querySelector('a[href="/budget"]') &&
-					document.querySelector('[data-testid="__global!accounts-balance"]')
-				) {
+				// A budget is open once Actual links to it; the sidebar's balance isn't always rendered.
+				if (window.$q && window.$query && document.querySelector('a[href="/budget"]')) {
 					resolve();
 				} else {
 					setTimeout(check, 50);
@@ -1556,11 +1559,66 @@ import { dashboardWidgetUtils } from "./dashboard-widget-utils";
 		});
 	}
 
-	async function init() {
+	// This script runs in the page's world, so it sees Actual's own navigations.
+	let historyPatched = false;
+	function patchHistory() {
+		if (historyPatched) return;
+		historyPatched = true;
+		for (const method of ["pushState", "replaceState"]) {
+			const original = history[method].bind(history);
+			history[method] = (...args) => {
+				const result = original(...args);
+				if (running) checkAndInject();
+				return result;
+			};
+		}
+	}
+
+	// The setting turns this on and off through an attribute on <html>.
+	const ON_ATTR = "data-abt-income-breakdown";
+	let running = false;
+
+	async function start() {
+		if (running) return;
+		running = true;
 		await waitForBackendReady();
-		checkAndInject();
+		if (!running) return;
+		patchHistory();
+		window.addEventListener("popstate", checkAndInject);
 		observer.observe(document.body, { childList: true, subtree: true });
-		setInterval(checkAndInject, POLL_INTERVAL);
+		lastUrl = "";
+		checkAndInject();
+	}
+
+	function stop() {
+		if (!running) return;
+		running = false;
+		observer.disconnect();
+		window.removeEventListener("popstate", checkAndInject);
+		closeActiveMenu();
+		closeTransactionPopover();
+		for (const resizeObserver of resizeObservers.values()) resizeObserver.disconnect();
+		resizeObservers.clear();
+		document.querySelectorAll(`.${WIDGET_CLASS}`).forEach((widget) => widget.remove());
+		document.querySelectorAll(".abt-ib-host").forEach((host) => {
+			host.classList.remove("abt-ib-host", "abt-ib-host-editing");
+			delete host.dataset.abtOverlaid;
+		});
+		for (const placeholder of hiddenPlaceholders) placeholder.style.removeProperty("visibility");
+		hiddenPlaceholders.clear();
+	}
+
+	function sync() {
+		if (document.documentElement.hasAttribute(ON_ATTR)) void start();
+		else stop();
+	}
+
+	function init() {
+		new MutationObserver(sync).observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: [ON_ATTR],
+		});
+		sync();
 	}
 
 	if (document.readyState === "loading") {

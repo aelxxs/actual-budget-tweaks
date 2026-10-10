@@ -341,6 +341,13 @@
 				"icon": "calendar",
 				"group": null,
 				"writes": null
+			},
+			{
+				"label": "Income Breakdown widget",
+				"description": "Adds an Income Breakdown chart to the Reports dashboard's Add widget menu.",
+				"icon": "trendingUp",
+				"group": null,
+				"writes": null
 			}
 		]
 	},
