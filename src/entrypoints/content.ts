@@ -34,6 +34,11 @@ export default defineContentScript({
 			if (mounted) return;
 			mounted = true;
 
+			// The bridge's own content script only checks the address at page load, so a page
+			// enabled from the popup afterwards would have none; injecting twice is a no-op.
+			const { injectMainWorldScript } = await import("@lib/utilities/inject-main-world");
+			void injectMainWorldScript("/actual-api-bridge-main.js");
+
 			const [
 				{ default: Settings },
 				{ scripts, coreScripts },
