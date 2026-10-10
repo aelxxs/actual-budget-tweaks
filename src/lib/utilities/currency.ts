@@ -23,20 +23,29 @@ export async function loadCurrency(force = false): Promise<void> {
 		const format = rows?.find((r) => r.id === "numberFormat")?.value;
 		if (format) numberFormat = format;
 		const code = rows?.find((r) => r.id === "defaultCurrencyCode")?.value;
+		const hideDecimalPref = await query("preferences", {
+			filter: { id: "hideFraction" },
+		});
+		const hideDecimal = hideDecimalPref?.[0]?.value === "true";
+		if (hideDecimal) {
+			currencyScale = 1;
+		}
 		if (code && typeof code === "string") {
 			currencyCode = code;
-			try {
-				const opts = new Intl.NumberFormat(undefined, {
-					style: "currency",
-					currency: code,
-				}).resolvedOptions();
-				const digits = Number.isFinite(opts.maximumFractionDigits)
-					? (opts.maximumFractionDigits ?? 2)
-					: 2;
-				currencyScale = Math.pow(10, digits);
-			} catch {
-				currencyCode = "USD";
-				currencyScale = 100;
+			if (!hideDecimal) {
+				try {
+					const opts = new Intl.NumberFormat(undefined, {
+						style: "currency",
+						currency: code,
+					}).resolvedOptions();
+					const digits = Number.isFinite(opts.maximumFractionDigits)
+						? (opts.maximumFractionDigits ?? 2)
+						: 2;
+					currencyScale = Math.pow(10, digits);
+				} catch {
+					currencyCode = "USD";
+					currencyScale = 100;
+				}
 			}
 		}
 	} catch {
@@ -52,7 +61,7 @@ export function getCurrencyCode(): string {
 
 export function fmtMoney(cents: number, opts?: { sign?: boolean; short?: boolean }): string {
 	const n = (cents || 0) / currencyScale;
-	const abs = Math.abs(n);
+	let abs = Math.abs(n);
 	const noDecimals = Math.round(currencyScale) === 1;
 
 	const fmtOpts: Intl.NumberFormatOptions = currencyCode
@@ -60,6 +69,7 @@ export function fmtMoney(cents: number, opts?: { sign?: boolean; short?: boolean
 		: { style: "decimal", minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
 	if (noDecimals) {
+		abs /= 100;
 		fmtOpts.minimumFractionDigits = 0;
 		fmtOpts.maximumFractionDigits = 0;
 	}
@@ -79,6 +89,7 @@ export function fmtMoney(cents: number, opts?: { sign?: boolean; short?: boolean
 
 	if (opts?.sign && cents > 0) return "+" + str;
 	if (n < 0) return "-" + str;
+
 	return str;
 }
 
