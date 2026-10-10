@@ -6,23 +6,23 @@ import { loadCurrentBudgetId, notify, query, send } from "@lib/utilities/actual-
 import {
 	type BudgetTableChange,
 	collectChanges,
+	readCells,
 	watchBudgetTable,
 } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, removeValue, setValue } from "@lib/utilities/store";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import {
 	diffSnapshots,
 	finishSnapshots,
-	getCells,
 	getCurrentSheet,
 	invalidateCategoriesCache,
 	isBudgetPage,
 	loadCategories,
 	loadTemplatesByCategoryId,
-	sheetToMonthKey,
 	sheetToMonthLabel,
 	startSnapshotAllVisible,
 	waitForQuiescence,
@@ -42,8 +42,6 @@ import { CSS } from "./css";
 import {
 	buildTrend,
 	monthCellNames,
-	monthSheet,
-	offsetMonth,
 	recentAverageSpending,
 	summarizeCategories,
 	trendCellNames,
@@ -64,12 +62,12 @@ const TRIGGER_ID = "abt-template-plan-trigger";
 let session: AbortSignal | null = null;
 
 const priorityPlanner = createPriorityPlanner({
+	getCells: readCells,
+	sheetToMonthKey: sheetToMonth,
 	getCurrentSheet,
 	isBudgetPage,
 	loadCategories,
 	loadTemplatesByCategoryId,
-	getCells,
-	sheetToMonthKey,
 	sheetToMonthLabel,
 });
 const { computePriorityStatus, buildBreakdownPrioritySummary, invalidatePriorityStatus } =
@@ -276,9 +274,9 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 		}
 
 		const cats = (await loadCategories()).filter((c) => !c.hidden);
-		const monthKey = sheetToMonthKey(sheet) ?? "";
+		const monthKey = sheetToMonth(sheet) ?? "";
 		const months = trendMonths(monthKey);
-		const nextMonthKey = offsetMonth(monthKey, 1);
+		const nextMonthKey = addMonths(monthKey, 1);
 
 		const [
 			cells,
@@ -289,10 +287,10 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 			templateRemaining,
 			templates,
 		] = await Promise.all([
-			getCells(sheet, monthCellNames(cats)),
+			readCells(sheet, monthCellNames(cats)),
 			query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
-			Promise.all(months.slice(0, -1).map((k) => getCells(monthSheet(k), trendCellNames(cats)))),
-			getCells(monthSheet(nextMonthKey), ["to-budget"]),
+			Promise.all(months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats)))),
+			readCells(monthToSheet(nextMonthKey), ["to-budget"]),
 			previewMonthTemplateTotal(nextMonthKey, cats),
 			// What Apply would still assign this month; goal cells only fill once it has run.
 			previewMonthTemplateTotal(monthKey, cats),
@@ -518,7 +516,7 @@ function checkSheetChange(): void {
 		return;
 	}
 	const sheet = getCurrentSheet();
-	const key = sheet ? sheetToMonthKey(sheet) : null;
+	const key = sheet ? sheetToMonth(sheet) : null;
 	if (key === lastSheetKey) {
 		return;
 	}
@@ -670,7 +668,7 @@ export const templatePlan = defineSetting({
 				return;
 			}
 			const sheet = getCurrentSheet();
-			const month = sheet ? sheetToMonthKey(sheet) : null;
+			const month = sheet ? sheetToMonth(sheet) : null;
 			if (!month) {
 				return;
 			}

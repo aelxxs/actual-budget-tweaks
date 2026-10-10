@@ -1,5 +1,6 @@
 import type { Account, Transaction } from "@lib/types/actual-schema";
 import { dispatch, query, send } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
 import { findUncategorizedButton } from "@lib/utilities/native-ui";
 
 export type SyncStatus = "synced" | "syncing" | "error" | "manual";
@@ -18,24 +19,22 @@ export interface SidebarAccount {
 // sync_status is one of loot-core's BankSyncStatus values for linked
 // accounts, or unset for manual ones.
 function toSyncStatus(syncStatus: string | null | undefined): SyncStatus {
-	if (!syncStatus) return "manual";
-	if (syncStatus === "ok") return "synced";
-	if (syncStatus === "pending" || syncStatus === "sync-requested") return "syncing";
+	if (!syncStatus) {
+		return "manual";
+	}
+	if (syncStatus === "ok") {
+		return "synced";
+	}
+	if (syncStatus === "pending" || syncStatus === "sync-requested") {
+		return "syncing";
+	}
 	return "error";
 }
 
 // Mirrors the native sidebar's own `get-cell` lookup rather than summing
 // transactions ourselves. Null when the sheet isn't ready yet, as just after a load.
 async function loadBalance(accountId: string): Promise<number | null> {
-	try {
-		const cell = await send<{ value: number }>("get-cell", {
-			sheetName: "__global",
-			name: `balance-${accountId}`,
-		});
-		return typeof cell?.value === "number" ? cell.value : null;
-	} catch {
-		return null;
-	}
+	return readCell("__global", `balance-${accountId}`);
 }
 
 /**
@@ -75,12 +74,15 @@ export async function refreshBalances(
 ): Promise<{ changed: string[]; failed: string[] }> {
 	const changed: string[] = [];
 	const failed: string[] = [];
-	if (!accounts.length) return { changed, failed };
+	if (!accounts.length) {
+		return { changed, failed };
+	}
 	const balances = await Promise.all(accounts.map((a) => loadBalance(a.id)));
 	accounts.forEach((account, i) => {
 		const balance = balances[i];
-		if (balance == null) failed.push(account.id);
-		else if (balance !== account.balance) {
+		if (balance == null) {
+			failed.push(account.id);
+		} else if (balance !== account.balance) {
 			account.balance = balance;
 			changed.push(account.id);
 		}
@@ -92,7 +94,9 @@ export async function refreshBalances(
 // it) and updates status in place — kept narrow so it's cheap to call
 // often. Returns ids whose status actually changed.
 export async function refreshSyncStatuses(accounts: SidebarAccount[]): Promise<string[]> {
-	if (!accounts.length) return [];
+	if (!accounts.length) {
+		return [];
+	}
 
 	// No explicit select: sync_status/bank_sync_status aren't real AQL fields
 	// by name, only via the default select("*") expansion.
@@ -146,7 +150,9 @@ function readNativeAccountRows(): Map<string, NativeAccountRow> {
 	)) {
 		const id = balance.dataset.cellname?.slice(BALANCE_CELL_PREFIX.length);
 		const row = balance.closest<HTMLElement>('a[href^="/accounts/"], [role="row"]');
-		if (id && row) rows.set(id, { row, balance });
+		if (id && row) {
+			rows.set(id, { row, balance });
+		}
 	}
 	return rows;
 }
@@ -159,7 +165,9 @@ function collectDotStateColors(): Map<string, string> {
 	const colors = new Map<string, string>();
 	for (const sheet of document.styleSheets) {
 		const owner = sheet.ownerNode;
-		if (!(owner instanceof HTMLStyleElement) || !owner.hasAttribute("data-emotion")) continue;
+		if (!(owner instanceof HTMLStyleElement) || !owner.hasAttribute("data-emotion")) {
+			continue;
+		}
 
 		let rules: CSSRuleList;
 		try {
@@ -169,14 +177,20 @@ function collectDotStateColors(): Map<string, string> {
 		}
 
 		for (const rule of rules) {
-			if (!(rule instanceof CSSStyleRule)) continue;
+			if (!(rule instanceof CSSStyleRule)) {
+				continue;
+			}
 			// Only a bare single-class selector — the dot's own state class —
 			// never a descendant selector like `.linkClass .dot` (that's the
 			// *active-link override* rule, not the dot's own declared state).
 			const match = rule.selectorText.trim().match(/^\.([\w-]+)$/);
-			if (!match) continue;
+			if (!match) {
+				continue;
+			}
 			const bg = rule.style.backgroundColor;
-			if (bg) colors.set(match[1], bg);
+			if (bg) {
+				colors.set(match[1], bg);
+			}
 		}
 	}
 	return colors;
@@ -196,7 +210,9 @@ const unresolvedDotClasses = new Set<string>();
 // classList, which stays correct regardless of selection.
 function isClassicDotPending(row: HTMLElement, pass: { rescanned: boolean }): boolean {
 	const dot = row.querySelector<HTMLElement>(".dot");
-	if (!dot) return false;
+	if (!dot) {
+		return false;
+	}
 	const classes = [...dot.classList].filter((cls) => cls !== "dot");
 	const lookup = () =>
 		classes.map((cls) => dotStateColors.get(cls)).find((color) => color !== undefined);
@@ -207,7 +223,9 @@ function isClassicDotPending(row: HTMLElement, pass: { rescanned: boolean }): bo
 		pass.rescanned = true;
 		dotStateColors = collectDotStateColors();
 		ownColor = lookup();
-		if (ownColor === undefined) unresolvedDotClasses.add(signature);
+		if (ownColor === undefined) {
+			unresolvedDotClasses.add(signature);
+		}
 	}
 	return ownColor === PENDING_DOT_VAR;
 }
@@ -221,7 +239,9 @@ export function readNativeSyncingAccountIds(): Set<string> {
 			ids.add(id);
 			continue;
 		}
-		if (isClassicDotPending(row, pass)) ids.add(id);
+		if (isClassicDotPending(row, pass)) {
+			ids.add(id);
+		}
 	}
 	return ids;
 }
@@ -230,7 +250,9 @@ export function readNativeSyncingAccountIds(): Set<string> {
 export function readNativeAccountBalanceTexts(): Map<string, string> {
 	const texts = new Map<string, string>();
 	for (const [id, { balance }] of readNativeAccountRows()) {
-		if (balance.textContent) texts.set(id, balance.textContent);
+		if (balance.textContent) {
+			texts.set(id, balance.textContent);
+		}
 	}
 	return texts;
 }
@@ -247,7 +269,9 @@ export function readNativeUncategorizedButtonText(): string {
 // recheck shape as refreshSyncStatuses, but for the uncategorized badge.
 // Returns ids whose count actually changed.
 export async function refreshUncategorizedCounts(accounts: SidebarAccount[]): Promise<string[]> {
-	if (!accounts.length) return [];
+	if (!accounts.length) {
+		return [];
+	}
 
 	const txs = await query<
 		Pick<Transaction, "account" | "category" | "is_parent" | "is_child" | "transfer_id">[]
@@ -260,8 +284,12 @@ export async function refreshUncategorizedCounts(accounts: SidebarAccount[]): Pr
 
 	const counts = new Map<string, number>();
 	for (const tx of txs) {
-		if (!tx.account) continue;
-		if (tx.category || tx.is_parent || tx.is_child || tx.transfer_id) continue;
+		if (!tx.account) {
+			continue;
+		}
+		if (tx.category || tx.is_parent || tx.is_child || tx.transfer_id) {
+			continue;
+		}
 		counts.set(tx.account, (counts.get(tx.account) || 0) + 1);
 	}
 
@@ -289,7 +317,9 @@ export async function closeAccount(accountId: string): Promise<void> {
 	const [account] = await query<Account[]>("accounts", {
 		filter: { id: accountId },
 	});
-	if (!account) return;
+	if (!account) {
+		return;
+	}
 
 	const props = await send<{ balance: number; numTransactions: number }>("account-properties", {
 		id: accountId,
@@ -319,7 +349,9 @@ interface BankSyncResult {
 // sync recap read. Its React Query invalidation is left out; this sidebar reloads its own data.
 export async function syncAllAccounts(accounts: SidebarAccount[]): Promise<void> {
 	const ids = accounts.filter((a) => a.status !== "manual" && !a.closed).map((a) => a.id);
-	if (!ids.length) return;
+	if (!ids.length) {
+		return;
+	}
 	const added: string[] = [];
 	const matched: string[] = [];
 	const updated: string[] = [];

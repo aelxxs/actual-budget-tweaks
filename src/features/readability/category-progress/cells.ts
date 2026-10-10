@@ -1,4 +1,4 @@
-import { send } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
 
 // Shared by the progress rings and the balance status pills, so both read one cache.
 
@@ -35,15 +35,8 @@ const staleSince = new Map<string, number>();
 /** Marks months whose cells changed, so the next read of them fetches fresh values. */
 export function markSheetsStale(sheets: Iterable<string>): void {
 	const now = Date.now();
-	for (const sheet of sheets) staleSince.set(sheet, now);
-}
-
-export async function cellValue(sheet: string, name: string): Promise<number> {
-	try {
-		const res = await send("get-cell", { sheetName: sheet, name });
-		return res && typeof res.value === "number" ? res.value : 0;
-	} catch {
-		return 0;
+	for (const sheet of sheets) {
+		staleSince.set(sheet, now);
 	}
 }
 
@@ -55,17 +48,19 @@ export function fetchCells(sheet: string, catId: string, force?: boolean): Promi
 		return Promise.resolve(cached);
 	}
 	const pending = inflight.get(key);
-	if (!force && pending && pending.startedAt >= since) return pending.promise;
+	if (!force && pending && pending.startedAt >= since) {
+		return pending.promise;
+	}
 
 	const entry = { startedAt: Date.now() } as { startedAt: number; promise: Promise<CatCells> };
 	const { startedAt } = entry;
 	entry.promise = (async () => {
 		const [budgeted, sumAmount, balance, goal, longGoal] = await Promise.all([
-			cellValue(sheet, `budget-${catId}`),
-			cellValue(sheet, `sum-amount-${catId}`),
-			cellValue(sheet, `leftover-${catId}`),
-			cellValue(sheet, `goal-${catId}`),
-			cellValue(sheet, `long-goal-${catId}`),
+			readCell(sheet, `budget-${catId}`, 0),
+			readCell(sheet, `sum-amount-${catId}`, 0),
+			readCell(sheet, `leftover-${catId}`, 0),
+			readCell(sheet, `goal-${catId}`, 0),
+			readCell(sheet, `long-goal-${catId}`, 0),
 		]);
 		// Same rule as Actual's balance pill: long goals compare the balance.
 		const funded = longGoal === 1 ? balance : budgeted;
@@ -80,7 +75,9 @@ export function fetchCells(sheet: string, catId: string, force?: boolean): Promi
 		};
 		cellCache.set(key, data);
 		// A forced fetch may have replaced this one; only clear our own entry.
-		if (inflight.get(key) === entry) inflight.delete(key);
+		if (inflight.get(key) === entry) {
+			inflight.delete(key);
+		}
 		return data;
 	})();
 	inflight.set(key, entry);

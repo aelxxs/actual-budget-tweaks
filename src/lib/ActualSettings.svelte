@@ -12,6 +12,7 @@
 	import Icon from "./components/Icon.svelte";
 	import SettingRow from "./components/SettingRow.svelte";
 	import { watchDom } from "./utilities/dom-watcher";
+	import { isoDate } from "./utilities/months";
 	import { DESKTOP_QUERY } from "./utilities/pages";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
@@ -276,7 +277,7 @@
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement("a");
 		a.href = url;
-		a.download = `abt-settings-${new Date().toISOString().slice(0, 10)}.json`;
+		a.download = `abt-settings-${isoDate()}.json`;
 		a.click();
 		URL.revokeObjectURL(url);
 	}

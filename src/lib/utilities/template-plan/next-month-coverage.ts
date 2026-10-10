@@ -1,4 +1,5 @@
 import { send } from "@lib/utilities/actual-api";
+import { monthToSheet } from "@lib/utilities/months";
 import { loadTemplatesByCategoryId } from "./actual-data";
 import { isRemainderTemplate } from "./templates";
 
@@ -20,7 +21,9 @@ export async function previewMonthTemplateTotal(
 					const templates = (templatesByCategory.get(id) ?? [])
 						.filter((entry) => !isRemainderTemplate(entry))
 						.map((entry) => entry.engineTemplate);
-					if (templates.length === 0) return 0;
+					if (templates.length === 0) {
+						return 0;
+					}
 					const [result, assignedCell] = await Promise.all([
 						send("budget/dry-run-category-template", {
 							month,
@@ -28,7 +31,7 @@ export async function previewMonthTemplateTotal(
 							templates,
 						}),
 						send("get-cell", {
-							sheetName: `budget${month.replace("-", "")}`,
+							sheetName: monthToSheet(month),
 							name: `budget-${id}`,
 						}),
 					]);

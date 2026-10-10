@@ -1,6 +1,8 @@
 import type { MonthMark } from "@lib/components/MonthPicker.svelte";
 import { dispatch, send, setLocalPref } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
 import { createLogger } from "@lib/utilities/logger";
+import { addMonths, currentMonth, monthKey, monthToSheet, parseMonth } from "@lib/utilities/months";
 
 const log = createLogger("month-header");
 
@@ -10,19 +12,7 @@ const SETTLE_MS = 1000;
 /** Actual's v2 calendar icon, used by its titlebar month-count selector. */
 const CALENDAR_ICON = 'svg:has(> path[d^="M21.5 3h-2.75"])';
 
-export const monthKey = (year: number, month: number) =>
-	`${year}-${String(month + 1).padStart(2, "0")}`;
-
-export function parseMonth(key: string): { year: number; month: number } {
-	const [y, m] = key.split("-").map(Number);
-	return { year: y, month: m - 1 };
-}
-
-export function addMonths(key: string, n: number): string {
-	const { year, month } = parseMonth(key);
-	const d = new Date(year, month + n, 1);
-	return monthKey(d.getFullYear(), d.getMonth());
-}
+export { addMonths, currentMonth, monthKey, parseMonth };
 
 export interface MonthBounds {
 	start: string;
@@ -33,7 +23,9 @@ export interface MonthBounds {
 export async function loadBounds(): Promise<MonthBounds> {
 	try {
 		const bounds = await send<MonthBounds | null>("get-budget-bounds");
-		if (bounds?.start && bounds.end) return bounds;
+		if (bounds?.start && bounds.end) {
+			return bounds;
+		}
 	} catch {
 		// Falls through to Actual's usual range.
 	}
@@ -46,14 +38,13 @@ export async function loadBounds(): Promise<MonthBounds> {
  */
 export function validStart(key: string, span: number, bounds: MonthBounds): string {
 	const latest = addMonths(bounds.end, -(Math.max(span, 1) - 1));
-	if (key > latest) return latest;
-	if (key < bounds.start) return bounds.start;
+	if (key > latest) {
+		return latest;
+	}
+	if (key < bounds.start) {
+		return bounds.start;
+	}
 	return key;
-}
-
-export function currentMonth(): string {
-	const now = new Date();
-	return monthKey(now.getFullYear(), now.getMonth());
 }
 
 /** The months Actual is showing, from its (hidden) month picker's selected cells. */
@@ -72,9 +63,13 @@ export function findMonthCountSelector(): HTMLElement | null {
 	let bestCount = 0;
 	for (const svg of document.querySelectorAll(CALENDAR_ICON)) {
 		// The month picker's own Today link uses the same icon.
-		if (svg.closest("button, a")) continue;
+		if (svg.closest("button, a")) {
+			continue;
+		}
 		const parent = svg.parentElement;
-		if (!parent) continue;
+		if (!parent) {
+			continue;
+		}
 		const count = countMonthIcons(parent);
 		if (count > bestCount) {
 			best = parent;
@@ -111,7 +106,9 @@ const shownCount = () => document.querySelectorAll(SELECTED_CELL).length;
  * a change Actual ignored is noticed, so the header can fall back to Actual's own controls.
  */
 function waitFor(done: () => boolean): Promise<boolean> {
-	if (done()) return Promise.resolve(true);
+	if (done()) {
+		return Promise.resolve(true);
+	}
 	return new Promise((resolve) => {
 		const finish = (ok: boolean) => {
 			observer.disconnect();
@@ -119,7 +116,9 @@ function waitFor(done: () => boolean): Promise<boolean> {
 			resolve(ok);
 		};
 		const observer = new MutationObserver(() => {
-			if (done()) finish(true);
+			if (done()) {
+				finish(true);
+			}
 		});
 		observer.observe(document.body, {
 			childList: true,
@@ -141,14 +140,18 @@ function monthsBetween(from: string, to: string): number {
 function clickNativeCell(key: string): boolean {
 	const first = document.querySelector<HTMLElement>(SELECTED_CELL);
 	const from = first?.dataset.month;
-	if (!first?.parentElement || !from) return false;
+	if (!first?.parentElement || !from) {
+		return false;
+	}
 	// Month cells are the row's divs; the Today/prev/next links are buttons.
 	const cells = [...first.parentElement.children].filter(
 		(el): el is HTMLElement => el instanceof HTMLDivElement,
 	);
 	const idx = cells.indexOf(first);
 	const target = Math.max(0, Math.min(cells.length - 1, idx + monthsBetween(from, key)));
-	if (target === idx) return false;
+	if (target === idx) {
+		return false;
+	}
 	cells[target].click();
 	return true;
 }
@@ -156,9 +159,13 @@ function clickNativeCell(key: string): boolean {
 async function clickToward(key: string): Promise<boolean> {
 	// The picker re-centres on each pick, so a far month takes a few hops.
 	for (let hop = 0; hop < 12; hop++) {
-		if (shownStart() === key) return true;
+		if (shownStart() === key) {
+			return true;
+		}
 		const before = shownStart();
-		if (!clickNativeCell(key) || !(await waitFor(() => shownStart() !== before))) return false;
+		if (!clickNativeCell(key) || !(await waitFor(() => shownStart() !== before))) {
+			return false;
+		}
 	}
 	return shownStart() === key;
 }
@@ -172,18 +179,24 @@ let prefIgnored = false;
  * Actual's own picker, then to showing Actual's controls.
  */
 export async function showMonth(key: string): Promise<void> {
-	if (shownStart() === key) return;
+	if (shownStart() === key) {
+		return;
+	}
 	if (!prefIgnored) {
 		try {
 			await setLocalPref("budget.startMonth", key);
 		} catch (e) {
 			log.warn("Couldn't set budget.startMonth:", e);
 		}
-		if (await waitFor(() => shownStart() === key)) return;
+		if (await waitFor(() => shownStart() === key)) {
+			return;
+		}
 		prefIgnored = true;
 		log.warn("Setting budget.startMonth had no effect; clicking Actual's month picker instead.");
 	}
-	if (!(await clickToward(key))) giveUp("Couldn't change the budget month.");
+	if (!(await clickToward(key))) {
+		giveUp("Couldn't change the budget month.");
+	}
 }
 
 export async function setMonthCount(count: number): Promise<void> {
@@ -197,17 +210,6 @@ export async function setMonthCount(count: number): Promise<void> {
 	}
 }
 
-async function cell(sheetName: string, name: string): Promise<number | null> {
-	try {
-		const res = await send<{ value?: unknown }>("get-cell", { sheetName, name });
-		return typeof res?.value === "number" ? res.value : null;
-	} catch {
-		return null;
-	}
-}
-
-const sheetFor = (key: string) => `budget${key.replace("-", "")}`;
-
 /** Picker dots: overspent or over-assigned months need attention. Read live, never stored. */
 export async function loadMonthMarks(year: number): Promise<Partial<Record<number, MonthMark>>> {
 	const bounds = await send<{ start: string; end: string } | null>("get-budget-bounds");
@@ -215,19 +217,29 @@ export async function loadMonthMarks(year: number): Promise<Partial<Record<numbe
 	const entries = await Promise.all(
 		Array.from({ length: 12 }, async (_, m): Promise<[number, MonthMark | null]> => {
 			const key = monthKey(year, m);
-			if (!bounds || key < bounds.start || key > bounds.end) return [m, "muted"];
-			if (key > now) return [m, "future"];
+			if (!bounds || key < bounds.start || key > bounds.end) {
+				return [m, "muted"];
+			}
+			if (key > now) {
+				return [m, "future"];
+			}
 			const next = addMonths(key, 1);
 			const [toBudget, overspent] = await Promise.all([
-				cell(sheetFor(key), "to-budget"),
-				next <= bounds.end ? cell(sheetFor(next), "last-month-overspent") : null,
+				readCell(monthToSheet(key), "to-budget"),
+				next <= bounds.end ? readCell(monthToSheet(next), "last-month-overspent") : null,
 			]);
 			// Tracking budgets have neither cell.
-			if (toBudget == null && overspent == null) return [m, null];
+			if (toBudget == null && overspent == null) {
+				return [m, null];
+			}
 			return [m, (toBudget ?? 0) < 0 || (overspent ?? 0) < 0 ? "warn" : "ok"];
 		}),
 	);
 	const marks: Partial<Record<number, MonthMark>> = {};
-	for (const [m, mark] of entries) if (mark) marks[m] = mark;
+	for (const [m, mark] of entries) {
+		if (mark) {
+			marks[m] = mark;
+		}
+	}
 	return marks;
 }

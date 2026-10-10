@@ -1,5 +1,6 @@
 import { query, send } from "@lib/utilities/actual-api";
 import type { GoalDefEntry } from "@lib/types/actual-schema";
+import { sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import type { Category } from "./priority-plan";
 import { templateEntriesFromGoalDef } from "./templates";
@@ -26,7 +27,9 @@ let categoriesPromise: Promise<Category[]> | null = null;
 // query()/send() already wait on the API bridge internally (waitForBudget),
 // so readiness here just needs to confirm the budget page has rendered.
 export function isBackendReady(): boolean {
-	if (!document.querySelector('a[href="/budget"]')) return false;
+	if (!document.querySelector('a[href="/budget"]')) {
+		return false;
+	}
 	return !!document.querySelector('[data-testid^="budget2"][data-testid*="!sum-amount-"]');
 }
 
@@ -51,8 +54,12 @@ export async function loadCategories(force?: boolean): Promise<Category[]> {
 	if (!isBackendReady()) {
 		await waitForBackendReady();
 	}
-	if (!force && categoriesCache) return categoriesCache;
-	if (!force && categoriesPromise) return categoriesPromise;
+	if (!force && categoriesCache) {
+		return categoriesCache;
+	}
+	if (!force && categoriesPromise) {
+		return categoriesPromise;
+	}
 	categoriesPromise = (async () => {
 		try {
 			const [cats, groups] = await Promise.all([query("categories"), query("category_groups")]);
@@ -72,7 +79,9 @@ export async function loadCategories(force?: boolean): Promise<Category[]> {
 				});
 		} catch (e) {
 			console.warn("[ABT TAB] categories query failed", e);
-			if (!categoriesCache) categoriesCache = [];
+			if (!categoriesCache) {
+				categoriesCache = [];
+			}
 		}
 		return categoriesCache!;
 	})();
@@ -88,18 +97,6 @@ export function invalidateCategoriesCache(): void {
 }
 
 // ── Cell reads ───────────────────────────────────────────────────────
-export async function getCells(sheet: string, names: string[]): Promise<Map<string, number>> {
-	const results = await Promise.all(
-		names.map((n) => send("get-cell", { sheetName: sheet, name: n }).catch(() => null)),
-	);
-	const map = new Map<string, number>();
-	names.forEach((n, i) => {
-		const r = results[i];
-		map.set(n, r && typeof r.value === "number" ? r.value : 0);
-	});
-	return map;
-}
-
 // SYNC: posts all get-cell messages immediately and returns a descriptor
 // with the in-flight promises. Must be callable from a click capture
 // handler so the worker queues these reads BEFORE React's bubble-phase
@@ -133,7 +130,9 @@ export function getVisibleSheets(): string[] {
 		const sheets = new Set<string>();
 		for (const c of Array.from(cells)) {
 			const m = c.getAttribute("data-testid")?.match(/^(budget\d{6})/);
-			if (m) sheets.add(m[1]);
+			if (m) {
+				sheets.add(m[1]);
+			}
 		}
 		return Array.from(sheets);
 	} catch {
@@ -141,23 +140,24 @@ export function getVisibleSheets(): string[] {
 	}
 }
 
-export function sheetToMonthKey(sheet: string): string | null {
-	const m = sheet && sheet.match(/^budget(\d{4})(\d{2})/);
-	return m ? `${m[1]}-${m[2]}` : null;
-}
-
 export function sheetToMonthLabel(sheet: string): string | null {
-	const key = sheetToMonthKey(sheet);
+	const key = sheetToMonth(sheet);
 	return formatMonthLabel(key);
 }
 
 export function formatMonthLabel(value: string | null): string | null {
-	if (!value) return null;
+	if (!value) {
+		return null;
+	}
 	const key = String(value);
 	const m = key.match(/^(\d{4})-(\d{2})$/);
-	if (!m) return key;
+	if (!m) {
+		return key;
+	}
 	const month = Number(m[2]);
-	if (month < 1 || month > 12) return key;
+	if (month < 1 || month > 12) {
+		return key;
+	}
 	const date = new Date(Number(m[1]), month - 1, 1);
 	return new Intl.DateTimeFormat(undefined, {
 		month: "long",
@@ -187,7 +187,9 @@ export function isBudgetPage(): boolean {
 }
 
 export function startSnapshotAllVisible(): SnapshotDescriptor[] {
-	if (!categoriesCache) return [];
+	if (!categoriesCache) {
+		return [];
+	}
 	const sheets = getVisibleSheets();
 	return sheets.map((s) => startSnapshotMonth(s, categoriesCache!));
 }
@@ -209,15 +211,21 @@ export function waitForQuiescence(idleMs?: number, maxMs?: number): Promise<void
 		let idleTimer: ReturnType<typeof setTimeout> | null = null;
 		let done = false;
 		const finish = () => {
-			if (done) return;
+			if (done) {
+				return;
+			}
 			done = true;
-			if (idleTimer) clearTimeout(idleTimer);
+			if (idleTimer) {
+				clearTimeout(idleTimer);
+			}
 			clearTimeout(hardStop);
 			obs.disconnect();
 			resolve();
 		};
 		const arm = () => {
-			if (idleTimer) clearTimeout(idleTimer);
+			if (idleTimer) {
+				clearTimeout(idleTimer);
+			}
 			idleTimer = setTimeout(finish, idle);
 		};
 		const obs = new MutationObserver((muts) => {
@@ -326,10 +334,14 @@ export function diffSnapshots(
 }
 
 function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
-	if (!goalDef) return [];
+	if (!goalDef) {
+		return [];
+	}
 	try {
 		const parsed = JSON.parse(goalDef);
-		if (!Array.isArray(parsed)) return [];
+		if (!Array.isArray(parsed)) {
+			return [];
+		}
 		return parsed.filter(
 			(d): d is GoalDefEntry => d && (d.directive === "template" || d.directive === "goal"),
 		);
@@ -346,12 +358,18 @@ export async function loadTemplatesByCategoryId(
 		const cats =
 			await query<{ id: string; tombstone: boolean; goal_def: string | null }[]>("categories");
 		for (const c of cats) {
-			if (c.tombstone || !c.goal_def) continue;
+			if (c.tombstone || !c.goal_def) {
+				continue;
+			}
 			const budgetTpls = templateEntriesFromGoalDef(parseGoalDef(c.goal_def));
-			if (budgetTpls.length) byCat.set(c.id, budgetTpls);
+			if (budgetTpls.length) {
+				byCat.set(c.id, budgetTpls);
+			}
 		}
 	} catch (e) {
-		if (throwOnError) throw e;
+		if (throwOnError) {
+			throw e;
+		}
 		console.warn("[ABT TAB] categories query failed", e);
 	}
 	return byCat;

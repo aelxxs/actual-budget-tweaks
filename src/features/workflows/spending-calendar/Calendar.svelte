@@ -27,9 +27,9 @@
 		cellCorner,
 		createMonthLoader,
 		hasTransactions,
-		isoDate,
 		monthsFromNow,
 	} from "./month-data";
+	import { isoDate } from "@lib/utilities/months";
 	import { dayHeat, maxDaySpent, summarizeMonth } from "./summary";
 	import type { DayData } from "./types";
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { currentMonth, monthToSheet } from "@lib/utilities/months";
 	import ActionCard from "./ActionCard.svelte";
 	import Breakdown from "./Breakdown.svelte";
 	import { summaryState } from "./state.svelte";
@@ -6,11 +7,10 @@
 
 	const { card, month }: { card: HTMLElement; month: string } = $props();
 
-	const sheet = $derived(`budget${month.replace("-", "")}`);
+	const sheet = $derived(monthToSheet(month));
 	const year = $derived(month.slice(0, 4));
 	const tag = $derived.by(() => {
-		const now = new Date();
-		const current = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+		const current = currentMonth();
 		return month === current ? "Now" : month > current ? "Plan" : null;
 	});
 

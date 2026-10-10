@@ -2,7 +2,9 @@ import { defineSetting } from "@features/types";
 import CategoryProgressPreview from "../previews/CategoryProgress.svelte";
 import { goalFunding } from "@features/workflows/goal-funding";
 import { icon } from "@lib/icons";
+import { readCell } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
+import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
@@ -11,7 +13,6 @@ import { mountToNode } from "@lib/utilities/svelte";
 import {
 	BALANCE_CELL_RE,
 	BALANCE_WATCH_OPTIONS,
-	cellValue,
 	clearCellCache,
 	fetchCells,
 	type CatCells,
@@ -105,26 +106,28 @@ export const categoryProgress = defineSetting({
 async function fetchAvgSpent(sheet: string, catId: string): Promise<number | null> {
 	const values = await Promise.all(
 		Array.from({ length: AVG_MONTHS }, (_, i) =>
-			cellValue(prevSheet(sheet, i + 1), `sum-amount-${catId}`),
+			readCell(prevSheet(sheet, i + 1), `sum-amount-${catId}`, 0),
 		),
 	);
 	const spends = values.map((v) => Math.max(0, -v));
-	if (spends.every((s) => s === 0)) return null;
+	if (spends.every((s) => s === 0)) {
+		return null;
+	}
 	return Math.round(spends.reduce((a, b) => a + b, 0) / spends.length);
 }
 
 // ── Sheet/month helpers ─────────────────────────────────────────
 
 function prevSheet(sheet: string, monthsBack: number): string {
-	const m = sheet.match(/^budget(\d{4})(\d{2})$/);
-	if (!m) return sheet;
-	const d = new Date(Number(m[1]), Number(m[2]) - 1 - monthsBack, 1);
-	return `budget${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
+	const month = sheetToMonth(sheet);
+	return month ? monthToSheet(addMonths(month, -monthsBack)) : sheet;
 }
 
 function sheetMonthLabel(sheet: string): string {
 	const m = sheet.match(/^budget(\d{4})(\d{2})$/);
-	if (!m) return "";
+	if (!m) {
+		return "";
+	}
 	return new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(
 		new Date(Number(m[1]), Number(m[2]) - 1, 1),
 	);
@@ -132,9 +135,13 @@ function sheetMonthLabel(sheet: string): string {
 
 function daysLeftInMonth(sheet: string): number | null {
 	const m = sheet.match(/^budget(\d{4})(\d{2})$/);
-	if (!m) return null;
+	if (!m) {
+		return null;
+	}
 	const now = new Date();
-	if (now.getFullYear() !== Number(m[1]) || now.getMonth() + 1 !== Number(m[2])) return null;
+	if (now.getFullYear() !== Number(m[1]) || now.getMonth() + 1 !== Number(m[2])) {
+		return null;
+	}
 	const daysInMonth = new Date(Number(m[1]), Number(m[2]), 0).getDate();
 	return daysInMonth - now.getDate() + 1;
 }
@@ -184,11 +191,15 @@ function scanAndDecorate() {
 		'[data-testid="balance"] span[data-cellname]',
 	)) {
 		const m = (span.getAttribute("data-cellname") || "").match(BALANCE_CELL_RE);
-		if (!m) continue;
+		if (!m) {
+			continue;
+		}
 		const [, sheet, catId] = m;
 
 		const host = span.closest("button") || span.closest<HTMLElement>('[data-testid="balance"]');
-		if (!host) continue;
+		if (!host) {
+			continue;
+		}
 
 		let ring = host.querySelector<HTMLElement>(`:scope > .${RING_CLASS}`);
 		if (!ring) {
@@ -236,26 +247,38 @@ let popoverRing: HTMLElement | null = null;
 
 function onRingEnter(e: Event) {
 	const ring = e.currentTarget as HTMLElement;
-	if (closeTimer) clearTimeout(closeTimer);
-	if (popoverRing === ring) return;
-	if (hoverTimer) clearTimeout(hoverTimer);
+	if (closeTimer) {
+		clearTimeout(closeTimer);
+	}
+	if (popoverRing === ring) {
+		return;
+	}
+	if (hoverTimer) {
+		clearTimeout(hoverTimer);
+	}
 	hoverTimer = setTimeout(() => openPopover(ring), HOVER_DELAY_MS);
 }
 
 function onRingLeave() {
-	if (hoverTimer) clearTimeout(hoverTimer);
+	if (hoverTimer) {
+		clearTimeout(hoverTimer);
+	}
 	scheduleClose();
 }
 
 function scheduleClose() {
-	if (closeTimer) clearTimeout(closeTimer);
+	if (closeTimer) {
+		clearTimeout(closeTimer);
+	}
 	closeTimer = setTimeout(() => closePopover(), CLOSE_DELAY_MS);
 }
 
 async function openPopover(ring: HTMLElement) {
 	const sheet = ring.dataset.sheet;
 	const catId = ring.dataset.catId;
-	if (!sheet || !catId) return;
+	if (!sheet || !catId) {
+		return;
+	}
 
 	const row = ring.closest<HTMLElement>('[data-testid="row"]');
 	const name =
@@ -266,7 +289,9 @@ async function openPopover(ring: HTMLElement) {
 		fetchAvgSpent(sheet, catId),
 		getValue(goalFunding.context.key, goalFunding.context.defaultValue),
 	]);
-	if (!ring.isConnected) return;
+	if (!ring.isConnected) {
+		return;
+	}
 	paintRing(ring, data);
 
 	closePopover(true);
@@ -285,7 +310,9 @@ async function openPopover(ring: HTMLElement) {
 	wrap.className = POPOVER_CLASS;
 	wrap.style.display = "block";
 	wrap.addEventListener("mouseenter", () => {
-		if (closeTimer) clearTimeout(closeTimer);
+		if (closeTimer) {
+			clearTimeout(closeTimer);
+		}
 	});
 	wrap.addEventListener("mouseleave", scheduleClose);
 	document.body.appendChild(wrap);
@@ -296,7 +323,9 @@ async function openPopover(ring: HTMLElement) {
 }
 
 function closePopover(immediate?: boolean) {
-	if (immediate && closeTimer) clearTimeout(closeTimer);
+	if (immediate && closeTimer) {
+		clearTimeout(closeTimer);
+	}
 	if (popoverWrap) {
 		popoverWrap.remove();
 		popoverWrap = null;

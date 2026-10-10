@@ -1,6 +1,8 @@
 import type { Account, Payee, Schedule, Transaction } from "@lib/types/actual-schema";
-import { query, send } from "@lib/utilities/actual-api";
+import { query } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
 import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
+import { isoDaysAgo } from "@lib/utilities/months";
 import type { SyncStatus } from "./data";
 
 export interface UpcomingItem {
@@ -41,14 +43,24 @@ const TYPE_LABEL: Record<Account["type"], string> = {
 };
 
 function relTime(iso: string | null | undefined): string {
-	if (!iso) return "";
+	if (!iso) {
+		return "";
+	}
 	const then = new Date(iso).getTime();
-	if (Number.isNaN(then)) return "";
+	if (Number.isNaN(then)) {
+		return "";
+	}
 	const mins = Math.max(0, Math.round((Date.now() - then) / 60_000));
-	if (mins < 1) return "just now";
-	if (mins < 60) return `${mins} min ago`;
+	if (mins < 1) {
+		return "just now";
+	}
+	if (mins < 60) {
+		return `${mins} min ago`;
+	}
 	const hours = Math.round(mins / 60);
-	if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+	if (hours < 24) {
+		return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+	}
 	const days = Math.round(hours / 24);
 	return `${days} day${days > 1 ? "s" : ""} ago`;
 }
@@ -56,15 +68,13 @@ function relTime(iso: string | null | undefined): string {
 const TREND_DAYS = 30;
 const TREND_WINDOW_DAYS = TREND_DAYS + 3; // small buffer, doesn't affect the 30 points returned
 
-function isoDaysAgo(n: number): string {
-	const d = new Date();
-	d.setDate(d.getDate() - n);
-	return d.toISOString().slice(0, 10);
-}
-
 function scheduleAmount(amount: Schedule["_amount"]): number {
-	if (typeof amount === "number") return amount;
-	if (amount && typeof amount === "object") return amount.num1;
+	if (typeof amount === "number") {
+		return amount;
+	}
+	if (amount && typeof amount === "object") {
+		return amount.num1;
+	}
 	return 0;
 }
 
@@ -78,7 +88,9 @@ export function loadAccountDetail(
 	currentBalance: number,
 ): Promise<AccountDetail> {
 	const cached = cache.get(accountId);
-	if (cached) return cached;
+	if (cached) {
+		return cached;
+	}
 	const promise = computeAccountDetail(accountId, status, currentBalance);
 	cache.set(accountId, promise);
 	promise.catch(() => cache.delete(accountId));
@@ -106,14 +118,8 @@ async function computeAccountDetail(
 				date: { $gte: isoDaysAgo(TREND_WINDOW_DAYS) },
 			},
 		}),
-		send<{ value: number }>("get-cell", {
-			sheetName: "__global",
-			name: `balanceCleared-${accountId}`,
-		}).catch(() => null),
-		send<{ value: number }>("get-cell", {
-			sheetName: "__global",
-			name: `balanceUncleared-${accountId}`,
-		}).catch(() => null),
+		readCell("__global", `balanceCleared-${accountId}`),
+		readCell("__global", `balanceUncleared-${accountId}`),
 		query<Schedule[]>("schedules"),
 	]);
 
@@ -128,7 +134,9 @@ async function computeAccountDetail(
 	// just to plot a 30-day sparkline. ----
 	const netByDay = new Map<string, number>();
 	for (const tx of recentTxs) {
-		if (tx.is_child) continue;
+		if (tx.is_child) {
+			continue;
+		}
 		netByDay.set(tx.date, (netByDay.get(tx.date) ?? 0) + tx.amount);
 	}
 	const points: number[] = [];
@@ -145,8 +153,8 @@ async function computeAccountDetail(
 	// own Reconcile screen reads; the count has no precomputed cell, so it's
 	// counted over the same trailing window already fetched for the trend.
 	const unclearedCount = recentTxs.filter((t) => !t.cleared && !t.is_child).length;
-	const clearedBalance = clearedCell?.value ?? currentBalance;
-	const unclearedAmount = unclearedCell?.value ?? 0;
+	const clearedBalance = clearedCell ?? currentBalance;
+	const unclearedAmount = unclearedCell ?? 0;
 
 	// ---- upcoming scheduled transactions ----
 	const upcomingRaw = schedules

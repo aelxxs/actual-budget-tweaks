@@ -2,6 +2,7 @@
 	import { navigate } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { formatDate, loadDatePrefs } from "@lib/utilities/date-format.svelte";
+	import { isoDate } from "@lib/utilities/months";
 	import { getCategoryName, parseScheduleAmount, progressState } from "./data";
 	import type { CategoryInsight, LinkedSchedule, ProgressInfo } from "./types";
 
@@ -25,11 +26,6 @@
 	const remaining = $derived(Math.max(0, (progress.denominator ?? 0) - (progress.numerator ?? 0)));
 	const state = $derived(progressState(entry, ratio));
 
-	function todayIso(): string {
-		const d = new Date();
-		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-	}
-
 	function daysBetween(from: string, to: string): number {
 		const [fy, fm, fd] = from.split("-").map(Number);
 		const [ty, tm, td] = to.split("-").map(Number);
@@ -40,7 +36,7 @@
 
 	function relativeDay(iso: string): string {
 		if (!iso) return "";
-		const diff = daysBetween(todayIso(), iso);
+		const diff = daysBetween(isoDate(), iso);
 		if (diff === 0) return "today";
 		if (diff === 1) return "tomorrow";
 		if (diff === -1) return "yesterday";

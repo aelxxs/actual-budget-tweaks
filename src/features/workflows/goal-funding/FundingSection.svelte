@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { notify, send } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import { formatMonthLabel, sheetToMonthKey } from "@lib/utilities/template-plan/actual-data";
+	import { sheetToMonth } from "@lib/utilities/months";
+	import { formatMonthLabel } from "@lib/utilities/template-plan/actual-data";
 	import { loadGoalState, type GoalState } from "./goal-state";
 
 	const { sheet, categoryId, initial }: { sheet: string; categoryId: string; initial: GoalState } =
 		$props();
 
-	const month = sheetToMonthKey(sheet);
+	const month = sheetToMonth(sheet);
 	let info = $state<GoalState | null>(initial);
 	let assigning = $state(false);
 	let assigned = $state<number | null>(null);

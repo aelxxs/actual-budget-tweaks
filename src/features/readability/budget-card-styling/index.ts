@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
 import BudgetCardStylingPreview from "../previews/BudgetCardStyling.svelte";
-import { send } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { watchRoute } from "@lib/utilities/route-watcher";
@@ -41,7 +41,9 @@ const SHEET_RE = /budget(\d{6})/;
 function getSheetName(card: HTMLElement): string | null {
 	for (const el of card.querySelectorAll("[data-cellname]")) {
 		const m = (el.getAttribute("data-cellname") || "").match(SHEET_RE);
-		if (m) return `budget${m[1]}`;
+		if (m) {
+			return `budget${m[1]}`;
+		}
 	}
 	return null;
 }
@@ -76,7 +78,9 @@ async function processCard(card: HTMLElement) {
 	const breakdown = card
 		.querySelector<HTMLElement>('[data-cellname*="!available-funds"]')
 		?.closest<HTMLElement>('[data-testid="budget-summary"] > div');
-	if (!breakdown) return;
+	if (!breakdown) {
+		return;
+	}
 
 	// Mount immediately with zeros — no flash
 	const existing = card.querySelector<HTMLElement>(".abt-flow-mount");
@@ -90,21 +94,25 @@ async function processCard(card: HTMLElement) {
 
 	try {
 		const [available, overspent, budgeted, forNext] = await Promise.all([
-			send<{ value: number }>("get-cell", { sheetName, name: "available-funds" }),
-			send<{ value: number }>("get-cell", { sheetName, name: "last-month-overspent" }),
-			send<{ value: number }>("get-cell", { sheetName, name: "total-budgeted" }),
-			send<{ value: number }>("get-cell", { sheetName, name: "buffered-selected" }),
+			readCell(sheetName, "available-funds", 0),
+			readCell(sheetName, "last-month-overspent", 0),
+			readCell(sheetName, "total-budgeted", 0),
+			readCell(sheetName, "buffered-selected", 0),
 		]);
 
-		const absOverspent = Math.abs(overspent.value ?? 0);
-		const absBudgeted = Math.abs(budgeted.value ?? 0);
-		const absForNext = Math.abs(forNext.value ?? 0);
-		const avail = available.value ?? 0;
+		const absOverspent = Math.abs(overspent);
+		const absBudgeted = Math.abs(budgeted);
+		const absForNext = Math.abs(forNext);
+		const avail = available;
 
 		const fp = `${avail}|${absBudgeted}|${absOverspent}|${absForNext}`;
 		const mount = card.querySelector<HTMLElement>(".abt-flow-mount");
-		if (mount?.dataset.fp === fp) return;
-		if (mount) mount.dataset.fp = fp;
+		if (mount?.dataset.fp === fp) {
+			return;
+		}
+		if (mount) {
+			mount.dataset.fp = fp;
+		}
 
 		// Re-mount with real values — FlowBar is already visible so swap is seamless
 		mount?.remove();

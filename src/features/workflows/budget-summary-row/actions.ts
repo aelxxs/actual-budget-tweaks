@@ -1,5 +1,5 @@
-import { cellValue } from "@features/readability/category-progress/cells";
 import { send } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
 import { getCurrencyCode } from "@lib/utilities/currency";
 
 /** What an action changed, so its toast can describe and undo it. */
@@ -24,7 +24,9 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 async function whileFunds(sheet: string, ids: string[], step: (id: string) => Promise<unknown>) {
 	let steps = 0;
 	for (const id of ids) {
-		if ((await cellValue(sheet, "to-budget")) <= 0) break;
+		if ((await readCell(sheet, "to-budget", 0)) <= 0) {
+			break;
+		}
 		await step(id);
 		steps++;
 	}
@@ -55,7 +57,9 @@ export async function coverOverspending(
  * runs short Actual funds them in template priority order.
  */
 export async function fundTargets(sheet: string, short: Shortfall[]): Promise<ActionResult | null> {
-	if (!short.length) return null;
+	if (!short.length) {
+		return null;
+	}
 	const result = await send<TemplateNotification | null>("budget/apply-multiple-templates", {
 		month: monthOf(sheet),
 		categoryIds: short.map((s) => s.id),
@@ -85,7 +89,9 @@ export async function runBulk(sheet: string, action: BulkAction): Promise<Action
 
 /** The server's undo, awaited per step; the client's undo() is throttled and drops rapid calls. */
 export async function undoSteps(steps: number): Promise<void> {
-	for (let i = 0; i < steps; i++) await send("undo");
+	for (let i = 0; i < steps; i++) {
+		await send("undo");
+	}
 }
 
 /** Opens Actual's own To Budget menu, which is where over-assigning gets fixed. */

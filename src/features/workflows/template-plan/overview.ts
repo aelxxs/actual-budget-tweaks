@@ -1,4 +1,5 @@
 import type { Schedule } from "@lib/types/actual-schema";
+import { addMonths, isoDate } from "@lib/utilities/months";
 import type { Category } from "@lib/utilities/template-plan/priority-plan";
 import type { MonthTrend, OverviewCategoryRow, OverviewSchedule } from "./state.svelte";
 
@@ -28,18 +29,9 @@ export const trendCellNames = (cats: Category[]): string[] => [
 	...cats.map((c) => `sum-amount-${c.id}`),
 ];
 
-/** "2026-03" shifted by whole months. */
-export function offsetMonth(monthKey: string, offset: number): string {
-	const [y, m] = monthKey.split("-").map(Number);
-	const d = new Date(y, m - 1 + offset, 1);
-	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
-export const monthSheet = (monthKey: string) => `budget${monthKey.replace("-", "")}`;
-
 /** The months the trend covers, oldest first, ending with `monthKey`. */
 export const trendMonths = (monthKey: string): string[] =>
-	Array.from({ length: TREND_MONTHS }, (_, i) => offsetMonth(monthKey, i - TREND_MONTHS + 1));
+	Array.from({ length: TREND_MONTHS }, (_, i) => addMonths(monthKey, i - TREND_MONTHS + 1));
 
 function spentIn(cats: Category[], cells: Cells): number {
 	let spent = 0;
@@ -94,8 +86,10 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 }
 
 export function upcomingSchedules(schedules: Schedule[], today = new Date()): OverviewSchedule[] {
-	const from = today.toISOString().slice(0, 10);
-	const until = new Date(today.getTime() + SCHEDULE_DAYS * 86_400_000).toISOString().slice(0, 10);
+	const from = isoDate(today);
+	const until = isoDate(
+		new Date(today.getFullYear(), today.getMonth(), today.getDate() + SCHEDULE_DAYS),
+	);
 	return schedules
 		.filter((s) => s.next_date && s.next_date >= from && s.next_date <= until)
 		.sort((a, b) => (a.next_date ?? "").localeCompare(b.next_date ?? ""))

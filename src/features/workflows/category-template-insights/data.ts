@@ -1,4 +1,6 @@
-import { query, send } from "@lib/utilities/actual-api";
+import { query } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
+import { isoDate } from "@lib/utilities/months";
 import type { GoalDefEntry } from "@lib/types/actual-schema";
 import type { CategoryInsight, LinkedSchedule, ProgressInfo, RawSchedule } from "./types";
 
@@ -26,10 +28,14 @@ export function resetData() {
  * once Actual's template UI migration drops note-based authoring entirely.
  */
 function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
-	if (!goalDef) return [];
+	if (!goalDef) {
+		return [];
+	}
 	try {
 		const parsed = JSON.parse(goalDef);
-		if (!Array.isArray(parsed)) return [];
+		if (!Array.isArray(parsed)) {
+			return [];
+		}
 		return parsed.filter(
 			(d): d is GoalDefEntry => d && (d.directive === "template" || d.directive === "goal"),
 		);
@@ -40,46 +46,64 @@ function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
 
 function parseScheduleAmount(schedule: RawSchedule): number | null {
 	const raw = schedule._amount;
-	if (raw == null) return null;
-	if (typeof raw === "number") return raw;
+	if (raw == null) {
+		return null;
+	}
+	if (typeof raw === "number") {
+		return raw;
+	}
 	if (typeof raw === "string") {
 		try {
 			const parsed = JSON.parse(raw);
-			if (typeof parsed === "number") return parsed;
-			if (parsed && typeof parsed.num === "number") return parsed.num;
+			if (typeof parsed === "number") {
+				return parsed;
+			}
+			if (parsed && typeof parsed.num === "number") {
+				return parsed.num;
+			}
 		} catch {
 			const n = parseFloat(raw);
-			if (Number.isFinite(n)) return Math.round(n * 100);
+			if (Number.isFinite(n)) {
+				return Math.round(n * 100);
+			}
 		}
 	}
 	if (typeof raw === "object" && raw !== null) {
 		const obj = raw as Record<string, unknown>;
-		if (typeof obj.num === "number") return obj.num;
+		if (typeof obj.num === "number") {
+			return obj.num;
+		}
 	}
 	return null;
 }
 
-function todayIso(): string {
-	const d = new Date();
-	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 function computeUpcomingThreshold(todayStr: string, pref: string): string {
 	const [y, m, d] = todayStr.split("-").map(Number);
-	const iso = (dt: Date) =>
-		`${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+	const iso = isoDate;
 
 	const raw = (pref || "7").toString().trim();
-	if (raw === "currentMonth") return iso(new Date(y, m, 0));
-	if (raw === "oneMonth") return iso(new Date(y, m, d));
+	if (raw === "currentMonth") {
+		return iso(new Date(y, m, 0));
+	}
+	if (raw === "oneMonth") {
+		return iso(new Date(y, m, d));
+	}
 	if (raw.includes("-")) {
 		const [nStr, unit] = raw.split("-");
 		const n = parseInt(nStr, 10);
 		if (Number.isFinite(n)) {
-			if (unit === "day") return iso(new Date(y, m - 1, d + n));
-			if (unit === "week") return iso(new Date(y, m - 1, d + n * 7));
-			if (unit === "month") return iso(new Date(y, m - 1 + n, d));
-			if (unit === "year") return iso(new Date(y + n, m - 1, d));
+			if (unit === "day") {
+				return iso(new Date(y, m - 1, d + n));
+			}
+			if (unit === "week") {
+				return iso(new Date(y, m - 1, d + n * 7));
+			}
+			if (unit === "month") {
+				return iso(new Date(y, m - 1 + n, d));
+			}
+			if (unit === "year") {
+				return iso(new Date(y + n, m - 1, d));
+			}
 		}
 	}
 	const n = parseInt(raw, 10);
@@ -88,8 +112,12 @@ function computeUpcomingThreshold(todayStr: string, pref: string): string {
 }
 
 export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
-	if (insights) return insights;
-	if (loading) return loading;
+	if (insights) {
+		return insights;
+	}
+	if (loading) {
+		return loading;
+	}
 	loading = (async () => {
 		try {
 			const [cats, scheds, txs, prefs] = await Promise.all([
@@ -107,39 +135,59 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 
 			const upcomingPref = prefs?.[0]?.value || "7";
 			categoryNameById.clear();
-			for (const c of cats) categoryNameById.set(c.id, c.name);
+			for (const c of cats) {
+				categoryNameById.set(c.id, c.name);
+			}
 			const schedsByName = new Map<string, RawSchedule>();
 			for (const s of scheds) {
-				if (s.name) schedsByName.set(s.name.trim().toLowerCase(), s);
+				if (s.name) {
+					schedsByName.set(s.name.trim().toLowerCase(), s);
+				}
 			}
 
-			const today = todayIso();
+			const today = isoDate();
 			const thresholdIso = computeUpcomingThreshold(today, upcomingPref);
 
 			const lastTxBySchedule = new Map<string, string>();
 			for (const tx of txs) {
-				if (!tx.schedule || !tx.date) continue;
+				if (!tx.schedule || !tx.date) {
+					continue;
+				}
 				const prev = lastTxBySchedule.get(tx.schedule);
-				if (!prev || tx.date > prev) lastTxBySchedule.set(tx.schedule, tx.date);
+				if (!prev || tx.date > prev) {
+					lastTxBySchedule.set(tx.schedule, tx.date);
+				}
 			}
 
 			const paidInfo = new Map<string, string>();
 			for (const s of scheds) {
 				const last = lastTxBySchedule.get(s.id);
-				if (!last || last > today) continue;
-				if (!s.next_date) continue;
-				if (s.next_date > thresholdIso) paidInfo.set(s.id, last);
+				if (!last || last > today) {
+					continue;
+				}
+				if (!s.next_date) {
+					continue;
+				}
+				if (s.next_date > thresholdIso) {
+					paidInfo.set(s.id, last);
+				}
 			}
 
 			const result = new Map<string, CategoryInsight>();
 			for (const c of cats) {
-				if (c.tombstone) continue;
+				if (c.tombstone) {
+					continue;
+				}
 				const directives = parseGoalDef(c.goal_def);
-				if (directives.length === 0) continue;
+				if (directives.length === 0) {
+					continue;
+				}
 
 				const linkedSchedules: LinkedSchedule[] = [];
 				for (const d of directives) {
-					if (d.type !== "schedule") continue;
+					if (d.type !== "schedule") {
+						continue;
+					}
 					const s = schedsByName.get(d.name.trim().toLowerCase());
 					if (s) {
 						linkedSchedules.push({
@@ -164,22 +212,6 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 	return loading;
 }
 
-export function getCurrentSheetName(): string | null {
-	const el = document.querySelector('[data-testid^="budget2"][data-testid*="!sum-amount-"]');
-	if (!el) return null;
-	const m = (el.getAttribute("data-testid") || "").match(/^(budget\d{6})!/);
-	return m ? m[1] : null;
-}
-
-async function fetchCell(sheet: string, name: string): Promise<number | null> {
-	try {
-		const res = await send<{ value?: unknown }>("get-cell", { sheetName: sheet, name });
-		return typeof res?.value === "number" ? res.value : null;
-	} catch {
-		return null;
-	}
-}
-
 /**
  * Actual's own target for one month: `goal` is what the templates ask for, `long-goal` marks a
  * #goal, which is met by the balance rather than by the month's budget.
@@ -194,9 +226,9 @@ export async function loadMonthValues(sheet: string, ids: Iterable<string>): Pro
 	await Promise.all(
 		[...ids].map(async (id) => {
 			const [goal, longGoal, balance] = await Promise.all([
-				fetchCell(sheet, `goal-${id}`),
-				fetchCell(sheet, `long-goal-${id}`),
-				fetchCell(sheet, `leftover-${id}`),
+				readCell(sheet, `goal-${id}`),
+				readCell(sheet, `long-goal-${id}`),
+				readCell(sheet, `leftover-${id}`),
 			]);
 			cells.set(id, { goal, isLongGoal: longGoal === 1, balance });
 		}),
@@ -206,12 +238,18 @@ export async function loadMonthValues(sheet: string, ids: Iterable<string>): Pro
 
 function getBudgetedCents(row: HTMLElement): number | null {
 	const el = row.querySelector('[data-testid="budget"]');
-	if (!el) return null;
+	if (!el) {
+		return null;
+	}
 	const cn = el.getAttribute("data-cellname");
-	if (cn != null && /^-?\d+$/.test(cn)) return parseInt(cn, 10);
+	if (cn != null && /^-?\d+$/.test(cn)) {
+		return parseInt(cn, 10);
+	}
 	const text = (el.textContent || "").replace(/[^\d.-]/g, "");
 	const n = parseFloat(text);
-	if (!Number.isFinite(n)) return null;
+	if (!Number.isFinite(n)) {
+		return null;
+	}
 	return Math.round(n * 100);
 }
 
@@ -238,9 +276,14 @@ export { parseScheduleAmount };
 export type ProgressState = "under" | "near" | "full" | "paid";
 
 export function progressState(entry: CategoryInsight, ratio: number): ProgressState {
-	if (entry.linkedSchedules.length > 0 && entry.linkedSchedules.every((ls) => ls.paid))
+	if (entry.linkedSchedules.length > 0 && entry.linkedSchedules.every((ls) => ls.paid)) {
 		return "paid";
-	if (ratio >= 1) return "full";
-	if (ratio >= 0.8) return "near";
+	}
+	if (ratio >= 1) {
+		return "full";
+	}
+	if (ratio >= 0.8) {
+		return "near";
+	}
 	return "under";
 }

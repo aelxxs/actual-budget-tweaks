@@ -5,6 +5,7 @@ import {
 	watchBudgetTable,
 } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
+import { getCurrentSheet } from "@lib/utilities/template-plan/actual-data";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
@@ -13,7 +14,6 @@ import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
 import {
 	type MonthValues,
-	getCurrentSheetName,
 	getInsights,
 	loadData,
 	loadMonthValues,
@@ -141,7 +141,7 @@ function scanAndDecorate() {
 	wasOnBudgetPage = true;
 	watchTable();
 	// First visit or another month: the table watcher can miss a switch, so ask here too.
-	const sheet = getCurrentSheetName();
+	const sheet = getCurrentSheet();
 	if (sheet && sheet !== requestedSheet) {
 		requestedSheet = sheet;
 		refreshNow();
@@ -236,7 +236,7 @@ function updateRowBar(row: HTMLElement, entry: CategoryInsight) {
 		return;
 	}
 	// Until the shown month's values arrive, bars keep their last width to grow or shrink from.
-	if (monthValues?.sheet !== getCurrentSheetName()) {
+	if (monthValues?.sheet !== getCurrentSheet()) {
 		return;
 	}
 	const { numerator, denominator } = progressFor(row, entry, monthValues);
@@ -274,7 +274,7 @@ function refreshNow() {
 }
 
 async function refresh({ reload = true }: { reload?: boolean } = {}) {
-	const sheet = getCurrentSheetName();
+	const sheet = getCurrentSheet();
 	if (!sheet) {
 		return;
 	}
@@ -297,7 +297,7 @@ async function refresh({ reload = true }: { reload?: boolean } = {}) {
 }
 
 function onTableChange({ changed }: BudgetTableChange) {
-	const sheet = getCurrentSheetName();
+	const sheet = getCurrentSheet();
 	if (!sheet) {
 		return;
 	}

@@ -1,8 +1,5 @@
-import {
-	BALANCE_CELL_RE,
-	cellValue,
-	fetchCells,
-} from "@features/readability/category-progress/cells";
+import { BALANCE_CELL_RE, fetchCells } from "@features/readability/category-progress/cells";
+import { readCell } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import type { Shortfall } from "./actions";
 
@@ -34,7 +31,9 @@ function categoryIds(): string[] {
 	const ids = new Set<string>();
 	for (const el of document.querySelectorAll('[data-cellname*="!leftover-"]')) {
 		const match = el.getAttribute("data-cellname")?.match(BALANCE_CELL_RE);
-		if (match) ids.add(match[2]);
+		if (match) {
+			ids.add(match[2]);
+		}
 	}
 	return [...ids];
 }
@@ -49,7 +48,7 @@ export async function loadMonthTotals(sheet: string): Promise<MonthTotals> {
 			"last-month-overspent",
 			"buffered-selected",
 			"total-spent",
-		].map((name) => cellValue(sheet, name)),
+		].map((name) => readCell(sheet, name, 0)),
 	);
 	const ids = categoryIds();
 	const cats = (await Promise.all(ids.map((id) => fetchCells(sheet, id)))).map((cells, i) => ({

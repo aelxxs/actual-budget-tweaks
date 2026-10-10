@@ -1,5 +1,7 @@
+import { send } from "./actual-api";
 import { isBulkEditing, onBulkEditEnd } from "./bulk-edit";
 import { watchElement } from "./dom-watcher";
+import { monthToSheet } from "./months";
 
 /*
  * One observer on the budget table for every feature that follows its cells. Each batch says
@@ -26,7 +28,25 @@ const listeners = new Set<Listener>();
 let watched: { table: HTMLElement; observer: MutationObserver; shown: string[] } | null = null;
 let stopFinding: (() => void) | null = null;
 
-export const monthToSheet = (month: string) => `budget${month.replace("-", "")}`;
+/** A cell's number, or `fallback` (null unless given) when it's empty or the read fails. */
+export async function readCell<F extends number | null = null>(
+	sheet: string,
+	name: string,
+	fallback: F = null as F,
+): Promise<number | F> {
+	try {
+		const res = await send<{ value?: unknown }>("get-cell", { sheetName: sheet, name });
+		return typeof res?.value === "number" ? res.value : fallback;
+	} catch {
+		return fallback;
+	}
+}
+
+/** Several cells of one sheet, each read as 0 when it's empty or the read fails. */
+export async function readCells(sheet: string, names: string[]): Promise<Map<string, number>> {
+	const values = await Promise.all(names.map((name) => readCell(sheet, name, 0)));
+	return new Map(names.map((name, i) => [name, values[i]]));
+}
 
 export function shownSheets(table: Element): string[] {
 	const header = table.parentElement ?? table;

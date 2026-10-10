@@ -8,6 +8,7 @@ import {
 	watchBudgetTable,
 } from "@lib/utilities/budget-cells";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
+import { currentMonth, monthToSheet } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { unmount } from "svelte";
@@ -128,8 +129,7 @@ function applyMode(table: HTMLElement): { months: string[]; cards: HTMLElement[]
 	table.toggleAttribute(MULTI_MONTH_ATTR, months.length > 1);
 	table.parentElement?.toggleAttribute(FULL_WIDTH_ATTR, single);
 	const cards = [...table.querySelectorAll<HTMLElement>('[data-testid="budget-summary"]')];
-	const now = new Date();
-	const current = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+	const current = currentMonth();
 	for (const card of cards) {
 		card.toggleAttribute(SUMMARY_CARD_ATTR, single);
 		card.toggleAttribute(CURRENT_MONTH_ATTR, card.dataset.month === current);
@@ -240,7 +240,7 @@ function syncSummary(cards: HTMLElement[], month: string | undefined): void {
 		return;
 	}
 	const { node, instance } = mountToNodeWithReturn(SummaryRow, {
-		sheet: `budget${month.replace("-", "")}`,
+		sheet: monthToSheet(month),
 	});
 	node.setAttribute(SUMMARY_STATS_ATTR, "");
 	card.insertBefore(node, toBudget);

@@ -1,5 +1,6 @@
 import type { Account, Category, Payee, Schedule, Transaction } from "@lib/types/actual-schema";
 import { query, send } from "@lib/utilities/actual-api";
+import { isoDate } from "@lib/utilities/months";
 import type { DayData, DayTransaction } from "./types";
 
 export const MONTH_NAMES = [
@@ -20,10 +21,6 @@ export const MONTH_NAMES = [
 /** How far ahead the month nav can go, so paging forward stays bounded. */
 export const MAX_FUTURE_MONTHS = 12;
 
-export function isoDate(d: Date): string {
-	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 /** Months between the given month and the current one — negative for the past. */
 export function monthsFromNow(year: number, month: number, now = new Date()): number {
 	return (year - now.getFullYear()) * 12 + (month - now.getMonth());
@@ -34,19 +31,27 @@ export function hasTransactions(day: DayData): boolean {
 }
 
 export function parseScheduleAmount(raw: unknown): number {
-	if (typeof raw === "number") return raw;
+	if (typeof raw === "number") {
+		return raw;
+	}
 	if (typeof raw === "string") {
 		try {
 			const parsed = JSON.parse(raw);
-			if (typeof parsed === "number") return parsed;
-			if (parsed?.value != null) return parsed.value;
+			if (typeof parsed === "number") {
+				return parsed;
+			}
+			if (parsed?.value != null) {
+				return parsed.value;
+			}
 		} catch {
 			return 0;
 		}
 	}
 	if (raw && typeof raw === "object") {
 		const obj = raw as Record<string, unknown>;
-		if (typeof obj.value === "number") return obj.value;
+		if (typeof obj.value === "number") {
+			return obj.value;
+		}
 	}
 	return 0;
 }
@@ -57,7 +62,9 @@ export function parseScheduleAmount(raw: unknown): number {
  * fixed-date one always lands exactly on its date.
  */
 export function occurrenceMatchStart(s: Schedule, occurrenceDate: string): string {
-	if (s.posts_transaction || typeof s._date === "string") return occurrenceDate;
+	if (s.posts_transaction || typeof s._date === "string") {
+		return occurrenceDate;
+	}
 	const d = new Date(`${occurrenceDate}T00:00:00`);
 	d.setDate(d.getDate() - 2);
 	return isoDate(d);
@@ -117,7 +124,9 @@ export function createMonthLoader() {
 	 */
 	async function loadUpcomingDates(s: Schedule, count: number): Promise<string[]> {
 		const cached = upcomingDates.get(s.id);
-		if (cached && cached.count >= count) return cached.dates;
+		if (cached && cached.count >= count) {
+			return cached.dates;
+		}
 		let dates: string[] = [];
 		try {
 			dates = await send<string[]>("schedule/get-upcoming-dates", { config: s._date, count });
@@ -155,7 +164,9 @@ export function createMonthLoader() {
 		if (categories) {
 			for (const c of categories) {
 				categoryNames.set(c.id, c.name);
-				if (c.is_income) incomeCategoryIds.add(c.id);
+				if (c.is_income) {
+					incomeCategoryIds.add(c.id);
+				}
 			}
 		}
 		if (accounts) {
@@ -169,30 +180,48 @@ export function createMonthLoader() {
 		// real expense/income and is kept.
 		const transactionById = new Map(transactions.map((t) => [t.id, t]));
 		function isPureTransfer(t: Transaction): boolean {
-			if (!t.transfer_id) return false;
+			if (!t.transfer_id) {
+				return false;
+			}
 			const other = transactionById.get(t.transfer_id);
-			if (!other) return false;
+			if (!other) {
+				return false;
+			}
 			const fromOff = accountOffbudget.get(t.account);
 			const toOff = accountOffbudget.get(other.account);
-			if (fromOff == null || toOff == null) return false;
+			if (fromOff == null || toOff == null) {
+				return false;
+			}
 			return fromOff === toOff;
 		}
 		function isPureTransferSchedule(s: Schedule): boolean {
-			if (!s._payee) return false;
+			if (!s._payee) {
+				return false;
+			}
 			const transferAcct = payeeTransferAcct.get(s._payee);
-			if (!transferAcct) return false;
+			if (!transferAcct) {
+				return false;
+			}
 			const fromOff = accountOffbudget.get(s._account || "");
 			const toOff = accountOffbudget.get(transferAcct);
-			if (fromOff == null || toOff == null) return false;
+			if (fromOff == null || toOff == null) {
+				return false;
+			}
 			return fromOff === toOff;
 		}
 
 		const byDay = new Map<number, DayTransaction[]>();
 		for (const t of transactions) {
-			if (!t.date || isPureTransfer(t)) continue;
-			if (hideOffBudget && accountOffbudget.get(t.account)) continue;
+			if (!t.date || isPureTransfer(t)) {
+				continue;
+			}
+			if (hideOffBudget && accountOffbudget.get(t.account)) {
+				continue;
+			}
 			const day = parseInt(t.date.split("-")[2]);
-			if (!byDay.has(day)) byDay.set(day, []);
+			if (!byDay.has(day)) {
+				byDay.set(day, []);
+			}
 			byDay.get(day)!.push({
 				payee: (t.payee && payeeNames.get(t.payee)) || "Unknown",
 				amount: typeof t.amount === "number" ? t.amount : 0,
@@ -223,7 +252,9 @@ export function createMonthLoader() {
 		// schedule — it stays parked there until the schedule is paid, completed,
 		// or deleted (the latter two are filtered out above).
 		for (const s of visibleSchedules) {
-			if (s.next_date?.startsWith(monthPrefix)) addOccurrence(s.id, s.next_date);
+			if (s.next_date?.startsWith(monthPrefix)) {
+				addOccurrence(s.id, s.next_date);
+			}
 		}
 
 		// `next_date` is only ever the *next* occurrence, so any month from the
@@ -235,10 +266,14 @@ export function createMonthLoader() {
 			await Promise.all(
 				visibleSchedules.map(async (s) => {
 					// A one-off schedule stores a plain date, not a recurrence to expand.
-					if (!s._date || typeof s._date === "string") return;
+					if (!s._date || typeof s._date === "string") {
+						return;
+					}
 					const dates = await loadUpcomingDates(s, count);
 					for (const d of dates) {
-						if (d.startsWith(monthPrefix)) addOccurrence(s.id, d);
+						if (d.startsWith(monthPrefix)) {
+							addOccurrence(s.id, d);
+						}
 					}
 				}),
 			);
@@ -250,23 +285,35 @@ export function createMonthLoader() {
 		await Promise.all(
 			visibleSchedules.flatMap((s) =>
 				Array.from(occurrences.get(s.id) ?? new Set<string>(), async (date) => {
-					if (date >= todayIso) return;
-					if (await wasOccurrencePosted(s, date)) posted.add(`${s.id}|${date}`);
+					if (date >= todayIso) {
+						return;
+					}
+					if (await wasOccurrencePosted(s, date)) {
+						posted.add(`${s.id}|${date}`);
+					}
 				}),
 			),
 		);
 
 		for (const s of visibleSchedules) {
 			const dates = occurrences.get(s.id);
-			if (!dates) continue;
+			if (!dates) {
+				continue;
+			}
 			const payeeName = s.name || (s._payee && payeeNames.get(s._payee)) || "Unknown";
 			for (const date of dates) {
-				if (posted.has(`${s.id}|${date}`)) continue;
+				if (posted.has(`${s.id}|${date}`)) {
+					continue;
+				}
 				const sd = Number(date.slice(-2));
-				if (!byDay.has(sd)) byDay.set(sd, []);
+				if (!byDay.has(sd)) {
+					byDay.set(sd, []);
+				}
 				const existing = byDay.get(sd)!;
 				// Skip if a real transaction with the same payee already exists on this day
-				if (existing.some((t) => !t.upcoming && !t.missed && t.payee === payeeName)) continue;
+				if (existing.some((t) => !t.upcoming && !t.missed && t.payee === payeeName)) {
+					continue;
+				}
 				existing.push({
 					payee: payeeName,
 					amount: parseScheduleAmount(s._amount),
@@ -339,9 +386,17 @@ export function buildGrid(
 
 /** Which outer corner of the grid a cell sits on, for rounding. */
 export function cellCorner(idx: number, len: number): string | undefined {
-	if (idx === 0) return "tl";
-	if (idx === 6) return "tr";
-	if (idx === len - 7) return "bl";
-	if (idx === len - 1) return "br";
+	if (idx === 0) {
+		return "tl";
+	}
+	if (idx === 6) {
+		return "tr";
+	}
+	if (idx === len - 7) {
+		return "bl";
+	}
+	if (idx === len - 1) {
+		return "br";
+	}
 	return undefined;
 }

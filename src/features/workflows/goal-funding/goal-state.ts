@@ -1,4 +1,4 @@
-import { send } from "@lib/utilities/actual-api";
+import { readCell } from "@lib/utilities/budget-cells";
 
 export interface GoalState {
 	goal: number;
@@ -9,21 +9,18 @@ export interface GoalState {
 	toBudget: number | null;
 }
 
-async function cell(sheet: string, name: string): Promise<number | null> {
-	const res = await send<{ value?: unknown }>("get-cell", { sheetName: sheet, name });
-	return typeof res?.value === "number" ? res.value : null;
-}
-
 // Mirrors Actual's own balance pill, so "needed" matches its underfunded state.
 export async function loadGoalState(sheet: string, categoryId: string): Promise<GoalState | null> {
 	const [goal, longGoal, budgeted, balance, toBudget] = await Promise.all([
-		cell(sheet, `goal-${categoryId}`),
-		cell(sheet, `long-goal-${categoryId}`),
-		cell(sheet, `budget-${categoryId}`),
-		cell(sheet, `leftover-${categoryId}`),
-		cell(sheet, "to-budget"),
+		readCell(sheet, `goal-${categoryId}`),
+		readCell(sheet, `long-goal-${categoryId}`),
+		readCell(sheet, `budget-${categoryId}`),
+		readCell(sheet, `leftover-${categoryId}`),
+		readCell(sheet, "to-budget"),
 	]);
-	if (goal == null || goal <= 0) return null;
+	if (goal == null || goal <= 0) {
+		return null;
+	}
 	const isLongGoal = longGoal === 1;
 	return {
 		goal,
