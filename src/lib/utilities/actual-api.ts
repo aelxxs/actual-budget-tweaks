@@ -7,59 +7,85 @@ let reqId = 0;
 const RETRY_INTERVAL = 100;
 const MAX_RETRIES = 150;
 
-function request<T>(event: string, detail: Record<string, unknown>): Promise<T> {
+interface Pending {
+	resolve: (data: unknown) => void;
+	reject: (err: Error) => void;
+	retryTimer: ReturnType<typeof setTimeout> | null;
+}
+
+// One listener for all requests: a listener per request made every response parse once per
+// request still waiting, which a budget page's thousands of cell reads made quadratic.
+const pending = new Map<string, Pending>();
+
+function readDetail(e: Event): { id: string; data?: unknown; error?: string } {
+	const raw = (e as CustomEvent).detail;
+	return typeof raw === "string" ? JSON.parse(raw) : raw;
+}
+
+function onAck(e: Event) {
+	const entry = pending.get(readDetail(e).id);
+	if (entry?.retryTimer) {
+		clearTimeout(entry.retryTimer);
+		entry.retryTimer = null;
+	}
+}
+
+function onResponse(e: Event) {
+	const d = readDetail(e);
+	const entry = pending.get(d.id);
+	if (!entry) {
+		return;
+	}
+	settle(d.id, entry);
+	if (d.error) {
+		entry.reject(new Error(d.error));
+	} else {
+		entry.resolve(d.data);
+	}
+}
+
+function settle(id: string, entry: Pending) {
+	if (entry.retryTimer) {
+		clearTimeout(entry.retryTimer);
+	}
+	pending.delete(id);
+	if (!pending.size) {
+		document.removeEventListener("abt:api:response", onResponse);
+		document.removeEventListener("abt:api:ack", onAck);
+	}
+}
+
+function request<T>(
+	event: string,
+	detail: Record<string, unknown>,
+	maxRetries = MAX_RETRIES,
+): Promise<T> {
 	const id = `abt-api-${++reqId}-${Date.now()}`;
+	const message = JSON.stringify({ id, ...detail });
+	const dispatch = () => document.dispatchEvent(new CustomEvent(event, { detail: message }));
 	return new Promise((resolve, reject) => {
-		let resolved = false;
-		let acked = false;
+		if (!pending.size) {
+			document.addEventListener("abt:api:response", onResponse);
+			document.addEventListener("abt:api:ack", onAck);
+		}
+		const entry: Pending = {
+			resolve: resolve as (data: unknown) => void,
+			reject,
+			retryTimer: null,
+		};
 		let retries = 0;
-		let retryTimer: ReturnType<typeof setTimeout> | null = null;
-
-		function onAck(e: Event) {
-			const raw = (e as CustomEvent).detail;
-			const d = typeof raw === "string" ? JSON.parse(raw) : raw;
-			if (d.id !== id) return;
-			acked = true;
-			document.removeEventListener("abt:api:ack", onAck);
-			if (retryTimer) clearTimeout(retryTimer);
-			retryTimer = null;
-		}
-
-		function onResponse(e: Event) {
-			const raw = (e as CustomEvent).detail;
-			const d = typeof raw === "string" ? JSON.parse(raw) : raw;
-			if (d.id !== id) return;
-			resolved = true;
-			cleanup();
-			if (d.error) reject(new Error(d.error));
-			else resolve(d.data as T);
-		}
-
-		function dispatch() {
-			document.dispatchEvent(new CustomEvent(event, { detail: JSON.stringify({ id, ...detail }) }));
-		}
-
-		function retry() {
-			if (resolved || acked) return;
-			if (++retries >= MAX_RETRIES) {
-				cleanup();
+		const retry = () => {
+			if (++retries >= maxRetries) {
+				settle(id, entry);
 				reject(new Error("API bridge timeout"));
 				return;
 			}
 			dispatch();
-			retryTimer = setTimeout(retry, RETRY_INTERVAL);
-		}
-
-		function cleanup() {
-			document.removeEventListener("abt:api:response", onResponse);
-			document.removeEventListener("abt:api:ack", onAck);
-			if (retryTimer) clearTimeout(retryTimer);
-		}
-
-		document.addEventListener("abt:api:response", onResponse);
-		document.addEventListener("abt:api:ack", onAck);
+			entry.retryTimer = setTimeout(retry, RETRY_INTERVAL);
+		};
+		pending.set(id, entry);
+		entry.retryTimer = setTimeout(retry, RETRY_INTERVAL);
 		dispatch();
-		retryTimer = setTimeout(retry, RETRY_INTERVAL);
 	});
 }
 
@@ -127,6 +153,36 @@ export async function send(method: string, args?: unknown): Promise<unknown> {
 	return request("abt:api:send", { method, args });
 }
 
+// A tab opened before an update keeps its old bridge, which doesn't know batches; it never acks them.
+const CELLS_RETRIES = 10;
+let cellsUnsupported = false;
+
+/** Several `get-cell`s in one bridge message; each value is null when it's missing or fails. */
+export async function getCells(cells: [sheet: string, name: string][]): Promise<unknown[]> {
+	await waitForBudget();
+	if (!cellsUnsupported) {
+		try {
+			return await request("abt:api:cells", { cells }, CELLS_RETRIES);
+		} catch (err) {
+			if (!String(err).includes("timeout")) {
+				throw err;
+			}
+			cellsUnsupported = true;
+		}
+	}
+	return Promise.all(
+		cells.map(([sheetName, name]) =>
+			request<{ value?: unknown }>("abt:api:send", {
+				method: "get-cell",
+				args: { sheetName, name },
+			}).then(
+				(res) => res?.value ?? null,
+				() => null,
+			),
+		),
+	);
+}
+
 /**
  * Dispatch one of Actual Budget's internal action-creators (e.g. pushModal) via the API bridge.
  *
@@ -160,7 +216,9 @@ function onToastEvent(e: Event) {
 	const { key, kind } = JSON.parse((e as CustomEvent).detail);
 	const action = toastActions.get(key);
 	toastActions.delete(key);
-	if (kind === "press") action?.();
+	if (kind === "press") {
+		action?.();
+	}
 }
 
 /**
@@ -177,10 +235,14 @@ export async function notify(
 	await waitForBudget();
 	const key = `abt-toast-${++reqId}-${Date.now()}`;
 	if (button) {
-		if (!toastActions.size) document.addEventListener("abt:api:notify-event", onToastEvent);
+		if (!toastActions.size) {
+			document.addEventListener("abt:api:notify-event", onToastEvent);
+		}
 		toastActions.set(key, button.action);
 		// Actual only reports manual closes, so forget actions once the toast times out.
-		if (!toast.sticky) setTimeout(() => toastActions.delete(key), (toast.timeout ?? 6500) + 1000);
+		if (!toast.sticky) {
+			setTimeout(() => toastActions.delete(key), (toast.timeout ?? 6500) + 1000);
+		}
 	}
 	await request("abt:api:notify", { key, notification: toast, button: button?.title });
 	return key;
@@ -249,8 +311,12 @@ let budgetReadyPromise: Promise<void> | null = null;
  * to call it directly.
  */
 export function waitForBudget(): Promise<void> {
-	if (document.querySelector('a[href="/budget"]')) return Promise.resolve();
-	if (budgetReadyPromise) return budgetReadyPromise;
+	if (document.querySelector('a[href="/budget"]')) {
+		return Promise.resolve();
+	}
+	if (budgetReadyPromise) {
+		return budgetReadyPromise;
+	}
 	budgetReadyPromise = new Promise((resolve) => {
 		const obs = new MutationObserver(() => {
 			if (document.querySelector('a[href="/budget"]')) {

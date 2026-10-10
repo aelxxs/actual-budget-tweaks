@@ -273,23 +273,25 @@ export async function refreshUncategorizedCounts(accounts: SidebarAccount[]): Pr
 		return [];
 	}
 
-	const txs = await query<
-		Pick<Transaction, "account" | "category" | "is_parent" | "is_child" | "transfer_id">[]
-	>("transactions", {
-		filter: {
-			tombstone: false,
-			account: { $oneof: accounts.map((a) => a.id) },
-		},
-	});
+	const onBudget = accounts.filter((a) => !a.offbudget).map((a) => a.id);
+	// Filtered in the query: a 10-year budget has tens of thousands of transactions to ship over the bridge.
+	const txs = !onBudget.length
+		? []
+		: await query<Pick<Transaction, "account">[]>("transactions", {
+				filter: {
+					tombstone: false,
+					account: { $oneof: onBudget },
+					category: null,
+					is_child: false,
+					transfer_id: null,
+				},
+				select: ["account"],
+				// "none" leaves out split parents.
+				options: { splits: "none" },
+			});
 
 	const counts = new Map<string, number>();
 	for (const tx of txs) {
-		if (!tx.account) {
-			continue;
-		}
-		if (tx.category || tx.is_parent || tx.is_child || tx.transfer_id) {
-			continue;
-		}
 		counts.set(tx.account, (counts.get(tx.account) || 0) + 1);
 	}
 

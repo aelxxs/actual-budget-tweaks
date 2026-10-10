@@ -1,21 +1,31 @@
 // @ts-nocheck
 export default defineUnlistedScript(async () => {
 	function waitForApi(cb, onFail, retries = 50) {
-		if (window.$q && window.$query && window.$send) return cb();
-		if (retries <= 0) return onFail();
+		if (window.$q && window.$query && window.$send) {
+			return cb();
+		}
+		if (retries <= 0) {
+			return onFail();
+		}
 		setTimeout(() => waitForApi(cb, onFail, retries - 1), 200);
 	}
 
 	function waitForActions(cb, onFail, retries = 50) {
-		if (window.__actionsForMenu) return cb();
-		if (retries <= 0) return onFail();
+		if (window.__actionsForMenu) {
+			return cb();
+		}
+		if (retries <= 0) {
+			return onFail();
+		}
 		setTimeout(() => waitForActions(cb, onFail, retries - 1), 200);
 	}
 
 	// The client re-dispatches until acked, so the same id can arrive more than once.
 	const accepted = new Set();
 	function accept(id) {
-		if (accepted.has(id)) return false;
+		if (accepted.has(id)) {
+			return false;
+		}
 		accepted.add(id);
 		document.dispatchEvent(new CustomEvent("abt:api:ack", { detail: JSON.stringify({ id }) }));
 		return true;
@@ -36,14 +46,20 @@ export default defineUnlistedScript(async () => {
 
 	document.addEventListener("abt:api:query", (e) => {
 		const { id, table, filter, select, calculate, options } = parseDetail(e);
-		if (!id || !table || !accept(id)) return;
+		if (!id || !table || !accept(id)) {
+			return;
+		}
 
 		waitForApi(
 			async () => {
 				try {
 					let q = window.$q(table);
-					if (filter) q = q.filter(filter);
-					if (options) q = q.options(options);
+					if (filter) {
+						q = q.filter(filter);
+					}
+					if (options) {
+						q = q.options(options);
+					}
 					q = calculate ? q.calculate(calculate) : q.select(select || "*");
 					const result = await window.$query(q);
 					respond(id, calculate ? result.data : result.data || [], null);
@@ -57,7 +73,9 @@ export default defineUnlistedScript(async () => {
 
 	document.addEventListener("abt:api:send", (e) => {
 		const { id, method, args } = parseDetail(e);
-		if (!id || !method || !accept(id)) return;
+		if (!id || !method || !accept(id)) {
+			return;
+		}
 
 		waitForApi(
 			async () => {
@@ -72,9 +90,33 @@ export default defineUnlistedScript(async () => {
 		);
 	});
 
+	document.addEventListener("abt:api:cells", (e) => {
+		const { id, cells } = parseDetail(e);
+		if (!id || !Array.isArray(cells) || !accept(id)) {
+			return;
+		}
+
+		waitForApi(
+			async () => {
+				const values = await Promise.all(
+					cells.map(([sheetName, name]) =>
+						window.$send("get-cell", { sheetName, name }).then(
+							(res) => res?.value ?? null,
+							() => null,
+						),
+					),
+				);
+				respond(id, values, null);
+			},
+			() => respond(id, null, "Actual API unavailable"),
+		);
+	});
+
 	document.addEventListener("abt:api:dispatch", (e) => {
 		const { id, action, args } = parseDetail(e);
-		if (!id || !action || !accept(id)) return;
+		if (!id || !action || !accept(id)) {
+			return;
+		}
 
 		waitForActions(
 			async () => {
@@ -92,7 +134,9 @@ export default defineUnlistedScript(async () => {
 	// Functions can't cross the bridge, so the toast's button and close report back by event.
 	document.addEventListener("abt:api:notify", (e) => {
 		const { id, key, notification, button } = parseDetail(e);
-		if (!id || !key || !notification || !accept(id)) return;
+		if (!id || !key || !notification || !accept(id)) {
+			return;
+		}
 		const report = (kind) =>
 			document.dispatchEvent(
 				new CustomEvent("abt:api:notify-event", { detail: JSON.stringify({ key, kind }) }),
@@ -121,7 +165,9 @@ export default defineUnlistedScript(async () => {
 	// Actual's useLocalPref is usehooks-ts' useLocalStorage, which re-reads on this event.
 	document.addEventListener("abt:api:local-pref", (e) => {
 		const { id, name, value } = parseDetail(e);
-		if (!id || !name || !accept(id)) return;
+		if (!id || !name || !accept(id)) {
+			return;
+		}
 
 		waitForApi(
 			async () => {
@@ -147,9 +193,15 @@ export default defineUnlistedScript(async () => {
 		for (let i = 0; stack.length && i < 200; i++) {
 			const fiber = stack.pop();
 			const store = fiber?.memoizedProps?.store;
-			if (store && typeof store.subscribe === "function") return store;
-			if (fiber?.sibling) stack.push(fiber.sibling);
-			if (fiber?.child) stack.push(fiber.child);
+			if (store && typeof store.subscribe === "function") {
+				return store;
+			}
+			if (fiber?.sibling) {
+				stack.push(fiber.sibling);
+			}
+			if (fiber?.child) {
+				stack.push(fiber.child);
+			}
 		}
 		return null;
 	}
@@ -164,8 +216,12 @@ export default defineUnlistedScript(async () => {
 		const flush = () => {
 			timer = null;
 			const state = store.getState();
-			if (state.account?.accountsSyncing?.length) return;
-			if (!pending.added.length && !pending.matched.length) return;
+			if (state.account?.accountsSyncing?.length) {
+				return;
+			}
+			if (!pending.added.length && !pending.matched.length) {
+				return;
+			}
 			const detail = {
 				...pending,
 				failed: Object.keys(state.account?.failedAccounts ?? {}),
@@ -196,7 +252,9 @@ export default defineUnlistedScript(async () => {
 			const wasSyncing = prev.account?.accountsSyncing?.length > 0;
 			prev = state;
 			// A file import never sets accountsSyncing, so settle briefly before reporting.
-			if (syncing) return;
+			if (syncing) {
+				return;
+			}
 			if (wasSyncing || pending.added.length || pending.matched.length) {
 				clearTimeout(timer);
 				timer = setTimeout(flush, 400);
@@ -220,8 +278,9 @@ export default defineUnlistedScript(async () => {
 				}
 				fiber = fiber.return;
 			}
-			if (added !== row.hasAttribute("data-abt-tx-new"))
+			if (added !== row.hasAttribute("data-abt-tx-new")) {
 				row.toggleAttribute("data-abt-tx-new", added);
+			}
 		}
 	});
 
@@ -230,7 +289,9 @@ export default defineUnlistedScript(async () => {
 		let last = null;
 		const report = () => {
 			const on = String(store.getState().prefs?.synced?.isPrivacyEnabled) === "true";
-			if (on === last) return;
+			if (on === last) {
+				return;
+			}
 			last = on;
 			document.dispatchEvent(
 				new CustomEvent("abt:api:privacy", { detail: JSON.stringify({ on }) }),
@@ -247,12 +308,15 @@ export default defineUnlistedScript(async () => {
 			watchPrivacy(store);
 			return;
 		}
-		if (retries > 0) setTimeout(() => attachStore(retries - 1), 200);
+		if (retries > 0) {
+			setTimeout(() => attachStore(retries - 1), 200);
+		}
 		// Found through React's internals, so an Actual update can hide it; Sync recap and privacy then stop following.
-		else
+		else {
 			console.warn(
 				"[ABT] Couldn't find Actual's store: Sync recap and privacy mode won't update live.",
 			);
+		}
 	})();
 
 	document.addEventListener("abt:api:navigate", (e) => {

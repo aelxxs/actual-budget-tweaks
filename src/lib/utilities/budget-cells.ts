@@ -1,4 +1,4 @@
-import { send } from "./actual-api";
+import { getCells } from "./actual-api";
 import { isBulkEditing, onBulkEditEnd } from "./bulk-edit";
 import { watchElement } from "./dom-watcher";
 import { UUID } from "./ids";
@@ -36,18 +36,32 @@ export function rowCategoryId(row: Element): string | null {
 	return cell?.getAttribute("data-testid")?.match(ROW_CATEGORY_RE)?.[1] ?? null;
 }
 
+let queued: { cell: [string, string]; resolve: (value: unknown) => void }[] = [];
+
+// Reads made in the same tick cross the bridge as one message; a budget page asks for thousands.
+async function flushReads(): Promise<void> {
+	const batch = queued;
+	queued = [];
+	let values: unknown[] = [];
+	try {
+		values = await getCells(batch.map((q) => q.cell));
+	} catch {
+		// Each read falls back below.
+	}
+	batch.forEach((q, i) => q.resolve(values[i]));
+}
+
 /** A cell's number, or `fallback` (null unless given) when it's empty or the read fails. */
 export async function readCell<F extends number | null = null>(
 	sheet: string,
 	name: string,
 	fallback: F = null as F,
 ): Promise<number | F> {
-	try {
-		const res = await send<{ value?: unknown }>("get-cell", { sheetName: sheet, name });
-		return typeof res?.value === "number" ? res.value : fallback;
-	} catch {
-		return fallback;
+	if (!queued.length) {
+		queueMicrotask(flushReads);
 	}
+	const value = await new Promise((resolve) => queued.push({ cell: [sheet, name], resolve }));
+	return typeof value === "number" ? value : fallback;
 }
 
 /** Several cells of one sheet, each read as 0 when it's empty or the read fails. */
