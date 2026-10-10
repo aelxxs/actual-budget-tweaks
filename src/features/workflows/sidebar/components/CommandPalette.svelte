@@ -19,7 +19,7 @@
 	import {
 		ArrowLeft,
 		ArrowUpRight,
-		Calendar,
+		ClipboardList,
 		ChartColumn,
 		Check,
 		ChevronRight,
@@ -64,7 +64,7 @@
 	const NAV_PAGES = [
 		{ label: "Budget", page: Page.Budget, icon: LayoutGrid },
 		{ label: "Reports", page: Page.Reports, icon: ChartColumn },
-		{ label: "Schedules", page: Page.Schedules, icon: Calendar },
+		{ label: "Schedules", page: Page.Schedules, icon: ClipboardList },
 		{ label: "Payees", page: Page.Payees, icon: Users },
 		{ label: "Bank Sync", page: Page.BankSync, icon: Landmark },
 		{ label: "Rules", page: Page.Rules, icon: SlidersHorizontal },
@@ -80,7 +80,7 @@
 	// can't pass through, which would leave the modal broken once opened.
 	const QUICK_ACTIONS: { icon: typeof LayoutGrid; label: string; run: () => void }[] = [
 		{
-			icon: Calendar,
+			icon: ClipboardList,
 			label: "Create new schedule",
 			run: () => dispatch("pushModal", { modal: { name: "schedule-edit", options: {} } }),
 		},

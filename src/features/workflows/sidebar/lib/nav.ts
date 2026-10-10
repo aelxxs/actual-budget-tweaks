@@ -1,8 +1,8 @@
 import { Page } from "@lib/utilities/pages";
 import {
 	Banknote,
-	Calendar,
 	ChartColumn,
+	ClipboardList,
 	LayoutGrid,
 	Settings,
 	SlidersHorizontal,
@@ -14,7 +14,7 @@ import {
 export const navItems = [
 	{ label: "Budget", page: Page.Budget, icon: LayoutGrid },
 	{ label: "Reports", page: Page.Reports, icon: ChartColumn },
-	{ label: "Schedules", page: Page.Schedules, icon: Calendar },
+	{ label: "Schedules", page: Page.Schedules, icon: ClipboardList },
 ];
 
 export const settingsItem = { label: "Settings", page: Page.Settings, icon: Settings };
