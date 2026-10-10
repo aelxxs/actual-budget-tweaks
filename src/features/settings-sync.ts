@@ -19,10 +19,7 @@ const EXTRA_KEYS = [
 	"category-colors",
 	"abt-account-icons",
 	"abt-category-icons",
-	"abt-sidebar-shortcuts",
 ];
-/** Extra keys whose readers watch storage, so adopting them needs no reload. */
-const WATCHED_KEYS = new Set(["abt-sidebar-shortcuts"]);
 
 /**
  * Data this browser keeps per budget, keyed by the budget's local id, which differs on every
@@ -54,6 +51,7 @@ const BUDGET_SCOPED: BudgetScoped[] = [
 	perBudgetKey("experimental-sidebar-groups"),
 	perBudgetKey("experimental-sidebar-account-groups"),
 	perBudgetKey("experimental-sidebar-account-order"),
+	perBudgetKey("abt-sidebar-shortcuts"),
 	{
 		// One map here for every budget; each budget keeps only its own icon, null once removed.
 		remote: "budget-icon",
@@ -167,7 +165,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			await adopt(key, () => setValue(key, value));
 			const setting = live.get(key);
 			if (setting) await reapplySetting(setting, value);
-			else if (!WATCHED_KEYS.has(key)) needsReload.push(key);
+			else needsReload.push(key);
 		}
 
 		budgetId = await loadCurrentBudgetId().catch(() => undefined);

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
+	import { loadCurrentBudgetId } from "@lib/utilities/actual-api";
 	import type { IconName } from "@lib/icons";
 	import { Check, ChevronLeft, Globe, Plus } from "lucide-svelte";
 	import { onMount } from "svelte";
@@ -15,17 +16,33 @@
 
 	/** Edits save as they happen, like the settings around it. */
 	let items = $state<Shortcut[]>([]);
+	// The open budget's, like the sidebar bar's; unknown for a moment while it's looked up.
+	let budgetId: string | undefined;
 
 	function commit(next: Shortcut[]) {
 		items = next;
-		saveShortcuts(next);
+		if (budgetId) {
+			saveShortcuts(budgetId, next);
+		}
 	}
 
 	// The preview wraps tiles at the sidebar bar's real width; 240px if it isn't on screen.
 	let stageWidth = $state(240);
 
 	onMount(() => {
-		loadShortcuts().then((stored) => (items = stored));
+		let stopWatching: (() => void) | undefined;
+		let mounted = true;
+		void loadCurrentBudgetId().then(async (id) => {
+			if (!id || !mounted) {
+				return;
+			}
+			budgetId = id;
+			items = await loadShortcuts(id);
+			if (!mounted) {
+				return;
+			}
+			stopWatching = watchShortcuts(id, (stored) => (items = stored));
+		});
 		const bar = document.querySelector<HTMLElement>("[data-abt-shortcuts-tiles] .bar");
 		if (bar) {
 			const style = getComputedStyle(bar);
@@ -33,7 +50,10 @@
 				bar.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
 			if (width > 0) stageWidth = width;
 		}
-		return watchShortcuts((stored) => (items = stored));
+		return () => {
+			mounted = false;
+			stopWatching?.();
+		};
 	});
 
 	/** Catalog entries that need input before they can be added get a form of their own. */

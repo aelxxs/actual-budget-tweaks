@@ -445,7 +445,7 @@
 							</button>
 						{/if}
 						{#if shortcutsFeatureEnabled}
-							<ShortcutsBar noPadding />
+							<ShortcutsBar noPadding {budgetId} />
 						{/if}
 					</div>
 				{/if}
@@ -492,7 +492,7 @@
 			{/if}
 			<PrimaryNav />
 			{#if shortcutsFeatureEnabled}
-				<ShortcutsBar noPadding />
+				<ShortcutsBar noPadding {budgetId} />
 			{/if}
 			<div class="divider"></div>
 			{#if loading}

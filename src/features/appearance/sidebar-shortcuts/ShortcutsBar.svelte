@@ -8,7 +8,7 @@
 	import { loadShortcuts, saveShortcuts, watchShortcuts } from "./store";
 	import type { Shortcut, ToolId } from "./types";
 
-	const { noPadding }: { noPadding: boolean } = $props();
+	const { noPadding, budgetId }: { noPadding: boolean; budgetId: string | undefined } = $props();
 
 	const ADD_TILE_KEY = sidebarShortcutsAddTile.context.key;
 
@@ -16,19 +16,35 @@
 	let showAddTile = $state(true);
 
 	onMount(() => {
-		loadShortcuts().then((stored) => (shortcuts = stored));
 		getValue(ADD_TILE_KEY, true).then((v) => (showAddTile = Boolean(v)));
-		const stopShortcuts = watchShortcuts((stored) => (shortcuts = stored));
-		const stopAddTile = watchValue<boolean>(ADD_TILE_KEY, (v) => (showAddTile = v ?? true));
+		return watchValue<boolean>(ADD_TILE_KEY, (v) => (showAddTile = v ?? true));
+	});
+
+	// Reloaded for each budget opened; none show until the budget is known.
+	$effect(() => {
+		const id = budgetId;
+		shortcuts = [];
+		if (!id) {
+			return;
+		}
+		let current = true;
+		loadShortcuts(id).then((stored) => {
+			if (current) {
+				shortcuts = stored;
+			}
+		});
+		const stop = watchShortcuts(id, (stored) => (shortcuts = stored));
 		return () => {
-			stopShortcuts();
-			stopAddTile();
+			current = false;
+			stop();
 		};
 	});
 
 	function save(items: Shortcut[]) {
 		shortcuts = items;
-		saveShortcuts(items);
+		if (budgetId) {
+			saveShortcuts(budgetId, items);
+		}
 	}
 
 	let activePopover: { instance: any; container: HTMLElement } | null = null;
