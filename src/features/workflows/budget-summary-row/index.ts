@@ -25,6 +25,12 @@ const SUMMARY_STATS_ATTR = "data-abt-summary-stats";
 const MONTH_META_ATTR = "data-abt-month-meta";
 const CURRENT_MONTH_ATTR = "data-abt-current-month";
 const RESIZING_ATTR = "data-abt-month-count-changing";
+// Set in JS: as :has() rules, every cell Actual rewrites on a month switch restyled the page.
+const HAS_MORE_ATTR = "data-abt-summary-has-more";
+const MONTH_LABEL_ATTR = "data-abt-month-label";
+// The element holding a card, and the carousel row that slides them.
+const CARD_SLOT_ATTR = "data-abt-card-slot";
+const CAROUSEL_ATTR = "data-abt-carousel";
 const REFRESH_MS = 250;
 /** Both modes' card height, so switching between them never moves the table. */
 const CARD_HEIGHT = 92;
@@ -79,6 +85,10 @@ function restoreNative(): void {
 		FULL_WIDTH_ATTR,
 		RESIZING_ATTR,
 		CURRENT_MONTH_ATTR,
+		HAS_MORE_ATTR,
+		MONTH_LABEL_ATTR,
+		CARD_SLOT_ATTR,
+		CAROUSEL_ATTR,
 	]) {
 		for (const el of document.querySelectorAll(`[${attr}]`)) {
 			el.removeAttribute(attr);
@@ -117,9 +127,14 @@ function applyMode(table: HTMLElement): { months: string[]; cards: HTMLElement[]
 	table.parentElement?.toggleAttribute(FULL_WIDTH_ATTR, single);
 	const cards = [...table.querySelectorAll<HTMLElement>('[data-testid="budget-summary"]')];
 	const current = currentMonth();
+	carouselRow(table)?.toggleAttribute(CAROUSEL_ATTR, true);
 	for (const card of cards) {
+		card.parentElement?.toggleAttribute(CARD_SLOT_ATTR, true);
 		card.toggleAttribute(SUMMARY_CARD_ATTR, single);
 		card.toggleAttribute(CURRENT_MONTH_ATTR, card.dataset.month === current);
+		for (const part of card.querySelectorAll(":scope > :last-child > * > * > :first-child")) {
+			part.toggleAttribute(MONTH_LABEL_ATTR, !single && !part.querySelector("[data-cellname]"));
+		}
 	}
 	return { months, cards };
 }
@@ -304,11 +319,11 @@ export const budgetSummaryRow = defineSetting({
 		 * The carousel row (the element whose grandchildren are the month cards) at rest: the
 		 * shown months plus one off-screen each side, shifted left by one month.
 		 */
-		[${RESIZING_ATTR}] :has(> * > [data-testid="budget-summary"]) {
+		[${RESIZING_ATTR}] [${CAROUSEL_ATTR}] {
 			width: 100% !important;
 			transform: translateX(calc(-100% / var(--abt-months))) !important;
 		}
-		[${RESIZING_ATTR}] :has(> * > [data-testid="budget-summary"]) > * {
+		[${RESIZING_ATTR}] [${CAROUSEL_ATTR}] > * {
 			flex: 0 0 calc(100% / var(--abt-months)) !important;
 		}
 
@@ -324,7 +339,7 @@ export const budgetSummaryRow = defineSetting({
 		 * on the cards' content widths before they shrink, so it would wrap even when shrinking to
 		 * their floors fits. It wraps only once the row is narrower than those floors.
 		 */
-		[${SINGLE_MONTH_ATTR}] :has(> [data-testid="budget-summary"]) {
+		[${SINGLE_MONTH_ATTR}] [${CARD_SLOT_ATTR}] {
 			container: abt-month-cards / inline-size;
 		}
 		${SUMMARY_CARD} {
@@ -371,7 +386,7 @@ export const budgetSummaryRow = defineSetting({
 			z-index: 1;
 		}
 		/* Beside the Insights breakdown shortcut, when that's in the corner. */
-		${SUMMARY_CARD}:has([data-abt-summary-more]) > :first-child > :last-child {
+		${SUMMARY_CARD}[${HAS_MORE_ATTR}] > :first-child > :last-child {
 			right: calc(var(--abt-space-2) + 1px + var(--abt-control-h-sm) + var(--abt-space-1));
 		}
 		/* Actual's notes button, sized and styled like the shortcut beside it. */
@@ -430,7 +445,8 @@ export const budgetSummaryRow = defineSetting({
 			justify-content: center;
 			/* The border is drawn by the background's border-box layers: the panel border, glowing
 			   in the card's colour from the top-left corner. */
-			--abt-card-tone: var(--color-noticeTextLight);
+			/* Neutral until ABT has read the month, so it never shows the wrong sign. */
+			--abt-card-tone: var(--abt-muted);
 			border: 1px solid transparent !important;
 			border-radius: var(--abt-radius);
 			background:
@@ -438,6 +454,9 @@ export const budgetSummaryRow = defineSetting({
 				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
 				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-card-tone) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
 				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box !important;
+		}
+		${SUMMARY_CARD}[data-abt-to-budget-known] > :last-child {
+			--abt-card-tone: var(--color-noticeTextLight);
 		}
 		${SUMMARY_CARD}[data-abt-to-budget-negative] > :last-child {
 			--abt-card-tone: var(--color-errorText);
@@ -546,7 +565,7 @@ export const budgetSummaryRow = defineSetting({
 		}
 		/* Narrow months keep the amount and drop the label. */
 		@container (max-width: 320px) {
-			${MONTH_CARD} > :last-child > * > * > :first-child:not(:has([data-cellname])) {
+			${MONTH_CARD} [${MONTH_LABEL_ATTR}] {
 				display: none !important;
 			}
 		}

@@ -8,7 +8,13 @@
 	import NativeRoll from "./NativeRoll.svelte";
 	import { smoothRow } from "./smooth-row";
 	import { summaryState } from "./state.svelte";
-	import { cachedTotals, loadMonthTotals, type MonthTotals } from "./totals";
+	import {
+		cachedTotals,
+		expectsTargets,
+		loadMonthTotals,
+		prefetchNeighbours,
+		type MonthTotals,
+	} from "./totals";
 
 	const { sheet }: { sheet: string } = $props();
 
@@ -19,18 +25,36 @@
 	// Tints Actual's own To Budget card, which sits outside this component.
 	$effect(() => {
 		const card = root?.closest("[data-abt-summary-row]");
-		if (!card || !totals) return;
+		if (!card || !totals) {
+			return;
+		}
 		card.toggleAttribute("data-abt-to-budget-negative", totals.toBudget < 0);
-		return () => card.removeAttribute("data-abt-to-budget-negative");
+		card.setAttribute("data-abt-to-budget-known", "");
+		return () => {
+			card.removeAttribute("data-abt-to-budget-negative");
+			card.removeAttribute("data-abt-to-budget-known");
+		};
 	});
 
 	const toBudgetCard = $derived(root?.closest("[data-abt-summary-row]")?.lastElementChild ?? null);
+
+	// Lets the card's CSS make room for the shortcut without a :has() rule.
+	$effect(() => {
+		const card = toBudgetCard?.parentElement;
+		if (!card || !templatePlanState.enabled) {
+			return;
+		}
+		card.setAttribute("data-abt-summary-has-more", "");
+		return () => card.removeAttribute("data-abt-summary-has-more");
+	});
 
 	// The To Budget card and ours, eased between widths when content outgrows their floors.
 	$effect(() => {
 		const card = toBudgetCard as HTMLElement | null;
 		const ours = root;
-		if (!card || !ours) return;
+		if (!card || !ours) {
+			return;
+		}
 		return smoothRow(() => [
 			card,
 			...ours.querySelectorAll<HTMLElement>(":scope > .sr__card, :scope > .ac"),
@@ -41,11 +65,15 @@
 	let toBudgetAmount = $state<HTMLElement | null>(null);
 	$effect(() => {
 		const card = toBudgetCard;
-		if (!card || !totals) return;
+		if (!card || !totals) {
+			return;
+		}
 		let current: HTMLElement | null = null;
 		const find = () => {
 			const el = card.querySelector<HTMLElement>("[data-cellname] > span");
-			if (el !== current) toBudgetAmount = current = el;
+			if (el !== current) {
+				toBudgetAmount = current = el;
+			}
 		};
 		find();
 		const watch = new MutationObserver(find);
@@ -63,7 +91,10 @@
 		let stale = false;
 		loadMonthTotals(sheet)
 			.then((t) => {
-				if (!stale) totals = t;
+				if (!stale) {
+					totals = t;
+				}
+				prefetchNeighbours(sheet);
 			})
 			.catch(() => {});
 		return () => {
@@ -163,10 +194,11 @@
 		/>
 	</div>
 {:else}
-	<!-- Same shape as the real cards, so loading a month never changes the row's height. -->
+	<!-- Laid out like the real row (Spent, Targets when the budget has them, the suggestion),
+	     so the cards replace it in place. -->
 	<div class="sr" aria-hidden="true">
-		{#each [0, 1, 2] as i (i)}
-			<div class="sr__card abt-card abt-stack is-skeleton">
+		{#each expectsTargets() ? ["", "sr__targets", "is-action"] : ["", "is-fill"] as kind (kind)}
+			<div class="sr__card abt-card abt-stack is-skeleton {kind}">
 				<span class="sr__label">&nbsp;</span>
 				<span class="sr__value">&nbsp;</span>
 				<span class="sr__sub">&nbsp;</span>
@@ -256,8 +288,13 @@
 		vertical-align: 1px;
 	}
 
-	.sr__card.is-skeleton {
-		min-width: 120px;
+	.sr > .sr__card.is-fill {
+		flex: 1 1 0;
+		min-width: 210px;
+	}
+
+	.sr > .sr__card.is-action {
+		min-width: 210px;
 	}
 
 	.sr__card.is-skeleton > span {

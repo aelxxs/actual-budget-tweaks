@@ -1,6 +1,7 @@
 import { BALANCE_CELL_RE, fetchCells } from "@features/readability/category-progress/cells";
 import { readCell } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
+import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import type { Shortfall } from "./actions";
 
 export interface MonthTotals {
@@ -22,6 +23,25 @@ export interface MonthTotals {
 const latest = new Map<string, MonthTotals>();
 
 export const cachedTotals = (sheet: string): MonthTotals | null => latest.get(sheet) ?? null;
+
+// Whether the last month loaded had targets, so a reload's placeholder has the row's shape.
+const TARGETS_KEY = "abt-summary-has-targets";
+
+export function expectsTargets(): boolean {
+	try {
+		return localStorage.getItem(TARGETS_KEY) === "1";
+	} catch {
+		return false;
+	}
+}
+
+function rememberTargets(has: boolean): void {
+	try {
+		localStorage.setItem(TARGETS_KEY, has ? "1" : "0");
+	} catch {
+		// The placeholder just guesses the shape without it.
+	}
+}
 
 /**
  * The categories the table shows, from any month's balance cells: every month lists the
@@ -74,5 +94,23 @@ export async function loadMonthTotals(sheet: string): Promise<MonthTotals> {
 		overIds: over.map((c) => c.id),
 	};
 	latest.set(sheet, totals);
+	rememberTargets(totals.goals > 0);
 	return totals;
+}
+
+/**
+ * Loads the months either side, so the card that slides in next draws complete and tinted
+ * during the slide rather than popping in once its reads return.
+ */
+export function prefetchNeighbours(sheet: string): void {
+	const month = sheetToMonth(sheet);
+	if (!month) {
+		return;
+	}
+	for (const step of [-1, 1]) {
+		const next = monthToSheet(addMonths(month, step));
+		if (!latest.has(next)) {
+			loadMonthTotals(next).catch(() => {});
+		}
+	}
 }

@@ -1,5 +1,7 @@
 const DURATION_MS = 300;
 const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+// The cards fill in while the page is still loading; easing then only stutters.
+const SETTLE_MS = 1000;
 
 /**
  * Eases the row's cards between widths when their content resizes them. Flex layout can't be
@@ -15,6 +17,7 @@ export function smoothRow(getItems: () => HTMLElement[]): () => void {
 	let frame = 0;
 	let done: ReturnType<typeof setTimeout> | undefined;
 	const observed = new Set<HTMLElement>();
+	const mountedAt = performance.now();
 
 	const measure = (items: HTMLElement[]) =>
 		new Map(items.map((el) => [el, el.getBoundingClientRect().width]));
@@ -36,7 +39,9 @@ export function smoothRow(getItems: () => HTMLElement[]): () => void {
 			}
 		}
 		// Our own pinning resizes the cards too; those changes aren't new content.
-		if (animating) return;
+		if (animating) {
+			return;
+		}
 
 		const next = measure(items);
 		const nextTexts = new Map(items.map((el) => [el, el.textContent ?? ""]));
@@ -49,7 +54,12 @@ export function smoothRow(getItems: () => HTMLElement[]): () => void {
 		const prev = widths;
 		widths = next;
 		texts = nextTexts;
-		if (!moved || !contentChanged || reducedMotion.matches) return;
+		if (!moved || !contentChanged || reducedMotion.matches) {
+			return;
+		}
+		if (performance.now() - mountedAt < SETTLE_MS) {
+			return;
+		}
 
 		animating = true;
 		for (const el of items) {
