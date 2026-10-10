@@ -1,6 +1,7 @@
 import { send } from "./actual-api";
 import { isBulkEditing, onBulkEditEnd } from "./bulk-edit";
 import { watchElement } from "./dom-watcher";
+import { UUID } from "./ids";
 import { monthToSheet } from "./months";
 
 /*
@@ -11,6 +12,7 @@ const BUDGET_TABLE = '[data-testid="budget-table"]';
 // Actual's month header, which the month header feature hides but leaves mounted.
 const SHOWN_MONTH = '[data-testid="selected-budget-month"][data-month]';
 const SHEET_RE = /^(budget\d{6})!/;
+const ROW_CATEGORY_RE = new RegExp(`(${UUID})`);
 
 export interface BudgetTableChange {
 	table: HTMLElement;
@@ -27,6 +29,12 @@ type Listener = (change: BudgetTableChange) => void;
 const listeners = new Set<Listener>();
 let watched: { table: HTMLElement; observer: MutationObserver; shown: string[] } | null = null;
 let stopFinding: (() => void) | null = null;
+
+/** The category a budget table row is for, from its cells' test ids; null for groups and headers. */
+export function rowCategoryId(row: Element): string | null {
+	const cell = row.querySelector('[data-testid*="sum-amount-"], [data-testid*="leftover-"]');
+	return cell?.getAttribute("data-testid")?.match(ROW_CATEGORY_RE)?.[1] ?? null;
+}
 
 /** A cell's number, or `fallback` (null unless given) when it's empty or the read fails. */
 export async function readCell<F extends number | null = null>(

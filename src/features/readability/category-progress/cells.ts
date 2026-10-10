@@ -1,9 +1,9 @@
 import { readCell } from "@lib/utilities/budget-cells";
+import { UUID } from "@lib/utilities/ids";
 
 // Shared by the progress rings and the balance status pills, so both read one cache.
 
-export const BALANCE_CELL_RE =
-	/^(budget\d{6})!leftover-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
+export const BALANCE_CELL_RE = new RegExp(`^(budget\\d{6})!leftover-(${UUID})$`);
 const CACHE_MS = 15000;
 
 /**

@@ -1,4 +1,4 @@
-import { mount, type Component } from "svelte";
+import { mount, unmount, type Component } from "svelte";
 import { createElement } from "./dom";
 
 export function mountToNode<T extends Record<string, unknown>>(
@@ -25,28 +25,38 @@ export function mountToNode(
 	return container as HTMLDivElement;
 }
 
-// utilities/svelte.ts — add:
+/** A mounted component and its node; `destroy` unmounts it and removes the node. */
+export interface Mounted {
+	node: HTMLDivElement;
+	instance: any;
+	destroy: () => void;
+}
+
 export function mountToNodeWithReturn<T extends Record<string, unknown>>(
 	component: Component<T>,
 	props: T,
-): { node: HTMLDivElement; instance: any } {
-	const node = document.createElement("div");
+	node: HTMLDivElement = document.createElement("div"),
+): Mounted {
 	const instance = mount(component, { target: node, props: props as never });
-	return { node, instance };
+	return {
+		node,
+		instance,
+		destroy: () => {
+			void unmount(instance);
+			node.remove();
+		},
+	};
 }
 
 /**
- * Mounts a component into a container sized/clipped to fill its parent and
- * scroll internally — for content passed as a side panel's `bodyNode`
- * (directly, or via `SidePanelContent` itself). Without this, the panel's
- * own outer scroll container ends up scrolling the whole drawer (header
- * included) instead of just the mounted content's internal scroll region.
+ * Mounts a component as a side panel's `bodyNode`, filling the panel and scrolling inside
+ * itself; otherwise the panel's own scroller moves the whole drawer, header included.
  */
 export function mountToPanelBody<T extends Record<string, unknown>>(
 	component: Component<T>,
-	props?: T,
-): HTMLDivElement {
-	const container = createElement("div", {
+	props: T,
+): Mounted {
+	const node = createElement("div", {
 		style: {
 			display: "flex",
 			flex: "1",
@@ -55,6 +65,6 @@ export function mountToPanelBody<T extends Record<string, unknown>>(
 			minHeight: "0px",
 			overflow: "hidden",
 		},
-	});
-	return mountToNode(component, props as never, container);
+	}) as HTMLDivElement;
+	return mountToNodeWithReturn(component, props, node);
 }

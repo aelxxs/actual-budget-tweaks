@@ -1,7 +1,6 @@
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
-import { unmount } from "svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import FundingSection from "./FundingSection.svelte";
 import { loadGoalState, type GoalState } from "./goal-state";
 
@@ -23,7 +22,7 @@ interface Pending {
 }
 
 let pending: Pending | null = null;
-let mounted: { node: HTMLElement; popover: Element; instance: unknown } | null = null;
+let mounted: (Mounted & { popover: Element }) | null = null;
 let popoverObserver: MutationObserver | null = null;
 
 // Actual swaps the menu for a non-menu form when you pick Transfer or Cover.
@@ -38,10 +37,14 @@ function stopObserving(): void {
 
 // The balance button wraps the spreadsheet cell, whose name carries month and category.
 function onPress(e: Event): void {
-	if (e instanceof KeyboardEvent && e.key !== "Enter" && e.key !== " ") return;
+	if (e instanceof KeyboardEvent && e.key !== "Enter" && e.key !== " ") {
+		return;
+	}
 	const cell = (e.target as Element | null)?.closest("button")?.querySelector(BALANCE_CELL);
 	const match = cell?.getAttribute("data-cellname")?.match(/^(budget\d{6})!leftover-(.+)$/);
-	if (!match) return;
+	if (!match) {
+		return;
+	}
 
 	const [, sheet, categoryId] = match;
 	pending = {
@@ -67,7 +70,9 @@ function attachToNewPopover(): void {
 	const popover = [...document.querySelectorAll<HTMLElement>("[data-popover]")].find(
 		(p) => !current.existing.has(p) && showsMenu(p),
 	);
-	if (!popover) return;
+	if (!popover) {
+		return;
+	}
 
 	pending = null;
 	stopObserving();
@@ -78,14 +83,14 @@ function attachToNewPopover(): void {
 	void current.data.then((initial) => {
 		if (initial && popover.isConnected && showsMenu(popover)) {
 			unmountSection();
-			const { node, instance } = mountToNodeWithReturn(FundingSection, {
+			const section = mountToNodeWithReturn(FundingSection, {
 				sheet: current.sheet,
 				categoryId: current.categoryId,
 				initial,
 			});
-			node.setAttribute(SECTION_ATTR, "");
-			popover.prepend(node);
-			mounted = { node, popover, instance };
+			section.node.setAttribute(SECTION_ATTR, "");
+			popover.prepend(section.node);
+			mounted = { ...section, popover };
 		}
 		clearTimeout(timeout);
 		reveal();
@@ -93,15 +98,18 @@ function attachToNewPopover(): void {
 }
 
 function unmountSection(): void {
-	if (!mounted) return;
-	unmount(mounted.instance as never);
-	mounted.node.remove();
+	if (!mounted) {
+		return;
+	}
+	mounted.destroy();
 	mounted = null;
 }
 
 // Gone when the popover closes or switches to Actual's transfer/cover view.
 function syncMounted(): void {
-	if (mounted && (!mounted.node.isConnected || !showsMenu(mounted.popover))) unmountSection();
+	if (mounted && (!mounted.node.isConnected || !showsMenu(mounted.popover))) {
+		unmountSection();
+	}
 }
 
 export const goalFunding = defineSetting({

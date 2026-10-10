@@ -4,14 +4,14 @@ import {
 	collectChanges,
 	watchBudgetTable,
 } from "@lib/utilities/budget-cells";
+import { rowCategoryId } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import { getCurrentSheet } from "@lib/utilities/template-plan/actual-data";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
 import { getValue, removeValue, setValue } from "@lib/utilities/store";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
-import { unmount } from "svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import {
 	type MonthValues,
 	getInsights,
@@ -29,7 +29,6 @@ const BAR_ATTR = "data-abt-cti-row";
 export const STATE_ATTR = "data-abt-cti-state";
 // The bars used to have their own hide flag; it is folded into this setting once (see init).
 const LEGACY_BARS_KEY = "abt-cti-bars-enabled";
-const UUID_RE = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/;
 const ROW_SELECTOR = '[data-testid="row"]:has([data-testid="category-name"])';
 const HOVER_DELAY_MS = 200;
 // Long enough to fold one edit's burst of cell updates into a single re-read.
@@ -115,15 +114,6 @@ let wasOnBudgetPage = false;
 
 // ── Row scanning ────────────────────────────────────────────────
 
-function getCategoryIdForRow(row: HTMLElement): string | null {
-	const idSrc = row.querySelector('[data-testid*="sum-amount-"], [data-testid*="leftover-"]');
-	if (!idSrc) {
-		return null;
-	}
-	const m = (idSrc.getAttribute("data-testid") || "").match(UUID_RE);
-	return m ? m[1] : null;
-}
-
 function getNameColumn(row: HTMLElement): HTMLElement | null {
 	return row.querySelector('[draggable="true"]');
 }
@@ -152,7 +142,7 @@ function scanAndDecorate() {
 		return;
 	}
 	for (const row of document.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
-		const id = getCategoryIdForRow(row);
+		const id = rowCategoryId(row);
 		if (!id) {
 			continue;
 		}
@@ -329,8 +319,7 @@ function stopLive() {
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 let currentRow: HTMLElement | null = null;
 let currentCol: HTMLElement | null = null;
-let popoverWrap: HTMLElement | null = null;
-let popoverInstance: ReturnType<typeof mountToNodeWithReturn>["instance"] | null = null;
+let popover: Mounted | null = null;
 
 function onColMouseEnter(e: Event) {
 	const col = e.currentTarget as HTMLElement;
@@ -367,7 +356,7 @@ function openPopover(row: HTMLElement, anchor: HTMLElement) {
 	if (!data) {
 		return;
 	}
-	const id = getCategoryIdForRow(row);
+	const id = rowCategoryId(row);
 	if (!id) {
 		return;
 	}
@@ -383,18 +372,15 @@ function openPopover(row: HTMLElement, anchor: HTMLElement) {
 	closePopover();
 	const progress = progressFor(row, entry, monthValues);
 
-	const { node: wrap, instance } = mountToNodeWithReturn(InsightsPopover, {
+	popover = mountToNodeWithReturn(InsightsPopover, {
 		entry,
 		progress,
 		onClose: dismissPopover,
 	});
-	wrap.className = "abt-popover abt-cti-popover-wrap";
-	wrap.style.display = "block";
-	document.body.appendChild(wrap);
-	popoverWrap = wrap;
-	popoverInstance = instance;
-
-	positionPopover(wrap, anchor, { gap: 6 });
+	popover.node.className = "abt-popover abt-cti-popover-wrap";
+	popover.node.style.display = "block";
+	document.body.appendChild(popover.node);
+	positionPopover(popover.node, anchor, { gap: 6 });
 }
 
 // Closes it for good, dropping any hover still waiting to open one.
@@ -409,12 +395,6 @@ function dismissPopover() {
 }
 
 function closePopover() {
-	if (popoverInstance) {
-		unmount(popoverInstance);
-		popoverInstance = null;
-	}
-	if (popoverWrap) {
-		popoverWrap.remove();
-		popoverWrap = null;
-	}
+	popover?.destroy();
+	popover = null;
 }

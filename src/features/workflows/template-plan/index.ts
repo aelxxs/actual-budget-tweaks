@@ -14,7 +14,7 @@ import { watchDom } from "@lib/utilities/dom-watcher";
 import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, removeValue, setValue } from "@lib/utilities/store";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
 import {
 	diffSnapshots,
 	finishSnapshots,
@@ -30,7 +30,6 @@ import {
 } from "@lib/utilities/template-plan/actual-data";
 import { previewMonthTemplateTotal } from "@lib/utilities/template-plan/next-month-coverage";
 import { createPriorityPlanner } from "@lib/utilities/template-plan/priority-plan";
-import { unmount } from "svelte";
 import {
 	BREAKDOWN_STORAGE_KEY,
 	PRIO_COLLAPSE_STORAGE_KEY,
@@ -74,28 +73,16 @@ const { computePriorityStatus, buildBreakdownPrioritySummary, invalidatePriority
 	priorityPlanner;
 
 // ── Panel mount (built once, reused across opens) ────────────────────
-let bodyContainer: HTMLElement | null = null;
-let panelInstance: ReturnType<typeof mountToNodeWithReturn>["instance"] | null = null;
+let panel: Mounted | null = null;
 
 function ensurePanelMounted(): HTMLElement {
-	if (!bodyContainer) {
-		const { node, instance } = mountToNodeWithReturn(TemplatePlanPanel, {});
-		// Clipped so only the tab body scrolls, not the side panel's own body, keeping the tabs pinned.
-		node.style.cssText =
-			"display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;";
-		bodyContainer = node;
-		panelInstance = instance;
-	}
-	return bodyContainer;
+	panel ??= mountToPanelBody(TemplatePlanPanel, {});
+	return panel.node;
 }
 
 function teardownPanel(): void {
-	if (panelInstance) {
-		unmount(panelInstance);
-		panelInstance = null;
-	}
-	bodyContainer?.remove();
-	bodyContainer = null;
+	panel?.destroy();
+	panel = null;
 }
 
 // ── Trigger button ────────────────────────────────────────────────────

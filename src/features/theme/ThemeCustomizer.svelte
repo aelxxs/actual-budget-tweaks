@@ -137,7 +137,7 @@
 					setResetFn(reset);
 					exportFn = getExportCSS;
 				},
-			});
+			}).node;
 			headerNode = mountToNode(ThemeEditorHeader, {
 				onReset: () => resetFn(),
 				onExport: () => exportFn?.() ?? "",
@@ -274,7 +274,7 @@
 				creatorType = "css";
 				applyUserCSSTheme(creatorThemeId, css);
 			},
-		});
+		}).node;
 		creatorHeaderNode = mountToNode(ThemeCreatorHeader, {
 			themeName: creatorThemeName,
 			mode: creatorThemeMode,

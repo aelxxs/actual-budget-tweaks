@@ -4,10 +4,10 @@ import { collapseLiveSidebar } from "@features/workflows/sidebar/lib/collapse";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { findAccountToolbar } from "@lib/utilities/native-ui";
+import { isUuid } from "@lib/utilities/ids";
 import { getCurrentPath } from "@lib/utilities/route-watcher";
 import { matchesPage, Page } from "@lib/utilities/pages";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
-import { mount, unmount } from "svelte";
+import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
 import InspectButton from "./InspectButton.svelte";
 import Inspector from "./Inspector.svelte";
 import { inspector } from "./state.svelte";
@@ -21,10 +21,9 @@ const PANEL_KEY = "transaction-inspector";
 const PANEL_WIDTH = 340;
 const ROW = '[data-testid="transaction-table"] [data-focus-key]';
 const CHECKED = '[data-testid="select"] svg';
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-let button: { node: HTMLElement; instance: Record<string, unknown> } | null = null;
-let panel: { node: HTMLElement; instance: Record<string, unknown> } | null = null;
+let button: Mounted | null = null;
+let panel: Mounted | null = null;
 // Selected ids, oldest first; the panel shows the newest. Actual clears selection between accounts.
 let selected: string[] = [];
 let selectedOn = "";
@@ -49,12 +48,20 @@ function followSelection() {
 	const rendered = new Map<string, boolean>();
 	for (const row of document.querySelectorAll<HTMLElement>(ROW)) {
 		const id = row.dataset.focusKey;
-		if (id && UUID.test(id)) rendered.set(id, !!row.querySelector(CHECKED));
+		if (id && isUuid(id)) {
+			rendered.set(id, !!row.querySelector(CHECKED));
+		}
 	}
 	selected = selected.filter((id) => rendered.get(id) ?? true);
-	for (const [id, checked] of rendered) if (checked && !selected.includes(id)) selected.push(id);
+	for (const [id, checked] of rendered) {
+		if (checked && !selected.includes(id)) {
+			selected.push(id);
+		}
+	}
 	const newest = selected.at(-1) ?? null;
-	if (newest !== inspector.transactionId) inspector.transactionId = newest;
+	if (newest !== inspector.transactionId) {
+		inspector.transactionId = newest;
+	}
 }
 
 async function openPanel() {
@@ -62,11 +69,7 @@ async function openPanel() {
 	selected = [];
 	followSelection();
 	if (!panel) {
-		// Fills the panel body and scrolls inside, like mountToPanelBody, but keeps the instance.
-		const node = document.createElement("div");
-		node.style.cssText =
-			"display: flex; flex: 1; flex-direction: column; height: 100%; min-height: 0; overflow: hidden;";
-		panel = { node, instance: mount(Inspector, { target: node }) };
+		panel = mountToPanelBody(Inspector, {});
 	}
 	sidepanel.open({ title: "Inspector", bodyNode: panel.node, key: PANEL_KEY, width: PANEL_WIDTH });
 	inspector.open = true;
@@ -74,9 +77,13 @@ async function openPanel() {
 }
 
 function destroyPanel() {
-	if (!panel) return;
-	if (panel.node.isConnected) sidepanel.close();
-	void unmount(panel.instance);
+	if (!panel) {
+		return;
+	}
+	if (panel.node.isConnected) {
+		sidepanel.close();
+	}
+	panel.destroy();
 	panel = null;
 	inspector.open = false;
 	inspector.transactionId = null;
@@ -85,9 +92,10 @@ function destroyPanel() {
 }
 
 function removeButton() {
-	if (!button) return;
-	void unmount(button.instance);
-	button.node.remove();
+	if (!button) {
+		return;
+	}
+	button.destroy();
 	button = null;
 }
 
@@ -99,7 +107,9 @@ function sync() {
 		selected = [];
 		restoreSidebar();
 	}
-	if (inspector.open) followSelection();
+	if (inspector.open) {
+		followSelection();
+	}
 
 	const toolbar = matchesPage(Page.Accounts) ? findAccountToolbar() : null;
 	if (!toolbar) {
@@ -107,7 +117,9 @@ function sync() {
 		destroyPanel();
 		return;
 	}
-	if (button?.node.isConnected && button.node.parentElement === toolbar) return;
+	if (button?.node.isConnected && button.node.parentElement === toolbar) {
+		return;
+	}
 
 	removeButton();
 	const mounted = mountToNodeWithReturn(InspectButton, {
@@ -116,8 +128,11 @@ function sync() {
 	mounted.node.setAttribute(OURS, "");
 	// With the actions, before Actual's empty flex spacer.
 	const spacer = [...toolbar.children].find((c) => c.matches(":empty"));
-	if (spacer) spacer.before(mounted.node);
-	else toolbar.append(mounted.node);
+	if (spacer) {
+		spacer.before(mounted.node);
+	} else {
+		toolbar.append(mounted.node);
+	}
 	button = mounted;
 }
 

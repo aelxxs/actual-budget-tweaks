@@ -10,8 +10,7 @@ import {
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { currentMonth, monthToSheet } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
-import { unmount } from "svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import MonthMeta from "./MonthMeta.svelte";
 import { summaryState } from "./state.svelte";
 import SummaryRow from "./SummaryRow.svelte";
@@ -38,26 +37,14 @@ const NOTE_MASK = iconMask("note");
 const SUMMARY_CARD = `[${SINGLE_MONTH_ATTR}] [data-testid="budget-summary"]`;
 const MONTH_CARD = `[${MULTI_MONTH_ATTR}] [data-testid="budget-summary"]`;
 
-interface Mounted {
-	node: HTMLElement;
-	instance: unknown;
-}
-
 let summary: (Mounted & { card: HTMLElement }) | null = null;
 const metas = new Map<HTMLElement, Mounted>();
 // The table sync() last set up on the budget page; its changes are followed until it's dropped.
 let tableShown: HTMLElement | null = null;
 let changes: ReturnType<typeof collectChanges> | null = null;
 
-function drop(mounted: Mounted): void {
-	unmount(mounted.instance as never);
-	mounted.node.remove();
-}
-
 function unmountSummary(): void {
-	if (summary) {
-		drop(summary);
-	}
+	summary?.destroy();
 	summary = null;
 }
 
@@ -66,7 +53,7 @@ function unmountMetas(keep?: (card: HTMLElement) => boolean): void {
 		if (keep?.(card)) {
 			continue;
 		}
-		drop(meta);
+		meta.destroy();
 		metas.delete(card);
 	}
 }
@@ -239,12 +226,9 @@ function syncSummary(cards: HTMLElement[], month: string | undefined): void {
 	if (!card || !toBudget || !month) {
 		return;
 	}
-	const { node, instance } = mountToNodeWithReturn(SummaryRow, {
-		sheet: monthToSheet(month),
-	});
-	node.setAttribute(SUMMARY_STATS_ATTR, "");
-	card.insertBefore(node, toBudget);
-	summary = { card, node, instance };
+	summary = { ...mountToNodeWithReturn(SummaryRow, { sheet: monthToSheet(month) }), card };
+	summary.node.setAttribute(SUMMARY_STATS_ATTR, "");
+	card.insertBefore(summary.node, toBudget);
 }
 
 /**
@@ -261,13 +245,10 @@ function syncMetas(cards: HTMLElement[], multi: boolean): void {
 		if (metas.has(card) || !card.dataset.month || !toBudget) {
 			continue;
 		}
-		const { node, instance } = mountToNodeWithReturn(MonthMeta, {
-			card,
-			month: card.dataset.month,
-		});
-		node.setAttribute(MONTH_META_ATTR, "");
-		card.insertBefore(node, toBudget);
-		metas.set(card, { node, instance });
+		const meta = mountToNodeWithReturn(MonthMeta, { card, month: card.dataset.month });
+		meta.node.setAttribute(MONTH_META_ATTR, "");
+		card.insertBefore(meta.node, toBudget);
+		metas.set(card, meta);
 	}
 }
 

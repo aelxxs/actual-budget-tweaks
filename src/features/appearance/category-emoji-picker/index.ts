@@ -1,12 +1,12 @@
 import { defineSetting } from "@features/types";
+import { rowCategoryId } from "@lib/utilities/budget-cells";
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 import { notify, send } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, setValue } from "@lib/utilities/store";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
-import { unmount } from "svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 
 const STORAGE_KEY = "category-emoji-picker";
 const ICONS_KEY = "abt-category-icons";
@@ -90,22 +90,14 @@ const CSS = `
 	}
 `;
 
-let popoverEl: HTMLElement | null = null;
-let popoverInstance: any = null;
+let popover: Mounted | null = null;
 
 function extractEmoji(name: string): { emoji: string | null; rest: string } {
 	const m = name.match(EMOJI_RE);
-	if (m) return { emoji: m[1], rest: name.slice(m[0].length) };
+	if (m) {
+		return { emoji: m[1], rest: name.slice(m[0].length) };
+	}
 	return { emoji: null, rest: name };
-}
-
-function getCategoryIdForRow(row: HTMLElement): string | null {
-	const idSrc = row.querySelector('[data-testid*="sum-amount-"], [data-testid*="leftover-"]');
-	if (!idSrc) return null;
-	const m = (idSrc.getAttribute("data-testid") || "").match(
-		/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/,
-	);
-	return m ? m[1] : null;
 }
 
 async function updateCategoryName(catId: string, newName: string) {
@@ -122,14 +114,8 @@ async function updateCategoryName(catId: string, newName: string) {
 }
 
 function closePopover() {
-	if (popoverInstance) {
-		unmount(popoverInstance);
-		popoverInstance = null;
-	}
-	if (popoverEl) {
-		popoverEl.remove();
-		popoverEl = null;
-	}
+	popover?.destroy();
+	popover = null;
 }
 
 const EMPTY_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="var(--color-pageText)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="pointer-events:none"><circle cx="8" cy="8" r="5.5"/><line x1="8" y1="5.5" x2="8" y2="10.5"/><line x1="5.5" y1="8" x2="10.5" y2="8"/></svg>`;
@@ -155,7 +141,7 @@ function openPicker(anchor: HTMLElement, catId: string, currentName: string) {
 	const { emoji: currentEmoji } = extractEmoji(currentName);
 	const hasIcon = !!currentEmoji || !!categoryIcons[catId];
 
-	const { node, instance } = mountToNodeWithReturn(IconPickerPopover, {
+	const mounted = mountToNodeWithReturn(IconPickerPopover, {
 		anchorRect: anchor.getBoundingClientRect(),
 		hasIcon,
 		onSelect: async (result: IconPickerResult) => {
@@ -179,25 +165,31 @@ function openPicker(anchor: HTMLElement, catId: string, currentName: string) {
 		onRemove: async () => {
 			await removeCategoryIcon(catId);
 			const { rest } = extractEmoji(currentName);
-			if (currentEmoji) await updateCategoryName(catId, rest);
+			if (currentEmoji) {
+				await updateCategoryName(catId, rest);
+			}
 			closePopover();
 		},
 		onClose: closePopover,
 	});
 
+	const { node } = mounted;
 	node.className = "abt-emoji-popover";
 	node.style.display = "block";
 	document.body.appendChild(node);
-	popoverEl = node;
-	popoverInstance = instance;
+	popover = mounted;
 }
 
 function decorateRow(row: HTMLElement) {
 	const nameEl = row.querySelector<HTMLElement>('[data-testid="category-name"]');
-	if (!nameEl) return;
+	if (!nameEl) {
+		return;
+	}
 
-	const catId = getCategoryIdForRow(row);
-	if (!catId) return;
+	const catId = rowCategoryId(row);
+	if (!catId) {
+		return;
+	}
 
 	const currentText = nameEl.textContent || "";
 	const { emoji } = extractEmoji(currentText);
@@ -205,7 +197,9 @@ function decorateRow(row: HTMLElement) {
 
 	// Fingerprint includes stored icon so we re-render when it changes
 	const fingerprint = `${catId}:${currentText}:${storedIcon?.value ?? ""}`;
-	if (row.getAttribute(ATTR) === fingerprint) return;
+	if (row.getAttribute(ATTR) === fingerprint) {
+		return;
+	}
 	row.setAttribute(ATTR, fingerprint);
 
 	// Clean up previous decoration
@@ -237,7 +231,9 @@ function decorateRow(row: HTMLElement) {
 }
 
 function scanRows() {
-	if (!matchesPage(Page.Budget)) return;
+	if (!matchesPage(Page.Budget)) {
+		return;
+	}
 	for (const row of document.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
 		decorateRow(row);
 	}
@@ -248,7 +244,9 @@ function cleanup() {
 	for (const row of document.querySelectorAll<HTMLElement>(`[${ATTR}]`)) {
 		row.removeAttribute(ATTR);
 		const nameEl = row.querySelector<HTMLElement>('[data-testid="category-name"]');
-		if (!nameEl) continue;
+		if (!nameEl) {
+			continue;
+		}
 		nameEl.parentElement?.querySelector(".abt-emoji-btn")?.remove();
 	}
 }

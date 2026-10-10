@@ -13,8 +13,7 @@ import {
 } from "@lib/utilities/budget-cells";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
-import { unmount } from "svelte";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import FilterControl from "./FilterControl.svelte";
 import { filterState, type CategoryFilter } from "./state.svelte";
 
@@ -23,7 +22,7 @@ const CONTROL_ATTR = "data-abt-category-filter";
 const HEADER_SLOT = "[data-abt-month-header-slot]";
 const REFRESH_MS = 250;
 
-let control: { node: HTMLElement; instance: unknown } | null = null;
+let control: Mounted | null = null;
 // The table sync() last set up on the budget page; its edits refresh the counts.
 let tableShown: HTMLElement | null = null;
 let changes: ReturnType<typeof collectChanges> | null = null;
@@ -183,10 +182,11 @@ function mountControl(table: HTMLElement): void {
 		return;
 	}
 	unmountControl();
-	const { node, instance } = mountToNodeWithReturn(FilterControl, {
+	control = mountToNodeWithReturn(FilterControl, {
 		onpick: pick,
 		size: slot ? "md" : "sm",
 	});
+	const { node } = control;
 	node.setAttribute(CONTROL_ATTR, "");
 	if (slot) {
 		slot.append(node);
@@ -195,15 +195,13 @@ function mountControl(table: HTMLElement): void {
 	else {
 		bar!.insertBefore(node, bar!.querySelector(".abt-view-options") ?? bar!.lastElementChild);
 	}
-	control = { node, instance };
 }
 
 function unmountControl(): void {
 	if (!control) {
 		return;
 	}
-	unmount(control.instance as never);
-	control.node.remove();
+	control.destroy();
 	control = null;
 }
 

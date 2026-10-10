@@ -1,9 +1,9 @@
 import { defineSetting } from "@features/types";
+import { UUID } from "@lib/utilities/ids";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { findAccountToolbar } from "@lib/utilities/native-ui";
 import { getCurrentPath } from "@lib/utilities/route-watcher";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
-import { unmount } from "svelte";
+import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { NATIVE_LOCK } from "./dom";
 import { closePanel, destroyPanel, panelWasClosed } from "./panel";
 import ReconcileButton from "./ReconcileButton.svelte";
@@ -16,7 +16,7 @@ import { cancel, reconcile } from "./state.svelte";
 const OURS = "data-abt-reconcile";
 // Marked in JS: a `div:has(<lock path>)` rule made every div on the page search its subtree.
 const HIDDEN_LOCK = "data-abt-native-lock";
-const ACCOUNT_PATH = /^\/accounts\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/;
+const ACCOUNT_PATH = new RegExp(`^/accounts/(${UUID})`);
 
 const CSS = `
 	[${HIDDEN_LOCK}] {
@@ -24,21 +24,24 @@ const CSS = `
 	}
 `;
 
-let mounted: { accountId: string; node: HTMLElement; instance: unknown } | null = null;
+let mounted: (Mounted & { accountId: string }) | null = null;
 let hiddenLock: Element | null = null;
 
 function teardown() {
 	hiddenLock?.removeAttribute(HIDDEN_LOCK);
 	hiddenLock = null;
-	if (!mounted) return;
-	void unmount(mounted.instance as Record<string, unknown>);
-	mounted.node.remove();
+	if (!mounted) {
+		return;
+	}
+	mounted.destroy();
 	mounted = null;
 }
 
 function sync() {
 	// Re-entering the account view to refresh it isn't leaving it.
-	if (reconcile.refreshing) return;
+	if (reconcile.refreshing) {
+		return;
+	}
 
 	// Closing the panel, or another feature taking it, ends the reconcile.
 	if (panelWasClosed()) {
@@ -88,9 +91,12 @@ function sync() {
 	button.node.setAttribute(OURS, "");
 	// With the actions, before Actual's empty flex spacer; beside the lock if that's ever gone.
 	const spacer = [...toolbar!.children].find((c) => !c.hasAttribute(OURS) && c.matches(":empty"));
-	if (spacer) spacer.before(button.node);
-	else lockWrapper.after(button.node);
-	mounted = { accountId, node: button.node, instance: button.instance };
+	if (spacer) {
+		spacer.before(button.node);
+	} else {
+		lockWrapper.after(button.node);
+	}
+	mounted = { ...button, accountId };
 }
 
 export const modernReconcile = defineSetting({

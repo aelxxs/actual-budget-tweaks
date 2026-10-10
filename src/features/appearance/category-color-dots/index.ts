@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import { rowCategoryId } from "@lib/utilities/budget-cells";
 import { query } from "@lib/utilities/actual-api";
 import {
 	getCategoryColor,
@@ -13,14 +14,15 @@ import ColorPicker from "./ColorPicker.svelte";
 const STORAGE_KEY = "category-color-dots";
 const ATTR = "data-abt-color-dot";
 const TX_ATTR = "data-abt-tx-dot";
-const UUID_RE = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/;
 const ROW_SELECTOR = '[data-testid="row"]:has([data-testid="category-name"])';
 
 let categoryNameToId = new Map<string, string>();
 let categoryMapLoaded = false;
 
 async function loadCategoryMap() {
-	if (categoryMapLoaded) return;
+	if (categoryMapLoaded) {
+		return;
+	}
 	try {
 		const cats = await query<{ id: string; name: string }[]>("categories");
 		categoryNameToId = new Map(cats.map((c) => [c.name, c.id]));
@@ -71,13 +73,6 @@ const CSS = `
 let popoverEl: HTMLElement | null = null;
 let stopOutsideClick: (() => void) | null = null;
 
-function getCategoryIdForRow(row: HTMLElement): string | null {
-	const idSrc = row.querySelector('[data-testid*="sum-amount-"], [data-testid*="leftover-"]');
-	if (!idSrc) return null;
-	const m = (idSrc.getAttribute("data-testid") || "").match(UUID_RE);
-	return m ? m[1] : null;
-}
-
 function closePopover() {
 	stopOutsideClick?.();
 	stopOutsideClick = null;
@@ -113,14 +108,20 @@ function openColorPicker(anchor: HTMLElement, catId: string) {
 
 function decorateRow(row: HTMLElement) {
 	const nameEl = row.querySelector<HTMLElement>('[data-testid="category-name"]');
-	if (!nameEl) return;
+	if (!nameEl) {
+		return;
+	}
 
-	const catId = getCategoryIdForRow(row);
-	if (!catId) return;
+	const catId = rowCategoryId(row);
+	if (!catId) {
+		return;
+	}
 
 	if (row.getAttribute(ATTR) === catId) {
 		const existing = nameEl.parentElement?.querySelector<HTMLElement>(".abt-cat-dot");
-		if (existing) existing.style.background = getCategoryColor(catId);
+		if (existing) {
+			existing.style.background = getCategoryColor(catId);
+		}
 		return;
 	}
 	row.setAttribute(ATTR, catId);
@@ -144,10 +145,14 @@ function decorateRow(row: HTMLElement) {
 
 function decorateTransactionRow(row: HTMLElement) {
 	const catCell = row.querySelector<HTMLElement>('[data-testid="category"]');
-	if (!catCell) return;
+	if (!catCell) {
+		return;
+	}
 
 	const textEl = catCell.querySelector("span");
-	if (!textEl) return;
+	if (!textEl) {
+		return;
+	}
 
 	const catName = textEl.textContent?.trim() || "";
 	if (
@@ -156,24 +161,31 @@ function decorateTransactionRow(row: HTMLElement) {
 		catName === "Upcoming" ||
 		catName === "Missed" ||
 		catName === "Split"
-	)
+	) {
 		return;
+	}
 
 	const fp = catName;
-	if (row.getAttribute(TX_ATTR) === fp) return;
+	if (row.getAttribute(TX_ATTR) === fp) {
+		return;
+	}
 	row.setAttribute(TX_ATTR, fp);
 
 	catCell.querySelector(".abt-tx-cat-dot")?.remove();
 
 	const catId = categoryNameToId.get(catName);
-	if (!catId) return;
+	if (!catId) {
+		return;
+	}
 
 	const dot = document.createElement("span");
 	dot.className = "abt-tx-cat-dot";
 	dot.style.background = getCategoryColor(catId);
 
 	const wrapper = textEl.parentElement;
-	if (wrapper) wrapper.insertBefore(dot, textEl);
+	if (wrapper) {
+		wrapper.insertBefore(dot, textEl);
+	}
 }
 
 function scanRows() {
