@@ -23,6 +23,7 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"generate:features-manifest": "node scripts/generate-features-manifest.mjs",
+		"generate:large-budget": "node scripts/generate-large-budget.mjs",
 		"new-feature": "node scripts/new-feature.mjs",
 		"postinstall": "wxt prepare"
 	},
