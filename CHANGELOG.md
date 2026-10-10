@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v0.1.90
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.89...v0.1.90)
+
+### 🩹 Fixes
+
+- Parse each bridge response once and batch budget cell reads ([8b893ce](https://github.com/aelxxs/actual-budget-tweaks/commit/8b893ce))
+- Replace :has() rules that restyled the whole page on every change ([80a234c](https://github.com/aelxxs/actual-budget-tweaks/commit/80a234c))
+- Keep month cards smooth on large budgets ([15453de](https://github.com/aelxxs/actual-budget-tweaks/commit/15453de))
+- Count every month header click while a large budget is still rendering ([3959227](https://github.com/aelxxs/actual-budget-tweaks/commit/3959227))
+- Style the header from its first frame ([25c91fc](https://github.com/aelxxs/actual-budget-tweaks/commit/25c91fc))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.89 ([38ca51f](https://github.com/aelxxs/actual-budget-tweaks/commit/38ca51f))
+- Add a large test budget generator ([f1615f4](https://github.com/aelxxs/actual-budget-tweaks/commit/f1615f4))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.89
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.88...v0.1.89)
