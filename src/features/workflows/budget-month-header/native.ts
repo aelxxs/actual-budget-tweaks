@@ -172,6 +172,8 @@ async function clickToward(key: string): Promise<boolean> {
 
 /** Set the first time writing the pref has no visible effect; later moves go straight to clicks. */
 let prefIgnored = false;
+/** Counts showMonth calls, so one overtaken by a newer click stops waiting for its month. */
+let request = 0;
 
 /**
  * Moves the budget to start at `key` by writing Actual's `budget.startMonth` local pref.
@@ -179,6 +181,8 @@ let prefIgnored = false;
  * Actual's own picker, then to showing Actual's controls.
  */
 export async function showMonth(key: string): Promise<void> {
+	const id = ++request;
+	const overtaken = () => id !== request;
 	if (shownStart() === key) {
 		return;
 	}
@@ -188,7 +192,10 @@ export async function showMonth(key: string): Promise<void> {
 		} catch (e) {
 			log.warn("Couldn't set budget.startMonth:", e);
 		}
-		if (await waitFor(() => shownStart() === key)) {
+		if (await waitFor(() => shownStart() === key || overtaken())) {
+			return;
+		}
+		if (overtaken()) {
 			return;
 		}
 		prefIgnored = true;

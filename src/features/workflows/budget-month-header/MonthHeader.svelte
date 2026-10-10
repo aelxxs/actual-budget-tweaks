@@ -20,6 +20,9 @@
 	let pickerOpen = $state(false);
 
 	const start = $derived(budgetNav.months[0] ?? null);
+	// The month last asked for, so clicks made while a big budget is still rendering add up.
+	let target = $state<string | null>(null);
+	const base = $derived(target ?? start);
 	const parsed = $derived(start ? parseMonth(start) : null);
 	const span = $derived(budgetNav.months.length);
 	const counts = $derived(Array.from({ length: budgetNav.displayMax }, (_, i) => i + 1));
@@ -29,10 +32,14 @@
 
 	// Budgets for new months are created as they're reached, so the bounds can grow.
 	$effect(() => {
-		if (!start) return;
+		if (!start) {
+			return;
+		}
 		let stale = false;
 		void loadBounds().then((b) => {
-			if (!stale) bounds = b;
+			if (!stale) {
+				bounds = b;
+			}
 		});
 		return () => {
 			stale = true;
@@ -43,14 +50,26 @@
 	async function setCount(count: number) {
 		const from = start;
 		await setMonthCount(count);
-		if (!from) return;
+		if (!from) {
+			return;
+		}
 		const next = validStart(from, count, bounds);
-		if (next !== from) void showMonth(next);
+		if (next !== from) {
+			void showMonth(next);
+		}
 	}
 
 	function go(key: string) {
 		const next = validStart(key, span, bounds);
-		if (next !== start) void showMonth(next);
+		if (next === base) {
+			return;
+		}
+		target = next;
+		void showMonth(next).finally(() => {
+			if (target === next) {
+				target = null;
+			}
+		});
 	}
 </script>
 
@@ -70,8 +89,8 @@
 					class="abt-btn abt-btn--icon"
 					title="Previous month"
 					aria-label="Previous month"
-					disabled={!start || validStart(addMonths(start, -1), span, bounds) === start}
-					onclick={() => start && go(addMonths(start, -1))}
+					disabled={!base || validStart(addMonths(base, -1), span, bounds) === base}
+					onclick={() => base && go(addMonths(base, -1))}
 				>
 					<Icon name="chevronLeft" size={16} />
 				</button>
@@ -80,8 +99,8 @@
 					class="abt-btn abt-btn--icon"
 					title="Next month"
 					aria-label="Next month"
-					disabled={!start || validStart(addMonths(start, 1), span, bounds) === start}
-					onclick={() => start && go(addMonths(start, 1))}
+					disabled={!base || validStart(addMonths(base, 1), span, bounds) === base}
+					onclick={() => base && go(addMonths(base, 1))}
 				>
 					<Icon name="chevronRight" size={16} />
 				</button>
