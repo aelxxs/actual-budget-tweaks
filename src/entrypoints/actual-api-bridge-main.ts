@@ -225,10 +225,34 @@ export default defineUnlistedScript(async () => {
 		}
 	});
 
+	// Reports privacy mode as Actual's own store has it; no element on the page reliably reflects it.
+	function watchPrivacy(store) {
+		let last = null;
+		const report = () => {
+			const on = String(store.getState().prefs?.synced?.isPrivacyEnabled) === "true";
+			if (on === last) return;
+			last = on;
+			document.dispatchEvent(
+				new CustomEvent("abt:api:privacy", { detail: JSON.stringify({ on }) }),
+			);
+		};
+		report();
+		store.subscribe(report);
+	}
+
 	(function attachStore(retries = 50) {
 		const store = findStore();
-		if (store) return watchImports(store);
+		if (store) {
+			watchImports(store);
+			watchPrivacy(store);
+			return;
+		}
 		if (retries > 0) setTimeout(() => attachStore(retries - 1), 200);
+		// Found through React's internals, so an Actual update can hide it; Sync recap and privacy then stop following.
+		else
+			console.warn(
+				"[ABT] Couldn't find Actual's store: Sync recap and privacy mode won't update live.",
+			);
 	})();
 
 	document.addEventListener("abt:api:navigate", (e) => {
