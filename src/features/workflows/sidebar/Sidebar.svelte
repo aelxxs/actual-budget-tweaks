@@ -8,6 +8,7 @@
 		setLiveSidebarBudget,
 		type SidebarSettingsTab,
 	} from "@features/appearance/sidebar-settings-menu/settings";
+	import { loadCurrentBudgetId } from "@lib/utilities/actual-api";
 	import { loadCurrency } from "@lib/utilities/currency";
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { getValue, setValue, watchValue } from "@lib/utilities/store";
@@ -24,7 +25,7 @@
 	import PrimaryNav from "./components/PrimaryNav.svelte";
 	import Rail from "./components/Rail.svelte";
 	import { invalidateAccountDetail } from "./lib/account-detail";
-	import { loadCurrentBudgetId, loadCurrentBudgetName } from "./lib/budgets";
+	import { loadCurrentBudgetName } from "./lib/budgets";
 	import { clearAutoCollapse, SIDEBAR_COLLAPSED_KEY, undoAutoCollapse } from "./lib/collapse";
 	import { LAYOUT_KEY, toLayout, type SidebarLayout } from "./lib/layout";
 	import type { SidebarAccount } from "./lib/data";

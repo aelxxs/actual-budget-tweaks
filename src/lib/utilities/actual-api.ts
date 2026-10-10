@@ -138,6 +138,11 @@ export async function dispatch<T = unknown>(action: string, args?: unknown): Pro
 	return request("abt:api:dispatch", { action, args });
 }
 
+/** The open budget's local id, which differs on every device. It's file metadata, so AQL can't read it. */
+export async function loadCurrentBudgetId(): Promise<string | undefined> {
+	return (await send<{ id?: string }>("load-prefs"))?.id;
+}
+
 export interface Toast {
 	type?: "message" | "error" | "warning";
 	title?: string;

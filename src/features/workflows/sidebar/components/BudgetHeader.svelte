@@ -15,12 +15,12 @@
 	import { onMount } from "svelte";
 	import { autofocus } from "../actions/autofocus";
 	import { tooltip } from "../actions/tooltip.svelte";
+	import { loadCurrentBudgetId } from "@lib/utilities/actual-api";
 	import type { BudgetFile, BudgetIcon, FileState } from "../lib/budgets";
 	import {
 		closeToFileList,
 		loadBudgetFiles,
 		loadBudgetIcon,
-		loadCurrentBudgetId,
 		removeBudgetIcon,
 		renameBudget,
 		selectBudgetFile,

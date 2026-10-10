@@ -1,4 +1,4 @@
-import { notify, send } from "@lib/utilities/actual-api";
+import { loadCurrentBudgetId, notify, send } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { createLogger } from "@lib/utilities/logger";
 import { getValue, hasValue, onSetValue, setValue } from "@lib/utilities/store";
@@ -170,7 +170,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			else if (!WATCHED_KEYS.has(key)) needsReload.push(key);
 		}
 
-		budgetId = (await send<{ id?: string }>("load-prefs").catch(() => null))?.id;
+		budgetId = await loadCurrentBudgetId().catch(() => undefined);
 		const id = budgetId;
 		if (id) {
 			for (const scoped of BUDGET_SCOPED) {

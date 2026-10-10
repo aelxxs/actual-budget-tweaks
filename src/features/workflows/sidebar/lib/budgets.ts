@@ -1,5 +1,5 @@
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
-import { dispatch, send } from "@lib/utilities/actual-api";
+import { dispatch, loadCurrentBudgetId, send } from "@lib/utilities/actual-api";
 import { getValue, setValue, watchValue } from "@lib/utilities/store";
 
 export type FileState = "local" | "remote" | "synced" | "detached" | "broken" | "unknown";
@@ -88,12 +88,6 @@ export async function loadBudgetFiles(): Promise<BudgetFile[]> {
 		send<RawRemoteFile[]>("get-remote-files").catch(() => null),
 	]);
 	return reconcileFiles(budgets, remoteFiles);
-}
-
-/** The currently open budget's local id — not queryable via the AQL bridge, since it's file metadata, not a table row. `load-prefs` is the same RPC Actual's own `loadPrefs()` thunk calls. */
-export async function loadCurrentBudgetId(): Promise<string | undefined> {
-	const prefs = await send<{ id?: string }>("load-prefs");
-	return prefs?.id;
 }
 
 /** The currently open budget's display name — resolved from the same file
