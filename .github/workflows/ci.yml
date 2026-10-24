@@ -2,6 +2,9 @@ name: CI
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
   # Releases run this first, so nothing ships that fails it.
   workflow_call:
 

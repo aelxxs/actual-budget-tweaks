@@ -1,15 +1,22 @@
 name: Build, Release & Publish Extensions
 
+# Run by hand from main (Actions > Run workflow), so a push never ships on its own.
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "website/**"
-      - ".github/**"
-      - ".gitignore"
-      - "*.md"
   workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump (auto reads it from the commits)"
+        type: choice
+        default: auto
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -23,8 +30,14 @@ jobs:
   verify:
     uses: ./.github/workflows/ci.yml
 
+  smoke:
+    uses: ./.github/workflows/smoke.yml
+    with:
+      actual: latest
+
   release:
-    needs: verify
+    needs: [verify, smoke]
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -48,8 +61,14 @@ jobs:
 
       - name: Bump version & update changelog
         id: version
+        env:
+          BUMP: ${{ inputs.bump }}
         run: |
-          npx changelogen@latest --release --push --no-tag=false
+          FLAG=""
+          if [ "$BUMP" != "auto" ]; then
+            FLAG="--$BUMP"
+          fi
+          npx changelogen@latest --release --push --no-tag=false $FLAG
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
