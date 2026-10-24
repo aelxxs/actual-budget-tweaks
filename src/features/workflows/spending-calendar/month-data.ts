@@ -257,15 +257,24 @@ export function createMonthLoader() {
 			});
 		}
 
+		// The end of each schedule the calendar shows: its own account, or for a transfer from a
+		// hidden account, the shown one it pays into, where the amount runs the other way.
+		const sides = new Map<string, { account: string | null; amount: number; from?: string }>();
+		for (const s of schedules) {
+			const amount = parseScheduleAmount(s._amount);
+			const transferAcct = (s._payee && payeeTransferAcct.get(s._payee)) || null;
+			const transferShown = !!transferAcct && !isHidden(transferAcct);
+			if (!isHidden(s._account)) {
+				if (!pureTransferScheduleAccount(s) || !transferShown) {
+					sides.set(s.id, { account: s._account || null, amount });
+				}
+			} else if (transferShown) {
+				sides.set(s.id, { account: transferAcct, amount: -amount, from: s._account || undefined });
+			}
+		}
 		const visibleSchedules = schedules.filter((s) => {
-			const transferTo = pureTransferScheduleAccount(s);
-			return (
-				!s.completed &&
-				!s.tombstone &&
-				!(transferTo && !isHidden(transferTo)) &&
-				!isHidden(s._account) &&
-				inFlow(parseScheduleAmount(s._amount))
-			);
+			const side = sides.get(s.id);
+			return !s.completed && !s.tombstone && !!side && inFlow(side.amount);
 		});
 
 		const todayIso = isoDate(new Date());
@@ -332,7 +341,11 @@ export function createMonthLoader() {
 			if (!dates) {
 				continue;
 			}
-			const payeeName = s.name || (s._payee && payeeNames.get(s._payee)) || "Unknown";
+			const side = sides.get(s.id)!;
+			const payeeName =
+				s.name ||
+				(side.from ? accountNames.get(side.from) : s._payee && payeeNames.get(s._payee)) ||
+				"Unknown";
 			for (const date of dates) {
 				if (posted.has(`${s.id}|${date}`)) {
 					continue;
@@ -348,10 +361,10 @@ export function createMonthLoader() {
 				}
 				existing.push({
 					payee: payeeName,
-					amount: parseScheduleAmount(s._amount),
+					amount: side.amount,
 					categoryId: "",
 					categoryName: "",
-					accountName: (s._account && accountNames.get(s._account)) || "",
+					accountName: (side.account && accountNames.get(side.account)) || "",
 					notes: "",
 					scheduleId: s.id,
 					...(pureTransferScheduleAccount(s) && { transfer: true }),
