@@ -40,6 +40,10 @@ export function openBudgetSettings(): void {
 					heading: "Colors & icons",
 					settings: [categoryColorDots, categoryEmojiPicker] as Setting[],
 				},
+				{
+					heading: "Filter",
+					settings: [budgetCategoryFilter] as Setting[],
+				},
 			],
 		},
 		{
@@ -51,6 +55,10 @@ export function openBudgetSettings(): void {
 					settings: [budgetTableRowHeight, budgetPageBorders, hideMonthOnScroll] as Setting[],
 				},
 				{
+					heading: "Months",
+					settings: [budgetMonthHeader, budgetSummaryRow] as Setting[],
+				},
+				{
 					heading: "Summary",
 					settings: [budgetCardStyling, budgetTotalsLabelStyling, showDailyAvailable] as Setting[],
 				},
@@ -60,13 +68,6 @@ export function openBudgetSettings(): void {
 			value: "insights",
 			label: "Insights",
 			groups: [{ settings: [templatePlan, nextMonthCoverageMethod] as Setting[] }],
-		},
-		{
-			value: "experimental",
-			label: "Experimental",
-			groups: [
-				{ settings: [budgetMonthHeader, budgetSummaryRow, budgetCategoryFilter] as Setting[] },
-			],
 		},
 	];
 

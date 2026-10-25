@@ -214,6 +214,28 @@
 				"writes": null
 			},
 			{
+				"key": "budget-month-header",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Month Header",
+				"description": "Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",
+				"icon": "calendar",
+				"group": "Layout",
+				"writes": null
+			},
+			{
+				"key": "budget-summary-row",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Month Cards",
+				"description": "Compact month headers when several months are shown; with one, a full-width row of To Budget (or savings, on a tracking budget), spending, targets, and quick budget actions.",
+				"icon": "sparkles",
+				"group": "Layout",
+				"writes": "Applies budget templates or covers overspending when you click those actions."
+			},
+			{
 				"key": "budget-card-styling",
 				"type": "checkbox",
 				"defaultValue": true,
@@ -289,6 +311,17 @@
 				"icon": "image",
 				"group": "Categories",
 				"writes": "Adds the emoji you pick to the category's name."
+			},
+			{
+				"key": "budget-category-filter",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Category Filter",
+				"description": "Filter the budget table to categories that need attention (overspent or short of their target) or are funded.",
+				"icon": "filter",
+				"group": "Categories",
+				"writes": null
 			},
 			{
 				"key": "actual-template-apply-breakdown",
@@ -635,45 +668,6 @@
 				"label": "Page transitions",
 				"description": "How each page appears as you move between them.",
 				"icon": "sparkles",
-				"group": null,
-				"writes": null
-			}
-		]
-	},
-	{
-		"title": "Experimental",
-		"description": null,
-		"items": [
-			{
-				"key": "budget-month-header",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Month header (experimental)",
-				"description": "Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",
-				"icon": "calendar",
-				"group": null,
-				"writes": null
-			},
-			{
-				"key": "budget-summary-row",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Month cards (experimental)",
-				"description": "Compact month headers when several months are shown; with one, a full-width row of To Budget (or savings, on a tracking budget), spending, targets, and quick budget actions.",
-				"icon": "sparkles",
-				"group": null,
-				"writes": "Applies budget templates or covers overspending when you click those actions."
-			},
-			{
-				"key": "budget-category-filter",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Category filter (experimental)",
-				"description": "Filter the budget table to categories that need attention (overspent or short of their target) or are funded.",
-				"icon": "filter",
 				"group": null,
 				"writes": null
 			}

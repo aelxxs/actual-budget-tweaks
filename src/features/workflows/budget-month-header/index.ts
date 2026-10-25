@@ -130,7 +130,7 @@ function sync(): void {
 
 export const budgetMonthHeader = defineSetting({
 	type: "checkbox",
-	label: "Month header (experimental)",
+	label: "Month Header",
 	description:
 		"Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",
 	icon: "calendar",

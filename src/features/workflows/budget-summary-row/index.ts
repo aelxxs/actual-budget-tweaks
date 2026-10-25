@@ -322,7 +322,7 @@ function syncParts(table: HTMLElement): void {
 
 export const budgetSummaryRow = defineSetting({
 	type: "checkbox",
-	label: "Month cards (experimental)",
+	label: "Month Cards",
 	description:
 		"Compact month headers when several months are shown; with one, a full-width row of To Budget (or savings, on a tracking budget), spending, targets, and quick budget actions.",
 	icon: "sparkles",

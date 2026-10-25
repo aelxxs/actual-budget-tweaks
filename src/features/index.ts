@@ -113,7 +113,16 @@ export const scriptSections: SettingsSection[] = [
 	{
 		title: "Budget",
 		groups: [
-			{ label: "Layout", items: [budgetTableRowHeight, hideMonthOnScroll, budgetPageBorders] },
+			{
+				label: "Layout",
+				items: [
+					budgetTableRowHeight,
+					hideMonthOnScroll,
+					budgetPageBorders,
+					budgetMonthHeader,
+					budgetSummaryRow,
+				],
+			},
 			{
 				label: "Readability",
 				items: [
@@ -124,7 +133,10 @@ export const scriptSections: SettingsSection[] = [
 					budgetTotalsLabelStyling,
 				],
 			},
-			{ label: "Categories", items: [categoryColorDots, categoryEmojiPicker] },
+			{
+				label: "Categories",
+				items: [categoryColorDots, categoryEmojiPicker, budgetCategoryFilter],
+			},
 			{
 				label: "Tools",
 				items: [
@@ -191,10 +203,6 @@ export const scriptSections: SettingsSection[] = [
 				],
 			},
 		],
-	},
-	{
-		title: "Experimental",
-		groups: [{ label: null, items: [budgetMonthHeader, budgetSummaryRow, budgetCategoryFilter] }],
 	},
 ];
 
