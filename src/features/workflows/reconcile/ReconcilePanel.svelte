@@ -5,9 +5,12 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
+	import { confetti } from "@lib/utilities/confetti";
 	import { formatMoneyInput, fmtMoney, parseMoney } from "@lib/utilities/currency";
 	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
+	import { getValue } from "@lib/utilities/store";
 	import { onMount } from "svelte";
+	import { reconcileConfetti } from "./confetti";
 	import { closePanel } from "./panel";
 	import { relativeTime } from "./relative-time";
 	import {
@@ -81,9 +84,15 @@
 		}
 	}
 
-	async function done() {
+	async function done(e: MouseEvent) {
+		// Read first: finishing re-renders the panel without this button.
+		const origin = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		await finish();
 		if (reconcile.target == null) {
+			const { key, defaultValue } = reconcileConfetti.context;
+			if (await getValue(key, defaultValue)) {
+				confetti(origin);
+			}
 			closePanel();
 		}
 	}

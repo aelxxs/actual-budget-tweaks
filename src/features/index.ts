@@ -10,6 +10,7 @@ import { modernTitlebar } from "./appearance/titlebar";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { mobilePageTransitions } from "./mobile/page-transitions";
 import { modernReconcile } from "./workflows/reconcile";
+import { reconcileConfetti } from "./workflows/reconcile/confetti";
 import { themedScrollbars } from "./appearance/scrollbars";
 import { modernToasts } from "./appearance/toasts";
 import { nativeHooks } from "./core/native-hooks";
@@ -166,7 +167,13 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Accounts",
-				items: [modernAccountToolbar, modernReconcile, syncRecap, transactionInspector],
+				items: [
+					modernAccountToolbar,
+					modernReconcile,
+					reconcileConfetti,
+					syncRecap,
+					transactionInspector,
+				],
 			},
 		],
 	},
@@ -216,6 +223,7 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[accountIconPicker, experimentalSidebar],
 	[nextMonthCoverageMethod, templatePlan],
 	[hideFundedTemplateBars, categoryTemplateInsights],
+	[reconcileConfetti, modernReconcile],
 ]);
 
 export function sectionItems(section: SettingsSection): PageSetting[] {
