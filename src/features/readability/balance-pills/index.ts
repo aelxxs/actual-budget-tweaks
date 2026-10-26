@@ -13,14 +13,16 @@ import { BALANCE_CELL, CELL } from "@lib/actual-dom";
 
 const STATUS_ATTR = "data-abt-balance-status";
 
-type Status = "funded" | "underfunded" | "overspent";
+type Status = "funded" | "underfunded" | "overspent" | "available";
+// Goal statuses carry an icon; a plain positive balance doesn't.
+type GoalStatus = Exclude<Status, "available">;
 
 function svgMask(paths: string): string {
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
 	return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
-const ICONS: Record<Status, string> = {
+const ICONS: Record<GoalStatus, string> = {
 	funded: svgMask('<path d="M20 6 9 17l-5-5"/>'),
 	underfunded: svgMask('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
 	overspent: svgMask('<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>'),
@@ -30,14 +32,19 @@ const TONES: Record<Status, string> = {
 	funded: "var(--color-noticeTextLight)",
 	underfunded: "var(--color-warningText)",
 	overspent: "var(--color-errorText)",
+	available: "var(--color-pageTextSubdued)",
 };
 
 const CSS = (Object.keys(TONES) as Status[])
 	.map(
 		(status) => `
 	[${STATUS_ATTR}="${status}"] {
-		--abt-pill-tone: ${TONES[status]};
-		--abt-pill-icon: ${ICONS[status]};
+		--abt-pill-tone: ${TONES[status]};${
+			status === "available"
+				? ""
+				: `
+		--abt-pill-icon: ${ICONS[status]};`
+		}
 	}`,
 	)
 	.join("").concat(`
@@ -61,17 +68,25 @@ const CSS = (Object.keys(TONES) as Status[])
 		-webkit-mask: var(--abt-pill-icon) center / contain no-repeat;
 		mask: var(--abt-pill-icon) center / contain no-repeat;
 	}
+	[${STATUS_ATTR}="available"] {
+		padding-inline: 8px;
+		color: var(--color-tableText) !important;
+	}
+	[${STATUS_ATTR}="available"]::before {
+		display: none;
+	}
 `);
 
-// Same states as Actual's own goal colouring; categories without a goal keep its plain balance.
+// Goal states match Actual's own goal colouring. Without a goal, overspent still shows, and a
+// positive balance gets a plain pill; zero stays bare, so unused categories stay quiet.
 function statusFor(data: CatCells): Status | null {
-	if (!data.hasGoal) {
-		return null;
-	}
 	if (data.balance < 0) {
 		return "overspent";
 	}
-	return data.goalShortfall > 0 ? "underfunded" : "funded";
+	if (data.hasGoal) {
+		return data.goalShortfall > 0 ? "underfunded" : "funded";
+	}
+	return data.balance > 0 ? "available" : null;
 }
 
 // One scan a frame, reading again only the categories whose cells changed (see category-progress).
@@ -124,7 +139,8 @@ function clearAll(): void {
 export const balancePills = defineSetting({
 	type: "checkbox",
 	label: "Balance Status Pills",
-	description: "Show goal balances as funded, underfunded or overspent pills.",
+	description:
+		"Show balances as pills: overspent, or funded and underfunded for categories with templates.",
 	group: "Budget",
 	icon: "gauge",
 	preview: BalancePillsPreview,

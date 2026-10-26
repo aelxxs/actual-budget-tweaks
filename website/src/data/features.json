@@ -263,7 +263,7 @@
 				"defaultValue": false,
 				"platform": "desktop",
 				"label": "Balance Status Pills",
-				"description": "Show goal balances as funded, underfunded or overspent pills.",
+				"description": "Show balances as pills: overspent, or funded and underfunded for categories with templates.",
 				"icon": "gauge",
 				"group": "Readability",
 				"writes": null

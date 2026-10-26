@@ -6,6 +6,7 @@
 		{ name: "Groceries", balance: "120.00", tone: "var(--color-noticeTextLight)", Icon: Check },
 		{ name: "Car fund", balance: "40.00", tone: "var(--color-warningText)", Icon: Clock },
 		{ name: "Dining", balance: "-18.50", tone: "var(--color-errorText)", Icon: CircleAlert },
+		{ name: "Gifts", balance: "35.00", tone: "var(--color-pageTextSubdued)", Icon: null },
 	];
 </script>
 
@@ -17,7 +18,7 @@
 					<span>{row.name}</span>
 					{#if on}
 						<span class="pill" style:--tone={row.tone}>
-							<row.Icon size={11} strokeWidth={2.5} />{row.balance}
+							{#if row.Icon}<row.Icon size={11} strokeWidth={2.5} />{/if}{row.balance}
 						</span>
 					{:else}
 						<span class="plain" style:color={row.tone}>{row.balance}</span>
