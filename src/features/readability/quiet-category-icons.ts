@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
+import { CATEGORY_NAME, ROW } from "@lib/actual-dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
-import { CATEGORY_NAME, ROW } from "@lib/actual-dom";
 
 const ICON_ATTR = "data-abt-category-icon";
 const NOTES_ATTR = "data-abt-has-notes";
