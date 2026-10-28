@@ -192,6 +192,17 @@
 				"writes": null
 			},
 			{
+				"key": "budget-row-hover",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Highlight Hovered Budget Row",
+				"description": "Tint the category row under the cursor, so its numbers are easy to follow across.",
+				"icon": "rows",
+				"group": "Layout",
+				"writes": null
+			},
+			{
 				"key": "hide-months-on-scroll",
 				"type": "checkbox",
 				"defaultValue": false,

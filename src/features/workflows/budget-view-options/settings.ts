@@ -1,5 +1,6 @@
 import { categoryColorDots } from "@features/appearance/category-color-dots";
 import { categoryEmojiPicker } from "@features/appearance/category-emoji-picker";
+import { budgetRowHover } from "@features/layout/budget-row-hover";
 import { budgetTableRowHeight } from "@features/layout/budget-table-row-height";
 import { hideMonthOnScroll } from "@features/layout/hide-month-on-scroll";
 import { balancePills } from "@features/readability/balance-pills";
@@ -55,7 +56,12 @@ export function openBudgetSettings(): void {
 			groups: [
 				{
 					heading: "Table",
-					settings: [budgetTableRowHeight, budgetPageBorders, hideMonthOnScroll] as Setting[],
+					settings: [
+						budgetTableRowHeight,
+						budgetRowHover,
+						budgetPageBorders,
+						hideMonthOnScroll,
+					] as Setting[],
 				},
 				{
 					heading: "Months",
