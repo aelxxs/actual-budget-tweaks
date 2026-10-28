@@ -1,6 +1,51 @@
 # Changelog
 
 
+## v0.1.101
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.100...v0.1.101)
+
+### 🚀 Enhancements
+
+- Make month header, month cards and category filter stable ([4c21b64](https://github.com/aelxxs/actual-budget-tweaks/commit/4c21b64))
+- Celebrate a finished reconcile with confetti ([a14bd8b](https://github.com/aelxxs/actual-budget-tweaks/commit/a14bd8b))
+- Show balance pills for categories without templates ([385cfd7](https://github.com/aelxxs/actual-budget-tweaks/commit/385cfd7))
+- Add schedule icon details with a hover card per schedule ([673e03f](https://github.com/aelxxs/actual-budget-tweaks/commit/673e03f))
+- Show category template and notes icons on hover ([9319e11](https://github.com/aelxxs/actual-budget-tweaks/commit/9319e11))
+- List schedule icon details and quiet category icons in budget settings ([7b3823c](https://github.com/aelxxs/actual-budget-tweaks/commit/7b3823c))
+- Highlight the hovered budget row ([9b61c75](https://github.com/aelxxs/actual-budget-tweaks/commit/9b61c75))
+- Explain target shortfalls caused by moving money ([9e74e2c](https://github.com/aelxxs/actual-budget-tweaks/commit/9e74e2c))
+- List goal funding in budget settings ([883d710](https://github.com/aelxxs/actual-budget-tweaks/commit/883d710))
+- Show spending pace and next month's readiness in Insights as two simpler cards ([9152b20](https://github.com/aelxxs/actual-budget-tweaks/commit/9152b20))
+
+### 🩹 Fixes
+
+- Show scheduled transfers in the calendar when only their payee account is shown ([be85bcb](https://github.com/aelxxs/actual-budget-tweaks/commit/be85bcb))
+- Keep the status colours of schedule icons in the budget table ([85523c6](https://github.com/aelxxs/actual-budget-tweaks/commit/85523c6))
+- Set the budget type attribute only on Actual pages ([3097ab3](https://github.com/aelxxs/actual-budget-tweaks/commit/3097ab3))
+- Mirror Actual's live sync status under the budget name ([ddf0f7c](https://github.com/aelxxs/actual-budget-tweaks/commit/ddf0f7c))
+- Call the filter's funded pill "On track" ([ed61e72](https://github.com/aelxxs/actual-budget-tweaks/commit/ed61e72))
+
+### 💅 Refactors
+
+- Read computed styles only when the sync button or notes buttons change ([3a0992a](https://github.com/aelxxs/actual-budget-tweaks/commit/3a0992a))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.100 ([a92d4ea](https://github.com/aelxxs/actual-budget-tweaks/commit/a92d4ea))
+- Release by hand, after CI and the smoke test pass ([277265d](https://github.com/aelxxs/actual-budget-tweaks/commit/277265d))
+- Note why group balance colours stay always on ([4137c69](https://github.com/aelxxs/actual-budget-tweaks/commit/4137c69))
+
+### 🎨 Styles
+
+- Sort quiet category icons imports ([ed43564](https://github.com/aelxxs/actual-budget-tweaks/commit/ed43564))
+- Align To Budget's label with the other cards and give Budget Actions a hover ([8067b45](https://github.com/aelxxs/actual-budget-tweaks/commit/8067b45))
+- Move the category width toggle beside the header icons and match the category label to the totals labels ([84451c0](https://github.com/aelxxs/actual-budget-tweaks/commit/84451c0))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.100
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.99...v0.1.100)
