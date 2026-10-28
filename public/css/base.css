@@ -318,12 +318,12 @@ body {
 		overflow: hidden;
 	}
 
-	/* green balance */
+	/* Deliberately always on: only group-row balances show it, since Actual colours the rest inline.
+	   Their data-cellname holds the raw amount, so ^="-" is a negative group total. */
 	[data-testid="balance"] {
 		color: var(--color-noticeTextLight);
 	}
 
-	/* red negative balance */
 	[data-testid="balance"][data-cellname^="-"] {
 		color: var(--color-errorText);
 		font-weight: bold;
