@@ -16,6 +16,7 @@ import { budgetCategoryFilter } from "@features/workflows/budget-category-filter
 import { budgetMonthHeader } from "@features/workflows/budget-month-header";
 import { budgetSummaryRow } from "@features/workflows/budget-summary-row";
 import { categoryTemplateInsights } from "@features/workflows/category-template-insights";
+import { goalFunding } from "@features/workflows/goal-funding";
 import { hideFundedTemplateBars } from "@features/workflows/category-template-insights/hide-funded";
 import { templatePlan } from "@features/workflows/template-plan";
 import { nextMonthCoverageMethod } from "@features/workflows/template-plan/coverage-method";
@@ -38,6 +39,7 @@ export function openBudgetSettings(): void {
 						categoryProgress,
 						balancePills,
 						scheduleIconDetails,
+						goalFunding,
 					] as Setting[],
 				},
 				{
