@@ -5,6 +5,7 @@
 	import {
 		Check,
 		ChevronsUpDown,
+		CloudAlert,
 		CloudCheck,
 		CloudDownload,
 		CloudOff,
@@ -26,6 +27,7 @@
 		selectBudgetFile,
 		setBudgetIcon,
 	} from "../lib/budgets";
+	import { type SyncStatus, syncStatus, trackSyncStatus } from "../lib/sync-status.svelte";
 	import { createLogger } from "@lib/utilities/logger";
 
 	const log = createLogger("sidebar");
@@ -63,6 +65,8 @@
 	);
 
 	const currentFile = $derived(files.find((f) => f.id === currentId));
+
+	onMount(trackSyncStatus);
 
 	onMount(async () => {
 		try {
@@ -113,17 +117,29 @@
 		unknown: "Offline",
 	};
 
-	// Compact caption for the trigger card — a "synced" file is both on disk
-	// and kept in sync with the cloud, so it's worth spelling out both halves
-	// (unlike the single-word labels above used for each row in the menu).
-	const STATUS_CAPTION: Record<FileState, string> = {
-		local: "Local",
-		remote: "Remote · not downloaded",
-		synced: "Local · synced",
-		detached: "Local · sync detached",
-		broken: "Local · no access",
-		unknown: "Offline",
+	// Actual's own sidebar status line, word for word, with its icon colours.
+	const SYNC_CAPTION: Record<SyncStatus | "local", { label: string; tone?: string }> = {
+		"no-server": { label: "Local only" },
+		syncing: { label: "Syncing…" },
+		error: { label: "Sync error", tone: "failed" },
+		offline: { label: "Offline" },
+		local: { label: "Local file" },
+		disabled: { label: "Sync disabled" },
+		synced: { label: "Synced", tone: "positive" },
 	};
+
+	// Actual says "Local file" for a budget the server doesn't hold, which the file list knows.
+	const liveStatus = $derived.by(() => {
+		const status = syncStatus();
+		return status === "synced" && currentFile?.state === "local" ? "local" : status;
+	});
+
+	function syncIcon(status: SyncStatus | "local") {
+		if (status === "synced" || status === "syncing") {
+			return CloudCheck;
+		}
+		return status === "error" ? CloudAlert : CloudOff;
+	}
 
 	function stateIcon(state: FileState) {
 		if (state === "synced") {
@@ -213,11 +229,11 @@
 <svelte:window onclick={onWindowClick} onkeydown={onWindowKeydown} />
 
 {#snippet fileStatus()}
-	{#if currentFile}
-		{@const StatusIcon = stateIcon(currentFile.state)}
-		<span class="budget-select-status">
+	{#if liveStatus}
+		{@const StatusIcon = syncIcon(liveStatus)}
+		<span class="budget-select-status" data-tone={SYNC_CAPTION[liveStatus].tone}>
 			<StatusIcon strokeWidth={1.5} />
-			{STATUS_CAPTION[currentFile.state]}
+			{SYNC_CAPTION[liveStatus].label}
 		</span>
 	{:else if !filesLoaded}
 		<!-- Zero-width space gives the placeholder the caption's line height. -->
@@ -442,6 +458,12 @@
 		width: 12px;
 		height: 12px;
 		flex-shrink: 0;
+	}
+	.budget-select-status[data-tone="positive"] :global(svg) {
+		color: var(--color-sidebarTextPositive);
+	}
+	.budget-select-status[data-tone="failed"] :global(svg) {
+		color: var(--color-sidebarTextFailed);
 	}
 	.budget-name {
 		font-size: var(--abt-text-lg);
