@@ -21,10 +21,10 @@
 		},
 		{
 			key: "funded" as const,
-			label: "Funded",
+			label: "On track",
 			short: "",
 			count: filterState.counts.funded,
-			empty: "No funded categories",
+			empty: "No categories on track",
 		},
 	]);
 </script>

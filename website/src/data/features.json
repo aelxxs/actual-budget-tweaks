@@ -351,7 +351,7 @@
 				"defaultValue": false,
 				"platform": "desktop",
 				"label": "Category Filter",
-				"description": "Filter the budget table to categories that need attention (overspent or short of their target) or are funded.",
+				"description": "Filter the budget table to categories that need attention (overspent or short of their target) or are on track.",
 				"icon": "filter",
 				"group": "Categories",
 				"writes": null

@@ -335,7 +335,7 @@ export const budgetCategoryFilter = defineSetting({
 	type: "checkbox",
 	label: "Category Filter",
 	description:
-		"Filter the budget table to categories that need attention (overspent or short of their target) or are funded.",
+		"Filter the budget table to categories that need attention (overspent or short of their target) or are on track.",
 	icon: "filter",
 	group: "Budget",
 	context: {
