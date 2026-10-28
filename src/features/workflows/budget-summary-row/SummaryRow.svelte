@@ -4,6 +4,7 @@
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import Icon from "@lib/components/Icon.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
+	import { fmtMoney } from "@lib/utilities/currency";
 	import ActionCard from "./ActionCard.svelte";
 	import Breakdown from "./Breakdown.svelte";
 	import NativeRoll from "./NativeRoll.svelte";
@@ -179,6 +180,12 @@
 							resetKey={sheet}
 							class="abt-privacy-number"
 						/>
+						{@const needs = totals.short.reduce((t, c) => t + c.shortfall, 0)}
+						{#if totals.fromMoves >= needs}
+							· from moving money
+						{:else if totals.fromMoves > 0}
+							· <span class="abt-privacy-number">{fmtMoney(totals.fromMoves)}</span> from moving money
+						{/if}
 					{:else}
 						All targets met
 					{/if}

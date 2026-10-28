@@ -1,5 +1,6 @@
 import { BALANCE_CELL_RE, fetchCells } from "@features/readability/category-progress/cells";
 import { readCell } from "@lib/utilities/budget-cells";
+import { loadMonthMoves, movedOutById } from "@lib/utilities/budget-moves";
 import { loadCurrency } from "@lib/utilities/currency";
 import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import type { Shortfall } from "./actions";
@@ -15,6 +16,8 @@ export interface MonthTotals {
 	goals: number;
 	funded: number;
 	short: Shortfall[];
+	/** How much of the targets' shortfall is money moved out of them this month. */
+	fromMoves: number;
 	/** This month's overspending, which comes out of next month's To Budget. */
 	overspentNow: number;
 	overIds: string[];
@@ -60,7 +63,10 @@ function categoryIds(): string[] {
 }
 
 /** Targets and overspending, from the category cells both budget types share. */
-type CategoryStats = Pick<MonthTotals, "goals" | "funded" | "short" | "overspentNow" | "overIds">;
+type CategoryStats = Pick<
+	MonthTotals,
+	"goals" | "funded" | "short" | "fromMoves" | "overspentNow" | "overIds"
+>;
 
 async function categoryStats(sheet: string): Promise<CategoryStats> {
 	const ids = categoryIds();
@@ -70,12 +76,19 @@ async function categoryStats(sheet: string): Promise<CategoryStats> {
 	}));
 	const withGoal = cats.filter((c) => c.hasGoal);
 	const over = cats.filter((c) => c.balance < 0);
+	const short = withGoal
+		.filter((c) => c.goalShortfall > 0)
+		.map((c) => ({ id: c.id, shortfall: c.goalShortfall }));
+	const month = sheetToMonth(sheet);
+	const movedOut =
+		short.length && month
+			? movedOutById(await loadMonthMoves(month).catch(() => []))
+			: new Map<string, number>();
 	return {
 		goals: withGoal.length,
 		funded: withGoal.filter((c) => c.goalShortfall === 0).length,
-		short: withGoal
-			.filter((c) => c.goalShortfall > 0)
-			.map((c) => ({ id: c.id, shortfall: c.goalShortfall })),
+		short,
+		fromMoves: short.reduce((t, c) => t + Math.min(c.shortfall, movedOut.get(c.id) ?? 0), 0),
 		overspentNow: over.reduce((sum, c) => sum - c.balance, 0),
 		overIds: over.map((c) => c.id),
 	};

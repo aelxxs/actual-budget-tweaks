@@ -7,7 +7,9 @@ import {
 import { rowCategoryId } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import { getCurrentSheet } from "@lib/template-plan/actual-data";
+import { type BudgetMove, loadMonthMoves } from "@lib/utilities/budget-moves";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
 import { getValue, removeValue, setValue } from "@lib/utilities/store";
@@ -253,6 +255,7 @@ function updateRowBar(row: HTMLElement, entry: CategoryInsight) {
 // transaction) or the month does, like the Insights panel; nothing is cached between reads.
 
 let monthValues: MonthValues | null = null;
+let monthMoves: BudgetMove[] = [];
 let requestedSheet: string | null = null;
 let refreshSeq = 0;
 let stopTable: (() => void) | null = null;
@@ -278,12 +281,17 @@ async function refresh({ reload = true }: { reload?: boolean } = {}) {
 	if (!data || seq !== refreshSeq) {
 		return;
 	}
-	const values = await loadMonthValues(sheet, data.keys());
+	const month = sheetToMonth(sheet);
+	const [values, moves] = await Promise.all([
+		loadMonthValues(sheet, data.keys()),
+		month ? loadMonthMoves(month).catch(() => []) : [],
+	]);
 	// A newer read (another month, or a later edit) started while this one waited.
 	if (seq !== refreshSeq) {
 		return;
 	}
 	monthValues = values;
+	monthMoves = moves;
 	scanAndDecorate();
 }
 
@@ -312,6 +320,7 @@ function stopLive() {
 	changes = null;
 	refreshSeq++;
 	monthValues = null;
+	monthMoves = [];
 	requestedSheet = null;
 }
 
@@ -376,6 +385,7 @@ function openPopover(row: HTMLElement, anchor: HTMLElement) {
 	popover = mountToNodeWithReturn(InsightsPopover, {
 		entry,
 		progress,
+		moves: monthMoves.filter((m) => m.fromId === id || m.toId === id),
 		onClose: dismissPopover,
 	});
 	popover.node.className = "abt-popover abt-cti-popover-wrap";

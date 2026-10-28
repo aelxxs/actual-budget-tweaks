@@ -152,6 +152,12 @@
 							resetKey={sheet}
 							class="abt-privacy-number"
 						/>
+						{@const needs = totals.short.reduce((t, c) => t + c.shortfall, 0)}
+						{#if totals.fromMoves >= needs}
+							· from moving money
+						{:else if totals.fromMoves > 0}
+							· <span class="abt-privacy-number">{fmtMoney(totals.fromMoves)}</span> from moving money
+						{/if}
 					{:else}
 						All targets met
 					{/if}

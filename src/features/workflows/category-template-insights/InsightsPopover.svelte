@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { BudgetMove } from "@lib/utilities/budget-moves";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { getCategoryName, progressState } from "./data";
 	import { openSchedule } from "./schedule-actions";
@@ -8,10 +9,13 @@
 	const {
 		entry,
 		progress,
+		moves = [],
 		onClose,
 	}: {
 		entry: CategoryInsight;
 		progress: ProgressInfo;
+		/** This month's logged moves in or out of this category. */
+		moves?: BudgetMove[];
 		onClose: () => void;
 	} = $props();
 
@@ -204,6 +208,24 @@
 		{/each}
 	</ul>
 
+	{#if moves.length}
+		<div class="pop__section abt-label"><span>Moved this month</span></div>
+		<ul class="pop__list">
+			{#each moves as move, i (i)}
+				{@const out = move.fromId === entry.id}
+				<li class="pop__item pop__move">
+					<div class="pop__body">
+						<span class="abt-privacy-number" class:pop__out={out}
+							>{fmtMoney(out ? -move.amount : move.amount, { sign: true })}</span
+						>
+						<span class="pop__text">{out ? `to ${move.to}` : `from ${move.from}`}</span>
+					</div>
+					<span class="pop__prio">{move.day}</span>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
 	{#if onlySched}
 		<div class="pop__hint">
 			<kbd class="pop__kbd">F</kbd>
@@ -348,6 +370,17 @@
 		color: var(--abt-subtle);
 		font-size: var(--abt-text-sm);
 		font-variant-numeric: tabular-nums;
+	}
+
+	.pop__move .pop__body {
+		display: flex;
+		align-items: baseline;
+		gap: var(--abt-space-3);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.pop__out {
+		color: var(--color-warningText);
 	}
 
 	.pop__hint {
