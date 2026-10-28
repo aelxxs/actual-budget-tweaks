@@ -55,7 +55,7 @@ Adds user-configurable interface options to Actual Budget — dynamic themes, la
 
 - **Themes:** browse community themes, or build your own in the palette editor, with separate light and dark picks.
 - **Live sidebar:** live balances, account groups, search and pinned shortcuts, as a standard sidebar or an icon bar.
-- **Budget Insights:** a side panel with the month's breakdown, spending pace, next month coverage and priority planning.
+- **Budget Insights:** a side panel showing where this month stands, how ready next month is, and priority planning.
 - **Spending Calendar:** daily spending and upcoming schedules on a month calendar.
 - **Modern Reconcile and Sync recap:** reconcile in a side panel, and review and categorize what a bank sync brought in.
 - **Privacy styles:** hide amounts as scribbles or dots, at their real length or a fixed one.

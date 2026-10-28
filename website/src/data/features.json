@@ -372,8 +372,8 @@
 				"type": "select",
 				"defaultValue": "goal-templates",
 				"platform": "desktop",
-				"label": "Next Month Coverage Method",
-				"description": "Choose the target used by Next Month Coverage in Plan → Overview.",
+				"label": "Next Month Target",
+				"description": "What \"Ready for next month\" in Insights → Overview measures against.",
 				"icon": "layout",
 				"group": "Tools",
 				"writes": null

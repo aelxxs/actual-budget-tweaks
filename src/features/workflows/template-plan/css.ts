@@ -34,85 +34,12 @@ export const CSS = `
 	}
 	.abt-tab-overview-load-btn:hover { opacity: 1; }
 
-	/* ── Card hero (ring + available amount) ────────────────────── */
-	.abt-tab-overview-card-hero {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin-bottom: 8px;
-	}
-
-	.abt-tab-overview-ring-wrap {
-		position: relative;
-		width: 48px;
-		height: 48px;
-		flex-shrink: 0;
-	}
-	/* Bars and the ring ease like the rolling numbers beside them. */
-	.abt-tab-overview-ring-wrap circle {
-		transition: stroke-dashoffset 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
 	@media (prefers-reduced-motion: reduce) {
-		.abt-tab-overview-card-bar,
-		.abt-tab-overview-mini-bar,
-		.abt-tab-overview-ring-wrap circle {
+		.abt-tab-overview-pace-fill,
+		.abt-tab-overview-mini-bar {
 			transition: none;
 		}
 	}
-
-	.abt-tab-overview-ring-label {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		pointer-events: none;
-	}
-
-	.abt-tab-overview-card-hero-info {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.abt-tab-overview-hero-label {
-		font-size: var(--abt-text-xs);
-		text-transform: uppercase;
-		letter-spacing: 0.6px;
-		color: var(--abt-muted);
-		font-weight: 600;
-	}
-
-	.abt-tab-overview-hero-amount {
-		font-size: 20px;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		line-height: 1.2;
-	}
-	.abt-tab-overview-hero-amount[data-sign="neg"] { color: var(--color-errorText, #e57373); }
-	.abt-tab-overview-hero-amount[data-sign="pos"] { color: var(--color-budgetNumberPositive, #4caf50); }
-
-	/* Card-level progress bar */
-	.abt-tab-overview-card-bar-wrap {
-		height: 5px;
-		border-radius: 2.5px;
-		background: var(--abt-panel-track);
-		overflow: hidden;
-		margin-bottom: 10px;
-	}
-	.abt-tab-overview-card-bar {
-		height: 100%;
-		border-radius: 2.5px;
-		min-width: 2px;
-		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-	.abt-tab-overview-card-bar[data-status="ok"]   { background: var(--abt-accent); }
-	.abt-tab-overview-card-bar[data-status="warn"] { background: var(--color-warningText, #e0c590); }
-	.abt-tab-overview-card-bar[data-status="over"] { background: var(--color-errorText, #e57373); }
 
 	/* ── Month breakdown rows ────────────────────────────────────── */
 	.abt-tab-overview-bdr-list {
@@ -166,38 +93,62 @@ export const CSS = `
 	.abt-tab-overview-bdr-avail[data-sign="neg"] { color: var(--color-errorText, #e57373); }
 	.abt-tab-overview-bdr-avail[data-sign="pos"] { color: var(--color-budgetNumberPositive, #4caf50); }
 
-	/* ── Spending Pace rows ──────────────────────────────────────── */
-	.abt-tab-overview-pace-row {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		font-size: var(--abt-text-sm);
-		margin-bottom: 4px;
+	/* ── Pace: one bar, with a tick for today ───────────────────── */
+	.abt-tab-overview-pace {
+		margin-top: 12px;
+		padding-top: 10px;
+		border-top: 1px solid var(--abt-panel-border);
 	}
 
-	.abt-tab-overview-pace-label {
-		flex: 1;
-		color: var(--abt-muted);
-	}
-
-	.abt-tab-overview-pace-pct {
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-	}
-	.abt-tab-overview-pace-pct[data-sign="neg"]  { color: var(--color-errorText, #e57373); }
-	.abt-tab-overview-pace-pct[data-sign="warn"] { color: var(--color-warningText, #e0c590); }
-
-	.abt-tab-overview-pace-footer {
+	.abt-tab-overview-pace-head,
+	.abt-tab-overview-pace-foot {
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		font-size: var(--abt-text-xs);
-		color: var(--abt-muted);
-		margin-top: 8px;
+		gap: 8px;
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* Mini progress bars (used in pace + overspent + goals) */
+	.abt-tab-overview-pace-head {
+		font-size: var(--abt-text-sm);
+		margin-bottom: 6px;
+	}
+	.abt-tab-overview-pace-head > span:first-of-type { color: var(--abt-muted); }
+
+	.abt-tab-overview-pace-track {
+		position: relative;
+		height: 8px;
+		border-radius: var(--abt-radius-pill);
+		background: var(--abt-panel-track);
+	}
+
+	.abt-tab-overview-pace-fill {
+		height: 100%;
+		min-width: 2px;
+		border-radius: inherit;
+		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.abt-tab-overview-pace-fill[data-status="ok"]   { background: var(--abt-accent); }
+	.abt-tab-overview-pace-fill[data-status="warn"] { background: var(--color-warningText, #e0c590); }
+	.abt-tab-overview-pace-fill[data-status="over"] { background: var(--color-errorText, #e57373); }
+
+	.abt-tab-overview-pace-today {
+		position: absolute;
+		top: -3px;
+		bottom: -3px;
+		width: 2px;
+		margin-left: -1px;
+		border-radius: 1px;
+		background: var(--abt-ink);
+	}
+
+	.abt-tab-overview-pace-foot {
+		margin-top: 6px;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+	}
+
+	/* Mini progress bars (readiness, overspent, goals) */
 	.abt-tab-overview-mini-bar-wrap {
 		height: 4px;
 		border-radius: 2px;
@@ -214,111 +165,6 @@ export const CSS = `
 	.abt-tab-overview-mini-bar[data-status="warn"]    { background: var(--color-warningText, #e0c590); }
 	.abt-tab-overview-mini-bar[data-status="over"]    { background: var(--color-errorText, #e57373); }
 	.abt-tab-overview-mini-bar[data-status="goal"]    { background: linear-gradient(90deg, var(--abt-accent) 0%, var(--abt-panel-accent-secondary) 100%); }
-	.abt-tab-overview-mini-bar[data-status="elapsed"] { background: var(--abt-ink-5); }
-
-	/* ── Next Month hero ─────────────────────────────────────────── */
-	.abt-tab-overview-next-hero {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-		flex-wrap: wrap;
-		margin-bottom: 8px;
-	}
-
-	.abt-tab-overview-next-pct {
-		font-size: 28px;
-		font-weight: 800;
-		font-variant-numeric: tabular-nums;
-		line-height: 1;
-	}
-	.abt-tab-overview-next-pct[data-sign="pos"]  { color: var(--color-budgetNumberPositive, #4caf50); }
-	.abt-tab-overview-next-pct[data-sign="warn"] { color: var(--color-warningText, #e0c590); }
-
-	.abt-tab-overview-next-sub {
-		color: var(--abt-muted);
-		font-size: var(--abt-text-base);
-	}
-
-	.abt-tab-overview-pill {
-		display: inline-flex;
-		align-items: center;
-		padding: 2px 8px;
-		border-radius: var(--abt-radius-pill);
-		font-size: var(--abt-text-xs);
-		font-weight: 600;
-		white-space: nowrap;
-	}
-	.abt-tab-overview-pill[data-status="ok"]   {
-		background: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 15%, transparent);
-		color: var(--color-budgetNumberPositive, #4caf50);
-	}
-	.abt-tab-overview-pill[data-status="warn"] {
-		background: color-mix(in srgb, var(--color-errorText, #e57373) 15%, transparent);
-		color: var(--color-errorText, #e57373);
-	}
-
-	/* ── Next Month Coverage extended layout ────────────────────── */
-	.abt-tab-overview-next-month-header {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-		margin-bottom: 10px;
-	}
-
-	.abt-tab-overview-next-month-name {
-		font-size: var(--abt-text-md);
-		font-weight: 700;
-		letter-spacing: 0.1px;
-	}
-
-	.abt-tab-overview-next-month-sub {
-		font-size: var(--abt-text-xs);
-		color: var(--abt-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.6px;
-		font-weight: 600;
-	}
-
-	.abt-tab-overview-next-amounts {
-		font-size: var(--abt-text-sm);
-		font-variant-numeric: tabular-nums;
-		color: var(--abt-muted);
-		margin-top: 6px;
-		font-weight: 500;
-	}
-
-	.abt-tab-overview-next-summary {
-		font-size: var(--abt-text-sm);
-		color: var(--abt-muted);
-		margin-top: 8px;
-		line-height: 1.45;
-		font-style: italic;
-	}
-
-	.abt-tab-overview-next-breakdown {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 8px;
-		margin-top: 10px;
-		padding-top: 8px;
-		border-top: 1px solid var(--abt-panel-border);
-		font-size: var(--abt-text-sm);
-	}
-
-	.abt-tab-overview-next-breakdown-label {
-		color: var(--abt-muted);
-		flex: 1;
-		min-width: 0;
-	}
-
-	.abt-tab-overview-next-breakdown-val {
-		font-variant-numeric: tabular-nums;
-		font-weight: 700;
-		color: var(--color-budgetNumberPositive, #4caf50);
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
 
 	/* ── Trend bar charts ────────────────────────────────────────── */
 	.abt-tab-overview-chart {

@@ -116,8 +116,8 @@
 				type="button"
 				class="sr__more abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 				data-abt-summary-more
-				title="Month breakdown in Insights"
-				aria-label="Month breakdown in Insights"
+				title="This month in Insights"
+				aria-label="This month in Insights"
 				use:portal={toBudgetCard}
 				onclick={() => openInsights("overview")}
 			>

@@ -448,7 +448,7 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* Progress hero, like Insights' month breakdown */
+	/* Progress hero */
 	.rp__hero {
 		display: flex;
 		align-items: center;

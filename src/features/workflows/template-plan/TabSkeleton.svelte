@@ -15,23 +15,15 @@
 <!-- Laid out like the tab it stands in for, so the content arrives without a jump. -->
 <div class="sk" role="status" aria-busy="true" aria-label={label}>
 	{#if tab === "overview"}
-		<Section title="Month Breakdown" collapsible={false}>
-			<div class="sk__hero">
-				<span class="abt-skeleton sk__ring"></span>
-				<div class="sk__stack">
-					<span class="abt-skeleton" style:width="45%" style:height="9px"></span>
-					<span class="abt-skeleton" style:width="60%" style:height="18px"></span>
-				</div>
-			</div>
-			<span class="abt-skeleton" style:width="100%" style:height="6px"></span>
+		<Section title="This Month" collapsible={false}>
 			{@render rows(4)}
+			<span class="abt-skeleton sk__bar" style:width="100%" style:height="8px"></span>
 		</Section>
-		<Section title="Spending Pace" collapsible={false}>
-			<span class="abt-skeleton" style:width="100%" style:height="6px"></span>
-			{@render rows(2)}
-		</Section>
-		<Section title="Next Month Coverage" collapsible={false}>
-			{@render rows(2)}
+		<!-- Its title names next month, so it's a placeholder too. -->
+		<Section title="" collapsible={false}>
+			{#snippet badges()}<span class="abt-skeleton" style:width="120px" style:height="9px"
+				></span>{/snippet}
+			{@render rows(3)}
 		</Section>
 		<Section title="Spending Trend" collapsible={false}>
 			<span class="abt-skeleton" style:width="100%" style:height="96px"></span>
@@ -74,25 +66,10 @@
 
 <style>
 	/* Spacing matches the tabs' own cards (css.ts), so nothing shifts when they load. */
-	.sk__hero {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin-bottom: 8px;
-	}
-
-	.sk__ring {
-		width: 48px;
-		height: 48px;
-		flex-shrink: 0;
+	.sk__bar {
+		display: block;
+		margin-top: 22px;
 		border-radius: var(--abt-radius-pill);
-	}
-
-	.sk__stack {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		gap: 6px;
 	}
 
 	.sk__rows {
