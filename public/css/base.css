@@ -338,10 +338,6 @@ body {
 		border-top: var(--border);
 		border-top-left-radius: var(--border-radius);
 	}
-
-	[data-testid="spent"] svg {
-		color: var(--color-pageTextLight) !important;
-	}
 }
 
 /* Actual's mobile Settings list and ABT's page in it, styled as Actual's own rows */
