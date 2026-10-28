@@ -307,7 +307,7 @@
 				"defaultValue": true,
 				"platform": "desktop",
 				"label": "Budget Totals Label Styling",
-				"description": "Mute and uppercase the Budgeted/Spent/Balance labels.",
+				"description": "Mute and uppercase the Category, Budgeted, Spent and Balance labels.",
 				"icon": "layout",
 				"group": "Readability",
 				"writes": null

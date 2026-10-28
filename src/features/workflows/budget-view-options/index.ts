@@ -10,6 +10,7 @@ import { openBudgetSettings } from "./settings";
 import { BUDGET_TOTALS } from "@lib/actual-dom";
 
 const GROUP_CLASS = "abt-view-options";
+const HEAD = `${BUDGET_TOTALS} > div:first-of-type`;
 
 const CSS = `
 	.${GROUP_CLASS} {
@@ -33,6 +34,28 @@ const CSS = `
 	.${GROUP_CLASS} > button:hover {
 		opacity: 1;
 		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+	/* Actual's column-width toggle joins these icons, always shown, instead of holding space
+	   before the title; its hover-only fade is overridden. */
+	${HEAD} > button:first-of-type,
+	${HEAD} > .${GROUP_CLASS},
+	${HEAD} > button:last-of-type {
+		order: 1;
+	}
+	${HEAD} > button:first-of-type {
+		margin: 0 2px 0 0 !important;
+		padding: 5px !important;
+		opacity: 0.7 !important;
+		border-radius: var(--abt-radius-sm);
+		transition: opacity 0.12s ease, background 0.12s ease;
+	}
+	${HEAD} > button:first-of-type:hover {
+		opacity: 1 !important;
+		background: color-mix(in srgb, currentColor 12%, transparent);
+	}
+	/* The title starts in line with the group rows' arrows. */
+	${HEAD} > div:first-of-type {
+		margin-left: var(--abt-space-3);
 	}
 `;
 
