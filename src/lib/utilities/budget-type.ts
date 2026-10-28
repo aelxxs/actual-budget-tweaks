@@ -2,7 +2,7 @@ import { query } from "./actual-api";
 
 export type BudgetType = "envelope" | "tracking";
 
-/** Set on <html> from the first frame, so CSS can tell the two budget types apart. */
+/** Set on <html> once ABT starts on Actual, so CSS can tell the two budget types apart. */
 export const BUDGET_TYPE_ATTR = "data-abt-budget-type";
 
 // The last type seen, so features start right at load instead of correcting themselves after
@@ -17,17 +17,23 @@ function lastSeen(): BudgetType {
 	}
 }
 
-let current: BudgetType = lastSeen();
-document.documentElement.setAttribute(BUDGET_TYPE_ATTR, current);
+// Read lazily: the content script loads on every site, and this module with it.
+let current: BudgetType | null = null;
 const listeners = new Set<(type: BudgetType) => void>();
 
 /** The open budget's type; until it's read, the last one seen. */
 export function budgetType(): BudgetType {
+	current ??= lastSeen();
 	return current;
 }
 
 export function isTrackingBudget(): boolean {
-	return current === "tracking";
+	return budgetType() === "tracking";
+}
+
+/** Marks <html> with the last type seen, until `refreshBudgetType` reads the real one. */
+export function markBudgetType(): void {
+	document.documentElement.setAttribute(BUDGET_TYPE_ATTR, budgetType());
 }
 
 /** Calls `listener` whenever the budget type changes. Returns an unsubscribe. */
@@ -47,7 +53,7 @@ export async function refreshBudgetType(): Promise<BudgetType> {
 		});
 		const next: BudgetType =
 			row?.value === "tracking" || row?.value === "report" ? "tracking" : "envelope";
-		if (next !== current) {
+		if (next !== budgetType()) {
 			current = next;
 			try {
 				localStorage.setItem(STORAGE_KEY, next);
@@ -58,9 +64,9 @@ export async function refreshBudgetType(): Promise<BudgetType> {
 				listener(next);
 			}
 		}
-		document.documentElement.setAttribute(BUDGET_TYPE_ATTR, current);
+		markBudgetType();
 	} catch {
 		// Keeps the last known type.
 	}
-	return current;
+	return budgetType();
 }
