@@ -38,6 +38,7 @@ import { dimReconciled } from "./readability/dim-reconciled";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { newTransactionStyle } from "./readability/new-transactions";
 import { reportCardBorders } from "./readability/report-card-borders";
+import { quietCategoryIcons } from "./readability/quiet-category-icons";
 import { scheduleIconDetails } from "./readability/schedule-icon-details";
 import { reportsHeader } from "./layout/reports-header";
 import { incomeBreakdown } from "./workflows/income-breakdown";
@@ -138,7 +139,7 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Categories",
-				items: [categoryColorDots, categoryEmojiPicker, budgetCategoryFilter],
+				items: [categoryColorDots, categoryEmojiPicker, quietCategoryIcons, budgetCategoryFilter],
 			},
 			{
 				label: "Tools",

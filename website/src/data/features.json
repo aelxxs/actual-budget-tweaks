@@ -324,6 +324,17 @@
 				"writes": "Adds the emoji you pick to the category's name."
 			},
 			{
+				"key": "quiet-category-icons",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Quiet Category Icons",
+				"description": "Show the template and notes icons on hover, keeping notes visible where there are some.",
+				"icon": "note",
+				"group": "Categories",
+				"writes": null
+			},
+			{
 				"key": "budget-category-filter",
 				"type": "checkbox",
 				"defaultValue": false,
