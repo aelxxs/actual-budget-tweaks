@@ -55,9 +55,10 @@ function update() {
 	}
 }
 
-function attach() {
+/** Finds the button again once Actual replaces it; true when it changed. */
+function attach(): boolean {
 	if (button?.isConnected) {
-		return;
+		return false;
 	}
 	observer?.disconnect();
 	button = findButton();
@@ -70,14 +71,17 @@ function attach() {
 			characterData: true,
 		});
 	}
+	return true;
 }
 
 /** Keeps `syncStatus()` current while a component that reads it is mounted. */
 export function trackSyncStatus(): () => void {
 	if (users++ === 0) {
+		// The observer follows the button itself; page-wide changes only matter until it's found.
 		stopDom = watchDom(function syncStatusSignal() {
-			attach();
-			update();
+			if (attach() || !button) {
+				update();
+			}
 		});
 	}
 	return () => {

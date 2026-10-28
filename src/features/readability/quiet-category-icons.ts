@@ -5,6 +5,8 @@ import { Page, matchesPage } from "@lib/utilities/pages";
 
 const ICON_ATTR = "data-abt-category-icon";
 const NOTES_ATTR = "data-abt-has-notes";
+// The class each notes button had when last read; Actual swaps it when the button's look changes.
+const readClass = new WeakMap<Element, string>();
 
 // visibility, not display, so the row doesn't shift when they appear. Closing a popover hands focus
 // back to its button, so only keyboard focus keeps one shown.
@@ -34,7 +36,8 @@ function markIcons() {
 		}
 		// Actual dims the notes button to 0.3 as a placeholder when there are none; hover lifts it.
 		const button = notes.querySelector("button");
-		if (button && !button.matches(":hover")) {
+		if (button && !button.matches(":hover") && readClass.get(button) !== button.className) {
+			readClass.set(button, button.className);
 			notes.toggleAttribute(NOTES_ATTR, Number(getComputedStyle(button).opacity) >= 1);
 		}
 	}
