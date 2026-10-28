@@ -17,7 +17,7 @@ import { summaryState } from "./state.svelte";
 import SummaryRow from "./SummaryRow.svelte";
 import TrackingMeta from "./TrackingMeta.svelte";
 import TrackingRow from "./TrackingRow.svelte";
-import { BUDGET_SUMMARY, BUDGET_TABLE, CELL, SHOWN_MONTH } from "@lib/actual-dom";
+import { BUDGET_SUMMARY, BUDGET_TABLE, CELL, SHOWN_MONTH, TO_BUDGET_CELL } from "@lib/actual-dom";
 
 const SINGLE_MONTH_ATTR = "data-abt-single-month";
 const MULTI_MONTH_ATTR = "data-abt-multi-month";
@@ -30,6 +30,8 @@ const RESIZING_ATTR = "data-abt-month-count-changing";
 // Set in JS: as :has() rules, every cell Actual rewrites on a month switch restyled the page.
 const HAS_MORE_ATTR = "data-abt-summary-has-more";
 const MONTH_LABEL_ATTR = "data-abt-month-label";
+// Actual's "To Budget:" label, holding its text without the colon for CSS to draw.
+const TO_BUDGET_LABEL_ATTR = "data-abt-to-budget-label";
 // The element holding a card, and the carousel row that slides them.
 const CARD_SLOT_ATTR = "data-abt-card-slot";
 const CAROUSEL_ATTR = "data-abt-carousel";
@@ -93,6 +95,7 @@ function restoreNative(): void {
 		CURRENT_MONTH_ATTR,
 		HAS_MORE_ATTR,
 		MONTH_LABEL_ATTR,
+		TO_BUDGET_LABEL_ATTR,
 		CARD_SLOT_ATTR,
 		CAROUSEL_ATTR,
 	]) {
@@ -318,6 +321,26 @@ function syncParts(table: HTMLElement): void {
 	watchCarouselWidth(table);
 	syncSummary(cards, months.length === 1 ? months[0] : undefined);
 	syncMetas(cards, months.length > 1);
+	if (summary) {
+		markToBudgetLabel(summary.card);
+	}
+}
+
+/** Found beside the amount rather than by its text, which is translated and flips to Overbudgeted. */
+function markToBudgetLabel(card: HTMLElement): void {
+	const cell = card.querySelector(TO_BUDGET_CELL);
+	let el = cell;
+	while (el?.parentElement && el.parentElement !== card) {
+		const first = el.parentElement.firstElementChild;
+		if (first && first !== el && !first.contains(cell)) {
+			const text = (first.textContent ?? "").trim().replace(/:$/, "");
+			if (text && first.getAttribute(TO_BUDGET_LABEL_ATTR) !== text) {
+				first.setAttribute(TO_BUDGET_LABEL_ATTR, text);
+			}
+			return;
+		}
+		el = el.parentElement;
+	}
 }
 
 export const budgetSummaryRow = defineSetting({
@@ -513,6 +536,26 @@ export const budgetSummaryRow = defineSetting({
 			align-items: flex-start !important;
 			text-align: left !important;
 			padding-left: 0 !important;
+		}
+		/* Top-aligned like the other cards' labels: their 68px of lines sit centred, 3px down. */
+		${ENVELOPE} ${SUMMARY_CARD} > :last-child {
+			justify-content: flex-start;
+			padding-top: calc(var(--abt-space-3) + 3px) !important;
+		}
+		/* Drawn like the other cards' labels; Actual's own text stays in the DOM, hidden. */
+		${ENVELOPE} ${SUMMARY_CARD} [${TO_BUDGET_LABEL_ATTR}] {
+			margin-bottom: var(--abt-space-2) !important;
+			font-size: 0 !important;
+			line-height: 14px;
+		}
+		${ENVELOPE} ${SUMMARY_CARD} [${TO_BUDGET_LABEL_ATTR}]::before {
+			content: attr(${TO_BUDGET_LABEL_ATTR});
+			font-size: var(--abt-text-xs);
+			font-weight: 500;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+			color: var(--color-tableHeaderText);
+			white-space: nowrap;
 		}
 
 		/*

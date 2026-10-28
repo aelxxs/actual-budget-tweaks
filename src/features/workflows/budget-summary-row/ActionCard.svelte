@@ -372,6 +372,15 @@
 		border-color: var(--abt-ink-4);
 	}
 
+	/* Without a suggestion's wash, a fill is what says the whole card is a button. */
+	.ac.is-quiet:has(.ac__main:hover) {
+		background: linear-gradient(var(--abt-ink-1), var(--abt-ink-1)), var(--abt-panel-surface);
+	}
+
+	.ac.is-quiet:has(.ac__main:active) {
+		background: linear-gradient(var(--abt-ink-2), var(--abt-ink-2)), var(--abt-panel-surface);
+	}
+
 	/* Washed in the suggestion's colour, the border glowing from the corner like To Budget's. */
 	.ac.is-primary,
 	.ac.is-danger {
