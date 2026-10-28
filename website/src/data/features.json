@@ -269,6 +269,17 @@
 				"writes": null
 			},
 			{
+				"key": "schedule-icon-details",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Schedule Icon Details",
+				"description": "Line up the schedule icons beside the spent amounts, with a hover card for each schedule.",
+				"icon": "calendar",
+				"group": "Readability",
+				"writes": null
+			},
+			{
 				"key": "actual-daily",
 				"type": "checkbox",
 				"defaultValue": true,

@@ -173,6 +173,7 @@ export const PAGE_ANCHORS: Record<string, Record<string, string>> = {
 		CATEGORY_ROW,
 		BUDGETED_CELL,
 		BALANCE_CELL,
+		CATEGORY_SPENT,
 		SHOWN_MONTH,
 		CELL,
 		LEFTOVER_CELL,

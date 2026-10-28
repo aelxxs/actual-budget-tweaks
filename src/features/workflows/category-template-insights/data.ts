@@ -2,7 +2,13 @@ import { query } from "@lib/utilities/actual-api";
 import { readCell } from "@lib/utilities/budget-cells";
 import { isoDate } from "@lib/utilities/months";
 import type { GoalDefEntry } from "@lib/types/actual-schema";
-import type { CategoryInsight, LinkedSchedule, ProgressInfo, RawSchedule } from "./types";
+import type {
+	CategoryInsight,
+	LinkedSchedule,
+	ProgressInfo,
+	RawSchedule,
+	ScheduleStatus,
+} from "./types";
 import { createLogger } from "@lib/utilities/logger";
 import { BUDGETED_CELL } from "@lib/actual-dom";
 
@@ -10,7 +16,9 @@ const log = createLogger("insights");
 
 let insights: Map<string, CategoryInsight> | null = null;
 let loading: Promise<Map<string, CategoryInsight> | null> | null = null;
+let stale = false;
 const categoryNameById = new Map<string, string>();
+const accountNameById = new Map<string, string>();
 
 export function getInsights() {
 	return insights;
@@ -19,6 +27,16 @@ export function getInsights() {
 /** Resolves a category id referenced by a "percentage" directive's `category` field. */
 export function getCategoryName(id: string): string | null {
 	return categoryNameById.get(id) ?? null;
+}
+
+export function getAccountName(id: string): string | null {
+	return accountNameById.get(id) ?? null;
+}
+
+/** Has the next `loadData` read again while `getInsights` keeps serving the current data. */
+export function markStale() {
+	stale = true;
+	loading = null;
 }
 
 export function resetData() {
@@ -115,16 +133,38 @@ function computeUpcomingThreshold(todayStr: string, pref: string): string {
 	return iso(new Date(y, m - 1, d + days));
 }
 
+function scheduleStatus(
+	s: RawSchedule,
+	paid: boolean,
+	today: string,
+	thresholdIso: string,
+): ScheduleStatus {
+	if (s.completed) {
+		return "completed";
+	}
+	if (paid) {
+		return "paid";
+	}
+	if (s.next_date === today) {
+		return "due";
+	}
+	if (s.next_date > today && s.next_date <= thresholdIso) {
+		return "upcoming";
+	}
+	return s.next_date < today ? "missed" : "scheduled";
+}
+
 export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
-	if (insights) {
+	if (insights && !stale) {
 		return insights;
 	}
 	if (loading) {
 		return loading;
 	}
+	stale = false;
 	loading = (async () => {
 		try {
-			const [cats, scheds, txs, prefs] = await Promise.all([
+			const [cats, scheds, txs, prefs, accounts] = await Promise.all([
 				query<{ id: string; name: string; tombstone: boolean; goal_def: string | null }[]>(
 					"categories",
 				),
@@ -135,12 +175,17 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 				query<{ id: string; value: string }[]>("preferences", {
 					filter: { id: "upcomingScheduledTransactionLength" },
 				}),
+				query<{ id: string; name: string }[]>("accounts"),
 			]);
 
 			const upcomingPref = prefs?.[0]?.value || "7";
 			categoryNameById.clear();
 			for (const c of cats) {
 				categoryNameById.set(c.id, c.name);
+			}
+			accountNameById.clear();
+			for (const a of accounts) {
+				accountNameById.set(a.id, a.name);
 			}
 			const schedsByName = new Map<string, RawSchedule>();
 			for (const s of scheds) {
@@ -197,6 +242,7 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 						linkedSchedules.push({
 							directive: d,
 							schedule: s,
+							status: scheduleStatus(s, paidInfo.has(s.id), today, thresholdIso),
 							paid: paidInfo.has(s.id),
 							paidDate: paidInfo.get(s.id) || null,
 						});
@@ -209,6 +255,7 @@ export async function loadData(): Promise<Map<string, CategoryInsight> | null> {
 			return insights;
 		} catch (err) {
 			loading = null;
+			stale = true;
 			log.error("Failed to load data:", err);
 			return null;
 		}

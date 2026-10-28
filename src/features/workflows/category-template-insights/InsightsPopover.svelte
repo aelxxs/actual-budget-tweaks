@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { ROW, byFocusKey } from "@lib/actual-dom";
-	import { navigate } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import { formatDate, loadDatePrefs } from "@lib/utilities/date-format.svelte";
-	import { isoDate } from "@lib/utilities/months";
-	import { getCategoryName, parseScheduleAmount, progressState } from "./data";
-	import type { CategoryInsight, LinkedSchedule, ProgressInfo } from "./types";
+	import { getCategoryName, progressState } from "./data";
+	import { openSchedule } from "./schedule-actions";
+	import ScheduleItem from "./ScheduleItem.svelte";
+	import type { CategoryInsight, ProgressInfo } from "./types";
 
 	const {
 		entry,
@@ -26,40 +24,6 @@
 	const hasGoal = $derived(!!progress.denominator && progress.denominator > 0);
 	const remaining = $derived(Math.max(0, (progress.denominator ?? 0) - (progress.numerator ?? 0)));
 	const state = $derived(progressState(entry, ratio));
-
-	function daysBetween(from: string, to: string): number {
-		const [fy, fm, fd] = from.split("-").map(Number);
-		const [ty, tm, td] = to.split("-").map(Number);
-		const a = new Date(fy, fm - 1, fd).getTime();
-		const b = new Date(ty, tm - 1, td).getTime();
-		return Math.round((b - a) / 86400000);
-	}
-
-	function relativeDay(iso: string): string {
-		if (!iso) {
-			return "";
-		}
-		const diff = daysBetween(isoDate(), iso);
-		if (diff === 0) {
-			return "today";
-		}
-		if (diff === 1) {
-			return "tomorrow";
-		}
-		if (diff === -1) {
-			return "yesterday";
-		}
-		if (diff > 1) {
-			return `in ${diff} days`;
-		}
-		return `${-diff} days ago`;
-	}
-
-	loadDatePrefs();
-
-	function fmtDateShort(iso: string): string {
-		return iso ? formatDate(iso) : "—";
-	}
 
 	// Limits store their period as an adverb ("monthly").
 	function periodUnit(period: string): string {
@@ -91,31 +55,6 @@
 		return getCategoryName(category) ?? category;
 	}
 
-	function getScheduleStatus(link: LinkedSchedule): string {
-		if (link.schedule.completed) {
-			return "completed";
-		}
-		if (link.paid) {
-			return "paid";
-		}
-		return "upcoming";
-	}
-
-	function getDisplayDate(link: LinkedSchedule): string {
-		return link.paid ? link.paidDate || "" : link.schedule.next_date;
-	}
-
-	function scheduleWhen(status: string, date: string): [string, string?] {
-		if (status === "completed") {
-			return ["Completed"];
-		}
-		if (!date) {
-			return [status === "paid" ? "Paid" : "No date"];
-		}
-		const day = fmtDateShort(date);
-		return [status === "paid" ? `Paid ${day}` : day, relativeDay(date)];
-	}
-
 	// One priority for every template is shown once, by the heading, instead of on each row.
 	const sharedPriority = $derived.by(() => {
 		const set = new Set(entry.directives.map((d) => d.priority ?? null));
@@ -124,19 +63,7 @@
 
 	function openScheduleModal(schedId: string) {
 		onClose();
-		navigate("/schedules");
-		let tries = 0;
-		const step = () => {
-			const row = document.querySelector<HTMLElement>(`${byFocusKey(schedId)} ${ROW}`);
-			if (row) {
-				row.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-				return;
-			}
-			if (++tries < 40) {
-				setTimeout(step, 100);
-			}
-		};
-		setTimeout(step, 120);
+		openSchedule(schedId);
 	}
 
 	// F is only a shortcut when there's no doubt which schedule it means.
@@ -205,20 +132,7 @@
 			<li>
 				<div class="pop__item">
 					{#if d.type === "schedule" && link}
-						{@const amt = parseScheduleAmount(link.schedule)}
-						{@const status = getScheduleStatus(link)}
-						{@const displayDate = getDisplayDate(link)}
-						{@const [when, rel] = scheduleWhen(status, displayDate)}
-						<span class="pop__dot pop__dot--{status}"></span>
-						<div class="pop__body">
-							<div class="pop__line">
-								<span class="pop__name">{link.schedule.name || d.name}</span>
-								<span class="pop__amt abt-privacy-number">{fmtMoney(amt ?? 0)}</span>
-							</div>
-							<div class="pop__meta">
-								{when}{#if rel}<span class="pop__sep">&middot;</span>{rel}{/if}
-							</div>
-						</div>
+						<ScheduleItem {link} fallbackName={d.name} />
 					{:else}
 						<span class="pop__dot"></span>
 						<div class="pop__body pop__text">
@@ -416,14 +330,6 @@
 		transform: translateY(-1px);
 	}
 
-	.pop__dot--upcoming {
-		background: var(--abt-accent);
-	}
-
-	.pop__dot--paid {
-		background: var(--color-noticeTextLight);
-	}
-
 	.pop__body {
 		flex: 1;
 		min-width: 0;
@@ -431,31 +337,6 @@
 
 	.pop__text {
 		color: var(--abt-muted);
-	}
-
-	.pop__line {
-		display: flex;
-		align-items: baseline;
-		gap: var(--abt-space-3);
-	}
-
-	.pop__name {
-		min-width: 0;
-		overflow: hidden;
-		font-weight: 500;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.pop__amt {
-		margin-left: auto;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.pop__meta {
-		margin-top: var(--abt-space-1);
-		color: var(--abt-soft);
-		font-size: var(--abt-text-sm);
 	}
 
 	.pop__missing {

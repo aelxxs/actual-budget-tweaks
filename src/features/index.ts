@@ -38,6 +38,7 @@ import { dimReconciled } from "./readability/dim-reconciled";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { newTransactionStyle } from "./readability/new-transactions";
 import { reportCardBorders } from "./readability/report-card-borders";
+import { scheduleIconDetails } from "./readability/schedule-icon-details";
 import { reportsHeader } from "./layout/reports-header";
 import { incomeBreakdown } from "./workflows/income-breakdown";
 import { mobileAccounts } from "./mobile/accounts";
@@ -130,6 +131,7 @@ export const scriptSections: SettingsSection[] = [
 					budgetCardStyling,
 					categoryProgress,
 					balancePills,
+					scheduleIconDetails,
 					showDailyAvailable,
 					budgetTotalsLabelStyling,
 				],
