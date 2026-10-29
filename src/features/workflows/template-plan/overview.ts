@@ -94,7 +94,12 @@ export function upcomingSchedules(schedules: Schedule[], today = new Date()): Ov
 		.filter((s) => s.next_date && s.next_date >= from && s.next_date <= until)
 		.sort((a, b) => (a.next_date ?? "").localeCompare(b.next_date ?? ""))
 		.slice(0, MAX_SCHEDULES)
-		.map((s) => ({ id: s.id, name: s.name ?? "Unnamed", nextDate: s.next_date! }));
+		.map((s) => ({
+			id: s.id,
+			name: s.name ?? "Unnamed",
+			nextDate: s.next_date!,
+			amount: typeof s._amount === "number" ? s._amount : null,
+		}));
 }
 
 /** One entry per month in `months`, read from the matching cells. */

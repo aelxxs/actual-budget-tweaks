@@ -10,6 +10,8 @@
 		barColor: string;
 		barColorDim: string;
 		higherIsBad?: boolean;
+		/** Draws each month's budget behind its bar, and drops the footer. */
+		withBudget?: boolean;
 	}
 
 	let {
@@ -19,12 +21,13 @@
 		barColor,
 		barColorDim,
 		higherIsBad = false,
+		withBudget = false,
 	}: Props = $props();
 
 	const CHART_H = 80;
 	const LABEL_H = 16;
-	const R = 4;
-	const TIP_W = 88;
+	const R = 2;
+	const TIP_W = $derived(withBudget ? 132 : 88);
 	const TIP_H = 32;
 
 	let w = $state(0);
@@ -41,7 +44,12 @@
 			.paddingOuter(0.1);
 	});
 
-	const maxVal = $derived(Math.max(...trend.map((t) => t[valueKey]), 1));
+	const maxVal = $derived(
+		Math.max(
+			...trend.map((t) => (withBudget ? Math.max(t[valueKey], t.budgeted) : t[valueKey])),
+			1,
+		),
+	);
 
 	const yScale = $derived(scaleLinear().domain([0, maxVal]).range([CHART_H, 0]).nice());
 
@@ -89,12 +97,30 @@
 				{@const h = CHART_H - top}
 				{@const curr = point.monthKey === currentMonthKey}
 				{@const isHovered = hovered === i}
-				<path
-					d={bar(x, bw, top, h)}
-					fill={curr ? barColor : barColorDim}
-					opacity={hovered !== null && !isHovered ? 0.45 : 1}
-					style="transition:opacity 0.1s"
-				/>
+				{@const over = withBudget && point.budgeted > 0 && point[valueKey] > point.budgeted}
+				{#if withBudget}
+					{@const pw = Math.min(14, (bw - 2) / 2)}
+					{@const bTop = yScale(point.budgeted)}
+					<path
+						d={bar(x + bw / 2 - pw - 1, pw, bTop, CHART_H - bTop)}
+						fill={barColorDim}
+						opacity={hovered !== null && !isHovered ? 0.45 : 1}
+						style="transition:opacity 0.1s"
+					/>
+					<path
+						d={bar(x + bw / 2 + 1, pw, top, h)}
+						fill={over ? "var(--color-errorText)" : barColor}
+						opacity={hovered !== null && !isHovered ? 0.45 : 1}
+						style="transition:opacity 0.1s"
+					/>
+				{:else}
+					<path
+						d={bar(x, bw, top, h)}
+						fill={curr ? barColor : barColorDim}
+						opacity={hovered !== null && !isHovered ? 0.45 : 1}
+						style="transition:opacity 0.1s"
+					/>
+				{/if}
 				<!-- Full-column hover target -->
 				<rect
 					{x}
@@ -113,6 +139,7 @@
 					font-size="10"
 					font-family="inherit"
 					fill="currentColor"
+					font-weight={curr ? 700 : 400}
 					opacity={hovered !== null ? (isHovered ? 0.9 : 0.2) : curr ? 0.75 : 0.35}
 					style="transition:opacity 0.1s">{shortMonth(point.monthKey)}</text
 				>
@@ -151,7 +178,8 @@
 						font-weight="700"
 						font-family="inherit"
 						style="font-variant-numeric:tabular-nums"
-						fill="white">{fmtMoney(point[valueKey])}</text
+						fill="white"
+						>{fmtMoney(point[valueKey])}{withBudget ? ` of ${fmtMoney(point.budgeted)}` : ""}</text
 					>
 				</g>
 			{/if}
@@ -159,16 +187,18 @@
 	{/if}
 </div>
 
-<div class="abt-tab-overview-chart-footer">
-	<span class="abt-privacy-number" style="font-weight:600;font-variant-numeric:tabular-nums"
-		>{fmtMoney(currVal)}</span
-	>
-	{#if deltaPct !== null}
-		<span
-			class="abt-tab-overview-chart-delta"
-			data-sign={deltaPct === 0 ? "neutral" : deltaPct > 0 === higherIsBad ? "neg" : "pos"}
-			>{deltaPct > 0 ? "↑" : "↓"}{Math.abs(deltaPct)}%</span
+{#if !withBudget}
+	<div class="abt-tab-overview-chart-footer">
+		<span class="abt-privacy-number" style="font-weight:600;font-variant-numeric:tabular-nums"
+			>{fmtMoney(currVal)}</span
 		>
-	{/if}
-	<span class="abt-tab-overview-chart-avg abt-privacy-number">6-mo avg {fmtMoney(avg)}</span>
-</div>
+		{#if deltaPct !== null}
+			<span
+				class="abt-tab-overview-chart-delta"
+				data-sign={deltaPct === 0 ? "neutral" : deltaPct > 0 === higherIsBad ? "neg" : "pos"}
+				>{deltaPct > 0 ? "↑" : "↓"}{Math.abs(deltaPct)}%</span
+			>
+		{/if}
+		<span class="abt-tab-overview-chart-avg abt-privacy-number">6-mo avg {fmtMoney(avg)}</span>
+	</div>
+{/if}

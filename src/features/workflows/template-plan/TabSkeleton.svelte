@@ -17,24 +17,14 @@
 	{#if tab === "overview"}
 		<Section title="This Month" collapsible={false}>
 			{@render rows(4)}
-			<span class="abt-skeleton sk__bar" style:width="100%" style:height="8px"></span>
 		</Section>
-		<!-- Its title names next month, so it's a placeholder too. -->
-		<Section title="" collapsible={false}>
-			{#snippet badges()}<span class="abt-skeleton" style:width="120px" style:height="9px"
-				></span>{/snippet}
-			{@render rows(3)}
+		<Section title="Next Month" collapsible={false}>
+			{@render rows(4)}
 		</Section>
-		<Section title="Spending Trend" collapsible={false}>
+		<Section title="Spent vs Budgeted" collapsible={false}>
 			<span class="abt-skeleton" style:width="100%" style:height="96px"></span>
 		</Section>
-		<Section title="Budgeting Trend" collapsible={false}>
-			<span class="abt-skeleton" style:width="100%" style:height="96px"></span>
-		</Section>
-		<Section title="Goals" collapsible={false}>
-			{@render rows(3)}
-		</Section>
-		<Section title="Scheduled Transactions" collapsible={false}>
+		<Section title="Coming Up" collapsible={false}>
 			{@render rows(3)}
 		</Section>
 	{:else}
@@ -66,12 +56,6 @@
 
 <style>
 	/* Spacing matches the tabs' own cards (css.ts), so nothing shifts when they load. */
-	.sk__bar {
-		display: block;
-		margin-top: 22px;
-		border-radius: var(--abt-radius-pill);
-	}
-
 	.sk__rows {
 		display: flex;
 		flex-direction: column;

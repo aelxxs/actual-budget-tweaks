@@ -20,6 +20,8 @@ export interface OverviewSchedule {
 	id: string;
 	name: string;
 	nextDate: string;
+	/** Negative for money going out; null when the schedule has no fixed amount. */
+	amount: number | null;
 }
 
 export interface OverviewData {
@@ -39,7 +41,8 @@ export interface OverviewData {
 	// Trend & next-month
 	trend: MonthTrend[];
 	nextMonthKey: string;
-	nextMonthToBudget: number;
+	/** Already assigned in next month. */
+	nextMonthBudgeted: number;
 	nextMonthGoalTotal: number | null;
 	/** Template funding still missing this month (what Apply would add); null if unknown. */
 	templateRemaining: number | null;

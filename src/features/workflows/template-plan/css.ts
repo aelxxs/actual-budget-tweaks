@@ -35,104 +35,21 @@ export const CSS = `
 	.abt-tab-overview-load-btn:hover { opacity: 1; }
 
 	@media (prefers-reduced-motion: reduce) {
-		.abt-tab-overview-pace-fill,
-		.abt-tab-overview-mini-bar {
+		.abt-tab-overview-mini-bar,
+		.abt-tab-overview-split span {
 			transition: none;
 		}
 	}
 
-	/* ── Month breakdown rows ────────────────────────────────────── */
-	.abt-tab-overview-bdr-list {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-	}
-
-	.abt-tab-overview-bdr {
-		display: flex;
-		align-items: baseline;
-		gap: 6px;
-		font-size: var(--abt-text-sm);
-	}
-
-	.abt-tab-overview-bdr-op {
-		width: 12px;
-		text-align: center;
-		color: var(--abt-muted);
-		flex-shrink: 0;
-		font-family: monospace;
-		font-size: var(--abt-text-base);
-	}
-
-	.abt-tab-overview-bdr-label {
-		flex: 1;
-		min-width: 0;
-		color: var(--abt-muted);
-	}
-
-	.abt-tab-overview-bdr-val {
-		font-variant-numeric: tabular-nums;
-		font-weight: 600;
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-	.abt-tab-overview-bdr-val[data-sign="neg"] { color: var(--color-errorText, #e57373); }
-
-	.abt-tab-overview-bdr--total {
-		padding-top: 6px;
-		margin-top: 3px;
-		border-top: 1px solid var(--abt-panel-border);
-		font-size: var(--abt-text-base);
-	}
-	.abt-tab-overview-bdr--total .abt-tab-overview-bdr-op { color: var(--abt-muted); }
-
-	.abt-tab-overview-bdr-avail {
-		font-size: var(--abt-text-lg);
-		font-weight: 700;
-	}
-	.abt-tab-overview-bdr-avail[data-sign="neg"] { color: var(--color-errorText, #e57373); }
-	.abt-tab-overview-bdr-avail[data-sign="pos"] { color: var(--color-budgetNumberPositive, #4caf50); }
-
-	/* ── Pace: one bar, with a tick for today ───────────────────── */
-	.abt-tab-overview-pace {
-		margin-top: 12px;
-		padding-top: 10px;
-		border-top: 1px solid var(--abt-panel-border);
-	}
-
-	.abt-tab-overview-pace-head,
-	.abt-tab-overview-pace-foot {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		gap: 8px;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.abt-tab-overview-pace-head {
-		font-size: var(--abt-text-sm);
-		margin-bottom: 6px;
-	}
-	.abt-tab-overview-pace-head > span:first-of-type { color: var(--abt-muted); }
-
-	.abt-tab-overview-pace-track {
+	/* ── This Month ─────────────────────────────────────────────── */
+	/* Where the month's funds went: one bar, its rows below as the key. */
+	.abt-tab-overview-split-wrap {
 		position: relative;
-		height: 8px;
-		border-radius: var(--abt-radius-pill);
-		background: var(--abt-panel-track);
+		margin: 6px 0 8px;
 	}
 
-	.abt-tab-overview-pace-fill {
-		height: 100%;
-		min-width: 2px;
-		border-radius: inherit;
-		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-	.abt-tab-overview-pace-fill[data-status="ok"]   { background: var(--abt-accent); }
-	.abt-tab-overview-pace-fill[data-status="warn"] { background: var(--color-warningText, #e0c590); }
-	.abt-tab-overview-pace-fill[data-status="over"] { background: var(--color-errorText, #e57373); }
-
-	.abt-tab-overview-pace-today {
+	/* Where spending would be today if it were spread evenly through the month. */
+	.abt-tab-overview-pace-tick {
 		position: absolute;
 		top: -3px;
 		bottom: -3px;
@@ -142,13 +59,73 @@ export const CSS = `
 		background: var(--abt-ink);
 	}
 
-	.abt-tab-overview-pace-foot {
-		margin-top: 6px;
+	.abt-tab-overview-pace-note {
+		margin: 0 0 6px;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+		font-variant-numeric: tabular-nums;
+	}
+	.abt-tab-overview-pace-note[data-ahead="true"] { color: var(--color-warningText); }
+	.abt-tab-overview-pace-day { color: var(--abt-muted); }
+
+	.abt-tab-overview-split {
+		display: flex;
+		gap: 2px;
+		height: 10px;
+		border-radius: var(--abt-radius-pill);
+		overflow: hidden;
+	}
+	.abt-tab-overview-split span {
+		min-width: 3px;
+		flex-basis: 0;
+		transition: flex-grow 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+
+	.abt-tab-overview-swatch {
+		width: 8px;
+		height: 8px;
+		flex-shrink: 0;
+		border-radius: 2px;
+	}
+
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="overspent"] { background: var(--color-errorText); }
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="spent"] { background: var(--abt-accent); }
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="left"] { background: var(--abt-accent-3); }
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="held"] { background: var(--color-budgetNumberPositive); }
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="free"] { background: var(--color-warningText); }
+
+	.abt-tab-overview-total {
+		margin-top: 4px;
+		padding-top: 4px;
+		border-top: 1px solid var(--abt-panel-border);
+	}
+
+	.abt-tab-overview-note {
+		margin: 6px 0 0;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+		line-height: 1.45;
+	}
+
+	.abt-tab-overview-legend {
+		display: flex;
+		gap: 12px;
+		margin-bottom: 8px;
 		font-size: var(--abt-text-xs);
 		color: var(--abt-muted);
 	}
+	.abt-tab-overview-legend span {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+	.abt-tab-overview-legend i {
+		width: 8px;
+		height: 8px;
+		border-radius: 2px;
+	}
 
-	/* Mini progress bars (readiness, overspent, goals) */
+	/* Mini progress bars */
 	.abt-tab-overview-mini-bar-wrap {
 		height: 4px;
 		border-radius: 2px;

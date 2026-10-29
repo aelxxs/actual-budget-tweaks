@@ -281,7 +281,7 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 			readCells(sheet, monthCellNames(cats)),
 			query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
 			Promise.all(months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats)))),
-			readCells(monthToSheet(nextMonthKey), ["to-budget"]),
+			readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
 			previewMonthTemplateTotal(nextMonthKey, cats),
 			// What Apply would still assign this month; goal cells only fill once it has run.
 			previewMonthTemplateTotal(monthKey, cats),
@@ -307,7 +307,7 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 			upcomingSchedules: upcomingSchedules(schedules ?? []),
 			trend,
 			nextMonthKey,
-			nextMonthToBudget: nextCells.get("to-budget") ?? 0,
+			nextMonthBudgeted: Math.abs(nextCells.get("total-budgeted") ?? 0),
 			nextMonthGoalTotal,
 			recentAvgSpending: recentAverageSpending(trend, totalBudgeted),
 			templateRemaining,
