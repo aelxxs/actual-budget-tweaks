@@ -5,10 +5,13 @@
 	import { bulkEdit } from "@lib/utilities/bulk-edit";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+	import { loadCategories } from "@lib/template-plan/actual-data";
+	import { previewMonthTemplateTotal } from "@lib/template-plan/next-month-coverage";
 	import { onMount } from "svelte";
 	import {
 		coverOverspending,
 		fundTargets,
+		monthOf,
 		openToBudgetMenu,
 		runBulk,
 		runTemplate,
@@ -94,6 +97,31 @@
 		},
 	];
 
+	// A month whose templates never ran has no goal cells, so its targets come from a preview.
+	let unapplied = $state(0);
+	$effect(() => {
+		unapplied = 0;
+		if (!templates || loading || short.length || toBudget <= 0) {
+			return;
+		}
+		let stale = false;
+		void loadCategories()
+			.then((cats) =>
+				previewMonthTemplateTotal(
+					monthOf(sheet),
+					cats.filter((c) => !c.hidden),
+				),
+			)
+			.then((total) => {
+				if (!stale) {
+					unapplied = total ?? 0;
+				}
+			});
+		return () => {
+			stale = true;
+		};
+	});
+
 	const needs = $derived(short.reduce((t, s) => t + s.shortfall, 0));
 	const fundable = $derived(Math.min(needs, Math.max(0, toBudget)));
 	const coverable = $derived(Math.min(overspent, Math.max(0, toBudget)));
@@ -130,6 +158,17 @@
 				amount: fundable,
 				sub: "from To Budget",
 				run: () => perform(() => fundTargets(sheet, short)),
+			};
+		}
+		if (unapplied > 0 && toBudget > 0) {
+			return {
+				tone: "primary",
+				icon: "target",
+				title: "Apply templates",
+				short: "Apply",
+				amount: Math.min(unapplied, toBudget),
+				sub: "from To Budget",
+				run: () => perform(() => runTemplate(sheet, "apply-goal-template")),
 			};
 		}
 		return {
