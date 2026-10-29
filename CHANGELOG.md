@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.1.102
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.101...v0.1.102)
+
+### 🚀 Enhancements
+
+- Show where the month's money went, whether next month is covered, and spent against budgeted in Insights ([02ff887](https://github.com/aelxxs/actual-budget-tweaks/commit/02ff887))
+- Suggest applying templates in Budget Actions for months they haven't run ([b5c88c8](https://github.com/aelxxs/actual-budget-tweaks/commit/b5c88c8))
+- Split the next month bar into what's needed and what's spare ([4a56b92](https://github.com/aelxxs/actual-budget-tweaks/commit/4a56b92))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.101 ([b3e89c7](https://github.com/aelxxs/actual-budget-tweaks/commit/b3e89c7))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.101
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.100...v0.1.101)
