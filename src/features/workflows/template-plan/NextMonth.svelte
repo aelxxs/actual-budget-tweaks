@@ -45,22 +45,28 @@
 					{/if}
 				</span>
 			</span>
-			<span class="pct">{pct}%</span>
-		</div>
-		<div class="track" aria-hidden="true">
-			<span class="fill" data-ready={covered} style:width="{Math.min(100, pct)}%"></span>
-		</div>
-		<p class="sub">
-			<span class="abt-privacy-number">{fmtMoney(need)}</span>
-			{needLabel} ·
-			<span class="abt-privacy-number">{fmtMoney(held)}</span> held
-			{#if covered && held > need}
-				· <span class="abt-privacy-number">{fmtMoney(held - need)}</span> spare
+			{#if !covered}
+				<span class="pct">{pct}%</span>
 			{/if}
-			{#if projected}
-				<br />Projected: a month before isn't budgeted yet.
+		</div>
+		<!-- Covered: held money split into needed and spare. Short: the need split into held and missing. -->
+		<div class="track" data-ready={covered} aria-hidden="true">
+			<span class="fill" style:width="{covered ? (need / held) * 100 : Math.min(100, pct)}%"></span>
+		</div>
+		<div class="ends">
+			{#if covered}
+				<span><span class="abt-privacy-number">{fmtMoney(need)}</span> {needLabel}</span>
+				{#if held > need}
+					<span><span class="abt-privacy-number">{fmtMoney(held - need)}</span> spare</span>
+				{/if}
+			{:else}
+				<span><span class="abt-privacy-number">{fmtMoney(Math.max(0, held))}</span> held</span>
+				<span><span class="abt-privacy-number">{fmtMoney(need - held)}</span> short</span>
 			{/if}
-		</p>
+		</div>
+		{#if projected}
+			<p class="sub">Projected: a month before isn't budgeted yet.</p>
+		{/if}
 	{/if}
 </Section>
 
@@ -89,10 +95,13 @@
 
 	.track {
 		height: 6px;
-		margin: 10px 0 8px;
+		margin: 10px 0 6px;
 		overflow: hidden;
 		border-radius: var(--abt-radius-pill);
 		background: var(--abt-panel-track);
+	}
+	.track[data-ready="true"] {
+		background: color-mix(in srgb, var(--color-budgetNumberPositive) 30%, transparent);
 	}
 
 	.fill {
@@ -103,8 +112,17 @@
 		background: var(--color-warningText);
 		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
-	.fill[data-ready="true"] {
+	.track[data-ready="true"] .fill {
 		background: var(--color-budgetNumberPositive);
+	}
+
+	.ends {
+		display: flex;
+		justify-content: space-between;
+		gap: 8px;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+		font-variant-numeric: tabular-nums;
 	}
 
 	.headline {
@@ -113,7 +131,7 @@
 	}
 
 	.sub {
-		margin: 0;
+		margin: 6px 0 0;
 		font-size: var(--abt-text-xs);
 		color: var(--abt-muted);
 		font-variant-numeric: tabular-nums;
