@@ -95,7 +95,7 @@
 				"description": "ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
 				"icon": null,
 				"group": "Live sidebar",
-				"writes": "Renames an account or runs its bank sync when you do so from the sidebar."
+				"writes": "Renames an account, runs its bank sync, or edits account groups when you do so from the sidebar."
 			},
 			{
 				"key": "experimental-sidebar-layout-mode",
