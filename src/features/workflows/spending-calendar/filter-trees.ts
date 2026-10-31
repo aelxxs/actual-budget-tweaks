@@ -4,8 +4,9 @@ import {
 	type AccountIconData,
 } from "@features/appearance/account-icon-picker";
 import {
-	loadAssignments,
-	loadGroups,
+	groupOf,
+	groupsIn,
+	loadGroupState,
 	type AccountGroup,
 } from "@features/workflows/sidebar/lib/groups";
 import { applyOrder, loadAccountOrder } from "@features/workflows/sidebar/lib/order";
@@ -26,11 +27,10 @@ export interface AccountLayout {
 
 export async function loadAccountLayout(): Promise<AccountLayout> {
 	const budgetId = await loadCurrentBudgetId();
-	const [iconsOn, icons, groups, assignments, order] = await Promise.all([
+	const [iconsOn, icons, { groups, assignments }, order] = await Promise.all([
 		getValue(accountIconPicker.context.key, accountIconPicker.context.defaultValue),
 		loadIconCache().catch(() => ({})),
-		loadGroups(budgetId),
-		loadAssignments(budgetId),
+		loadGroupState(budgetId),
 		loadAccountOrder(budgetId),
 	]);
 	return { icons: iconsOn ? icons : {}, groups, assignments, order };
@@ -45,22 +45,19 @@ export function accountSections(
 		accounts.filter((a) => !a.closed && !(hideOffBudget && a.offbudget)),
 		layout.order,
 	);
-	const groupOf = (id: string) => layout.groups[layout.assignments[id]]?.id;
+	const bucketOf = (a: FilterAccount) => groupOf(a, layout.assignments, layout.groups);
 
 	return (["onbudget", "offbudget"] as const).map((kind) => {
 		const inSection = open.filter((a) => a.offbudget === (kind === "offbudget"));
 		return {
 			id: kind,
 			label: kind === "onbudget" ? "On Budget" : "Off Budget",
-			items: inSection.filter((a) => !groupOf(a.id)),
-			groups: Object.values(layout.groups)
-				.filter((g) => g.section === kind)
-				.sort((a, b) => a.order - b.order)
-				.map((g) => ({
-					id: g.id,
-					label: g.label,
-					items: inSection.filter((a) => groupOf(a.id) === g.id),
-				})),
+			items: inSection.filter((a) => !bucketOf(a)),
+			groups: groupsIn(kind, layout, open).map((g) => ({
+				id: g.id,
+				label: g.label,
+				items: inSection.filter((a) => bucketOf(a) === g.id),
+			})),
 		};
 	});
 }

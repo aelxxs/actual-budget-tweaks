@@ -1,77 +1,92 @@
 <script lang="ts">
-	import { Plus, X } from "@lucide/svelte";
+	import { Info, Plus, X } from "@lucide/svelte";
 	import { onMount, tick } from "svelte";
-	import type { AccountGroup } from "../lib/groups";
+	import { onListChange, query } from "@lib/utilities/actual-api";
+	import type { Account } from "@lib/types/actual-schema";
+	import type { AccountGroup, GroupState, Section } from "../lib/groups";
 	import {
-		createGroup,
-		loadAssignments,
-		loadGroups,
+		addGroup,
+		deleteGroup,
+		groupOf,
+		groupsIn,
+		importGroups,
 		removeGroup,
 		renameGroup,
-		saveAssignments,
-		saveGroups,
-		watchAssignments,
-		watchGroups,
+		renameGroupTo,
+		watchGroupState,
 	} from "../lib/groups";
 
 	const { budgetId }: { budgetId: string | undefined } = $props();
 
-	type Section = AccountGroup["section"];
 	const SECTIONS: { kind: Section; label: string }[] = [
 		{ kind: "onbudget", label: "On budget" },
 		{ kind: "offbudget", label: "Off budget" },
 	];
 
-	let groups = $state<Record<string, AccountGroup>>({});
-	let assignments = $state<Record<string, string>>({});
+	let groupState = $state<GroupState>({
+		groups: {},
+		assignments: {},
+		native: false,
+		importable: false,
+	});
+	let accounts = $state<Pick<Account, "id" | "offbudget" | "closed">[]>([]);
+	let importing = $state(false);
 	let listEl: HTMLDivElement;
 
 	onMount(() => {
-		loadGroups(budgetId).then((stored) => (groups = stored));
-		loadAssignments(budgetId).then((stored) => (assignments = stored));
-		const stopGroups = watchGroups(budgetId, (stored) => (groups = stored));
-		const stopAssignments = watchAssignments(budgetId, (stored) => (assignments = stored));
+		const loadAccounts = () =>
+			void query<Pick<Account, "id" | "offbudget" | "closed" | "tombstone">[]>("accounts", {
+				select: ["id", "offbudget", "closed", "tombstone"],
+			}).then((rows) => (accounts = rows.filter((a) => !a.tombstone)));
+		loadAccounts();
+		const stopGroups = watchGroupState(budgetId, (next) => (groupState = next));
+		const stopAccounts = onListChange("accounts", loadAccounts);
 		return () => {
 			stopGroups();
-			stopAssignments();
+			stopAccounts();
 		};
 	});
 
 	function inSection(kind: Section): AccountGroup[] {
-		return Object.values(groups)
-			.filter((g) => g.section === kind)
-			.sort((a, b) => a.order - b.order);
+		return groupsIn(kind, groupState, accounts);
 	}
 
-	function accountCount(id: string): number {
-		return Object.values(assignments).filter((g) => g === id).length;
+	function accountCount(id: string, kind: Section): number {
+		return accounts.filter(
+			(a) =>
+				!a.closed &&
+				(a.offbudget ? "offbudget" : "onbudget") === kind &&
+				groupOf(a, groupState.assignments, groupState.groups) === id,
+		).length;
 	}
 
 	async function add(kind: Section) {
-		const created = createGroup(groups, kind);
-		groups = created.groups;
-		saveGroups(budgetId, created.groups);
+		const id = await addGroup(budgetId, groupState, kind);
 		await tick();
-		const input = listEl.querySelector<HTMLInputElement>(`[data-group="${created.id}"]`);
+		const input = listEl.querySelector<HTMLInputElement>(`[data-group="${id}"]`);
 		input?.focus();
 		input?.select();
 	}
 
 	function rename(id: string, label: string) {
-		const next = renameGroup(groups, id, label);
-		if (next === groups) {
-			return;
-		}
-		groups = next;
-		saveGroups(budgetId, next);
+		const prev = groupState;
+		groupState = { ...prev, groups: renameGroup(prev.groups, id, label) };
+		void renameGroupTo(budgetId, prev, id, label);
 	}
 
 	function remove(id: string) {
-		const result = removeGroup(groups, assignments, id);
-		groups = result.groups;
-		assignments = result.assignments;
-		saveGroups(budgetId, result.groups);
-		saveAssignments(budgetId, result.assignments);
+		const prev = groupState;
+		groupState = { ...prev, ...removeGroup(prev.groups, prev.assignments, id) };
+		void deleteGroup(budgetId, prev, id);
+	}
+
+	async function moveIntoActual() {
+		importing = true;
+		try {
+			await importGroups(budgetId);
+		} finally {
+			importing = false;
+		}
 	}
 </script>
 
@@ -79,7 +94,28 @@
 	<p class="intro">
 		Groups nest accounts under On and Off budget in the Live sidebar. Drag an account onto a group
 		there to move it in.
+		{#if groupState.native}
+			They're saved in this budget, so Actual and other tools see them too.
+		{/if}
 	</p>
+
+	{#if groupState.importable}
+		<div class="import" role="note">
+			<Info size={16} strokeWidth={1.75} />
+			<div class="import-text">
+				<strong>Keep these groups in your budget</strong>
+				<p>Actual can now store account groups, so Actual and other tools see them too.</p>
+			</div>
+			<button
+				type="button"
+				class="import-btn abt-btn abt-btn--sm"
+				disabled={importing}
+				onclick={moveIntoActual}
+			>
+				{importing ? "Moving…" : "Move into Actual"}
+			</button>
+		</div>
+	{/if}
 
 	{#each SECTIONS as section (section.kind)}
 		{@const list = inSection(section.kind)}
@@ -89,13 +125,18 @@
 				<p class="empty">No groups yet.</p>
 			{/if}
 			{#each list as group (group.id)}
-				{@const count = accountCount(group.id)}
+				{@const count = accountCount(group.id, section.kind)}
 				<div class="row">
 					<input
 						class="abt-input name"
 						type="text"
 						value={group.label}
 						data-group={group.id}
+						autocomplete="off"
+						data-form-type="other"
+						data-1p-ignore
+						data-lpignore="true"
+						data-bwignore
 						aria-label="Group name"
 						onchange={(e) => rename(group.id, e.currentTarget.value)}
 						onkeydown={(e) => e.key === "Enter" && e.currentTarget.blur()}
@@ -135,6 +176,45 @@
 		margin: 0;
 		font-size: var(--abt-text-sm);
 		color: var(--color-pageTextSubdued);
+	}
+
+	.import {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
+		padding: var(--abt-space-3) var(--abt-space-4);
+		border: 1px solid var(--abt-accent-3);
+		border-radius: var(--abt-radius);
+		background: var(--abt-accent-1);
+	}
+
+	.import > :global(svg) {
+		flex-shrink: 0;
+		align-self: flex-start;
+		margin-top: 2px;
+		color: var(--abt-accent);
+	}
+
+	.import-text {
+		flex: 1;
+		min-width: 0;
+		font-size: var(--abt-text-sm);
+	}
+
+	.import-text p {
+		margin: 2px 0 0;
+		color: var(--color-pageTextSubdued);
+	}
+
+	.import-btn {
+		flex-shrink: 0;
+		border-color: var(--abt-accent-4);
+		background: var(--abt-accent-2);
+		color: var(--abt-accent);
+	}
+
+	.import-btn:hover:not(:disabled) {
+		background: var(--abt-accent-3);
 	}
 
 	.section {

@@ -24,15 +24,13 @@
 	import { loadBudgetIcon, removeBudgetIcon, setBudgetIcon } from "../lib/budgets";
 	import type { SidebarAccount } from "../lib/data";
 	import {
-		type AccountGroup,
-		loadAssignments,
-		loadCollapsedGroups,
+		type GroupState,
 		groupOf,
-		loadGroups,
+		groupsIn as visibleGroups,
+		loadCollapsedGroups,
 		saveCollapsedGroups,
-		watchAssignments,
 		watchCollapsedGroups,
-		watchGroups,
+		watchGroupState,
 	} from "../lib/groups";
 	import { applyOrder, loadAccountOrder, watchAccountOrder } from "../lib/order";
 	import { navItems, settingsItem, settingsMenu, settingsPages } from "../lib/nav";
@@ -194,22 +192,19 @@
 
 	// The same groups, order and collapsed state as the account list.
 	let order = $state<string[]>([]);
-	let groups = $state<Record<string, AccountGroup>>({});
-	let assignments = $state<Record<string, string>>({});
+	let groupState = $state<GroupState>({
+		groups: {},
+		assignments: {},
+		native: false,
+		importable: false,
+	});
 	let collapsedGroups = $state<Record<string, boolean>>({});
 
 	$effect(() => {
 		loadAccountOrder(budgetId).then((stored) => (order = stored));
 		return watchAccountOrder(budgetId, (stored) => (order = stored));
 	});
-	$effect(() => {
-		loadGroups(budgetId).then((stored) => (groups = stored));
-		return watchGroups(budgetId, (stored) => (groups = stored));
-	});
-	$effect(() => {
-		loadAssignments(budgetId).then((stored) => (assignments = stored));
-		return watchAssignments(budgetId, (stored) => (assignments = stored));
-	});
+	$effect(() => watchGroupState(budgetId, (state) => (groupState = state)));
 	$effect(() => {
 		loadCollapsedGroups().then((stored) => (collapsedGroups = stored));
 		return watchCollapsedGroups((stored) => (collapsedGroups = stored));
@@ -239,18 +234,18 @@
 	);
 
 	function groupsIn(kind: "onbudget" | "offbudget", items: SidebarAccount[]) {
-		return Object.values(groups)
-			.filter((g) => g.section === kind)
-			.sort((a, b) => a.order - b.order)
+		return visibleGroups(kind, groupState, accounts)
 			.map((group) => ({
 				group,
-				items: items.filter((a) => groupOf(a, assignments, groups) === group.id),
+				items: items.filter(
+					(a) => groupOf(a, groupState.assignments, groupState.groups) === group.id,
+				),
 			}))
 			.filter((g) => g.items.length);
 	}
 
 	function isGrouped(account: SidebarAccount): boolean {
-		return !!groupOf(account, assignments, groups);
+		return !!groupOf(account, groupState.assignments, groupState.groups);
 	}
 
 	function openAccount(id: string) {

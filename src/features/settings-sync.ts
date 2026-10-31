@@ -55,6 +55,7 @@ const BUDGET_ICONS_KEY = "abt-budget-icons";
 const BUDGET_SCOPED: BudgetScoped[] = [
 	perBudgetKey("experimental-sidebar-groups"),
 	perBudgetKey("experimental-sidebar-account-groups"),
+	perBudgetKey("experimental-sidebar-group-sections"),
 	perBudgetKey("experimental-sidebar-account-order"),
 	perBudgetKey("abt-sidebar-shortcuts"),
 	{

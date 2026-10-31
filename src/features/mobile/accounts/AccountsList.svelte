@@ -9,10 +9,10 @@
 	import { type SidebarAccount, loadSidebarAccounts } from "@features/workflows/sidebar/lib/data";
 	import {
 		type AccountGroup,
-		loadAssignments,
-		loadGroups,
-		watchAssignments,
-		watchGroups,
+		type GroupState,
+		groupOf as bucketOf,
+		groupsIn,
+		watchGroupState,
 	} from "@features/workflows/sidebar/lib/groups";
 	import {
 		applyOrder,
@@ -34,8 +34,12 @@
 	let accounts = $state<SidebarAccount[]>([]);
 	let loaded = $state(false);
 	let budgetId = $state<string | undefined>(undefined);
-	let groups = $state<Record<string, AccountGroup>>({});
-	let assignments = $state<Record<string, string>>({});
+	let groupState = $state<GroupState>({
+		groups: {},
+		assignments: {},
+		native: false,
+		importable: false,
+	});
 	let order = $state<string[]>([]);
 	let icons = $state<Record<string, AccountIconData>>({});
 	let syncing = $state(new Set<string>());
@@ -82,12 +86,9 @@
 		if (!id) {
 			return;
 		}
-		void loadGroups(id).then((stored) => (groups = stored));
-		void loadAssignments(id).then((stored) => (assignments = stored));
 		void loadAccountOrder(id).then((stored) => (order = stored));
 		const stops = [
-			watchGroups(id, (stored) => (groups = stored)),
-			watchAssignments(id, (stored) => (assignments = stored)),
+			watchGroupState(id, (state) => (groupState = state)),
 			watchAccountOrder(id, (stored) => (order = stored)),
 		];
 		return () => stops.forEach((stop) => stop());
@@ -106,14 +107,11 @@
 	const total = (items: SidebarAccount[]) => items.reduce((sum, a) => sum + a.balance, 0);
 
 	function groupsOf(kind: Section["kind"]): AccountGroup[] {
-		return Object.values(groups)
-			.filter((g) => g.section === kind)
-			.sort((a, b) => a.order - b.order);
+		return groupsIn(kind, groupState, accounts);
 	}
 
 	function groupOf(account: SidebarAccount): string | null {
-		const id = assignments[account.id];
-		return id && groups[id] ? id : null;
+		return bucketOf(account, groupState.assignments, groupState.groups);
 	}
 
 	function iconUrl(icon: AccountIconData | undefined): string | null {

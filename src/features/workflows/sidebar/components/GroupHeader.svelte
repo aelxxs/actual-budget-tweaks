@@ -61,6 +61,11 @@
 		<ChevronDown class="caret" color="var(--abt-ink-5)" strokeWidth={3} />
 		<input
 			class="group-rename"
+			autocomplete="off"
+			data-form-type="other"
+			data-1p-ignore
+			data-lpignore="true"
+			data-bwignore
 			use:autofocus
 			bind:value={editValue}
 			onkeydown={onKeydown}

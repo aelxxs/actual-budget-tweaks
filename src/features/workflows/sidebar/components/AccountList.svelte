@@ -11,22 +11,21 @@
 	import { scrollFade } from "../actions/scroll-fade";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import type { SidebarAccount } from "../lib/data";
-	import type { AccountGroup } from "../lib/groups";
+	import type { AccountGroup, GroupState } from "../lib/groups";
 	import {
+		addGroup,
 		assignAccount,
-		createGroup,
+		deleteGroup,
 		groupOf,
-		loadAssignments,
+		groupsIn,
 		loadCollapsedGroups,
-		loadGroups,
+		moveToGroup,
 		removeGroup,
 		renameGroup,
-		saveAssignments,
+		renameGroupTo,
 		saveCollapsedGroups,
-		saveGroups,
-		watchAssignments,
 		watchCollapsedGroups,
-		watchGroups,
+		watchGroupState,
 	} from "../lib/groups";
 	import { applyOrder, loadAccountOrder, saveAccountOrder, watchAccountOrder } from "../lib/order";
 	import AccountHoverCard from "./AccountHoverCard.svelte";
@@ -65,8 +64,14 @@
 	let collapsed = $state<Record<string, boolean>>({});
 	let collapsedGroups = $state<Record<string, boolean>>({});
 	let order = $state<string[]>([]);
-	let groups = $state<Record<string, AccountGroup>>({});
-	let assignments = $state<Record<string, string>>({});
+	let groupState = $state<GroupState>({
+		groups: {},
+		assignments: {},
+		native: false,
+		importable: false,
+	});
+	const groups = $derived(groupState.groups);
+	const assignments = $derived(groupState.assignments);
 
 	$effect(() => {
 		getValue<Record<string, boolean>>(STORAGE_KEY, {}).then((stored) => (collapsed = stored));
@@ -90,14 +95,7 @@
 		loadAccountOrder(budgetId).then((stored) => (order = stored));
 		return watchAccountOrder(budgetId, (stored) => (order = stored));
 	});
-	$effect(() => {
-		loadGroups(budgetId).then((stored) => (groups = stored));
-		return watchGroups(budgetId, (stored) => (groups = stored));
-	});
-	$effect(() => {
-		loadAssignments(budgetId).then((stored) => (assignments = stored));
-		return watchAssignments(budgetId, (stored) => (assignments = stored));
-	});
+	$effect(() => watchGroupState(budgetId, (state) => (groupState = state)));
 
 	function toggle(label: string) {
 		collapsed = { ...collapsed, [label]: !collapsed[label] };
@@ -147,9 +145,7 @@
 	);
 
 	function groupsForSection(kind: "onbudget" | "offbudget"): AccountGroup[] {
-		return Object.values(groups)
-			.filter((g) => g.section === kind)
-			.sort((a, b) => a.order - b.order);
+		return groupsIn(kind, groupState, accounts);
 	}
 
 	function bucketOf(account: SidebarAccount): string | null {
@@ -238,16 +234,13 @@
 		if (!kind) {
 			return;
 		}
-		const created = createGroup(groups, kind);
-		groups = created.groups;
-		saveGroups(budgetId, created.groups);
-		editingGroupId = created.id;
+		void addGroup(budgetId, groupState, kind).then((id) => (editingGroupId = id));
 	}
 
 	function commitRename(id: string, label: string) {
-		const next = renameGroup(groups, id, label);
-		groups = next;
-		saveGroups(budgetId, next);
+		const state = groupState;
+		groupState = { ...state, groups: renameGroup(state.groups, id, label) };
+		void renameGroupTo(budgetId, state, id, label);
 		editingGroupId = null;
 	}
 
@@ -268,11 +261,9 @@
 	}
 
 	function ungroup(group: AccountGroup) {
-		const result = removeGroup(groups, assignments, group.id);
-		groups = result.groups;
-		assignments = result.assignments;
-		saveGroups(budgetId, result.groups);
-		saveAssignments(budgetId, result.assignments);
+		const state = groupState;
+		groupState = { ...state, ...removeGroup(state.groups, state.assignments, group.id) };
+		void deleteGroup(budgetId, state, group.id);
 		closeMenu();
 	}
 
@@ -311,8 +302,22 @@
 		overPos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
 	}
 
+	function canDropInGroup(groupId: string): boolean {
+		const kind = dragSrcId ? sectionOf(dragSrcId) : null;
+		return (
+			(kind === "onbudget" || kind === "offbudget") &&
+			groupsForSection(kind).some((g) => g.id === groupId)
+		);
+	}
+
+	function assign(accountId: string, groupId: string | null) {
+		const state = groupState;
+		groupState = { ...state, assignments: assignAccount(state.assignments, accountId, groupId) };
+		void moveToGroup(budgetId, state, accountId, groupId);
+	}
+
 	function onGroupDragOver(e: DragEvent, groupId: string) {
-		if (!dragSrcId || sectionOf(dragSrcId) !== groups[groupId]?.section) {
+		if (!canDropInGroup(groupId)) {
 			return;
 		}
 		e.preventDefault();
@@ -324,13 +329,11 @@
 	}
 
 	function onGroupDrop(e: DragEvent, groupId: string) {
-		if (!dragSrcId || sectionOf(dragSrcId) !== groups[groupId]?.section) {
+		if (!dragSrcId || !canDropInGroup(groupId)) {
 			return;
 		}
 		e.preventDefault();
-		const next = assignAccount(assignments, dragSrcId, groupId);
-		assignments = next;
-		saveAssignments(budgetId, next);
+		assign(dragSrcId, groupId);
 		endDrag();
 	}
 
@@ -349,9 +352,7 @@
 
 		const dragged = accounts.find((a) => a.id === dragSrcId);
 		if (dragged && bucketOf(dragged) !== targetGroupId) {
-			const nextAssignments = assignAccount(assignments, dragSrcId, targetGroupId);
-			assignments = nextAssignments;
-			saveAssignments(budgetId, nextAssignments);
+			assign(dragSrcId, targetGroupId);
 		}
 
 		const ids = sectionItems.map((a) => a.id);
