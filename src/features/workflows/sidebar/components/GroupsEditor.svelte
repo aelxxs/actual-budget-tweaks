@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Info, Plus, X } from "@lucide/svelte";
+	import { GripVertical, Info, Plus, X } from "@lucide/svelte";
 	import { onMount, tick } from "svelte";
 	import { onListChange, query } from "@lib/utilities/actual-api";
 	import type { Account } from "@lib/types/actual-schema";
@@ -10,9 +10,11 @@
 		groupOf,
 		groupsIn,
 		importGroups,
+		moveGroup,
 		removeGroup,
 		renameGroup,
 		renameGroupTo,
+		reorderGroups,
 		watchGroupState,
 	} from "../lib/groups";
 
@@ -80,6 +82,82 @@
 		void deleteGroup(budgetId, prev, id);
 	}
 
+	function reorder(kind: Section, id: string, beforeId: string | null) {
+		const prev = groupState;
+		const reordered = reorderGroups(inSection(kind), id, beforeId);
+		groupState = {
+			...prev,
+			groups: { ...prev.groups, ...Object.fromEntries(reordered.map((g) => [g.id, g])) },
+		};
+		void moveGroup(budgetId, prev, reordered, id, beforeId);
+	}
+
+	let drag = $state<{ kind: Section; id: string } | null>(null);
+	let over = $state<{ id: string; pos: "before" | "after" } | null>(null);
+
+	function onDragStart(e: DragEvent, kind: Section, id: string) {
+		drag = { kind, id };
+		const row = (e.currentTarget as HTMLElement).closest(".row");
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = "move";
+			e.dataTransfer.setData("text/plain", id);
+			if (row) {
+				e.dataTransfer.setDragImage(row, 16, 16);
+			}
+		}
+	}
+
+	function onDragOver(e: DragEvent, kind: Section, id: string) {
+		if (drag?.kind !== kind) {
+			return;
+		}
+		e.preventDefault();
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		over =
+			id === drag.id
+				? null
+				: { id, pos: e.clientY < rect.top + rect.height / 2 ? "before" : "after" };
+	}
+
+	function onDrop(e: DragEvent, kind: Section) {
+		if (drag?.kind !== kind) {
+			return;
+		}
+		e.preventDefault();
+		const { id } = drag;
+		const target = over;
+		endDrag();
+		if (!target) {
+			return;
+		}
+		const rest = inSection(kind).filter((g) => g.id !== id);
+		const at = rest.findIndex((g) => g.id === target.id) + (target.pos === "after" ? 1 : 0);
+		reorder(kind, id, rest[at]?.id ?? null);
+	}
+
+	function endDrag() {
+		drag = null;
+		over = null;
+	}
+
+	async function onHandleKey(e: KeyboardEvent, kind: Section, id: string) {
+		if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+			return;
+		}
+		e.preventDefault();
+		const list = inSection(kind);
+		const i = list.findIndex((g) => g.id === id);
+		if (e.key === "ArrowUp" && i > 0) {
+			reorder(kind, id, list[i - 1].id);
+		} else if (e.key === "ArrowDown" && i < list.length - 1) {
+			reorder(kind, id, list[i + 2]?.id ?? null);
+		} else {
+			return;
+		}
+		await tick();
+		listEl.querySelector<HTMLElement>(`[data-handle="${id}"]`)?.focus();
+	}
+
 	async function moveIntoActual() {
 		importing = true;
 		try {
@@ -126,7 +204,29 @@
 			{/if}
 			{#each list as group (group.id)}
 				{@const count = accountCount(group.id, section.kind)}
-				<div class="row">
+				<div
+					class="row"
+					class:dragging={drag?.id === group.id}
+					class:drop-before={over?.id === group.id && over.pos === "before"}
+					class:drop-after={over?.id === group.id && over.pos === "after"}
+					ondragover={(e) => onDragOver(e, section.kind, group.id)}
+					ondrop={(e) => onDrop(e, section.kind)}
+					role="listitem"
+				>
+					<button
+						type="button"
+						class="handle abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+						draggable="true"
+						data-handle={group.id}
+						title="Drag to reorder, or use the arrow keys"
+						aria-label="Move {group.label}"
+						disabled={list.length < 2}
+						ondragstart={(e) => onDragStart(e, section.kind, group.id)}
+						ondragend={endDrag}
+						onkeydown={(e) => onHandleKey(e, section.kind, group.id)}
+					>
+						<GripVertical size={14} strokeWidth={1.75} />
+					</button>
 					<input
 						class="abt-input name"
 						type="text"
@@ -228,9 +328,45 @@
 	}
 
 	.row {
+		position: relative;
 		display: flex;
 		align-items: center;
 		gap: var(--abt-space-3);
+	}
+
+	.row.dragging {
+		opacity: 0.4;
+	}
+
+	.row.drop-before::after,
+	.row.drop-after::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--abt-accent);
+		pointer-events: none;
+	}
+
+	.row.drop-before::after {
+		top: calc(-1 * var(--abt-space-1) - 1px);
+	}
+
+	.row.drop-after::after {
+		bottom: calc(-1 * var(--abt-space-1) - 1px);
+	}
+
+	.handle {
+		flex-shrink: 0;
+		margin-right: calc(-1 * var(--abt-space-2));
+		color: var(--color-pageTextSubdued);
+		cursor: grab;
+	}
+
+	.handle:disabled {
+		visibility: hidden;
 	}
 
 	.name {

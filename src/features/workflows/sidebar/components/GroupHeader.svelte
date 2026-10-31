@@ -19,6 +19,8 @@
 		onContextMenu,
 		onDragOver,
 		onDrop,
+		onDragStart,
+		onDragEnd,
 	}: {
 		group: AccountGroup;
 		count: number;
@@ -35,6 +37,8 @@
 		onContextMenu: (e: MouseEvent) => void;
 		onDragOver: (e: DragEvent) => void;
 		onDrop: (e: DragEvent) => void;
+		onDragStart: (e: DragEvent) => void;
+		onDragEnd: () => void;
 	} = $props();
 
 	let editValue = $derived(group.label);
@@ -83,6 +87,9 @@
 		oncontextmenu={onContextMenu}
 		ondragover={onDragOver}
 		ondrop={onDrop}
+		draggable="true"
+		ondragstart={onDragStart}
+		ondragend={onDragEnd}
 	>
 		<ChevronDown
 			class={open ? "caret" : "caret collapsed"}

@@ -257,6 +257,40 @@ export async function moveToGroup(
 	refreshNative();
 }
 
+/** A section's groups with `id` moved in front of `beforeId`, or to the end when it's null. */
+export function reorderGroups(
+	list: AccountGroup[],
+	id: string,
+	beforeId: string | null,
+): AccountGroup[] {
+	const moving = list.find((g) => g.id === id);
+	if (!moving) {
+		return list;
+	}
+	const rest = list.filter((g) => g.id !== id);
+	const at = beforeId ? rest.findIndex((g) => g.id === beforeId) : -1;
+	rest.splice(at === -1 ? rest.length : at, 0, moving);
+	return rest.map((g, order) => ({ ...g, order }));
+}
+
+export async function moveGroup(
+	budgetId: string | undefined,
+	state: GroupState,
+	reordered: AccountGroup[],
+	id: string,
+	beforeId: string | null,
+): Promise<void> {
+	if (!state.native) {
+		saveGroups(budgetId, {
+			...state.groups,
+			...Object.fromEntries(reordered.map((g) => [g.id, g])),
+		});
+		return;
+	}
+	await send("account-group-move", { id, targetId: beforeId });
+	refreshNative();
+}
+
 /**
  * Moves ABT's groups into the budget, merging same-named ones across sections, then clears ABT's
  * copy so they can't come back if every native group is later deleted.

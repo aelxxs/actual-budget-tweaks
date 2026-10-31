@@ -19,10 +19,12 @@
 		groupOf,
 		groupsIn,
 		loadCollapsedGroups,
+		moveGroup,
 		moveToGroup,
 		removeGroup,
 		renameGroup,
 		renameGroupTo,
+		reorderGroups,
 		saveCollapsedGroups,
 		watchCollapsedGroups,
 		watchGroupState,
@@ -337,6 +339,63 @@
 		endDrag();
 	}
 
+	// ---- drag to reorder groups within a section ----
+	let dragGroupId = $state<string | null>(null);
+	let overBlock = $state<{ id: string; pos: "before" | "after" } | null>(null);
+
+	function endGroupDrag() {
+		dragGroupId = null;
+		overBlock = null;
+	}
+
+	function onGroupDragStart(e: DragEvent, id: string) {
+		hideHoverCard();
+		dragGroupId = id;
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = "move";
+			e.dataTransfer.setData("text/plain", id);
+		}
+	}
+
+	function onBlockDragOver(e: DragEvent, kind: "onbudget" | "offbudget", id: string) {
+		if (!dragGroupId || !groupsForSection(kind).some((g) => g.id === dragGroupId)) {
+			return;
+		}
+		e.preventDefault();
+		if (e.dataTransfer) {
+			e.dataTransfer.dropEffect = "move";
+		}
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		overBlock =
+			id === dragGroupId
+				? null
+				: { id, pos: e.clientY < rect.top + rect.height / 2 ? "before" : "after" };
+	}
+
+	function onBlockDrop(e: DragEvent, kind: "onbudget" | "offbudget") {
+		if (!dragGroupId) {
+			return;
+		}
+		e.preventDefault();
+		const id = dragGroupId;
+		const target = overBlock;
+		endGroupDrag();
+		if (!target) {
+			return;
+		}
+		const list = groupsForSection(kind);
+		const rest = list.filter((g) => g.id !== id);
+		const at = rest.findIndex((g) => g.id === target.id) + (target.pos === "after" ? 1 : 0);
+		const beforeId = rest[at]?.id ?? null;
+		const reordered = reorderGroups(list, id, beforeId);
+		const state = groupState;
+		groupState = {
+			...state,
+			groups: { ...state.groups, ...Object.fromEntries(reordered.map((g) => [g.id, g])) },
+		};
+		void moveGroup(budgetId, state, reordered, id, beforeId);
+	}
+
 	/** Dropping onto an ungrouped-bucket row (or the target's bucket, whichever it is) reorders, and — if the dragged account was in a different bucket — reassigns its group to match. */
 	function onDrop(
 		e: DragEvent,
@@ -531,61 +590,74 @@
 						{/if}
 						{#each groupsForSection(kind) as group (group.id)}
 							{@const itemsInGroup = section.items.filter((a) => bucketOf(a) === group.id)}
-							<GroupHeader
-								{group}
-								count={itemsInGroup.length}
-								total={showGroupTotals && itemsInGroup.length
-									? itemsInGroup.reduce((sum, a) => sum + a.balance, 0)
-									: null}
-								{budgetId}
-								open={!collapsedGroups[group.id]}
-								editing={editingGroupId === group.id}
-								dropActive={overGroupId === group.id}
-								onToggleOpen={() => toggleGroup(group.id)}
-								onStartRename={() => (editingGroupId = group.id)}
-								onCommitRename={(label) => commitRename(group.id, label)}
-								onCancelRename={() => (editingGroupId = null)}
-								onContextMenu={(e) => openGroupMenu(e, group)}
-								onDragOver={(e) => onGroupDragOver(e, group.id)}
-								onDrop={(e) => onGroupDrop(e, group.id)}
-							/>
-							{#if !collapsedGroups[group.id]}
-								{#if itemsInGroup.length}
-									<div class="account-list indented">
-										{#each itemsInGroup as account (account.id)}
-											<AccountRow
-												{account}
-												icon={icons[account.id]}
-												{iconPicker}
-												dragging={dragSrcId === account.id}
-												dropPos={overId === account.id ? overPos : null}
-												editing={editingAccountId === account.id}
-												onDragStart={(e) => onDragStart(e, account.id)}
-												onDragOver={(e) => onDragOver(e, account.id)}
-												onDrop={(e) =>
-													onDrop(e, section.label, account.id, group.id, section.items)}
-												onDragEnd={endDrag}
-												onStartRename={() => (editingAccountId = account.id)}
-												onCommitRename={(name) => commitAccountRename(account.id, name)}
-												onCancelRename={() => (editingAccountId = null)}
-												onContextMenu={(e) => openAccountMenu(e, account)}
-												onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
-												onRowMouseLeave={hideHoverCard}
-											/>
-										{/each}
-									</div>
-								{:else}
-									<div
-										class="group-empty-hint"
-										class:drop-before={overGroupId === group.id}
-										ondragover={(e) => onGroupDragOver(e, group.id)}
-										ondrop={(e) => onGroupDrop(e, group.id)}
-										role="list"
-									>
-										Drop accounts here
-									</div>
+							<div
+								class="group-block"
+								class:dragging={dragGroupId === group.id}
+								class:drop-before={overBlock?.id === group.id && overBlock.pos === "before"}
+								class:drop-after={overBlock?.id === group.id && overBlock.pos === "after"}
+								ondragover={(e) => kind && onBlockDragOver(e, kind, group.id)}
+								ondrop={(e) => kind && onBlockDrop(e, kind)}
+								role="group"
+								aria-label={group.label}
+							>
+								<GroupHeader
+									{group}
+									count={itemsInGroup.length}
+									total={showGroupTotals && itemsInGroup.length
+										? itemsInGroup.reduce((sum, a) => sum + a.balance, 0)
+										: null}
+									{budgetId}
+									open={!collapsedGroups[group.id]}
+									editing={editingGroupId === group.id}
+									dropActive={overGroupId === group.id}
+									onToggleOpen={() => toggleGroup(group.id)}
+									onStartRename={() => (editingGroupId = group.id)}
+									onCommitRename={(label) => commitRename(group.id, label)}
+									onCancelRename={() => (editingGroupId = null)}
+									onContextMenu={(e) => openGroupMenu(e, group)}
+									onDragOver={(e) => onGroupDragOver(e, group.id)}
+									onDrop={(e) => onGroupDrop(e, group.id)}
+									onDragStart={(e) => onGroupDragStart(e, group.id)}
+									onDragEnd={endGroupDrag}
+								/>
+								{#if !collapsedGroups[group.id]}
+									{#if itemsInGroup.length}
+										<div class="account-list indented">
+											{#each itemsInGroup as account (account.id)}
+												<AccountRow
+													{account}
+													icon={icons[account.id]}
+													{iconPicker}
+													dragging={dragSrcId === account.id}
+													dropPos={overId === account.id ? overPos : null}
+													editing={editingAccountId === account.id}
+													onDragStart={(e) => onDragStart(e, account.id)}
+													onDragOver={(e) => onDragOver(e, account.id)}
+													onDrop={(e) =>
+														onDrop(e, section.label, account.id, group.id, section.items)}
+													onDragEnd={endDrag}
+													onStartRename={() => (editingAccountId = account.id)}
+													onCommitRename={(name) => commitAccountRename(account.id, name)}
+													onCancelRename={() => (editingAccountId = null)}
+													onContextMenu={(e) => openAccountMenu(e, account)}
+													onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
+													onRowMouseLeave={hideHoverCard}
+												/>
+											{/each}
+										</div>
+									{:else}
+										<div
+											class="group-empty-hint"
+											class:drop-before={overGroupId === group.id}
+											ondragover={(e) => onGroupDragOver(e, group.id)}
+											ondrop={(e) => onGroupDrop(e, group.id)}
+											role="list"
+										>
+											Drop accounts here
+										</div>
+									{/if}
 								{/if}
-							{/if}
+							</div>
 						{/each}
 					{/if}
 				{/if}
@@ -853,6 +925,30 @@
 		width: 100%;
 	}
 	/* Centres a nested row's status dot between its sub-category's caret and label. */
+	.group-block {
+		position: relative;
+	}
+	.group-block.dragging {
+		opacity: 0.4;
+	}
+	.group-block.drop-before::after,
+	.group-block.drop-after::after {
+		content: "";
+		position: absolute;
+		left: 8px;
+		right: 8px;
+		height: 2px;
+		border-radius: 2px;
+		background: var(--abt-accent);
+		box-shadow: 0 0 4px var(--abt-accent-4);
+		pointer-events: none;
+	}
+	.group-block.drop-before::after {
+		top: -1px;
+	}
+	.group-block.drop-after::after {
+		bottom: -1px;
+	}
 	.account-list.indented {
 		padding-left: 9.5px;
 	}
