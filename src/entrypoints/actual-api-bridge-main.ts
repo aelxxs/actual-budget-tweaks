@@ -315,6 +315,37 @@ export default defineUnlistedScript(async () => {
 		store.subscribe(report);
 	}
 
+	// Reports each synced pref a content script asked for, then every change to it.
+	const watchedPrefs = new Map();
+	let prefStore = null;
+	function reportPref(key) {
+		const value = prefStore?.getState().prefs?.synced?.[key] ?? null;
+		if (watchedPrefs.get(key) === value) {
+			return;
+		}
+		watchedPrefs.set(key, value);
+		document.dispatchEvent(
+			new CustomEvent("abt:api:synced-pref", { detail: JSON.stringify({ key, value }) }),
+		);
+	}
+	document.addEventListener("abt:api:synced-pref-request", (e) => {
+		const { key } = parseDetail(e);
+		if (typeof key === "string") {
+			watchedPrefs.set(key, undefined);
+			reportPref(key);
+		}
+	});
+	function watchSyncedPrefs(store) {
+		prefStore = store;
+		const report = () => {
+			for (const key of watchedPrefs.keys()) {
+				reportPref(key);
+			}
+		};
+		report();
+		store.subscribe(report);
+	}
+
 	// Reports which accounts are bank-syncing. Actual keeps that only in its store; the result
 	// is saved to the accounts table when each finishes.
 	function watchSyncing(store) {
@@ -359,6 +390,7 @@ export default defineUnlistedScript(async () => {
 			watchImports(store);
 			watchPrivacy(store);
 			watchSyncing(store);
+			watchSyncedPrefs(store);
 			// Actual creates its query client before rendering, so it's there once the store is.
 			watchLists();
 			return;

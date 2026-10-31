@@ -33,10 +33,18 @@
 		watchGroupState,
 	} from "../lib/groups";
 	import { applyOrder, loadAccountOrder, watchAccountOrder } from "../lib/order";
-	import { navItems, settingsItem, settingsMenu, settingsPages } from "../lib/nav";
+	import { settingsItem, settingsMenu } from "../lib/nav";
+	import {
+		lockedItems,
+		mainItems,
+		optionalItems,
+		settingsItems,
+		trackSidebarMenu,
+	} from "../lib/menu.svelte";
 	import { route, trackRoute } from "../lib/route.svelte";
 
 	$effect(() => trackRoute());
+	$effect(() => trackSidebarMenu());
 
 	function isActive(page: Page): boolean {
 		return Boolean(route()) && matchesPage(page);
@@ -154,13 +162,17 @@
 	let moreX = $state(0);
 	let moreY = $state(0);
 	const moreActive = $derived(
-		Boolean(route()) && settingsMenu.some((item) => matchesPage(item.page)),
+		Boolean(route()) && settingsMenu().some((item) => matchesPage(item.page)),
 	);
 
 	function toggleMore(e: MouseEvent) {
 		e.stopPropagation();
 		if (moreOpen) {
 			moreOpen = false;
+			return;
+		}
+		if (settingsItems().length === 0) {
+			go(settingsItem.page);
 			return;
 		}
 		const MH = 200;
@@ -331,7 +343,7 @@
 	<Search strokeWidth={1.5} />
 </button>
 <div class="rail-nav">
-	{#each navItems as item (item.page)}
+	{#each showAccounts ? mainItems() : lockedItems() as item (item.page)}
 		<button
 			type="button"
 			class="rail-icon"
@@ -372,7 +384,7 @@
 {#if !showAccounts}
 	<div class="rail-divider"></div>
 	<div class="rail-nav">
-		{#each [...settingsPages, settingsItem] as item (item.page)}
+		{#each [...optionalItems(), settingsItem] as item (item.page)}
 			<button
 				type="button"
 				class="rail-icon"
@@ -389,7 +401,7 @@
 
 {#if moreOpen}
 	<div use:portal class="ctx" style="top: {moreY}px; left: {moreX}px">
-		{#each settingsMenu as item (item.page)}
+		{#each settingsMenu() as item (item.page)}
 			<button
 				type="button"
 				class="ctx-item"

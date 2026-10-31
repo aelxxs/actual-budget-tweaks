@@ -346,6 +346,21 @@ export function onListChange(scope: string, callback: () => void): () => void {
 	return () => document.removeEventListener("abt:api:lists", listener);
 }
 
+/** Calls back with one of Actual's synced prefs now and on each change; null when unset. */
+export function onSyncedPref(key: string, callback: (value: string | null) => void): () => void {
+	const listener = (e: Event) => {
+		const d = readDetail<{ key: string; value: unknown }>(e);
+		if (d.key === key) {
+			callback(d.value == null ? null : String(d.value));
+		}
+	};
+	document.addEventListener("abt:api:synced-pref", listener);
+	document.dispatchEvent(
+		new CustomEvent("abt:api:synced-pref-request", { detail: JSON.stringify({ key }) }),
+	);
+	return () => document.removeEventListener("abt:api:synced-pref", listener);
+}
+
 /** Calls back with the accounts bank-syncing right now, each time that set changes. */
 export function onSyncingAccounts(callback: (ids: Set<string>) => void): () => void {
 	const listener = (e: Event) => {

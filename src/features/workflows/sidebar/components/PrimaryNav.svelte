@@ -8,7 +8,8 @@
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
 	import { getValue, setValue } from "@lib/utilities/store";
 	import { CalendarDays, ChevronDown } from "@lucide/svelte";
-	import { navItems, settingsItem, settingsMenu } from "../lib/nav";
+	import { settingsItem, settingsMenu } from "../lib/nav";
+	import { mainItems, settingsItems, trackSidebarMenu } from "../lib/menu.svelte";
 	import { route, trackRoute } from "../lib/route.svelte";
 
 	// Only shown if the user has the Spending Calendar feature enabled — reads
@@ -59,13 +60,14 @@
 	}
 
 	$effect(() => trackRoute());
+	$effect(() => trackSidebarMenu());
 
 	// `route()` is read in this expression so each binding calling it tracks navigation.
 	function isActive(page: Page): boolean {
 		return Boolean(route()) && matchesPage(page);
 	}
 
-	const inSettings = $derived(settingsMenu.some((item) => isActive(item.page)));
+	const inSettings = $derived(settingsMenu().some((item) => isActive(item.page)));
 
 	// Opens on arriving at a settings page, like Actual's own menu; collapsing it there sticks.
 	$effect(() => {
@@ -76,7 +78,7 @@
 </script>
 
 <nav class="nav">
-	{#each navItems as item (item.page)}
+	{#each mainItems() as item (item.page)}
 		<button
 			type="button"
 			class="nav-link"
@@ -100,38 +102,50 @@
 		</button>
 	{/if}
 
-	<button
-		type="button"
-		class="nav-link"
-		class:active={!moreExpanded && inSettings}
-		aria-expanded={moreExpanded}
-		onclick={toggleMore}
-	>
-		<span class="nav-icon"><settingsItem.icon strokeWidth={1.5} /></span>
-		<span class="nav-label">{settingsItem.label}</span>
-		<span class="nav-caret">
-			<ChevronDown
-				class={moreExpanded ? "caret" : "caret collapsed"}
-				color="var(--abt-ink-5)"
-				strokeWidth={3}
-			/>
-		</span>
-	</button>
+	{#if settingsItems().length === 0}
+		<button
+			type="button"
+			class="nav-link"
+			class:active={isActive(settingsItem.page)}
+			onclick={() => go(settingsItem.page)}
+		>
+			<span class="nav-icon"><settingsItem.icon strokeWidth={1.5} /></span>
+			<span class="nav-label">{settingsItem.label}</span>
+		</button>
+	{:else}
+		<button
+			type="button"
+			class="nav-link"
+			class:active={!moreExpanded && inSettings}
+			aria-expanded={moreExpanded}
+			onclick={toggleMore}
+		>
+			<span class="nav-icon"><settingsItem.icon strokeWidth={1.5} /></span>
+			<span class="nav-label">{settingsItem.label}</span>
+			<span class="nav-caret">
+				<ChevronDown
+					class={moreExpanded ? "caret" : "caret collapsed"}
+					color="var(--abt-ink-5)"
+					strokeWidth={3}
+				/>
+			</span>
+		</button>
 
-	{#if moreExpanded}
-		<div class="nav-sublist">
-			{#each settingsMenu as sub (sub.page)}
-				<button
-					type="button"
-					class="nav-link nav-sublink"
-					class:active={isActive(sub.page)}
-					onclick={() => go(sub.page)}
-				>
-					<span class="nav-icon"><sub.icon strokeWidth={1.5} /></span>
-					<span class="nav-label">{sub.label}</span>
-				</button>
-			{/each}
-		</div>
+		{#if moreExpanded}
+			<div class="nav-sublist">
+				{#each settingsMenu() as sub (sub.page)}
+					<button
+						type="button"
+						class="nav-link nav-sublink"
+						class:active={isActive(sub.page)}
+						onclick={() => go(sub.page)}
+					>
+						<span class="nav-icon"><sub.icon strokeWidth={1.5} /></span>
+						<span class="nav-label">{sub.label}</span>
+					</button>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 </nav>
 

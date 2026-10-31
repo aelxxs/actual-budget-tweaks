@@ -30,8 +30,21 @@ export function clearOverlayPage(): void {
 	overlay = null;
 }
 
-/** Pages Actual moved under /settings/ (actualbudget/actual#9110). */
-const SETTINGS_PAGES: readonly Page[] = [Page.Payees, Page.Rules, Page.BankSync, Page.Tags];
+/** Pages Actual can put under /settings/ (actualbudget/actual#9110, #9193). */
+const SETTINGS_PAGES: readonly Page[] = [
+	Page.Schedules,
+	Page.Payees,
+	Page.Rules,
+	Page.BankSync,
+	Page.Tags,
+];
+
+/** Which of them the user keeps in the sidebar instead, set from Actual's sidebar menu pref. */
+let sidebarPages: readonly Page[] = [Page.Schedules];
+
+export function setSidebarPages(pages: readonly Page[]): void {
+	sidebarPages = pages;
+}
 
 export function matchesPage(page: Page): boolean {
 	if (overlay?.el.isConnected && overlay.path === getCurrentPath()) {
@@ -60,7 +73,9 @@ function usesNestedSettings(): boolean {
 }
 
 export function pagePath(page: Page): string {
-	return SETTINGS_PAGES.includes(page) && usesNestedSettings() ? `/settings/${page}` : `/${page}`;
+	return SETTINGS_PAGES.includes(page) && !sidebarPages.includes(page) && usesNestedSettings()
+		? `/settings/${page}`
+		: `/${page}`;
 }
 
 /** Actual renders its mobile app below its "small" breakpoint (512px), a separate component tree. */
