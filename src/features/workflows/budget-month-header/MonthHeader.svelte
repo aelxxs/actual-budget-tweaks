@@ -3,6 +3,7 @@
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Icon from "@lib/components/Icon.svelte";
+	import { onListChange } from "@lib/utilities/actual-api";
 	import { cubicOut } from "svelte/easing";
 	import { slide } from "svelte/transition";
 	import {
@@ -45,20 +46,22 @@
 	const outOfBounds = (key: string) => key < bounds.start || key > bounds.end;
 
 	// Budgets for new months are created as they're reached, so the bounds can grow.
-	$effect(() => {
-		if (!start) {
-			return;
-		}
-		let stale = false;
+	let boundsSeq = 0;
+	function reloadBounds() {
+		const seq = ++boundsSeq;
 		void loadBounds().then((b) => {
-			if (!stale) {
+			if (seq === boundsSeq) {
 				bounds = b;
 			}
 		});
-		return () => {
-			stale = true;
-		};
+	}
+	$effect(() => {
+		if (start) {
+			reloadBounds();
+		}
 	});
+	// Budgeting near the end of the range extends it (actualbudget/actual#9293).
+	$effect(() => onListChange("budget-bounds", reloadBounds));
 
 	// Showing more months near the budget's end would run past it; start earlier instead.
 	async function setCount(count: number) {

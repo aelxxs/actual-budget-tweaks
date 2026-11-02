@@ -334,7 +334,8 @@ export function invalidateQueries(queryKey: string[]): void {
 
 /**
  * Calls back whenever Actual refetches one of its lists ("accounts", "categories", "payees",
- * "account-groups"), which it does after any change to it. Returns an unsubscribe.
+ * "account-groups"), which it does after any change to it. Also "budget-bounds", the budget's
+ * month range. Returns an unsubscribe.
  */
 export function onListChange(scope: string, callback: () => void): () => void {
 	const listener = (e: Event) => {

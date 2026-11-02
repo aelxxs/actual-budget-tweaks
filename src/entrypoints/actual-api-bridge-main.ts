@@ -375,7 +375,9 @@ export default defineUnlistedScript(async () => {
 	function watchLists() {
 		window.__TANSTACK_QUERY_CLIENT__?.getQueryCache?.().subscribe((event) => {
 			const [scope, kind] = event.query?.queryKey ?? [];
-			if (event.type !== "updated" || event.action?.type !== "success" || kind !== "lists") {
+			// Budget bounds (actualbudget/actual#9293) grow as months are budgeted; it isn't a list.
+			const watched = kind === "lists" || scope === "budget-bounds";
+			if (event.type !== "updated" || event.action?.type !== "success" || !watched) {
 				return;
 			}
 			document.dispatchEvent(
