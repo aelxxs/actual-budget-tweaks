@@ -406,7 +406,7 @@
 				"defaultValue": true,
 				"platform": "desktop",
 				"label": "Goal Funding",
-				"description": "Click a category's balance to see its goal progress and assign money to an underfunded goal.",
+				"description": "Click a category's balance to see its goal progress and assign money to an underfunded goal. Actual 26.11 and later show this themselves.",
 				"icon": "interest",
 				"group": "Tools",
 				"writes": "Budgets the rest of a goal to its category when you click Assign."

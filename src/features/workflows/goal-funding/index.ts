@@ -3,7 +3,7 @@ import { watchDom } from "@lib/utilities/dom-watcher";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import FundingSection from "./FundingSection.svelte";
 import { loadGoalState, type GoalState } from "./goal-state";
-import { LEFTOVER_CELL, MENU } from "@lib/actual-dom";
+import { GOAL_PROGRESS, LEFTOVER_CELL, MENU } from "@lib/actual-dom";
 
 const SECTION_ATTR = "data-abt-goal-funding";
 /** How long after pressing a balance its popover may still appear. */
@@ -76,6 +76,10 @@ function attachToNewPopover(): void {
 
 	pending = null;
 	stopObserving();
+	// Actual 26.11+ shows the goal and a fund option itself; one panel is enough.
+	if (popover.querySelector(GOAL_PROGRESS)) {
+		return;
+	}
 	popover.style.visibility = "hidden";
 	const reveal = () => popover.style.removeProperty("visibility");
 	const timeout = setTimeout(reveal, REVEAL_TIMEOUT_MS);
@@ -117,7 +121,7 @@ export const goalFunding = defineSetting({
 	envelopeOnly: true,
 	label: "Goal Funding",
 	description:
-		"Click a category's balance to see its goal progress and assign money to an underfunded goal.",
+		"Click a category's balance to see its goal progress and assign money to an underfunded goal. Actual 26.11 and later show this themselves.",
 	icon: "interest",
 	writes: "Budgets the rest of a goal to its category when you click Assign.",
 	context: {

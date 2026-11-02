@@ -24,6 +24,8 @@ export const FOCUS_KEY = "[data-focus-key]";
 export const MAIN = '[role="main"]';
 export const DIALOG = '[role="dialog"]';
 export const MENU = '[role="menu"]';
+/** Actual's own goal progress in the balance menu (actualbudget/actual#9281, 26.11+). */
+export const GOAL_PROGRESS = '[role="progressbar"]';
 export const TOAST = '[role="alert"]';
 export const NAVIGATION = '[role="navigation"]';
 /** Mobile lists: transactions and accounts are listboxes of options, the budget a grid of rows. */
