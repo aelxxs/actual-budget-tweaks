@@ -11,7 +11,9 @@ import {
 	shownSheets,
 	watchBudgetTable,
 } from "@lib/utilities/budget-cells";
+import { loadMonthMoves, movedOutById } from "@lib/utilities/budget-moves";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
+import { currentMonth, sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import FilterControl from "./FilterControl.svelte";
@@ -68,13 +70,27 @@ async function loadStatuses(table: HTMLElement): Promise<Map<string, Status>> {
 		}
 	}
 	const sheets = shownSheets(table);
+	// In a past month, a target short only by money moved out of it (to cover overspending, say) is done.
+	const moved = await Promise.all(
+		sheets.map(async (s) => {
+			const month = sheetToMonth(s);
+			return month && month < currentMonth()
+				? movedOutById(await loadMonthMoves(month).catch(() => []))
+				: new Map<string, number>();
+		}),
+	);
 	const statuses = new Map<string, Status>();
 	await Promise.all(
 		[...ids].map(async (id) => {
 			const months = await Promise.all(sheets.map((s) => fetchCells(s, id)));
-			const attention = months.some((c) => c.balance < 0 || c.goalShortfall > 0);
+			const attention = months.some(
+				(c, i) => c.balance < 0 || c.goalShortfall > (moved[i].get(id) ?? 0),
+			);
 			const funded =
-				!attention && months.some((c) => (c.hasGoal ? c.goalShortfall === 0 : c.balance > 0));
+				!attention &&
+				months.some((c, i) =>
+					c.hasGoal ? c.goalShortfall <= (moved[i].get(id) ?? 0) : c.balance > 0,
+				);
 			statuses.set(id, { attention, funded });
 		}),
 	);

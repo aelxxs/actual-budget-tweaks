@@ -5,7 +5,7 @@
 
 	const data = $derived(templatePlanState.overviewData);
 	const loading = $derived(templatePlanState.overviewLoading);
-	const remaining = $derived(data?.hasTemplates ? data.templateRemaining : null);
+	const remaining = $derived(data?.hasTemplates ? data.templateToApply : null);
 	const toApply = $derived(remaining !== null && remaining > 0);
 </script>
 

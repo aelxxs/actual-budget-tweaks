@@ -46,6 +46,8 @@ export interface OverviewData {
 	nextMonthGoalTotal: number | null;
 	/** Template funding still missing this month (what Apply would add); null if unknown. */
 	templateRemaining: number | null;
+	/** The part of it Apply would assign: Apply skips categories that already have money. */
+	templateToApply: number | null;
 	hasTemplates: boolean;
 	recentAvgSpending: number;
 }

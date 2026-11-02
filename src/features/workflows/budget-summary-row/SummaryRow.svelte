@@ -188,6 +188,9 @@
 						{/if}
 					{:else}
 						All targets met
+						{#if totals.settled}
+							· <span class="abt-privacy-number">{fmtMoney(totals.fromMoves)}</span> moved to other categories
+						{/if}
 					{/if}
 				</span>
 			</div>
@@ -198,6 +201,7 @@
 			short={totals.short}
 			overIds={totals.overIds}
 			overspent={totals.overspentNow}
+			toApply={totals.toApply}
 		/>
 	</div>
 {:else}

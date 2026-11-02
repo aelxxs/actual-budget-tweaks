@@ -13,9 +13,21 @@ export async function previewMonthTemplateTotal(
 	month: string,
 	categories: { id: string }[],
 ): Promise<number | null> {
+	return (await previewMonthTemplates(month, categories))?.remaining ?? null;
+}
+
+/**
+ * What templates still need this month (`remaining`), and how much of it Apply would assign
+ * (`onApply`): Apply skips categories that already have money assigned, unlike Overwrite.
+ */
+export async function previewMonthTemplates(
+	month: string,
+	categories: { id: string }[],
+): Promise<{ remaining: number; onApply: number } | null> {
 	try {
 		const templatesByCategory = await loadTemplatesByCategoryId(true);
-		let total = 0;
+		let remaining = 0;
+		let onApply = 0;
 		// Bound bridge traffic for budgets with many categories.
 		for (let start = 0; start < categories.length; start += CONCURRENCY) {
 			const amounts = await Promise.all(
@@ -25,7 +37,7 @@ export async function previewMonthTemplateTotal(
 						.filter((entry) => !isRemainderTemplate(entry))
 						.map((entry) => entry.engineTemplate);
 					if (templates.length === 0) {
-						return 0;
+						return { need: 0, assigned: 0 };
 					}
 					const [result, assignedCell] = await Promise.all([
 						send("budget/dry-run-category-template", {
@@ -49,12 +61,17 @@ export async function previewMonthTemplateTotal(
 					}
 					// The preview is the final assignment, not an additional amount.
 					// Clamp each category so excess cannot cover a different goal.
-					return Math.max(0, result.budgeted - assigned);
+					return { need: Math.max(0, result.budgeted - assigned), assigned };
 				}),
 			);
-			total += amounts.reduce((sum, amount) => sum + amount, 0);
+			for (const { need, assigned } of amounts) {
+				remaining += need;
+				if (assigned === 0) {
+					onApply += need;
+				}
+			}
 		}
-		return total;
+		return { remaining, onApply };
 	} catch (error) {
 		log.warn("next-month template preview failed", error);
 		// Never present a partial target or silently fall back to applied goals.

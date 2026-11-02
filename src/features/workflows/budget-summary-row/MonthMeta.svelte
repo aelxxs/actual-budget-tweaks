@@ -75,6 +75,7 @@
 		short={totals?.short ?? []}
 		overIds={totals?.overIds ?? []}
 		overspent={totals?.overspentNow ?? 0}
+		toApply={totals?.toApply ?? 0}
 	/>
 </div>
 

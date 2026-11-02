@@ -2,8 +2,10 @@ import { BALANCE_CELL_RE, fetchCells } from "@features/readability/category-prog
 import { readCell } from "@lib/utilities/budget-cells";
 import { loadMonthMoves, movedOutById } from "@lib/utilities/budget-moves";
 import { loadCurrency } from "@lib/utilities/currency";
-import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
-import type { Shortfall } from "./actions";
+import { addMonths, currentMonth, monthToSheet, sheetToMonth } from "@lib/utilities/months";
+import { loadCategories } from "@lib/template-plan/actual-data";
+import { previewMonthTemplates } from "@lib/template-plan/next-month-coverage";
+import { templatesEnabled, type Shortfall } from "./actions";
 import { LEFTOVER_CELL } from "@lib/actual-dom";
 
 export interface MonthTotals {
@@ -18,9 +20,13 @@ export interface MonthTotals {
 	short: Shortfall[];
 	/** How much of the targets' shortfall is money moved out of them this month. */
 	fromMoves: number;
+	/** A past month whose shortfall is all money moved out, e.g. to cover overspending: done, not short. */
+	settled: boolean;
 	/** This month's overspending, which comes out of next month's To Budget. */
 	overspentNow: number;
 	overIds: string[];
+	/** What Apply would assign; 0 without templates or To Budget. */
+	toApply: number;
 }
 
 /** The last totals per month, in memory only, so switching views can draw them at once. */
@@ -65,15 +71,19 @@ function categoryIds(): string[] {
 /** Targets and overspending, from the category cells both budget types share. */
 type CategoryStats = Pick<
 	MonthTotals,
-	"goals" | "funded" | "short" | "fromMoves" | "overspentNow" | "overIds"
+	"goals" | "funded" | "short" | "fromMoves" | "settled" | "overspentNow" | "overIds"
 >;
 
 async function categoryStats(sheet: string): Promise<CategoryStats> {
 	const ids = categoryIds();
-	const cats = (await Promise.all(ids.map((id) => fetchCells(sheet, id)))).map((cells, i) => ({
-		...cells,
-		id: ids[i],
-	}));
+	// Fresh reads: Apply can clear a goal without changing any cell the table shows, so the
+	// shared cache wouldn't know (a refill category whose balance already covers its cap).
+	const cats = (await Promise.all(ids.map((id) => fetchCells(sheet, id, true)))).map(
+		(cells, i) => ({
+			...cells,
+			id: ids[i],
+		}),
+	);
 	const withGoal = cats.filter((c) => c.hasGoal);
 	const over = cats.filter((c) => c.balance < 0);
 	const short = withGoal
@@ -84,11 +94,18 @@ async function categoryStats(sheet: string): Promise<CategoryStats> {
 		short.length && month
 			? movedOutById(await loadMonthMoves(month).catch(() => []))
 			: new Map<string, number>();
+	const fromMoves = short.reduce((t, c) => t + Math.min(c.shortfall, movedOut.get(c.id) ?? 0), 0);
+	const settled =
+		!!month &&
+		month < currentMonth() &&
+		short.length > 0 &&
+		fromMoves >= short.reduce((t, c) => t + c.shortfall, 0);
 	return {
 		goals: withGoal.length,
-		funded: withGoal.filter((c) => c.goalShortfall === 0).length,
-		short,
-		fromMoves: short.reduce((t, c) => t + Math.min(c.shortfall, movedOut.get(c.id) ?? 0), 0),
+		funded: settled ? withGoal.length : withGoal.filter((c) => c.goalShortfall === 0).length,
+		short: settled ? [] : short,
+		fromMoves,
+		settled,
 		overspentNow: over.reduce((sum, c) => sum - c.balance, 0),
 		overIds: over.map((c) => c.id),
 	};
@@ -115,10 +132,25 @@ export async function loadMonthTotals(sheet: string): Promise<MonthTotals> {
 		nextMonth: Math.abs(nextMonth),
 		spent: Math.abs(spent),
 		...(await categoryStats(sheet)),
+		toApply: toBudget > 0 ? await applyAmount(sheet) : 0,
 	};
 	latest.set(sheet, totals);
 	rememberTargets(totals.goals > 0);
 	return totals;
+}
+
+/**
+ * What Apply would assign, worked out with the rest so a month's suggestion is ready when its
+ * card draws. Goal cells can't tell this: Actual can set them with nothing budgeted
+ * (actualbudget/actual#9304).
+ */
+async function applyAmount(sheet: string): Promise<number> {
+	const month = sheetToMonth(sheet);
+	if (!month || !(await templatesEnabled())) {
+		return 0;
+	}
+	const cats = (await loadCategories()).filter((c) => !c.hidden);
+	return (await previewMonthTemplates(month, cats))?.onApply ?? 0;
 }
 
 /** A tracking budget's month: income and spending against what's budgeted, and the difference. */

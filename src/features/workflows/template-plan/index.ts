@@ -28,7 +28,10 @@ import {
 	waitForQuiescence,
 	type SnapshotDescriptor,
 } from "@lib/template-plan/actual-data";
-import { previewMonthTemplateTotal } from "@lib/template-plan/next-month-coverage";
+import {
+	previewMonthTemplates,
+	previewMonthTemplateTotal,
+} from "@lib/template-plan/next-month-coverage";
 import { createPriorityPlanner } from "@lib/template-plan/priority-plan";
 import {
 	BREAKDOWN_STORAGE_KEY,
@@ -269,24 +272,20 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 		const months = trendMonths(monthKey);
 		const nextMonthKey = addMonths(monthKey, 1);
 
-		const [
-			cells,
-			schedules,
-			pastCells,
-			nextCells,
-			nextMonthGoalTotal,
-			templateRemaining,
-			templates,
-		] = await Promise.all([
-			readCells(sheet, monthCellNames(cats)),
-			query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
-			Promise.all(months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats)))),
-			readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
-			previewMonthTemplateTotal(nextMonthKey, cats),
-			// What Apply would still assign this month; goal cells only fill once it has run.
-			previewMonthTemplateTotal(monthKey, cats),
-			loadTemplatesByCategoryId(),
-		]);
+		const [cells, schedules, pastCells, nextCells, nextMonthGoalTotal, templatePreview, templates] =
+			await Promise.all([
+				readCells(sheet, monthCellNames(cats)),
+				query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
+				Promise.all(
+					months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats))),
+				),
+				readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
+				previewMonthTemplateTotal(nextMonthKey, cats),
+				// Goal cells can't tell what's left: they fill once templates run, and Actual can set them
+				// without budgeting anything (actualbudget/actual#9304).
+				previewMonthTemplates(monthKey, cats),
+				loadTemplatesByCategoryId(),
+			]);
 
 		const toBudget = cells.get("to-budget") ?? 0;
 		const totalBudgeted = Math.abs(cells.get("total-budgeted") ?? 0);
@@ -310,7 +309,8 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 			nextMonthBudgeted: Math.abs(nextCells.get("total-budgeted") ?? 0),
 			nextMonthGoalTotal,
 			recentAvgSpending: recentAverageSpending(trend, totalBudgeted),
-			templateRemaining,
+			templateRemaining: templatePreview?.remaining ?? null,
+			templateToApply: templatePreview?.onApply ?? null,
 			hasTemplates: cats.some((c) => templates.has(c.id)),
 		};
 	} catch (e) {
