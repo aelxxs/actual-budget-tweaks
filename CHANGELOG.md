@@ -1,6 +1,32 @@
 # Changelog
 
 
+## v0.1.103
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.102...v0.1.103)
+
+### 🚀 Enhancements
+
+- Store sidebar account groups in Actual's budget when it supports them ([64cda29](https://github.com/aelxxs/actual-budget-tweaks/commit/64cda29))
+- Reorder account groups by dragging in the sidebar and the groups dialog ([de3ac70](https://github.com/aelxxs/actual-budget-tweaks/commit/de3ac70))
+- Follow Actual's sidebar page order and visibility in the live sidebar ([8e57b38](https://github.com/aelxxs/actual-budget-tweaks/commit/8e57b38))
+- Unlock budget months as soon as Actual extends its range ([fd936ab](https://github.com/aelxxs/actual-budget-tweaks/commit/fd936ab))
+- Hide the goal funding section when Actual shows its own goal status ([2af68f5](https://github.com/aelxxs/actual-budget-tweaks/commit/2af68f5))
+
+### 🩹 Fixes
+
+- Suggest Apply whenever it would add money, and count past months' moved-out targets as met ([7d76348](https://github.com/aelxxs/actual-budget-tweaks/commit/7d76348))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.102 ([5519d40](https://github.com/aelxxs/actual-budget-tweaks/commit/5519d40))
+- Update branding images ([96ad66a](https://github.com/aelxxs/actual-budget-tweaks/commit/96ad66a))
+- Regenerate features manifest ([d655c9e](https://github.com/aelxxs/actual-budget-tweaks/commit/d655c9e))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.102
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.101...v0.1.102)

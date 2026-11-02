@@ -3,7 +3,7 @@
 	"description": "",
 	"private": true,
 	"license": "MIT",
-	"version": "0.1.102",
+	"version": "0.1.103",
 	"type": "module",
 	"engines": {
 		"node": ">=22.13"
