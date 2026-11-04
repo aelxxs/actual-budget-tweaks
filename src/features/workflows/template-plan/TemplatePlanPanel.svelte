@@ -18,6 +18,10 @@
 				return "Applied template (single)";
 			case "apply-group":
 				return "Applied templates (group)";
+			case "fund":
+				return "Funded targets";
+			case "cover":
+				return "Covered overspending";
 			default:
 				return "Applied template";
 		}
