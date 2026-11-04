@@ -2,6 +2,9 @@ import { send } from "@lib/utilities/actual-api";
 import { readCell } from "@lib/utilities/budget-cells";
 import { getCurrencyCode } from "@lib/utilities/currency";
 import { CELL } from "@lib/actual-dom";
+import { loadTemplatesByCategoryId } from "@lib/template-plan/actual-data";
+import { comparePriority, type PriorityValue } from "@lib/template-plan/constants";
+import { isRemainderTemplate } from "@lib/template-plan/templates";
 
 /** What an action changed, so its toast can describe and undo it. */
 export interface ActionResult {
@@ -52,24 +55,100 @@ export async function coverOverspending(
 		: null;
 }
 
+/** Part of a category's shortfall, at the priority of the template it belongs to. */
+interface Piece {
+	id: string;
+	priority: PriorityValue;
+	amount: number;
+	/** The category's place in the table, which breaks ties within a priority like Actual. */
+	index: number;
+}
+
 /**
- * Funds the underfunded targets by applying just those categories' templates, which is where
- * targets come from: one call and one undo step however many there are, and when To Budget
- * runs short Actual funds them in template priority order.
+ * Splits each shortfall by template priority. The current budget covers templates in priority
+ * order, as when Actual applies them, so what's left is the later templates' share; any
+ * shortfall the templates don't explain (a `#goal` balance) comes last.
+ */
+async function shortfallPieces(sheet: string, short: Shortfall[]): Promise<Piece[]> {
+	const month = monthOf(sheet);
+	const templates = await loadTemplatesByCategoryId().catch(() => new Map<string, never[]>());
+	const pieces = await Promise.all(
+		short.map(async ({ id, shortfall }, index) => {
+			const entries = (templates.get(id) ?? [])
+				.filter((t) => t.engineTemplate && !isRemainderTemplate(t))
+				.sort((a, b) => comparePriority(a.priority, b.priority));
+			const [dry, budgeted] = await Promise.all([
+				entries.length
+					? send("budget/dry-run-category-template", {
+							month,
+							categoryId: id,
+							templates: entries.map((t) => t.engineTemplate),
+						}).catch(() => null)
+					: null,
+				readCell(sheet, `budget-${id}`, 0),
+			]);
+			const out: Piece[] = [];
+			let covered = budgeted;
+			let need = shortfall;
+			entries.forEach((t, i) => {
+				const demand = Math.max(0, dry?.perTemplate?.[i] ?? 0);
+				const fromBudget = Math.min(demand, Math.max(0, covered));
+				covered -= fromBudget;
+				const amount = Math.min(demand - fromBudget, need);
+				if (amount > 0) {
+					out.push({ id, priority: t.priority, amount, index });
+					need -= amount;
+				}
+			});
+			if (need > 0) {
+				out.push({ id, priority: null, amount: need, index });
+			}
+			return out;
+		}),
+	);
+	return pieces.flat().sort((a, b) => comparePriority(a.priority, b.priority) || a.index - b.index);
+}
+
+/**
+ * Moves each target's shortfall from To Budget, by template priority when To Budget runs short.
+ * Not Actual's apply-multiple-templates: that re-runs the templates over To Budget plus what
+ * the categories already hold, so a short month takes money back from lower priorities.
  */
 export async function fundTargets(sheet: string, short: Shortfall[]): Promise<ActionResult | null> {
-	if (!short.length) {
+	let left = await readCell(sheet, "to-budget", 0);
+	const needs = short.reduce((t, s) => t + s.shortfall, 0);
+	if (!short.length || left <= 0 || needs <= 0) {
 		return null;
 	}
-	const result = await send<TemplateNotification | null>("budget/apply-multiple-templates", {
-		month: monthOf(sheet),
-		categoryIds: short.map((s) => s.id),
-	});
+	// Order only matters when there isn't enough for every target.
+	const pieces =
+		left >= needs
+			? short.map(({ id, shortfall }, index) => ({ id, priority: null, amount: shortfall, index }))
+			: await shortfallPieces(sheet, short);
+	const adds = new Map<string, number>();
+	for (const piece of pieces) {
+		if (left <= 0) {
+			break;
+		}
+		const amount = Math.min(piece.amount, left);
+		adds.set(piece.id, (adds.get(piece.id) ?? 0) + amount);
+		left -= amount;
+	}
+	const month = monthOf(sheet);
+	for (const [category, amount] of adds) {
+		const budgeted = await readCell(sheet, `budget-${category}`, 0);
+		await send("budget/budget-amount", { month, category, amount: budgeted + amount });
+	}
+	const full = short.filter((s) => (adds.get(s.id) ?? 0) >= s.shortfall).length;
+	const partial = adds.size - full;
+	const total = plural(short.length, "target", "targets");
 	const message =
-		result?.message === "template-errors" || result?.message === "templates-up-to-date"
-			? TEMPLATE_MESSAGES[result.message](result)
-			: `Funded ${plural(result?.count ?? short.length, "target", "targets")}`;
-	return { message, undoSteps: 1, detail: result?.pre };
+		full === short.length
+			? `Funded ${total}`
+			: full
+				? `Funded ${full} of ${total}${partial ? `, and part of ${partial} more` : ""}`
+				: `Funded part of ${plural(partial, "target", "targets")}`;
+	return { message, undoSteps: adds.size };
 }
 
 export const BULK_ACTIONS = {
