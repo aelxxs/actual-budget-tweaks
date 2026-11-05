@@ -1,6 +1,29 @@
 # Changelog
 
 
+## v0.1.104
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.103...v0.1.104)
+
+### 🚀 Enhancements
+
+- Show the summary row's budget actions in Insights Breakdown ([81f1793](https://github.com/aelxxs/actual-budget-tweaks/commit/81f1793))
+- Show custom category icons in the transaction table and dropdowns ([2ea16fd](https://github.com/aelxxs/actual-budget-tweaks/commit/2ea16fd))
+
+### 🩹 Fixes
+
+- Apply the Income Breakdown widget's end date ([b8589b2](https://github.com/aelxxs/actual-budget-tweaks/commit/b8589b2))
+- Fund targets only from To Budget, never from other categories ([cce9425](https://github.com/aelxxs/actual-budget-tweaks/commit/cce9425))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.103 ([4e10979](https://github.com/aelxxs/actual-budget-tweaks/commit/4e10979))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+- Andy Su <andysu1551@gmail.com>
+
 ## v0.1.103
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.102...v0.1.103)
