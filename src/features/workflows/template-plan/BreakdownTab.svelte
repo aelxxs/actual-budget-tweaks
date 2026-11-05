@@ -41,7 +41,9 @@
 {#if templatePlanState.breakdownLoading}
 	<TabSkeleton tab="breakdown" />
 {:else if !breakdownState}
-	<div class="abt-tab-empty">Apply or overwrite a template to see a breakdown here.</div>
+	<div class="abt-tab-empty">
+		Apply templates, fund targets, or cover overspending to see a breakdown here.
+	</div>
 {:else}
 	{@const note = breakdownState.ctx.notification}
 	{#if note?.message && (note.type === "error" || note.type === "warning")}

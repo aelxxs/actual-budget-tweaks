@@ -1,4 +1,8 @@
 <script lang="ts">
+	import {
+		templatePlanState,
+		type TrackedAction,
+	} from "@features/workflows/template-plan/state.svelte";
 	import { BUDGET_SUMMARY } from "@lib/actual-dom";
 	import Icon from "@lib/components/Icon.svelte";
 	import { notify } from "@lib/utilities/actual-api";
@@ -67,18 +71,22 @@
 
 	const TEMPLATE_ITEMS: {
 		action: TemplateAction;
+		/** Shown in Insights Breakdown; cleanup and check aren't. */
+		track?: TrackedAction;
 		icon: "target" | "copy" | "sparkles" | "alert";
 		title: string;
 		desc: string;
 	}[] = [
 		{
 			action: "apply-goal-template",
+			track: "apply",
 			icon: "target",
 			title: "Apply budget template",
 			desc: "Fill categories that aren't budgeted yet",
 		},
 		{
 			action: "overwrite-goal-template",
+			track: "overwrite",
 			icon: "copy",
 			title: "Overwrite with budget template",
 			desc: "Replace every templated budget",
@@ -121,7 +129,7 @@
 				short: "Cover",
 				amount: coverable,
 				sub: "from To Budget",
-				run: () => perform(() => coverOverspending(sheet, overIds)),
+				run: () => perform(() => tracked("cover", () => coverOverspending(sheet, overIds))),
 			};
 		}
 		// Apply first: Fund targets only tops up goals, which can be stale until templates run.
@@ -133,7 +141,7 @@
 				short: "Apply",
 				amount: Math.min(toApply, toBudget),
 				sub: "from To Budget",
-				run: () => perform(() => runTemplate(sheet, "apply-goal-template")),
+				run: () => perform(() => tracked("apply", () => runTemplate(sheet, "apply-goal-template"))),
 			};
 		}
 		if (fundable > 0) {
@@ -144,7 +152,7 @@
 				short: "Fund",
 				amount: fundable,
 				sub: "from To Budget",
-				run: () => perform(() => fundTargets(sheet, short)),
+				run: () => perform(() => tracked("fund", () => fundTargets(sheet, short))),
 			};
 		}
 		return {
@@ -179,6 +187,15 @@
 		} finally {
 			busy = false;
 		}
+	}
+
+	/** Through Insights when it's on, so Breakdown shows what the action changed. */
+	function tracked(
+		kind: TrackedAction,
+		action: () => Promise<ActionResult | null>,
+	): Promise<ActionResult | null> {
+		const track = templatePlanState.trackBreakdown;
+		return track ? track(kind, action) : action();
 	}
 
 	function showToast(result: ActionResult) {
@@ -296,7 +313,7 @@
 			role="menuitem"
 			class="abt-menu__item"
 			disabled={fundable <= 0}
-			onclick={() => perform(() => fundTargets(sheet, short))}
+			onclick={() => perform(() => tracked("fund", () => fundTargets(sheet, short)))}
 		>
 			<Icon name="target" size={15} />
 			<span class="abt-stack abt-gap-1">
@@ -312,7 +329,7 @@
 			role="menuitem"
 			class="abt-menu__item"
 			disabled={coverable <= 0}
-			onclick={() => perform(() => coverOverspending(sheet, overIds))}
+			onclick={() => perform(() => tracked("cover", () => coverOverspending(sheet, overIds)))}
 		>
 			<Icon name="shield" size={15} />
 			<span class="abt-stack abt-gap-1">
@@ -361,7 +378,12 @@
 					type="button"
 					role="menuitem"
 					class="abt-menu__item"
-					onclick={() => perform(() => runTemplate(sheet, item.action))}
+					onclick={() =>
+						perform(() =>
+							item.track
+								? tracked(item.track, () => runTemplate(sheet, item.action))
+								: runTemplate(sheet, item.action),
+						)}
 				>
 					<Icon name={item.icon} size={15} />
 					<span class="abt-stack abt-gap-1">

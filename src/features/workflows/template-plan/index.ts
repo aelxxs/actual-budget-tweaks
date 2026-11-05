@@ -56,6 +56,7 @@ import {
 	type BreakdownDiff,
 	type InsightsTab,
 	type BreakdownState,
+	type TrackedAction,
 } from "./state.svelte";
 import TemplatePlanPanel from "./TemplatePlanPanel.svelte";
 import { createLogger } from "@lib/utilities/logger";
@@ -378,11 +379,15 @@ function classifyTrigger(target: EventTarget | null) {
 	return TRIGGER_LABELS.get(text) ?? null;
 }
 
-async function handleTrigger(
+/**
+ * Shows what a budget action changed in Breakdown. `doWork` runs the action, when ABT does
+ * rather than Actual's own menu; its result and errors go back to the caller.
+ */
+async function handleTrigger<T>(
 	kind: BreakdownState["ctx"]["kind"],
 	beforeStarts: SnapshotDescriptor[],
-	doWork?: () => Promise<void>,
-): Promise<void> {
+	doWork?: () => Promise<T>,
+): Promise<T | undefined> {
 	const seq = ++runSeq;
 	const signal = session;
 	// A newer run replaced this one, or the feature turned off.
@@ -396,67 +401,24 @@ async function handleTrigger(
 		openPanel();
 	}
 
+	let result: T | undefined;
+	let failure: { error: unknown } | null = null;
 	try {
-		const beforeMap = await finishSnapshots(beforeStarts);
+		// A snapshot that fails costs the breakdown, never the action.
+		const beforeMap = await finishSnapshots(beforeStarts).catch((e) => {
+			log.warn("template plan snapshot failed", e);
+			return null;
+		});
 		if (doWork) {
 			try {
-				await doWork();
-			} catch (e) {
-				void notify({ type: "error", message: "Couldn't apply templates", pre: String(e) });
-				return;
+				result = await doWork();
+			} catch (error) {
+				failure = { error };
 			}
 		}
-		// Lets Actual's spreadsheet and React settle the new values, from a click or a send().
-		await waitForQuiescence().catch(() => {});
-		if (stale()) {
-			return;
+		if (beforeMap && !failure) {
+			await recordBreakdown(kind, beforeMap, stale);
 		}
-		const afterMap = await finishSnapshots(startSnapshotAllVisible());
-		if (stale()) {
-			return;
-		}
-
-		// The month that changed most is the one the templates were applied to.
-		let diff: BreakdownDiff | null = null;
-		let sheet: string | null = null;
-		let bestScore = 0;
-		for (const [key, after] of afterMap) {
-			const before = beforeMap.get(key);
-			if (!before) {
-				continue;
-			}
-			const d = diffSnapshots(before, after);
-			const score = d.groups.reduce(
-				(acc, g) => acc + g.rows.reduce((a, r) => a + Math.abs(r.delta), 0),
-				0,
-			);
-			if (score > bestScore) {
-				[bestScore, diff, sheet] = [score, d, key];
-			}
-		}
-		sheet ??= afterMap.keys().next().value ?? null;
-
-		const priorityBreakdown =
-			sheet && diff
-				? await buildBreakdownPrioritySummary(sheet, diff).catch((e) => {
-						log.warn("template plan priority breakdown failed", e);
-						return null;
-					})
-				: null;
-		const budgetId = await loadCurrentBudgetId().catch(() => undefined);
-		if (stale()) {
-			return;
-		}
-
-		templatePlanState.breakdownState = {
-			diff: diff ?? EMPTY_DIFF,
-			budgetId,
-			ctx: { kind, month: sheetToMonthLabel(sheet ?? ""), notification: null, priorityBreakdown },
-		};
-		saveBreakdown();
-		templatePlanState.overviewData = null;
-		invalidatePriorityStatus();
-		refreshPriorityIfNeeded();
 	} catch (e) {
 		log.warn("template plan breakdown failed", e);
 	} finally {
@@ -464,6 +426,78 @@ async function handleTrigger(
 			templatePlanState.breakdownLoading = false;
 		}
 	}
+	if (failure) {
+		throw failure.error;
+	}
+	return result;
+}
+
+/** ABT's own actions, run from its buttons, which the click listener can't classify. */
+async function trackBreakdown<T>(kind: TrackedAction, work: () => Promise<T>): Promise<T> {
+	if (!isBudgetPage()) {
+		return work();
+	}
+	// With `doWork`, a run that doesn't throw returns its result.
+	return (await handleTrigger(kind, startSnapshotAllVisible(), work)) as T;
+}
+
+async function recordBreakdown(
+	kind: BreakdownState["ctx"]["kind"],
+	beforeMap: Awaited<ReturnType<typeof finishSnapshots>>,
+	stale: () => boolean,
+): Promise<void> {
+	// Lets Actual's spreadsheet and React settle the new values, from a click or a send().
+	await waitForQuiescence().catch(() => {});
+	if (stale()) {
+		return;
+	}
+	const afterMap = await finishSnapshots(startSnapshotAllVisible());
+	if (stale()) {
+		return;
+	}
+
+	// The month that changed most is the one the templates were applied to.
+	let diff: BreakdownDiff | null = null;
+	let sheet: string | null = null;
+	let bestScore = 0;
+	for (const [key, after] of afterMap) {
+		const before = beforeMap.get(key);
+		if (!before) {
+			continue;
+		}
+		const d = diffSnapshots(before, after);
+		const score = d.groups.reduce(
+			(acc, g) => acc + g.rows.reduce((a, r) => a + Math.abs(r.delta), 0),
+			0,
+		);
+		if (score > bestScore) {
+			[bestScore, diff, sheet] = [score, d, key];
+		}
+	}
+	sheet ??= afterMap.keys().next().value ?? null;
+
+	// Covering overspending moves money by need, not by template priority.
+	const priorityBreakdown =
+		sheet && diff && kind !== "cover"
+			? await buildBreakdownPrioritySummary(sheet, diff).catch((e) => {
+					log.warn("template plan priority breakdown failed", e);
+					return null;
+				})
+			: null;
+	const budgetId = await loadCurrentBudgetId().catch(() => undefined);
+	if (stale()) {
+		return;
+	}
+
+	templatePlanState.breakdownState = {
+		diff: diff ?? EMPTY_DIFF,
+		budgetId,
+		ctx: { kind, month: sheetToMonthLabel(sheet ?? ""), notification: null, priorityBreakdown },
+	};
+	saveBreakdown();
+	templatePlanState.overviewData = null;
+	invalidatePriorityStatus();
+	refreshPriorityIfNeeded();
 }
 
 function installClickListener(): () => void {
@@ -667,10 +701,16 @@ export const templatePlan = defineSetting({
 				return;
 			}
 			const beforeStarts = startSnapshotAllVisible();
-			await handleTrigger("apply", beforeStarts, () =>
-				send("budget/apply-goal-template", { month }),
-			);
+			try {
+				await handleTrigger("apply", beforeStarts, () =>
+					send("budget/apply-goal-template", { month }),
+				);
+			} catch (e) {
+				void notify({ type: "error", message: "Couldn't apply templates", pre: String(e) });
+			}
 		};
+
+		templatePlanState.trackBreakdown = trackBreakdown;
 
 		const stopClickListener = installClickListener();
 		const stopKeyboard = installKeyboard();
@@ -696,6 +736,7 @@ export const templatePlan = defineSetting({
 			teardownPanel();
 			templatePlanState.onTabChange = null;
 			templatePlanState.applyTemplates = null;
+			templatePlanState.trackBreakdown = null;
 			templatePlanState.overviewData = null;
 			templatePlanState.breakdownLoading = false;
 			lastSheetKey = null;

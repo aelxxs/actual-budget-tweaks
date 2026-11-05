@@ -75,8 +75,11 @@ export interface BreakdownDiff {
 	toBudgetAfter: number;
 }
 
+/** ABT's own budget actions, which Insights can't see from a click. */
+export type TrackedAction = "fund" | "cover" | "apply" | "overwrite";
+
 export interface BreakdownContext {
-	kind: "apply" | "overwrite" | "apply-single" | "apply-group";
+	kind: "apply-single" | "apply-group" | TrackedAction;
 	month: string | null;
 	notification: { type: "error" | "warning" | "info"; message: string } | null;
 	priorityBreakdown: BreakdownSummary | null;
@@ -112,4 +115,6 @@ export const templatePlanState = $state({
 	// Callbacks registered by index.ts.
 	onTabChange: null as ((tab: InsightsTab) => void) | null,
 	applyTemplates: null as (() => Promise<void>) | null,
+	/** Runs `work` and shows what it changed in Breakdown; null while Insights is off. */
+	trackBreakdown: null as (<T>(kind: TrackedAction, work: () => Promise<T>) => Promise<T>) | null,
 });
