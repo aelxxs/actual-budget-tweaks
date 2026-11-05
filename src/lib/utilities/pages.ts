@@ -55,6 +55,10 @@ export function matchesPage(page: Page): boolean {
 	if (page === Page.Settings && SETTINGS_PAGES.some((p) => path.includes(`/${p}`))) {
 		return false;
 	}
+	// Actual's Uncategorized list is the account page under another route.
+	if (page === Page.Accounts && path.startsWith("/categories/")) {
+		return true;
+	}
 	return path.includes(page);
 }
 

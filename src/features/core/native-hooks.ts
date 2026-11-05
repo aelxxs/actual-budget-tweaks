@@ -56,7 +56,7 @@ export const nativeHooks = {
 		watchDom(() => {
 			// List pages (not the transaction table) wrap a header row and the table, which some
 			// pages nest in a single-child div.
-			if (!location.pathname.startsWith("/accounts")) {
+			if (!matchesPage(Page.Accounts)) {
 				for (const table of document.querySelectorAll(TABLE)) {
 					if (table.closest(DIALOG)) {
 						continue;

@@ -236,6 +236,12 @@ export default defineUnlistedScript(async () => {
 			const state = store.getState();
 			const tx = state.transactions;
 			if (tx && tx !== prev.transactions) {
+				// Actual restyles the rows with a class swap, which the shared DOM watcher doesn't see.
+				if (tx.newTransactions !== prev.transactions?.newTransactions) {
+					requestAnimationFrame(() => {
+						document.dispatchEvent(new CustomEvent("abt:api:new-rows-changed"));
+					});
+				}
 				for (const id of tx.newTransactions ?? []) {
 					if (!seen.has(id)) {
 						seen.add(id);

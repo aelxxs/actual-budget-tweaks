@@ -4,7 +4,7 @@ import { Page, matchesPage } from "@lib/utilities/pages";
 import { byTestId } from "@lib/actual-dom";
 
 const NEW_ATTR = "data-abt-tx-new";
-const VALUE_CELLS = ["date", "payee", "notes", "category", "debit", "credit"]
+const VALUE_CELLS = ["date", "account", "payee", "notes", "category", "debit", "credit"]
 	.map((id) => `${byTestId(id)} > div`)
 	.join(", ");
 
@@ -36,8 +36,10 @@ export const newTransactionStyle = defineSetting({
 	`,
 	init: () => {
 		const unwatch = watchDom(markRows);
+		document.addEventListener("abt:api:new-rows-changed", markRows);
 		return () => {
 			unwatch();
+			document.removeEventListener("abt:api:new-rows-changed", markRows);
 			document.querySelectorAll(`[${NEW_ATTR}]`).forEach((el) => el.removeAttribute(NEW_ATTR));
 		};
 	},
