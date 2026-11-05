@@ -17,6 +17,8 @@ export const MODAL = '[data-testid$="-modal"]';
 /** Lets a cell name a row, e.g. a schedule's in the schedules table. */
 export const byFocusKey = (id: string) => `[data-focus-key="${id}"]`;
 export const FOCUS_KEY = "[data-focus-key]";
+/** A scheduled transaction shown ahead of its date; these rows' ids start with "preview/". */
+export const PREVIEW_ROW = '[data-focus-key^="preview/"]';
 
 // ── Roles ───────────────────────────────────────────────────────────────
 

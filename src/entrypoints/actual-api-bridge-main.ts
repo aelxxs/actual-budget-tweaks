@@ -1,7 +1,13 @@
 // @ts-nocheck
 import { createLogger } from "@lib/utilities/logger";
 import { closestFiber, closestProps, propsUnderRoot } from "@lib/utilities/react-fiber";
-import { CATEGORY_CELL, CATEGORY_ITEM, ROW, TRANSACTION_TABLE } from "@lib/actual-dom";
+import {
+	ACCOUNT_CELL,
+	CATEGORY_CELL,
+	CATEGORY_ITEM,
+	ROW,
+	TRANSACTION_TABLE,
+} from "@lib/actual-dom";
 
 const log = createLogger("bridge");
 
@@ -408,19 +414,29 @@ export default defineUnlistedScript(async () => {
 		}
 	});
 
-	// Tags category cells and dropdown rows with the id only React has. Only real category cells
-	// have a formatter: transfers' hold display text in `value`, and split parents' hold nothing.
+	// Tags a cell with the id only React has. Only real id cells have a formatter: transfers' hold
+	// display text in `value`, and split parents' hold nothing.
+	function tagCell(cell, name, key) {
+		const props = closestProps(cell, (p) => p.name === name && "value" in p);
+		const id = props?.formatter ? props.value : null;
+		if (id) {
+			if (cell.dataset[key] !== id) {
+				cell.dataset[key] = id;
+			}
+		} else if (cell.dataset[key]) {
+			delete cell.dataset[key];
+		}
+	}
+
+	document.addEventListener("abt:api:mark-account-ids", () => {
+		for (const cell of document.querySelectorAll(ACCOUNT_CELL)) {
+			tagCell(cell, "account", "abtAccountId");
+		}
+	});
+
 	document.addEventListener("abt:api:mark-category-ids", () => {
 		for (const cell of document.querySelectorAll(CATEGORY_CELL)) {
-			const props = closestProps(cell, (p) => p.name === "category" && "value" in p);
-			const id = props?.formatter ? props.value : null;
-			if (id) {
-				if (cell.dataset.abtCategoryId !== id) {
-					cell.dataset.abtCategoryId = id;
-				}
-			} else if (cell.dataset.abtCategoryId) {
-				delete cell.dataset.abtCategoryId;
-			}
+			tagCell(cell, "category", "abtCategoryId");
 		}
 		// Keyed by category, so a row never changes to another one.
 		for (const row of document.querySelectorAll(`${CATEGORY_ITEM}:not([data-abt-category-id])`)) {
