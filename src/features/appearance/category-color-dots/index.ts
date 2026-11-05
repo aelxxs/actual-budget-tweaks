@@ -1,11 +1,11 @@
 import { defineSetting } from "@features/types";
 import { rowCategoryId } from "@lib/utilities/budget-cells";
-import { query } from "@lib/utilities/actual-api";
 import {
 	getCategoryColor,
 	loadCategoryColors,
 	setCategoryColor,
 } from "@lib/utilities/category-colors";
+import { CATEGORY_ID_ATTR, trackCategoryIds } from "@lib/utilities/category-ids";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
@@ -14,23 +14,6 @@ import { CATEGORY_CELL, CATEGORY_NAME, ROW } from "@lib/actual-dom";
 
 const STORAGE_KEY = "category-color-dots";
 const ATTR = "data-abt-color-dot";
-const TX_ATTR = "data-abt-tx-dot";
-
-let categoryNameToId = new Map<string, string>();
-let categoryMapLoaded = false;
-
-async function loadCategoryMap() {
-	if (categoryMapLoaded) {
-		return;
-	}
-	try {
-		const cats = await query<{ id: string; name: string }[]>("categories");
-		categoryNameToId = new Map(cats.map((c) => [c.name, c.id]));
-		categoryMapLoaded = true;
-	} catch {
-		// Bridge not ready
-	}
-}
 
 const CSS = `
 	.abt-cat-dot {
@@ -148,49 +131,32 @@ function decorateRow(row: HTMLElement) {
 	);
 }
 
-function decorateTransactionRow(row: HTMLElement) {
-	const catCell = row.querySelector<HTMLElement>(CATEGORY_CELL);
-	if (!catCell) {
+function decorateCell(cell: HTMLElement) {
+	const catId = cell.getAttribute(CATEGORY_ID_ATTR);
+	const dot = cell.querySelector<HTMLElement>(".abt-tx-cat-dot");
+	if (!catId) {
+		dot?.remove();
 		return;
 	}
 
-	const textEl = catCell.querySelector("span");
+	const color = getCategoryColor(catId);
+	if (dot) {
+		if (dotColors.get(dot) !== color) {
+			dot.style.background = color;
+			dotColors.set(dot, color);
+		}
+		return;
+	}
+
+	const textEl = cell.querySelector("span");
 	if (!textEl) {
 		return;
 	}
-
-	const catName = textEl.textContent?.trim() || "";
-	if (
-		!catName ||
-		catName === "Categorize" ||
-		catName === "Upcoming" ||
-		catName === "Missed" ||
-		catName === "Split"
-	) {
-		return;
-	}
-
-	const fp = catName;
-	if (row.getAttribute(TX_ATTR) === fp) {
-		return;
-	}
-	row.setAttribute(TX_ATTR, fp);
-
-	catCell.querySelector(".abt-tx-cat-dot")?.remove();
-
-	const catId = categoryNameToId.get(catName);
-	if (!catId) {
-		return;
-	}
-
-	const dot = document.createElement("span");
-	dot.className = "abt-tx-cat-dot";
-	dot.style.background = getCategoryColor(catId);
-
-	const wrapper = textEl.parentElement;
-	if (wrapper) {
-		wrapper.insertBefore(dot, textEl);
-	}
+	const added = document.createElement("span");
+	added.className = "abt-tx-cat-dot";
+	added.style.background = color;
+	dotColors.set(added, color);
+	textEl.parentElement?.insertBefore(added, textEl);
 }
 
 function scanRows() {
@@ -200,11 +166,8 @@ function scanRows() {
 			decorateRow(row);
 		}
 	}
-	for (const cell of document.querySelectorAll(CATEGORY_CELL)) {
-		const row = cell.closest<HTMLElement>(ROW);
-		if (row) {
-			decorateTransactionRow(row);
-		}
+	for (const cell of document.querySelectorAll<HTMLElement>(CATEGORY_CELL)) {
+		decorateCell(cell);
 	}
 }
 
@@ -214,9 +177,8 @@ function cleanup() {
 		row.removeAttribute(ATTR);
 		row.querySelector(".abt-cat-dot")?.remove();
 	}
-	for (const row of document.querySelectorAll<HTMLElement>(`[${TX_ATTR}]`)) {
-		row.removeAttribute(TX_ATTR);
-		row.querySelector(".abt-tx-cat-dot")?.remove();
+	for (const dot of document.querySelectorAll(".abt-tx-cat-dot")) {
+		dot.remove();
 	}
 }
 
@@ -232,11 +194,13 @@ export const categoryColorDots = defineSetting({
 	},
 	css: () => CSS,
 	init: async () => {
-		await Promise.all([loadCategoryColors(), loadCategoryMap()]);
+		await loadCategoryColors();
+		const stopTracking = trackCategoryIds();
 		const unwatch = watchDom(scanRows);
 
 		return () => {
 			unwatch();
+			stopTracking();
 			cleanup();
 		};
 	},

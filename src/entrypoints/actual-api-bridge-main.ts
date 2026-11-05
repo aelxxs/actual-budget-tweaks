@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { createLogger } from "@lib/utilities/logger";
-import { ROW, TRANSACTION_TABLE } from "@lib/actual-dom";
+import { closestFiber, closestProps, propsUnderRoot } from "@lib/utilities/react-fiber";
+import { CATEGORY_CELL, CATEGORY_ITEM, ROW, TRANSACTION_TABLE } from "@lib/actual-dom";
 
 const log = createLogger("bridge");
 
@@ -202,22 +203,8 @@ export default defineUnlistedScript(async () => {
 	// Actual keeps its Redux store off window; the <Provider> near the React root holds it.
 	function findStore() {
 		const root = document.getElementById("root");
-		const key = root && Object.keys(root).find((k) => k.startsWith("__reactContainer$"));
-		const stack = key ? [root[key]] : [];
-		for (let i = 0; stack.length && i < 200; i++) {
-			const fiber = stack.pop();
-			const store = fiber?.memoizedProps?.store;
-			if (store && typeof store.subscribe === "function") {
-				return store;
-			}
-			if (fiber?.sibling) {
-				stack.push(fiber.sibling);
-			}
-			if (fiber?.child) {
-				stack.push(fiber.child);
-			}
-		}
-		return null;
+		const props = root && propsUnderRoot(root, (p) => typeof p.store?.subscribe === "function");
+		return props?.store ?? null;
 	}
 
 	// Reports the transactions a bank sync or file import added, once it has finished. Actual
@@ -281,17 +268,7 @@ export default defineUnlistedScript(async () => {
 	document.addEventListener("abt:api:mark-new-rows", () => {
 		const rows = document.querySelectorAll(`${TRANSACTION_TABLE} ${ROW}`);
 		for (const row of rows) {
-			const key = Object.keys(row).find((k) => k.startsWith("__reactFiber$"));
-			let fiber = key ? row[key] : null;
-			let added = false;
-			for (let i = 0; i < 8 && fiber; i++) {
-				const props = fiber.memoizedProps;
-				if (props && "added" in props) {
-					added = !!props.added;
-					break;
-				}
-				fiber = fiber.return;
-			}
+			const added = !!closestProps(row, (p) => "added" in p)?.added;
 			if (added !== row.hasAttribute("data-abt-tx-new")) {
 				row.toggleAttribute("data-abt-tx-new", added);
 			}
@@ -418,14 +395,32 @@ export default defineUnlistedScript(async () => {
 		for (const button of document.querySelectorAll(
 			"[data-popover] button:not([data-abt-menu-key])",
 		)) {
-			const key = Object.keys(button).find((k) => k.startsWith("__reactFiber$"));
-			let fiber = key ? button[key] : null;
-			for (let i = 0; i < 12 && fiber; i++) {
-				if (typeof fiber.key === "string") {
-					button.dataset.abtMenuKey = fiber.key.replace(/^\.?\$/, "");
-					break;
+			const key = closestFiber(button, (f) => typeof f.key === "string", 12)?.key;
+			if (key) {
+				button.dataset.abtMenuKey = key.replace(/^\.?\$/, "");
+			}
+		}
+	});
+
+	// Tags category cells and dropdown rows with the id only React has. Only real category cells
+	// have a formatter: transfers' hold display text in `value`, and split parents' hold nothing.
+	document.addEventListener("abt:api:mark-category-ids", () => {
+		for (const cell of document.querySelectorAll(CATEGORY_CELL)) {
+			const props = closestProps(cell, (p) => p.name === "category" && "value" in p);
+			const id = props?.formatter ? props.value : null;
+			if (id) {
+				if (cell.dataset.abtCategoryId !== id) {
+					cell.dataset.abtCategoryId = id;
 				}
-				fiber = fiber.return;
+			} else if (cell.dataset.abtCategoryId) {
+				delete cell.dataset.abtCategoryId;
+			}
+		}
+		// Keyed by category, so a row never changes to another one.
+		for (const row of document.querySelectorAll(`${CATEGORY_ITEM}:not([data-abt-category-id])`)) {
+			const id = closestProps(row, (p) => p.item?.id)?.item.id;
+			if (id) {
+				row.dataset.abtCategoryId = id;
 			}
 		}
 	});

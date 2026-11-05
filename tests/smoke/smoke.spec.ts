@@ -152,6 +152,7 @@ test("ABT on every page", async ({ page }) => {
 	await visit(page, "accounts", async () => {
 		await page.goto("/accounts");
 		await expectAttached(page, '[data-abt-page="accounts"]');
+		await expectAttached(page, "[data-abt-category-id]");
 		await expect.soft(page.locator("[data-abt-live-sidebar]")).toContainText("House");
 		await expectAnchors(page, PAGE_ANCHORS["/accounts"]);
 	});

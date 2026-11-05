@@ -111,6 +111,8 @@ export const PAYEE_CELL = byTestId("payee");
 export const NOTES_CELL = byTestId("notes");
 /** A transaction's category cell ("Categorize" when it has none). */
 export const CATEGORY_CELL = byTestId("category");
+/** A row in a category dropdown, named "<category name>-category-item". */
+export const CATEGORY_ITEM = '[data-testid$="-category-item"]';
 export const CLEARED_CELL = byTestId("cleared");
 export const DEBIT_CELL = byTestId("debit");
 export const CREDIT_CELL = byTestId("credit");

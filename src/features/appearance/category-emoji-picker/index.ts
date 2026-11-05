@@ -3,11 +3,13 @@ import { rowCategoryId, watchBudgetTable } from "@lib/utilities/budget-cells";
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 import { notify, send } from "@lib/utilities/actual-api";
+import { CATEGORY_ID_ATTR, trackCategoryIds } from "@lib/utilities/category-ids";
+import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getValue, setValue } from "@lib/utilities/store";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { createLogger } from "@lib/utilities/logger";
-import { CATEGORY_NAME, ROW } from "@lib/actual-dom";
+import { CATEGORY_CELL, CATEGORY_ITEM, CATEGORY_NAME, ROW } from "@lib/actual-dom";
 
 const log = createLogger("emoji");
 
@@ -85,6 +87,16 @@ const CSS = `
 
 	.abt-emoji-hidden {
 		display: none;
+	}
+
+	.abt-category-icon {
+		display: inline-block;
+		width: 14px;
+		height: 14px;
+		margin-right: 4px;
+		vertical-align: -2px;
+		object-fit: contain;
+		border-radius: 2px;
 	}
 
 	.abt-emoji-popover {
@@ -242,8 +254,33 @@ function scanRows() {
 	}
 }
 
+// Real images: Actual's CSP blocks remote URLs in stylesheets, but not in a content script's <img>.
+function showIcons() {
+	const hosts = `${CATEGORY_CELL}[${CATEGORY_ID_ATTR}], ${CATEGORY_ITEM}[${CATEGORY_ID_ATTR}]`;
+	for (const host of document.querySelectorAll(hosts)) {
+		const icon = categoryIcons[host.getAttribute(CATEGORY_ID_ATTR) ?? ""];
+		const shown = host.querySelector<HTMLImageElement>(".abt-category-icon");
+		if (!icon) {
+			shown?.remove();
+		} else if (shown) {
+			if (shown.getAttribute("src") !== icon.value) {
+				shown.src = icon.value;
+			}
+		} else {
+			const img = document.createElement("img");
+			img.className = "abt-category-icon";
+			img.alt = "";
+			img.src = icon.value;
+			host.querySelector(":scope > div > span:not(.abt-tx-cat-dot)")?.prepend(img);
+		}
+	}
+}
+
 function cleanup() {
 	closePopover();
+	for (const img of document.querySelectorAll(".abt-category-icon")) {
+		img.remove();
+	}
 	for (const row of document.querySelectorAll<HTMLElement>(`[${ATTR}]`)) {
 		row.removeAttribute(ATTR);
 		const nameEl = row.querySelector<HTMLElement>(CATEGORY_NAME);
@@ -270,9 +307,13 @@ export const categoryEmojiPicker = defineSetting({
 		await loadCategoryIcons();
 		// Category names only change inside the budget table.
 		const unwatch = watchBudgetTable(scanRows);
+		const stopTracking = trackCategoryIds();
+		const unwatchIcons = watchDom(showIcons);
 
 		return () => {
 			unwatch();
+			unwatchIcons();
+			stopTracking();
 			cleanup();
 		};
 	},
