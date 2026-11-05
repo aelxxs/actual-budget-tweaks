@@ -109,7 +109,8 @@ export async function loadBreakdown(start: string, end: string): Promise<Breakdo
 	const [transactions, categories, groups] = await Promise.all([
 		// Actual's default splits: a split's lines, each with its own category, not the parent.
 		query<BreakdownTransaction[]>("transactions", {
-			filter: { date: { $gte: start, $lte: end } },
+			// One operator per field: AQL drops the rest of `{ $gte, $lte }`, here the end date.
+			filter: { $and: [{ date: { $gte: start } }, { date: { $lte: end } }] },
 			select: [
 				"id",
 				"date",
