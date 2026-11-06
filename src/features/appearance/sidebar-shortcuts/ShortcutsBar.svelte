@@ -97,6 +97,7 @@
 		padding={noPadding ? "0px" : "4px 12px 2px"}
 		onReorder={save}
 		onActivate={handleClick}
+		hasTrailing={showAddTile || shortcuts.length === 0}
 	>
 		{#snippet trailing()}
 			{#if showAddTile || shortcuts.length === 0}

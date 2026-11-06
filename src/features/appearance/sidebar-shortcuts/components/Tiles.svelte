@@ -1,10 +1,25 @@
 <script lang="ts">
-	import { icon } from "@lib/utilities/icons";
 	import { getFaviconUrl } from "@lib/utilities/favicon";
+	import { icon } from "@lib/utilities/icons";
 	import { X } from "@lucide/svelte";
-	import type { Snippet } from "svelte";
-	import { flip } from "svelte/animate";
+	import { onDestroy, tick, type Snippet } from "svelte";
+	import type { AnimationConfig } from "svelte/animate";
+	import { cubicOut } from "svelte/easing";
 	import { scale } from "svelte/transition";
+	import {
+		GAP,
+		dropLines,
+		fits,
+		sameTarget,
+		pickSwap,
+		pickTarget,
+		placeTiles,
+		previewLines,
+		toLines,
+		withExtras,
+		type Band,
+		type Target,
+	} from "../rows";
 	import type { Shortcut, WidgetId } from "../types";
 	import InlineWidget from "./InlineWidget.svelte";
 
@@ -19,6 +34,8 @@
 		onRemove?: (id: string) => void;
 		onActivate?: (shortcut: Shortcut, el: HTMLElement) => void;
 		trailing?: Snippet;
+		/** Whether `trailing` draws anything, so it isn't given room when it doesn't. */
+		hasTrailing?: boolean;
 	};
 
 	const {
@@ -30,6 +47,7 @@
 		onRemove,
 		onActivate,
 		trailing,
+		hasTrailing = false,
 	}: TilesProps = $props();
 
 	const COLORS = [
@@ -68,8 +86,60 @@
 		}
 	}
 
-	let dragIdx = $state<number | null>(null);
-	let dropTarget = $state<{ idx: number; side: "before" | "after" } | null>(null);
+	const MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1;
+	const FLIP_MS = 180 * MOTION;
+	const LAND_MS = 140 * MOTION;
+	const DRAG_THRESHOLD = 5;
+	// How far outside the bar a drag still reorders.
+	const DRAG_REACH = 32;
+	const TRAILING_ID = "abt-trailing";
+	const GHOST_ID = "abt-ghost";
+
+	let width = $state(240);
+	// Tiles snap to a new width: sliding them would trail behind the sidebar's edge.
+	let resizing = false;
+	let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+	const lines = $derived(toLines(items, width));
+	// While dragging, tiles follow `draft`; `items` only changes once on drop.
+	let draft = $state<Shortcut[][] | null>(null);
+	let dragId = $state<string | null>(null);
+	let newRowLine = $state<{ top: number; left: number; width: number } | null>(null);
+	const shownLines = $derived(draft ?? lines);
+	const shown = $derived(shownLines.flat());
+	const placed = $derived.by(() => {
+		const extras: Pick<Shortcut, "id" | "size" | "url">[] = [];
+		if (ghost) {
+			extras.push({ ...ghost, id: GHOST_ID });
+		}
+		if (hasTrailing) {
+			extras.push({ id: TRAILING_ID, size: "small", url: "" });
+		}
+		return placeTiles(withExtras(shownLines, extras, width), width);
+	});
+
+	function placement(id: string): string {
+		const spot = placed.get(id);
+		return spot
+			? `grid-row: ${spot.line + 1}; margin-left: ${spot.left}px; width: ${spot.width}px;`
+			: "";
+	}
+
+	let press: {
+		id: string;
+		el: HTMLElement;
+		startX: number;
+		startY: number;
+		grabX: number;
+		grabY: number;
+		x: number;
+		y: number;
+		clone: HTMLElement | null;
+		lines: Shortcut[][];
+		bands: Band[];
+		bar: DOMRect | null;
+		origin: Target & { kind: "join" };
+		target: Target;
+	} | null = null;
 	let barEl: HTMLDivElement | undefined = $state();
 	let focusedId = $state<string | null>(null);
 	// Tiles arrive after the bar on load; only ones added later scale in.
@@ -81,67 +151,262 @@
 		}
 	});
 
-	function onDragStart(idx: number, e: DragEvent) {
-		dragIdx = idx;
-		if (e.dataTransfer) {
-			e.dataTransfer.effectAllowed = "move";
-			e.dataTransfer.setData("text/plain", String(idx));
-		}
-	}
-
-	// Full-width tiles split top/bottom; the rest split left/right, nearest tile wins.
-	function onBarDragOver(e: DragEvent) {
-		e.preventDefault();
-		if (e.dataTransfer) {
-			e.dataTransfer.dropEffect = "move";
-		}
-		if (dragIdx == null || !barEl) {
+	$effect(() => {
+		const el = barEl;
+		if (!el) {
 			return;
 		}
-
-		let closest: { idx: number; side: "before" | "after"; dist: number } | null = null;
-		const tiles = barEl.querySelectorAll<HTMLElement>(":scope > .item:not(.is-ghost)");
-		for (const [idx, el] of tiles.entries()) {
-			if (idx === dragIdx) {
-				continue;
+		const measure = () => {
+			const style = getComputedStyle(el);
+			const inner = el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+			if (inner > 0 && inner !== width) {
+				resizing = true;
+				clearTimeout(resizeTimer);
+				resizeTimer = setTimeout(() => (resizing = false), 150);
+				width = inner;
 			}
-			const rect = el.getBoundingClientRect();
-			const vertical = items[idx]?.size === "wide";
-			const mid = vertical ? rect.top + rect.height / 2 : rect.left + rect.width / 2;
-			const pos = vertical ? e.clientY : e.clientX;
-			const dist = Math.abs(pos - mid);
-			if (!closest || dist < closest.dist) {
-				closest = { idx, side: pos < mid ? "before" : "after", dist };
+		};
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(el);
+		return () => observer.disconnect();
+	});
+
+	function onTilePress(e: PointerEvent, id: string) {
+		const target = e.target as Element;
+		if (e.button !== 0 || press || target.closest("input, select, textarea, .item__remove")) {
+			return;
+		}
+		const el = e.currentTarget as HTMLElement;
+		const rect = el.getBoundingClientRect();
+		press = {
+			id,
+			el,
+			startX: e.clientX,
+			startY: e.clientY,
+			grabX: e.clientX - rect.left,
+			grabY: e.clientY - rect.top,
+			x: e.clientX,
+			y: e.clientY,
+			clone: null,
+			lines: [],
+			bands: [],
+			bar: null,
+			origin: { kind: "join", line: 0, at: 0 },
+			target: { kind: "join", line: 0, at: 0 },
+		};
+		window.addEventListener("pointermove", onPointerMove);
+		window.addEventListener("pointerup", onPointerUp);
+		window.addEventListener("pointercancel", onPointerCancel);
+		window.addEventListener("keydown", onDragKey, true);
+	}
+
+	/** The lines as they stand, for every later decision in the drag to read from. */
+	function measureBands(from: Shortcut[][]): Band[] {
+		const bar = barEl!;
+		return from.map((line) => {
+			const tiles = line.map((tile) => {
+				const rect = bar.querySelector(`[data-id="${tile.id}"]`)!.getBoundingClientRect();
+				return { id: tile.id, rect };
+			});
+			return {
+				top: Math.min(...tiles.map((t) => t.rect.top)),
+				bottom: Math.max(...tiles.map((t) => t.rect.bottom)),
+				tiles: tiles.map((t) => ({ id: t.id, center: t.rect.left + t.rect.width / 2 })),
+			};
+		});
+	}
+
+	// A floating copy follows the pointer, so the real tile can hold its slot as the others reflow.
+	function liftTile(active: NonNullable<typeof press>) {
+		active.lines = lines;
+		active.bands = measureBands(lines);
+		active.bar = barEl!.getBoundingClientRect();
+		const line = lines.findIndex((l) => l.some((s) => s.id === active.id));
+		active.origin = {
+			kind: "join",
+			line,
+			at: lines[line].findIndex((s) => s.id === active.id),
+		};
+		active.target = active.origin;
+		const rect = active.el.getBoundingClientRect();
+		const clone = active.el.cloneNode(true) as HTMLElement;
+		Object.assign(clone.style, {
+			position: "fixed",
+			top: "0",
+			left: "0",
+			width: `${rect.width}px`,
+			height: `${rect.height}px`,
+			margin: "0",
+			zIndex: "30000",
+			pointerEvents: "none",
+			transition: "none",
+			cursor: "grabbing",
+			background: "linear-gradient(var(--sc-bg), var(--sc-bg)), var(--color-menuBackground)",
+			boxShadow: "0 6px 18px rgba(0, 0, 0, 0.35)",
+		});
+		document.body.appendChild(clone);
+		active.clone = clone;
+		dragId = active.id;
+		draft = lines;
+	}
+
+	const cloneTransform = (x: number, y: number, scale = 1.03) =>
+		`translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+
+	function onPointerMove(e: PointerEvent) {
+		if (!press) {
+			return;
+		}
+		press.x = e.clientX;
+		press.y = e.clientY;
+		if (!press.clone) {
+			if (Math.hypot(press.x - press.startX, press.y - press.startY) < DRAG_THRESHOLD) {
+				return;
+			}
+			liftTile(press);
+		}
+		press.clone!.style.transform = cloneTransform(press.x - press.grabX, press.y - press.grabY);
+		retarget(press);
+	}
+
+	// Position only: svelte's `flip` scales too, which stretches the text in tiles changing width.
+	function slide(
+		_node: Element,
+		{ from, to }: { from: DOMRect; to: DOMRect },
+		{ duration }: { duration: number },
+	): AnimationConfig {
+		const dx = from.left - to.left;
+		const dy = from.top - to.top;
+		return {
+			duration: resizing ? 0 : duration,
+			easing: cubicOut,
+			css: (_t, u) => `transform: translate(${u * dx}px, ${u * dy}px);`,
+		};
+	}
+
+	function distanceTo(rect: DOMRect, x: number, y: number): number {
+		const dx = Math.max(rect.left - x, 0, x - rect.right);
+		const dy = Math.max(rect.top - y, 0, y - rect.bottom);
+		return Math.hypot(dx, dy);
+	}
+
+	function retarget(active: NonNullable<typeof press>) {
+		const { id, lines: from, bands, origin, bar } = active;
+		if (!bar || distanceTo(bar, active.x, active.y) > DRAG_REACH) {
+			return;
+		}
+		let target = pickTarget(bands, id, active.x, active.y, active.target);
+		const alone = from[origin.line].length === 1;
+		if (
+			target.kind === "new" &&
+			alone &&
+			(target.gap === origin.line || target.gap === origin.line + 1)
+		) {
+			target = origin;
+		}
+		if (target.kind === "join" && target.line !== origin.line) {
+			const tile = from[origin.line][origin.at];
+			if (!fits(from[target.line], tile, width)) {
+				const band = bands[target.line];
+				target = pickSwap(from, band, id, active.x, width, active.target) ?? origin;
 			}
 		}
-		dropTarget = closest ? { idx: closest.idx, side: closest.side } : null;
+		// Redrawing restarts tiles' slides, so a pointer moving within one target must change nothing.
+		if (sameTarget(target, active.target)) {
+			return;
+		}
+		active.target = target;
+		// A new row is only a line until the drop, so tiles stay put while passing through a gap.
+		if (target.kind !== "new") {
+			draft = previewLines(from, id, target);
+		}
+		newRowLine = target.kind === "new" ? gapLine(bands, target.gap, bar) : null;
 	}
+
+	function gapLine(bands: Band[], gap: number, bar: DOMRect) {
+		const y =
+			gap === 0
+				? bands[0].top - GAP / 2
+				: gap === bands.length
+					? bands[gap - 1].bottom + GAP / 2
+					: (bands[gap - 1].bottom + bands[gap].top) / 2;
+		const style = getComputedStyle(barEl!);
+		return { top: y - bar.top - 1, left: parseFloat(style.paddingLeft), width };
+	}
+
+	function stopListening() {
+		window.removeEventListener("pointermove", onPointerMove);
+		window.removeEventListener("pointerup", onPointerUp);
+		window.removeEventListener("pointercancel", onPointerCancel);
+		window.removeEventListener("keydown", onDragKey, true);
+	}
+
+	async function endDrag(commit: boolean) {
+		const ended = press;
+		press = null;
+		stopListening();
+		if (!ended?.clone) {
+			return;
+		}
+		// The release would otherwise count as a click on whatever tile it lands on.
+		const swallow = (e: Event) => e.stopPropagation();
+		window.addEventListener("click", swallow, { capture: true, once: true });
+		setTimeout(() => window.removeEventListener("click", swallow, true));
+
+		const { target, origin } = ended;
+		const moved = target.kind !== "join" || target.line !== origin.line || target.at !== origin.at;
+		if (commit && moved) {
+			onReorder(dropLines(ended.lines, ended.id, target));
+		}
+		draft = null;
+		newRowLine = null;
+		await tick();
+
+		const { clone, id } = ended;
+		const slot = barEl?.querySelector<HTMLElement>(`[data-id="${id}"]`)?.getBoundingClientRect();
+		const landed = () => {
+			clone.remove();
+			dragId = null;
+		};
+		if (!slot || !LAND_MS) {
+			landed();
+			return;
+		}
+		const landing = clone.animate(
+			[{ transform: clone.style.transform }, { transform: cloneTransform(slot.left, slot.top, 1) }],
+			{ duration: LAND_MS, easing: "ease-out", fill: "forwards" },
+		);
+		landing.onfinish = landed;
+		landing.oncancel = landed;
+	}
+
+	const onPointerUp = () => void endDrag(true);
+	const onPointerCancel = () => void endDrag(false);
+
+	function onDragKey(e: KeyboardEvent) {
+		if (e.key === "Escape" && press?.clone) {
+			e.preventDefault();
+			e.stopPropagation();
+			void endDrag(false);
+		}
+	}
+
+	onDestroy(() => {
+		clearTimeout(resizeTimer);
+		stopListening();
+		press?.clone?.remove();
+		press = null;
+	});
 
 	function move(from: number, to: number) {
 		const a = [...items];
 		const [moved] = a.splice(from, 1);
 		a.splice(to, 0, moved);
+		// Takes the row it arrives in, once rows have been saved.
+		const neighbor = a[to + 1] ?? a[to - 1];
+		a[to] = { ...moved, row: neighbor?.row ?? moved.row };
 		onReorder(a);
-	}
-
-	function onBarDrop(e: DragEvent) {
-		e.preventDefault();
-		if (dragIdx != null && dropTarget) {
-			let insertAt = dropTarget.idx;
-			if (dragIdx < insertAt) {
-				insertAt--;
-			}
-			if (dropTarget.side === "after") {
-				insertAt++;
-			}
-			move(dragIdx, insertAt);
-		}
-		onDragEnd();
-	}
-
-	function onDragEnd() {
-		dragIdx = null;
-		dropTarget = null;
 	}
 
 	function onEditKey(idx: number, e: KeyboardEvent) {
@@ -200,14 +465,14 @@
 <div
 	class="bar"
 	class:is-edit={mode === "edit"}
+	class:is-sorting={dragId}
 	style:padding
 	role={mode === "edit" ? "listbox" : "group"}
 	aria-label="Shortcuts"
 	bind:this={barEl}
-	ondragover={onBarDragOver}
-	ondrop={onBarDrop}
+	ondragstart={(e) => e.preventDefault()}
 >
-	{#each items as shortcut, idx (shortcut.id)}
+	{#each shown as shortcut, idx (shortcut.id)}
 		{@const isWidget = shortcut.type === "widget"}
 		{@const isData = shortcut.url === "upcoming-schedules"}
 		<!-- In edit mode, a listbox of options you rearrange (Delete, Alt+arrows); otherwise plain buttons. -->
@@ -218,27 +483,26 @@
 			class:is-half={shortcut.size === "half"}
 			class:is-wide={shortcut.size === "wide"}
 			class:is-data={isData}
-			class:is-dragging={dragIdx === idx}
-			class:is-drop-before={dropTarget?.idx === idx && dropTarget?.side === "before"}
-			class:is-drop-after={dropTarget?.idx === idx && dropTarget?.side === "after"}
+			class:is-dragging={dragId === shortcut.id}
 			role={mode === "edit" ? "option" : undefined}
 			aria-selected={mode === "edit" ? focusedId === shortcut.id : undefined}
 			data-id={shortcut.id}
-			style={colorVars(idx, mode === "edit" || !isWidget || isData)}
+			style="{colorVars(
+				draft ? items.findIndex((s) => s.id === shortcut.id) : idx,
+				mode === 'edit' || !isWidget || isData,
+			)}; {placement(shortcut.id)}"
 			aria-label={mode === "edit"
 				? `${shortcut.label}. Delete to remove, Alt+arrows to move`
 				: shortcut.label}
 			tabindex={mode === "edit" ? 0 : undefined}
-			draggable="true"
+			onpointerdown={(e: PointerEvent) => onTilePress(e, shortcut.id)}
 			onclick={mode === "bar" && !isWidget
 				? (e: MouseEvent) => onActivate?.(shortcut, e.currentTarget as HTMLElement)
 				: undefined}
 			onkeydown={mode === "edit" ? (e: KeyboardEvent) => onEditKey(idx, e) : undefined}
 			onfocus={() => (focusedId = shortcut.id)}
 			onblur={() => (focusedId = null)}
-			ondragstart={(e: DragEvent) => onDragStart(idx, e)}
-			ondragend={onDragEnd}
-			animate:flip={{ duration: 180 }}
+			animate:slide={{ duration: dragId === shortcut.id ? 0 : FLIP_MS }}
 			in:scale={{ start: 0.8, duration: animateIn ? 180 : 0 }}
 		>
 			<span class="item__content">{@render content(shortcut)}</span>
@@ -263,23 +527,57 @@
 			class:is-half={ghost.size === "half"}
 			class:is-wide={ghost.size === "wide"}
 			class:is-data={ghost.url === "upcoming-schedules"}
-			style={colorVars(items.length, false)}
+			style="{colorVars(items.length, false)}; {placement(GHOST_ID)}"
 			aria-hidden="true"
 		>
 			<span class="item__content">{@render content(ghost)}</span>
 		</div>
 	{/if}
 
-	{@render trailing?.()}
+	{#if hasTrailing}
+		<div class="trailing" style={placement(TRAILING_ID)}>{@render trailing?.()}</div>
+	{:else}
+		{@render trailing?.()}
+	{/if}
+
+	{#if newRowLine}
+		<div
+			class="new-row"
+			style:top="{newRowLine.top}px"
+			style:left="{newRowLine.left}px"
+			style:width="{newRowLine.width}px"
+		></div>
+	{/if}
 </div>
 
 <style>
+	/* Every tile sits in the one column at its own offset, set from its saved row. */
 	.bar {
-		display: flex;
-		flex-wrap: wrap;
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-auto-rows: minmax(36px, auto);
 		gap: 6px;
 		flex-shrink: 0;
 		align-items: center;
+		justify-items: start;
+	}
+
+	.item,
+	.trailing {
+		grid-column: 1;
+	}
+
+	.trailing {
+		display: flex;
+	}
+
+	.new-row {
+		position: absolute;
+		height: 2px;
+		border-radius: 1px;
+		background: var(--color-sidebarItemAccentSelected);
+		pointer-events: none;
 	}
 
 	.item {
@@ -296,6 +594,7 @@
 		padding: 0;
 		min-width: 0;
 		font: inherit;
+		user-select: none;
 		transition:
 			background 0.12s,
 			transform 0.12s,
@@ -321,19 +620,11 @@
 	}
 
 	.item.is-small {
-		width: 36px;
-		flex: 0 0 36px;
 		font-size: 17px;
 	}
 
-	.item.is-half {
-		flex: 1 1 calc(50% - 3px);
-		font-size: var(--abt-text-base);
-		justify-content: flex-start;
-	}
-
+	.item.is-half,
 	.item.is-wide {
-		flex: 1 1 100%;
 		font-size: var(--abt-text-base);
 		justify-content: flex-start;
 	}
@@ -345,6 +636,12 @@
 
 	.item.is-dragging {
 		opacity: 0.3;
+	}
+
+	/* The pointer is tracked by position, so tiles passing under it shouldn't react to hover. */
+	.is-sorting .item {
+		pointer-events: none;
+		transition: width 0.18s ease-out;
 	}
 
 	.placeholder {
@@ -428,50 +725,6 @@
 			opacity: 0;
 			transform: scale(0.9);
 		}
-	}
-
-	/* ── Drop indicators: a line beside small and half tiles, above or below full-width ones ── */
-
-	.item.is-drop-before::before,
-	.item.is-drop-after::after {
-		content: "";
-		position: absolute;
-		border-radius: 1px;
-		background: var(--color-sidebarItemAccentSelected);
-	}
-
-	.item.is-small.is-drop-before::before,
-	.item.is-small.is-drop-after::after,
-	.item.is-half.is-drop-before::before,
-	.item.is-half.is-drop-after::after {
-		top: 4px;
-		bottom: 4px;
-		width: 2px;
-	}
-
-	.item.is-small.is-drop-before::before,
-	.item.is-half.is-drop-before::before {
-		left: -4px;
-	}
-
-	.item.is-small.is-drop-after::after,
-	.item.is-half.is-drop-after::after {
-		right: -4px;
-	}
-
-	.item.is-wide.is-drop-before::before,
-	.item.is-wide.is-drop-after::after {
-		left: 4px;
-		right: 4px;
-		height: 2px;
-	}
-
-	.item.is-wide.is-drop-before::before {
-		top: -4px;
-	}
-
-	.item.is-wide.is-drop-after::after {
-		bottom: -4px;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

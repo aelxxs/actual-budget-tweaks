@@ -7,6 +7,8 @@ export interface Shortcut {
 	url: string;
 	type: "external" | "tool" | "widget";
 	size: ShortcutSize;
+	/** Which row it sits on; unset until the bar is first rearranged. */
+	row?: number;
 	config?: Record<string, string>;
 }
 
