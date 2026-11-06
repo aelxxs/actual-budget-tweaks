@@ -71,18 +71,15 @@ export default defineContentScript({
 				return; // Extension context invalidated
 			}
 
-			document.body.appendChild(
-				createElement("link", {
-					rel: "stylesheet",
-					href: baseCss,
-				}),
+			// The sidecar has already linked these in the page it serves.
+			const linked = [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].map(
+				(link) => link.href,
 			);
-			document.body.appendChild(
-				createElement("link", {
-					rel: "stylesheet",
-					href: componentCss,
-				}),
-			);
+			for (const href of [baseCss, componentCss]) {
+				if (!linked.includes(new URL(href, location.href).href)) {
+					document.body.appendChild(createElement("link", { rel: "stylesheet", href }));
+				}
+			}
 
 			// Not awaited: the settings panel only needs to read persisted values
 			// from storage to render, not wait for every feature to finish
