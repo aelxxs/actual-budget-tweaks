@@ -2,6 +2,9 @@
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
 	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
+	import { openTool } from "@features/appearance/sidebar-shortcuts/open-tool";
+	import { BUILTIN_TOOLS } from "@features/appearance/sidebar-shortcuts/store";
+	import type { ToolId } from "@features/appearance/sidebar-shortcuts/types";
 	import { getPrivacyMode } from "@features/core/privacy-mode";
 	import {
 		applyThemeByKey,
@@ -10,31 +13,49 @@
 		NATIVE_THEME_KEY,
 		type RemoteTheme,
 	} from "@features/theme/theme-apply";
-	import { closeCalendar, isCalendarOpen } from "@features/workflows/spending-calendar";
+	import type { PageSetting } from "@features/index";
+	import { applySettingChange } from "@features/runtime";
+	import {
+		closeCalendar,
+		isCalendarOpen,
+		openCalendar,
+		spendingCalendar,
+	} from "@features/workflows/spending-calendar";
+	import { openInsights, templatePlan } from "@features/workflows/template-plan";
 	import { themes } from "@lib/design";
-	import { dispatch, navigate, query as queryTable } from "@lib/utilities/actual-api";
+	import { dispatch, navigate, notify, query as queryTable } from "@lib/utilities/actual-api";
+	import { calculate } from "@lib/utilities/calc";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import { Page, pagePath } from "@lib/utilities/pages";
+	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
+	import { TWEAKS_PATH, searchTweaksFor } from "@lib/utilities/settings-page";
 	import { getValue, setValue } from "@lib/utilities/store";
 	import {
 		ArrowLeft,
+		ArrowLeftRight,
 		ArrowUpRight,
+		Calculator,
+		CalendarDays,
 		ClipboardList,
 		ChartColumn,
 		Check,
 		ChevronRight,
+		Copy,
 		Eye,
 		EyeOff,
 		Landmark,
 		LayoutGrid,
 		Palette,
+		Percent,
 		Plus,
 		RefreshCw,
 		Search,
 		Settings,
+		Sparkles,
 		SlidersHorizontal,
 		Tag,
+		ToggleRight,
 		Users,
+		Wrench,
 	} from "@lucide/svelte";
 	import { autofocus } from "../actions/autofocus";
 	import { portal } from "../actions/portal";
@@ -71,6 +92,12 @@
 		{ label: "Tags", page: Page.Tags, icon: Tag },
 		{ label: "Settings", page: Page.Settings, icon: Settings },
 	];
+
+	const TOOL_ICONS: Record<ToolId, typeof LayoutGrid> = {
+		calculator: Calculator,
+		"currency-converter": ArrowLeftRight,
+		"interest-calculator": Percent,
+	};
 
 	// Each of these is a real dispatch/navigate call, verified against Actual's
 	// own source (loot-core/desktop-client) rather than guessed modal names.
@@ -110,7 +137,9 @@
 		| { kind: "action"; label: string; icon: typeof LayoutGrid; run: () => void }
 		| { kind: "view-all"; label: string; target: SubPage }
 		| { kind: "subpage"; label: string; icon: typeof LayoutGrid; target: SubPage }
-		| { kind: "theme"; key: string; name: string; swatch: string[] };
+		| { kind: "theme"; key: string; name: string; swatch: string[] }
+		| { kind: "math"; value: number }
+		| { kind: "setting"; setting: PageSetting; section: string };
 	interface PaletteGroup {
 		label: string;
 		items: PaletteItem[];
@@ -122,6 +151,7 @@
 	// sub-page rather than an ever-growing root list.
 	type SubPage = "accounts" | "reports" | "themes";
 	const PREVIEW_LIMIT = 5;
+	const SETTINGS_LIMIT = 6;
 
 	let open = $state(false);
 	let query = $state("");
@@ -135,6 +165,27 @@
 	// tracked live — privacy.ts's own state isn't a Svelte store, and the
 	// palette closes immediately after running any action anyway.
 	let privacyEnabled = $state(false);
+
+	// What ABT offers, read when the palette opens: settings can change at any time.
+	let settings = $state.raw<{ setting: PageSetting; section: string }[]>([]);
+	let enabled = $state<Record<string, boolean>>({});
+	async function loadSettings(): Promise<void> {
+		const { scriptSections } = await import("@features/index");
+		const all = scriptSections.flatMap((section) =>
+			section.groups.flatMap((group) =>
+				group.items
+					.filter((setting) => setting.platform !== "mobile")
+					.map((setting) => ({ setting, section: section.title })),
+			),
+		);
+		const values = await Promise.all(
+			all.map(({ setting }) => getValue(setting.context.key, setting.context.defaultValue)),
+		);
+		settings = all;
+		enabled = Object.fromEntries(
+			all.map(({ setting }, i) => [setting.context.key, values[i] === true]),
+		);
+	}
 
 	let reports = $state<CustomReport[]>([]);
 	let reportsLoaded = false;
@@ -175,7 +226,7 @@
 				? "Search reports…"
 				: page === "themes"
 					? "Search themes…"
-					: "Search accounts and pages…",
+					: "Search, or try 145.20 * 12",
 	);
 
 	const groups = $derived.by((): PaletteGroup[] => {
@@ -249,17 +300,58 @@
 			});
 		}
 
+		const math = calculate(query);
+		const abtPages = [
+			...(enabled[spendingCalendar.context.key]
+				? [{ label: "Spending Calendar", icon: CalendarDays, run: openCalendar }]
+				: []),
+			...(enabled[templatePlan.context.key]
+				? [{ label: "Insights", icon: Sparkles, run: showInsights }]
+				: []),
+			{ label: "Tweaks", icon: Wrench, run: () => navigate(TWEAKS_PATH) },
+		];
+		const settingWords = (s: PageSetting) =>
+			`${s.label} ${"description" in s ? (s.description ?? "") : ""}`;
+
 		const out: PaletteGroup[] = [
+			{
+				label: "Calculator",
+				items: math === null ? [] : [{ kind: "math" as const, value: math }],
+			},
 			{ label: "Accounts", items: accountItems },
 			{ label: "Reports", items: reportItems },
 			{
 				label: "Go to",
-				items: NAV_PAGES.filter((p) => match(p.label)).map((p) => ({
-					kind: "nav" as const,
-					label: p.label,
-					page: p.page,
-					icon: p.icon,
+				items: [
+					...NAV_PAGES.filter((p) => match(p.label)).map((p) => ({
+						kind: "nav" as const,
+						label: p.label,
+						page: p.page,
+						icon: p.icon,
+					})),
+					...abtPages.filter((p) => match(p.label)).map((p) => ({ kind: "action" as const, ...p })),
+				],
+			},
+			{
+				label: "Tools",
+				items: BUILTIN_TOOLS.filter((tool) => match(tool.label)).map((tool) => ({
+					kind: "action" as const,
+					label: tool.label,
+					icon: TOOL_ICONS[tool.id],
+					run: () =>
+						openTool(tool.id, tool.label, window.innerWidth / 2, window.innerHeight * 0.2, true),
 				})),
+			},
+			{
+				label: "Tweaks",
+				// Only when asked for: all of them would bury everything else.
+				items:
+					q.length < 2
+						? []
+						: settings
+								.filter(({ setting }) => match(settingWords(setting)))
+								.slice(0, SETTINGS_LIMIT)
+								.map((entry) => ({ kind: "setting" as const, ...entry })),
 			},
 			{
 				label: "Quick actions",
@@ -312,6 +404,7 @@
 		open = true;
 		privacyEnabled = getPrivacyMode();
 		ensureReportsLoaded();
+		void loadSettings();
 		getValue<string>(THEME_SETTING_KEY, DEFAULT_THEME_KEY).then(
 			(v) => (activeThemeKey = v ?? DEFAULT_THEME_KEY),
 		);
@@ -335,9 +428,47 @@
 		index = 0;
 		animatePageChange = true;
 	}
+	// Insights needs the budget table, so it opens itself once the page has arrived.
+	function showInsights(): void {
+		openInsights();
+		if (!matchesPage(Page.Budget)) {
+			navigate(pagePath(Page.Budget));
+		}
+	}
+
+	function copyResult(value: number): void {
+		const text = String(value);
+		navigator.clipboard
+			?.writeText(text)
+			.then(() => notify({ type: "message", message: `Copied ${text}` }))
+			.catch(() => notify({ type: "error", message: "Couldn't copy the result" }));
+	}
+
+	function runSetting(setting: PageSetting): void {
+		if (setting.type === "checkbox") {
+			const { key } = setting.context;
+			enabled[key] = !enabled[key];
+			void applySettingChange(setting, enabled[key]);
+			return;
+		}
+		searchTweaksFor(setting.label);
+		navigate(TWEAKS_PATH);
+		closePalette();
+	}
+
 	function runItem(item: PaletteItem): void {
 		if (item.kind === "view-all" || item.kind === "subpage") {
 			goToPage(item.target);
+			return;
+		}
+		// Stays open, so the switch visibly changes and a few can be flipped in a row.
+		if (item.kind === "setting") {
+			runSetting(item.setting);
+			return;
+		}
+		if (item.kind === "math") {
+			copyResult(item.value);
+			closePalette();
 			return;
 		}
 		if (isCalendarOpen()) {
@@ -506,6 +637,23 @@
 								<span class="cp-item-glyph cp-item-icon"><item.icon strokeWidth={1.5} /></span>
 								<span class="cp-item-label">{@render hl(item.label)}</span>
 								<ArrowUpRight class="cp-go" strokeWidth={2.2} />
+							{:else if item.kind === "math"}
+								<span class="cp-item-glyph cp-item-icon"><Calculator strokeWidth={1.5} /></span>
+								<span class="cp-item-label cp-math"
+									>= {item.value.toLocaleString(undefined, { maximumFractionDigits: 10 })}</span
+								>
+								<Copy class="cp-go" strokeWidth={2.2} />
+							{:else if item.kind === "setting"}
+								<span class="cp-item-glyph cp-item-icon"><ToggleRight strokeWidth={1.5} /></span>
+								<span class="cp-item-label">{@render hl(item.setting.label)}</span>
+								<span class="cp-item-meta">{item.section}</span>
+								{#if item.setting.type === "checkbox"}
+									<span class="cp-state" class:on={enabled[item.setting.context.key]}>
+										{enabled[item.setting.context.key] ? "On" : "Off"}
+									</span>
+								{:else}
+									<ArrowUpRight class="cp-go" strokeWidth={2.2} />
+								{/if}
 							{:else if item.kind === "theme"}
 								<span class="cp-item-glyph">
 									{#each item.swatch.slice(0, 4) as color, i (i)}
@@ -724,6 +872,30 @@
 		color: var(--abt-accent);
 		font-weight: 700;
 	}
+	.cp-math {
+		font-variant-numeric: tabular-nums;
+		font-weight: 600;
+	}
+
+	.cp-item-meta {
+		flex-shrink: 0;
+		font-size: var(--abt-text-sm);
+		color: var(--abt-soft);
+	}
+
+	.cp-state {
+		flex-shrink: 0;
+		min-width: 28px;
+		font-size: var(--abt-text-sm);
+		font-weight: 600;
+		text-align: right;
+		color: var(--abt-soft);
+	}
+
+	.cp-state.on {
+		color: var(--abt-accent);
+	}
+
 	.cp-item-amount {
 		flex-shrink: 0;
 		font-size: var(--abt-text-base);

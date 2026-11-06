@@ -4,11 +4,20 @@
 	import InterestCalculator from "../tools/InterestCalculator.svelte";
 	import type { ToolId } from "../types";
 
-	const { toolId, title, anchorX, anchorY, onClose } = $props<{
+	const {
+		toolId,
+		title,
+		anchorX,
+		anchorY,
+		centered = false,
+		onClose,
+	} = $props<{
 		toolId: ToolId;
 		title: string;
 		anchorX: number;
 		anchorY: number;
+		/** Treats `anchorX` as the popover's middle, for opening away from any tile. */
+		centered?: boolean;
 		onClose: () => void;
 	}>();
 </script>
@@ -18,7 +27,13 @@
 	role="presentation"
 	onclick={(e) => e.target === e.currentTarget && onClose()}
 >
-	<div class="popover" role="dialog" tabindex="-1" style="left: {anchorX}px; top: {anchorY}px">
+	<div
+		class="popover"
+		class:centered
+		role="dialog"
+		tabindex="-1"
+		style="left: {anchorX}px; top: {anchorY}px"
+	>
 		<div class="popover__hd">
 			<span class="popover__title">{title}</span>
 			<button class="popover__close" onclick={onClose}>✕</button>
@@ -58,6 +73,10 @@
 			var(--color-sidebarItemText) 6%,
 			var(--color-sidebarBackground)
 		);
+	}
+
+	.popover.centered {
+		transform: translateX(-50%);
 	}
 
 	.popover__hd {

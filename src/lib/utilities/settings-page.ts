@@ -1,5 +1,19 @@
 import { SETTINGS, SETTINGS_NAV_LINK } from "@lib/actual-dom";
 export const TWEAKS_HASH = "#tweaks";
+export const TWEAKS_PATH = `/settings/general${TWEAKS_HASH}`;
+
+let pendingSearch = "";
+
+/** Fills ABT's settings search the next time that page opens. */
+export function searchTweaksFor(text: string): void {
+	pendingSearch = text;
+}
+
+export function takeTweaksSearch(): string {
+	const text = pendingSearch;
+	pendingSearch = "";
+	return text;
+}
 /** Where ABT's settings mount while its tab is open. */
 export const TWEAKS_HOST_ATTR = "data-abt-tweaks-host";
 /** Under ABT's tab in the nav, where its panel lists its sections while open. */

@@ -4,6 +4,7 @@ import { isMobileView } from "@lib/utilities/pages";
 import {
 	TWEAKS_HASH,
 	TWEAKS_HOST_ATTR,
+	TWEAKS_PATH,
 	TWEAKS_SECTIONS_ATTR,
 	settingsNav,
 } from "@lib/utilities/settings-page";
@@ -19,7 +20,6 @@ const PANE_ATTR = "data-abt-tweaks-pane";
 /** Mobile: on Actual's General list while ABT's panel stands in for it, and on the page title. */
 const MOBILE_HIDDEN_ATTR = "data-abt-tweaks-hidden";
 const MOBILE_TITLE_ATTR = "data-abt-tweaks-title";
-const TWEAKS_PATH = `/settings/general${TWEAKS_HASH}`;
 const CHEVRON = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="m12.95 10.707.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657z" fill="currentColor"/></svg>`;
 
 let link: HTMLAnchorElement | null = null;

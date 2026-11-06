@@ -151,12 +151,18 @@ export function openInsights(tab?: InsightsTab): void {
 			templatePlanState.onTabChange?.(tab);
 		}
 	}
-	openPanel();
+	if (isBudgetPage()) {
+		openPanel();
+	} else {
+		openOnArrival = true;
+	}
 }
 
 // ── Drawer open/close ─────────────────────────────────────────────────
 let drawerOpen = false;
 let drawerMounted = false;
+// Asked for from another page: the panel needs the budget table, so it waits for that.
+let openOnArrival = false;
 
 function openPanel(): void {
 	if (!session || !isBudgetPage()) {
@@ -639,7 +645,10 @@ function tick(): void {
 		invalidateCategoriesCache();
 		// Left open last time: refilled synchronously once known, so it's back before the page paints.
 		const persisted = isPanelPersistedOpen();
-		if (persisted === undefined) {
+		if (openOnArrival) {
+			openOnArrival = false;
+			openPanel();
+		} else if (persisted === undefined) {
 			reopenIfPersisted();
 		} else if (!drawerOpen) {
 			if (persisted) {

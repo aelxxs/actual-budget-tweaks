@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { takeTweaksSearch } from "@lib/utilities/settings-page";
 	import { ExternalLink, X } from "@lucide/svelte";
 	import { tick } from "svelte";
 	import {
@@ -20,7 +21,7 @@
 	const version = browser.runtime.getManifest().version;
 	const logoUrl = browser.runtime.getURL("/icon.svg");
 
-	let query = $state("");
+	let query = $state(takeTweaksSearch());
 	let collapsed = $state<Record<string, boolean>>({});
 	let changedOnly = $state(false);
 	let activeSection = $state(scriptSections[0]?.title ?? "");

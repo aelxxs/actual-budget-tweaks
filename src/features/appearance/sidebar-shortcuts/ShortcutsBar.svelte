@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
 	import { getValue, watchValue } from "@lib/utilities/store";
-	import { mount, onMount, unmount } from "svelte";
+	import { onMount } from "svelte";
 	import { sidebarShortcutsAddTile } from ".";
 	import Tiles from "./components/Tiles.svelte";
-	import ToolPopover from "./components/ToolPopover.svelte";
+	import { openTool } from "./open-tool";
 	import { loadShortcuts, saveShortcuts, watchShortcuts } from "./store";
 	import type { Shortcut, ToolId } from "./types";
 
@@ -47,43 +47,10 @@
 		}
 	}
 
-	let activePopover: { instance: any; container: HTMLElement } | null = null;
-
-	function closePopover() {
-		if (activePopover) {
-			unmount(activePopover.instance);
-			activePopover.container.remove();
-			activePopover = null;
-		}
-	}
-
-	function openTool(toolId: ToolId, label: string, anchorEl: HTMLElement) {
-		closePopover();
-		const rect = anchorEl.getBoundingClientRect();
-		const container = document.createElement("div");
-		container.dataset.abtModal = "tool-popover";
-		document.body.appendChild(container);
-
-		const instance = mount(ToolPopover, {
-			target: container,
-			props: {
-				toolId,
-				title: label,
-				anchorX: rect.right + 8,
-				anchorY: rect.top,
-				onClose: () => {
-					unmount(instance);
-					container.remove();
-					activePopover = null;
-				},
-			},
-		});
-		activePopover = { instance, container };
-	}
-
 	function handleClick(shortcut: Shortcut, el: HTMLElement) {
 		if (shortcut.type === "tool") {
-			openTool(shortcut.url as ToolId, shortcut.label, el);
+			const rect = el.getBoundingClientRect();
+			openTool(shortcut.url as ToolId, shortcut.label, rect.right + 8, rect.top);
 		} else if (shortcut.type === "external") {
 			window.open(shortcut.url, "_blank", "noopener");
 		}
