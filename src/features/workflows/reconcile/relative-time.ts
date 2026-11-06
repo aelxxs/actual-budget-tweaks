@@ -17,3 +17,16 @@ export function relativeTime(ms: number): string {
 	}
 	return "just now";
 }
+
+export function compactAge(days: number): string {
+	if (days < 1) {
+		return "today";
+	}
+	if (days < 30) {
+		return `${Math.floor(days)}d`;
+	}
+	if (days < 365) {
+		return `${Math.floor(days / 30)}mo`;
+	}
+	return `${Math.floor(days / 365)}y`;
+}

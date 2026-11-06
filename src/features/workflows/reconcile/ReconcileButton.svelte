@@ -2,7 +2,7 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { calculate, send } from "@lib/utilities/actual-api";
 	import { openPanel } from "./panel";
-	import { relativeTime } from "./relative-time";
+	import { compactAge, relativeTime } from "./relative-time";
 	import { collapseSidebar, reconcile } from "./state.svelte";
 
 	const { accountId }: { accountId: string } = $props();
@@ -24,19 +24,6 @@
 			: `${lastReconciled ? `Last reconciled ${relativeTime(lastReconciled)}` : "Never reconciled"}` +
 					` · ${uncleared === 1 ? "1 transaction" : `${uncleared} transactions`} not cleared`,
 	);
-
-	function compactAge(d: number): string {
-		if (d < 1) {
-			return "today";
-		}
-		if (d < 30) {
-			return `${Math.floor(d)}d`;
-		}
-		if (d < 365) {
-			return `${Math.floor(d / 30)}mo`;
-		}
-		return `${Math.floor(d / 365)}y`;
-	}
 
 	// Refetched when a reconcile here starts or finishes, which is when these change.
 	$effect(() => {

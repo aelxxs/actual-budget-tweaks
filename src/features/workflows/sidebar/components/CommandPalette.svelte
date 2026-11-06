@@ -21,9 +21,15 @@
 		openCalendar,
 		spendingCalendar,
 	} from "@features/workflows/spending-calendar";
+	import {
+		currentAccountId,
+		modernReconcile,
+		reconcileAccount,
+	} from "@features/workflows/reconcile";
+	import { compactAge } from "@features/workflows/reconcile/relative-time";
 	import { openInsights, templatePlan } from "@features/workflows/template-plan";
 	import { themes } from "@lib/design";
-	import { dispatch, navigate, notify, query as queryTable } from "@lib/utilities/actual-api";
+	import { dispatch, navigate, notify, query as queryTable, send } from "@lib/utilities/actual-api";
 	import { calculate } from "@lib/utilities/calc";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
@@ -44,6 +50,7 @@
 		EyeOff,
 		Landmark,
 		LayoutGrid,
+		ListChecks,
 		Palette,
 		Percent,
 		Plus,
@@ -101,10 +108,10 @@
 
 	// Each of these is a real dispatch/navigate call, verified against Actual's
 	// own source (loot-core/desktop-client) rather than guessed modal names.
-	// "Add transaction", "Import transactions" and "Reconcile" were dropped —
-	// they either have no global (accountless) trigger, or their real modal
-	// requires a callback prop that this bridge's JSON-serialized dispatch
-	// can't pass through, which would leave the modal broken once opened.
+	// "Add transaction" and "Import transactions" were dropped — they either
+	// have no global (accountless) trigger, or their real modal requires a
+	// callback prop that this bridge's JSON-serialized dispatch can't pass
+	// through, which would leave the modal broken once opened.
 	const QUICK_ACTIONS: { icon: typeof LayoutGrid; label: string; run: () => void }[] = [
 		{
 			icon: ClipboardList,
@@ -132,6 +139,7 @@
 
 	type PaletteItem =
 		| { kind: "account"; account: SidebarAccount }
+		| { kind: "reconcile"; account: SidebarAccount }
 		| { kind: "report"; report: CustomReport }
 		| { kind: "nav"; label: string; page: Page; icon: typeof LayoutGrid }
 		| { kind: "action"; label: string; icon: typeof LayoutGrid; run: () => void }
@@ -149,7 +157,7 @@
 	// all" row (see PREVIEW_LIMIT below) instead of dumping everything into
 	// the root list — mirrors CommandBar.tsx's themes page: a pushed
 	// sub-page rather than an ever-growing root list.
-	type SubPage = "accounts" | "reports" | "themes";
+	type SubPage = "accounts" | "reconcile" | "reports" | "themes";
 	const PREVIEW_LIMIT = 5;
 	const SETTINGS_LIMIT = 6;
 
@@ -157,6 +165,7 @@
 	let query = $state("");
 	let index = $state(0);
 	let listEl = $state<HTMLElement | null>(null);
+	let inputEl = $state<HTMLInputElement | null>(null);
 	let page = $state<"root" | SubPage>("root");
 	// Only a page *transition* animates — not the dialog's initial open.
 	let animatePageChange = $state(false);
@@ -203,6 +212,20 @@
 		}
 	}
 
+	const DAY = 24 * 3600e3;
+	// Last reconciled, in ms, by account; accounts never reconciled are missing.
+	let reconciledAt = $state.raw<Record<string, number>>({});
+	async function loadReconciledDates(): Promise<void> {
+		const rows = await send<{ id: string; last_reconciled: string | null }[]>("accounts-get");
+		reconciledAt = Object.fromEntries(
+			rows.filter((r) => r.last_reconciled).map((r) => [r.id, Number(r.last_reconciled)]),
+		);
+	}
+	function reconciledAge(id: string): string {
+		const at = reconciledAt[id];
+		return at ? compactAge((Date.now() - at) / DAY) : "never";
+	}
+
 	let activeThemeKey = $state(DEFAULT_THEME_KEY);
 	let communityThemes = $state<RemoteTheme[]>([]);
 	let communityThemesLoaded = false;
@@ -222,11 +245,13 @@
 	const placeholder = $derived(
 		page === "accounts"
 			? "Search accounts…"
-			: page === "reports"
-				? "Search reports…"
-				: page === "themes"
-					? "Search themes…"
-					: "Search, or try 145.20 * 12",
+			: page === "reconcile"
+				? "Choose an account to reconcile…"
+				: page === "reports"
+					? "Search reports…"
+					: page === "themes"
+						? "Search themes…"
+						: "Search, or try 145.20 * 12",
 	);
 
 	const groups = $derived.by((): PaletteGroup[] => {
@@ -240,6 +265,20 @@
 						{
 							label: "Accounts",
 							items: matchedAccounts.map((account) => ({ kind: "account" as const, account })),
+						},
+					]
+				: [];
+		}
+		if (page === "reconcile") {
+			const current = currentAccountId();
+			const rank = (a: SidebarAccount) => (a.id === current ? -1 : (reconciledAt[a.id] ?? 0));
+			return matchedAccounts.length
+				? [
+						{
+							label: "Accounts",
+							items: [...matchedAccounts]
+								.sort((a, b) => rank(a) - rank(b))
+								.map((account) => ({ kind: "reconcile" as const, account })),
 						},
 					]
 				: [];
@@ -343,17 +382,6 @@
 				})),
 			},
 			{
-				label: "Tweaks",
-				// Only when asked for: all of them would bury everything else.
-				items:
-					q.length < 2
-						? []
-						: settings
-								.filter(({ setting }) => match(settingWords(setting)))
-								.slice(0, SETTINGS_LIMIT)
-								.map((entry) => ({ kind: "setting" as const, ...entry })),
-			},
-			{
 				label: "Quick actions",
 				items: [
 					...QUICK_ACTIONS.filter((a) => match(a.label)).map((a) => ({
@@ -362,6 +390,16 @@
 						icon: a.icon,
 						run: a.run,
 					})),
+					...(enabled[modernReconcile.context.key] && match("Reconcile account")
+						? [
+								{
+									kind: "subpage" as const,
+									label: "Reconcile account",
+									icon: ListChecks,
+									target: "reconcile" as const,
+								},
+							]
+						: []),
 					...(match("Change theme")
 						? [
 								{
@@ -391,6 +429,17 @@
 					})(),
 				],
 			},
+			{
+				label: "Tweaks",
+				// Only when asked for: all of them would bury everything else.
+				items:
+					q.length < 2
+						? []
+						: settings
+								.filter(({ setting }) => match(settingWords(setting)))
+								.slice(0, SETTINGS_LIMIT)
+								.map((entry) => ({ kind: "setting" as const, ...entry })),
+			},
 		];
 		return out.filter((g) => g.items.length > 0);
 	});
@@ -405,6 +454,7 @@
 		privacyEnabled = getPrivacyMode();
 		ensureReportsLoaded();
 		void loadSettings();
+		void loadReconciledDates();
 		getValue<string>(THEME_SETTING_KEY, DEFAULT_THEME_KEY).then(
 			(v) => (activeThemeKey = v ?? DEFAULT_THEME_KEY),
 		);
@@ -418,6 +468,8 @@
 		query = "";
 		index = 0;
 		animatePageChange = true;
+		// A clicked row is removed with the old page, which drops focus to the body.
+		inputEl?.focus();
 		if (target === "themes") {
 			ensureCommunityThemesLoaded();
 		}
@@ -427,6 +479,7 @@
 		query = "";
 		index = 0;
 		animatePageChange = true;
+		inputEl?.focus();
 	}
 	// Insights needs the budget table, so it opens itself once the page has arrived.
 	function showInsights(): void {
@@ -478,6 +531,8 @@
 			navigate(pagePath(item.page));
 		} else if (item.kind === "account") {
 			navigate(`/accounts/${item.account.id}`);
+		} else if (item.kind === "reconcile") {
+			reconcileAccount(item.account.id);
 		} else if (item.kind === "report") {
 			navigate(`/reports/custom/${item.report.id}`);
 		} else if (item.kind === "theme") {
@@ -587,6 +642,7 @@
 				class="cp-input"
 				type="text"
 				{placeholder}
+				bind:this={inputEl}
 				bind:value={query}
 				use:autofocus
 				oninput={() => (index = 0)}
@@ -622,6 +678,13 @@
 								>
 									{fmtMoney(item.account.balance)}
 								</span>
+							{:else if item.kind === "reconcile"}
+								<span class="cp-item-glyph">
+									<StatusIcon status={item.account.status} />
+									{@render acctIcon(item.account)}
+								</span>
+								<span class="cp-item-label">{@render hl(item.account.name)}</span>
+								<span class="cp-item-meta">{reconciledAge(item.account.id)}</span>
 							{:else if item.kind === "report"}
 								<span class="cp-item-glyph cp-item-icon"><ChartColumn strokeWidth={1.5} /></span>
 								<span class="cp-item-label">{@render hl(item.report.name)}</span>

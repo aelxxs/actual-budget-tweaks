@@ -1,13 +1,14 @@
 import { defineSetting } from "@features/types";
+import { navigate } from "@lib/utilities/actual-api";
 import { UUID } from "@lib/utilities/ids";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { findAccountToolbar } from "@lib/utilities/native-ui";
 import { getCurrentPath } from "@lib/utilities/route-watcher";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { NATIVE_LOCK } from "./dom";
-import { closePanel, destroyPanel, panelWasClosed } from "./panel";
+import { closePanel, destroyPanel, openPanel, panelWasClosed } from "./panel";
 import ReconcileButton from "./ReconcileButton.svelte";
-import { cancel, reconcile } from "./state.svelte";
+import { cancel, collapseSidebar, reconcile } from "./state.svelte";
 
 /*
  * Replaces Actual's reconcile popover and banner with a side panel. Its lock button is found by
@@ -26,6 +27,22 @@ const CSS = `
 
 let mounted: (Mounted & { accountId: string }) | null = null;
 let hiddenLock: Element | null = null;
+// Asked for from elsewhere: the panel waits for the button, since arriving at an account closes it.
+let requested: string | null = null;
+
+export function currentAccountId(): string | null {
+	return getCurrentPath().match(ACCOUNT_PATH)?.[1] ?? null;
+}
+
+/** Goes to the account and opens its reconcile panel. */
+export function reconcileAccount(accountId: string): void {
+	requested = accountId;
+	if (currentAccountId() === accountId) {
+		sync();
+	} else {
+		navigate(`/accounts/${accountId}`);
+	}
+}
 
 function teardown() {
 	hiddenLock?.removeAttribute(HIDDEN_LOCK);
@@ -37,7 +54,7 @@ function teardown() {
 	mounted = null;
 }
 
-function sync() {
+function placeButton() {
 	// Re-entering the account view to refresh it isn't leaving it.
 	if (reconcile.refreshing) {
 		return;
@@ -49,7 +66,7 @@ function sync() {
 		destroyPanel();
 	}
 
-	const accountId = getCurrentPath().match(ACCOUNT_PATH)?.[1];
+	const accountId = currentAccountId();
 	// Runs on every DOM change: skip the queries while the button is in place.
 	if (
 		accountId &&
@@ -99,6 +116,16 @@ function sync() {
 	mounted = { ...button, accountId };
 }
 
+function sync() {
+	placeButton();
+	if (requested && mounted?.accountId === requested && mounted.node.isConnected) {
+		const accountId = requested;
+		requested = null;
+		collapseSidebar();
+		openPanel(accountId);
+	}
+}
+
 export const modernReconcile = defineSetting({
 	type: "checkbox",
 	label: "Modern Reconcile",
@@ -118,6 +145,7 @@ export const modernReconcile = defineSetting({
 		const stop = watchDom(sync);
 		return () => {
 			stop();
+			requested = null;
 			cancel();
 			closePanel();
 			teardown();
