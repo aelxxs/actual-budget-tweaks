@@ -225,10 +225,9 @@
 			aria-selected={mode === "edit" ? focusedId === shortcut.id : undefined}
 			data-id={shortcut.id}
 			style={colorVars(idx, mode === "edit" || !isWidget || isData)}
-			title={shortcut.label}
 			aria-label={mode === "edit"
 				? `${shortcut.label}. Delete to remove, Alt+arrows to move`
-				: undefined}
+				: shortcut.label}
 			tabindex={mode === "edit" ? 0 : undefined}
 			draggable="true"
 			onclick={mode === "bar" && !isWidget
@@ -285,7 +284,7 @@
 
 	.item {
 		position: relative;
-		height: 38px;
+		height: 36px;
 		border: none;
 		border-radius: 10px; /* raw: fixed, with the sidebar search bar */
 		background: var(--sc-bg);
@@ -322,8 +321,8 @@
 	}
 
 	.item.is-small {
-		width: 38px;
-		flex: 0 0 38px;
+		width: 36px;
+		flex: 0 0 36px;
 		font-size: 17px;
 	}
 
@@ -341,7 +340,7 @@
 
 	.item.is-data {
 		height: auto;
-		min-height: 38px;
+		min-height: 36px;
 	}
 
 	.item.is-dragging {

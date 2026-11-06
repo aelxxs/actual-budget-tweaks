@@ -489,7 +489,7 @@
 	}
 
 	.stage__bar {
-		min-height: 38px;
+		min-height: 36px;
 	}
 
 	.stage__empty {

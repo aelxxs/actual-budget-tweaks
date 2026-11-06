@@ -70,7 +70,7 @@
 	onMount(() => refreshWhileVisible(fetchData, 60000));
 </script>
 
-<div class="rsu" title="{symbol} RSU · {rsuCount} shares">
+<div class="rsu">
 	{#if loading}
 		<span class="rsu__sym">{symbol || "RSU"}</span>
 		<span class="rsu__dots">···</span>

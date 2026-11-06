@@ -55,15 +55,9 @@
 	}
 
 	onMount(() => refreshWhileVisible(fetchQuote, 60000));
-
-	let tooltip = $derived(
-		price != null && change != null
-			? `${symbol} $${price.toFixed(2)} (${change >= 0 ? "+" : ""}${change.toFixed(2)})`
-			: symbol,
-	);
 </script>
 
-<div class="stk" title={tooltip}>
+<div class="stk">
 	{#if loading}
 		<span class="stk__sym">{symbol}</span>
 		<span class="stk__dots">···</span>

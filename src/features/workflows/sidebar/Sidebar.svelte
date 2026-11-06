@@ -682,7 +682,7 @@
 		gap: 8px;
 		width: 100%;
 		box-sizing: border-box;
-		padding: calc(var(--sb-row-pad-y, 5px) + 2px) 13px;
+		padding: calc(var(--sb-row-pad-y, 5px) + 1px) 13px;
 		background: var(--abt-ink-1);
 		border: 1px solid var(--abt-ink-2);
 		border-radius: 11px; /* raw: fixed, with the shortcut tiles beside it */
@@ -717,7 +717,7 @@
 	}
 	.search-kbd {
 		flex-shrink: 0;
-		padding: 3px 7px;
+		padding: 1px 5px;
 		background: var(--abt-ink-3);
 		border-radius: var(--abt-radius-sm);
 		font-size: var(--abt-text-sm);

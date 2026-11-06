@@ -125,8 +125,8 @@
 
 <style>
 	.edit-btn {
-		width: 38px;
-		height: 38px;
+		width: 36px;
+		height: 36px;
 		border: 1.5px dashed color-mix(in srgb, var(--color-sidebarItemText) 30%, transparent);
 		border-radius: 10px; /* raw: fixed, with the sidebar search bar */
 		background: color-mix(in srgb, var(--color-sidebarItemText) 5%, transparent);
