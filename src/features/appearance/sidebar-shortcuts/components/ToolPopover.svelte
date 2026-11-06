@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import Calculator from "../tools/Calculator.svelte";
 	import CurrencyConverter from "../tools/CurrencyConverter.svelte";
 	import InterestCalculator from "../tools/InterestCalculator.svelte";
@@ -11,6 +12,7 @@
 		anchorY,
 		centered = false,
 		onClose,
+		onMoved,
 	} = $props<{
 		toolId: ToolId;
 		title: string;
@@ -19,45 +21,98 @@
 		/** Treats `anchorX` as the popover's middle, for opening away from any tile. */
 		centered?: boolean;
 		onClose: () => void;
+		onMoved: (x: number, y: number) => void;
 	}>();
+
+	let popover: HTMLDivElement;
+	// Set once, then the popover is the user's to move.
+	// svelte-ignore state_referenced_locally
+	let left = $state(anchorX);
+	// svelte-ignore state_referenced_locally
+	let top = $state(anchorY);
+	let grab: { x: number; y: number } | null = null;
+
+	function moveTo(x: number, y: number) {
+		left = Math.max(0, Math.min(x, window.innerWidth - popover.offsetWidth));
+		top = Math.max(0, Math.min(y, window.innerHeight - popover.offsetHeight));
+	}
+
+	onMount(() => {
+		moveTo(centered ? anchorX - popover.offsetWidth / 2 : anchorX, anchorY);
+		if (!popover.contains(document.activeElement)) {
+			popover.focus({ preventScroll: true });
+		}
+		const keepOnScreen = () => moveTo(left, top);
+		window.addEventListener("resize", keepOnScreen);
+		return () => window.removeEventListener("resize", keepOnScreen);
+	});
+
+	function onGrab(e: PointerEvent) {
+		if (e.button !== 0 || (e.target as Element).closest("button")) {
+			return;
+		}
+		grab = { x: e.clientX - left, y: e.clientY - top };
+		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+	}
+
+	function onDrag(e: PointerEvent) {
+		if (grab) {
+			moveTo(e.clientX - grab.x, e.clientY - grab.y);
+		}
+	}
+
+	function onDrop() {
+		if (grab) {
+			grab = null;
+			onMoved(left, top);
+		}
+	}
+
+	function onKeydown(e: KeyboardEvent) {
+		if (e.key === "Escape") {
+			e.stopPropagation();
+			onClose();
+		}
+	}
 </script>
 
+<!-- Not modal: it's for using alongside the page, so the page stays usable behind it. -->
 <div
-	class="backdrop"
-	role="presentation"
-	onclick={(e) => e.target === e.currentTarget && onClose()}
+	class="popover"
+	data-abt-tool
+	role="dialog"
+	aria-label={title}
+	tabindex="-1"
+	style="left: {left}px; top: {top}px"
+	bind:this={popover}
+	onkeydown={onKeydown}
 >
 	<div
-		class="popover"
-		class:centered
-		role="dialog"
-		tabindex="-1"
-		style="left: {anchorX}px; top: {anchorY}px"
+		class="popover__hd"
+		role="presentation"
+		onpointerdown={onGrab}
+		onpointermove={onDrag}
+		onpointerup={onDrop}
+		onpointercancel={onDrop}
 	>
-		<div class="popover__hd">
-			<span class="popover__title">{title}</span>
-			<button class="popover__close" onclick={onClose}>✕</button>
-		</div>
-		{#if toolId === "calculator"}
-			<Calculator {onClose} />
-		{:else if toolId === "currency-converter"}
-			<CurrencyConverter {onClose} />
-		{:else if toolId === "interest-calculator"}
-			<InterestCalculator {onClose} />
-		{/if}
+		<span class="popover__title">{title}</span>
+		<button class="popover__close" aria-label="Close {title}" onclick={onClose}>✕</button>
 	</div>
+	{#if toolId === "calculator"}
+		<Calculator {onClose} />
+	{:else if toolId === "currency-converter"}
+		<CurrencyConverter {onClose} />
+	{:else if toolId === "interest-calculator"}
+		<InterestCalculator {onClose} />
+	{/if}
 </div>
 
 <style>
-	.backdrop {
-		position: fixed;
-		inset: 0;
-		z-index: 99998;
-	}
-
 	.popover {
 		position: fixed;
-		z-index: 99999;
+		/* Above the page and sidebar (1001), below Actual's dialogs (3000). */
+		z-index: 2000;
+		outline: none;
 		background: var(--color-sidebarBackground, #2a2b3d);
 		color: var(--color-sidebarItemText, #e0e0e0);
 		border: 1px solid color-mix(in srgb, var(--color-sidebarItemText) 10%, transparent);
@@ -75,16 +130,19 @@
 		);
 	}
 
-	.popover.centered {
-		transform: translateX(-50%);
-	}
-
 	.popover__hd {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		padding: 8px 12px;
 		border-bottom: 1px solid color-mix(in srgb, var(--color-sidebarItemText) 10%, transparent);
+		cursor: grab;
+		user-select: none;
+		touch-action: none;
+	}
+
+	.popover__hd:active {
+		cursor: grabbing;
 	}
 
 	.popover__title {

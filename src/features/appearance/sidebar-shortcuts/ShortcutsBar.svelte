@@ -4,7 +4,7 @@
 	import { onMount } from "svelte";
 	import { sidebarShortcutsAddTile } from ".";
 	import Tiles from "./components/Tiles.svelte";
-	import { openTool } from "./open-tool";
+	import { closeTool, isToolOpen, openTool } from "./open-tool";
 	import { loadShortcuts, saveShortcuts, watchShortcuts } from "./store";
 	import type { Shortcut, ToolId } from "./types";
 
@@ -49,8 +49,13 @@
 
 	function handleClick(shortcut: Shortcut, el: HTMLElement) {
 		if (shortcut.type === "tool") {
-			const rect = el.getBoundingClientRect();
-			openTool(shortcut.url as ToolId, shortcut.label, rect.right + 8, rect.top);
+			const toolId = shortcut.url as ToolId;
+			if (isToolOpen(toolId)) {
+				closeTool();
+			} else {
+				const rect = el.getBoundingClientRect();
+				void openTool(toolId, shortcut.label, rect.right + 8, rect.top);
+			}
 		} else if (shortcut.type === "external") {
 			window.open(shortcut.url, "_blank", "noopener");
 		}

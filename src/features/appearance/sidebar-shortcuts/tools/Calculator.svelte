@@ -84,6 +84,10 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
+		// The page stays usable behind a tool, so its keys only count when focus is in here.
+		if (!(e.target as Element).closest?.("[data-abt-tool]")) {
+			return;
+		}
 		if (e.key >= "0" && e.key <= "9") {
 			input(e.key);
 		} else if (e.key === ".") {

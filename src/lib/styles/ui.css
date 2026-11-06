@@ -434,7 +434,8 @@
 }
 
 /* Native select arrows sit flush with the edge in Chrome; draw one with room to breathe. */
-select.abt-input {
+select.abt-input,
+select.abt-select-arrow {
 	appearance: none;
 	padding-right: calc(var(--abt-space-3) + 14px);
 	background-image:

@@ -62,7 +62,7 @@
 
 		<label class="ic__field">
 			<span class="ic__label">Compound</span>
-			<select class="ic__select" bind:value={compounding}>
+			<select class="ic__select abt-select-arrow" bind:value={compounding}>
 				{#each compoundOptions as opt (opt.value)}
 					<option value={opt.value}>{opt.label}</option>
 				{/each}
@@ -161,12 +161,13 @@
 
 	.ic__select {
 		width: 100%;
-		padding: 6px 8px;
+		padding-block: 6px;
+		padding-left: 8px;
 		font-size: var(--abt-text-base);
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius-sm);
-		background: var(--abt-ink-1);
+		background-color: var(--abt-ink-1);
 		color: var(--color-pageText);
 		outline: none;
 		cursor: pointer;

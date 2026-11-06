@@ -80,6 +80,10 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
+		// The page stays usable behind a tool, so its keys only count when focus is in here.
+		if (!(e.target as Element).closest?.("[data-abt-tool]")) {
+			return;
+		}
 		if (e.key === "Escape") {
 			onClose();
 		}
@@ -105,7 +109,11 @@
 <div class="conv">
 	<div class="conv__row">
 		<div class="conv__field">
-			<select class="conv__select" bind:value={fromCurrency} onchange={() => fetchRates()}>
+			<select
+				class="conv__select abt-select-arrow"
+				bind:value={fromCurrency}
+				onchange={() => fetchRates()}
+			>
 				{#each CURRENCIES as c (c)}
 					<option value={c}>{c}</option>
 				{/each}
@@ -122,7 +130,7 @@
 
 	<div class="conv__row">
 		<div class="conv__field">
-			<select class="conv__select" bind:value={toCurrency}>
+			<select class="conv__select abt-select-arrow" bind:value={toCurrency}>
 				{#each CURRENCIES as c (c)}
 					<option value={c}>{c}</option>
 				{/each}
@@ -173,9 +181,10 @@
 	}
 
 	.conv__select {
-		padding: 10px 8px 10px 10px;
+		padding-block: 10px;
+		padding-left: 10px;
 		border: none;
-		background: var(--abt-ink-2);
+		background-color: var(--abt-ink-2);
 		color: var(--color-pageText);
 		font-family: inherit;
 		font-size: var(--abt-text-md);
