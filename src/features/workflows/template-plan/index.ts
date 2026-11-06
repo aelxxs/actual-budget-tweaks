@@ -82,9 +82,18 @@ const { computePriorityStatus, buildBreakdownPrioritySummary, invalidatePriority
 
 // ── Panel mount (built once, reused across opens) ────────────────────
 let panel: Mounted | null = null;
+// The panel stays mounted while hidden: its title waits for the next open, not another panel's header.
+let panelTitle: string | undefined;
+
+function updateTitle(title: string): void {
+	panelTitle = title;
+	if (drawerOpen) {
+		sidepanel.setTitle(title);
+	}
+}
 
 function ensurePanelMounted(): HTMLElement {
-	panel ??= mountToPanelBody(TemplatePlanPanel, {});
+	panel ??= mountToPanelBody(TemplatePlanPanel, { onTitle: updateTitle });
 	return panel.node;
 }
 
@@ -172,7 +181,7 @@ function openPanel(): void {
 	drawerMounted = false;
 	removeTriggerButton();
 	const bodyNode = ensurePanelMounted();
-	sidepanel.open({ bodyNode, persist: true, width: SIDE_PANEL_WIDTH });
+	sidepanel.open({ title: panelTitle, bodyNode, persist: true, width: SIDE_PANEL_WIDTH });
 	if (
 		templatePlanState.activeTab === "overview" &&
 		!templatePlanState.overviewLoading &&

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { sidepanel } from "@features/core/side-panel";
 	import Tabs from "@lib/components/Tabs.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { monthLabelForHeader } from "@lib/template-plan/actual-data";
@@ -29,6 +28,8 @@
 
 	// The month, since the tabs already say which view this is; Breakdown reports the last
 	// template run, which can be another month, so it names the run too.
+	const { onTitle }: { onTitle: (title: string) => void } = $props();
+
 	const title = $derived.by(() => {
 		const rawMonthLabel =
 			(templatePlanState.activeTab === "breakdown" &&
@@ -47,7 +48,7 @@
 	});
 
 	$effect(() => {
-		sidepanel.setTitle(title);
+		onTitle(title);
 	});
 
 	// Refreshing data that's already on screen: dimmed until the new numbers arrive.
