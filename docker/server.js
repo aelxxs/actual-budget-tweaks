@@ -15,11 +15,13 @@ const PACKAGE_JSON_PATH = process.env.PACKAGE_JSON_PATH || "/app/package.json";
 const actualUrl = new URL(ACTUAL_ORIGIN);
 
 // Read once at startup rather than per-request.
-let ABT_VERSION = "unknown";
-try {
-	ABT_VERSION = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf8")).version || ABT_VERSION;
-} catch (err) {
-	console.warn(`[abt-sidecar] couldn't read version from ${PACKAGE_JSON_PATH}:`, err.message);
+let ABT_VERSION = process.env.ABT_VERSION || "unknown";
+if (!process.env.ABT_VERSION) {
+	try {
+		ABT_VERSION = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf8")).version || ABT_VERSION;
+	} catch (err) {
+		console.warn(`[abt-sidecar] couldn't read version from ${PACKAGE_JSON_PATH}:`, err.message);
+	}
 }
 
 const YAHOO_CHART_PREFIX = "/abt-api/yahoo-chart/";

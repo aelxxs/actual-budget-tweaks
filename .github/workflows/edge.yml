@@ -1,0 +1,82 @@
+name: Publish Edge Sidecar
+
+# Nightly build of main for trying changes before a release. Never touches the `latest` image.
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: edge
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 50
+
+      - id: check
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ] || [ -n "$(git log --since='25 hours ago' --oneline)" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  verify:
+    needs: changes
+    if: needs.changes.outputs.publish == 'true'
+    uses: ./.github/workflows/ci.yml
+
+  smoke:
+    needs: changes
+    if: needs.changes.outputs.publish == 'true'
+    uses: ./.github/workflows/smoke.yml
+    with:
+      actual: latest
+
+  publish:
+    needs: [verify, smoke]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: version
+        run: |
+          SHA=$(git rev-parse --short=7 HEAD)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p "require('./package.json').version")-edge.$SHA" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        timeout-minutes: 15
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: ABT_VERSION=${{ steps.version.outputs.version }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/abt-sidecar:edge
+            ghcr.io/${{ github.repository_owner }}/abt-sidecar:edge-${{ steps.version.outputs.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

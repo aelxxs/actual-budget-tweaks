@@ -99,6 +99,11 @@ const compose = `services:
 				<code>docker compose pull &amp;&amp; docker compose up -d</code>. To stay on a release, use its
 				version tag instead, for example <code>ghcr.io/aelxxs/abt-sidecar:0.1.75</code>.
 			</p>
+			<p>
+				To try changes before they're released, use <code>edge</code>, built nightly from the main
+				branch after its tests pass. It can include unfinished work, so it's for testing, not your
+				everyday setup. To stay on one build, use its <code>edge-&lt;commit&gt;</code> tag.
+			</p>
 		</section>
 
 		<section class="docs__section">

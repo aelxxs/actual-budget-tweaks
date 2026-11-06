@@ -16,6 +16,9 @@ WORKDIR /app
 COPY docker/server.js docker/browser-shim.js ./
 COPY --from=build /repo/.output/chrome-mv3 /assets
 COPY --from=build /repo/package.json /app/package.json
+# Edge builds stamp their commit here; releases use package.json's version.
+ARG ABT_VERSION
+ENV ABT_VERSION=$ABT_VERSION
 ENV PORT=3005
 EXPOSE 3005
 # The image's unprivileged user; the server only needs to read its files.
