@@ -685,7 +685,7 @@
 		padding: calc(var(--sb-row-pad-y, 5px) + 1px) 13px;
 		background: var(--abt-ink-1);
 		border: 1px solid var(--abt-ink-2);
-		border-radius: 11px; /* raw: fixed, with the shortcut tiles beside it */
+		border-radius: 10px; /* raw: fixed, with the shortcut tiles beside it */
 		transition: border-color 0.12s ease;
 	}
 	.search:hover {
