@@ -23,6 +23,7 @@ const SURFACES = `
 	.abt-side-drawer-body,
 	.abt-side-drawer-body .abt-tabs,
 	.settings-toolbar,
+	[data-abt-calendar] .cal-day-name,
 	${MAIN},
 	${REPORTS_PAGE},
 	${REPORTS_PAGE} > div:not([data-abt-calendar]),
