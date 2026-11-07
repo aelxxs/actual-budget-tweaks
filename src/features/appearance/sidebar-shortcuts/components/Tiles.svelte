@@ -156,6 +156,7 @@
 		if (!el) {
 			return;
 		}
+		let awaited: Animation | null = null;
 		const measure = () => {
 			const style = getComputedStyle(el);
 			let inner = el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
@@ -172,7 +173,10 @@
 					: 0;
 			if (sidebar && target) {
 				inner = Math.round(inner + target - sidebar.getBoundingClientRect().width);
-				void transition?.finished.then(measure, () => {});
+				if (transition && transition !== awaited) {
+					awaited = transition;
+					void transition.finished.then(measure, () => {});
+				}
 			}
 			if (inner > 0 && inner !== width) {
 				resizing = true;
