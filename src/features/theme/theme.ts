@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
 import { getValue } from "@lib/utilities/store";
 import { DEFAULT_THEME } from "./defaults";
-import { applyThemeByKey } from "./theme-apply";
+import { applyThemeByKey, watchWindowColor } from "./theme-apply";
 import ThemeCustomizer from "./ThemeCustomizer.svelte";
 import { loadUserThemes } from "./user-themes.svelte";
 
@@ -15,6 +15,8 @@ export const themeSelector = defineSetting({
 	},
 	component: ThemeCustomizer,
 	init: async (ctx) => {
+		// Always on, like this setting, so it never stops.
+		watchWindowColor();
 		await loadUserThemes();
 
 		const autoSwitch = await getValue<boolean>("theme-auto-switch", false);

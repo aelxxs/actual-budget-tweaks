@@ -1,5 +1,6 @@
 import { getTheme, themes } from "@lib/design";
 import { applyGlobalCSS } from "@lib/utilities/dom";
+import { watchElement } from "@lib/utilities/dom-watcher";
 import { editorState } from "./editor-state.svelte";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
 import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
@@ -396,10 +397,30 @@ export function applyOverrides(key: string) {
 }
 
 /**
- * The window's title bar (an installed app, or a Safari web app) takes the theme-color tag and the
- * body's background, which Actual resolves only when its own theme changes. Re-resolved after
- * each theme ABT applies; only with a budget open, since the budget list sets its own colour.
+ * Keeps the window's title bar (an installed app, or a Safari web app) on the theme: it takes the
+ * theme-color tag and the body's background, which Actual resolves from its own theme, sometimes
+ * before ABT's has loaded. Re-resolved when a budget opens and whenever Actual rewrites the tag.
  */
+export function watchWindowColor(): void {
+	watchElement(BUDGET_LINK, syncWindowColor);
+	const tag = new MutationObserver(syncWindowColor);
+	let watched: Element | null = null;
+	// Just the tag, which Actual may add later; the rest of the head changes with every style.
+	const findTag = () => {
+		const meta = document.querySelector('meta[name="theme-color"]');
+		if (meta && meta !== watched) {
+			watched = meta;
+			tag.disconnect();
+			tag.observe(meta, { attributes: true, attributeFilter: ["content"] });
+			syncWindowColor();
+		}
+	};
+	new MutationObserver(findTag).observe(document.head, { childList: true });
+	findTag();
+	syncWindowColor();
+}
+
+/** Only with a budget open, since the budget list sets its own colour. */
 function syncWindowColor() {
 	const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
 	if (!meta || !document.querySelector(BUDGET_LINK)) {
