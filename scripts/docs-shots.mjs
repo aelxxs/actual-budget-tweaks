@@ -7,6 +7,8 @@ import { chromium } from "@playwright/test";
 /**
  * Regenerates the guide screenshots: a throwaway Actual behind the sidecar, a seeded demo budget at
  * a fixed date, then each shot driven and annotated. Needs Docker and `pnpm build`.
+ *
+ * `--home` makes the home page's hero comparison instead.
  */
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -17,6 +19,7 @@ const BASE = `http://localhost:${SIDECAR_PORT}`;
 const CONTAINER = "abt-docs-shots";
 const IMAGE = `actualbudget/actual-server:${process.env.ACTUAL_TAG ?? "latest"}`;
 const PASSWORD = "abt-docs-shots";
+const HERO = resolve(ROOT, "website/public/images");
 const TODAY = "2026-06-24";
 const BUDGET_TABLE = '[data-testid="budget-table"]';
 
@@ -32,20 +35,45 @@ const SETTINGS = {
 	"transaction-inspector": true,
 };
 
+const HOME_SETTINGS = {
+	...SETTINGS,
+	"experimental-sidebar-layout-mode": "split",
+	"side-panel-width": 280,
+	"budget-summary-row": true,
+	"category-progress-indicators": true,
+	"balance-status-pills": true,
+};
+
 const TEMPLATES = {
 	Rent: ["#template 1450", 145000],
+	"Renters Insurance": ["#template 18", 1800],
 	Utilities: ["#template-1 90", 9000],
 	Internet: ["#template-1 60", 6000],
 	Groceries: ["#template-2 450", 45000],
-	Transport: ["#template-2 350", 35000],
+	Transport: ["#template-2 160", 16000],
 	"Dining Out": ["#template-3 150", 15000],
-	Fun: ["#template-4 320", 32000],
+	Subscriptions: ["#template-3 16", 1600],
+	Fun: ["#template-4 60", 6000],
+	Shopping: ["#template-4 150", 15000],
+	Vacation: ["#template-4 320", 32000],
+	"Emergency Fund": ["#template-4 100", 10000],
+	Gifts: ["#template-4 40", 4000],
 };
 
+// Listed top to bottom. Actual puts a new category first, and keeps the emoji in the name.
 const CATEGORIES = {
-	Bills: ["Rent", "Utilities", "Internet"],
-	"Usual Expenses": ["Groceries", "Dining Out", "Transport", "Fun"],
+	Needs: {
+		Rent: "🏠",
+		"Renters Insurance": "🛡️",
+		Utilities: "💡",
+		Groceries: "🥑",
+		Transport: "🚆",
+		Internet: "📶",
+	},
+	Wants: { "Dining Out": "🍜", Fun: "🍿", Shopping: "🛒", Subscriptions: "📺" },
+	Saving: { Savings: "💵", Vacation: "✈️", "Emergency Fund": "⛺", Gifts: "🎁" },
 };
+const INCOME = { Income: "💰", "Starting Balances": "🏁" };
 
 // `opening` and `monthly` are cents. Everyday Checking gets its history from MONTHLY below.
 const ACCOUNTS = [
@@ -78,20 +106,20 @@ const PURCHASES = {
 		["Sunrise Coffee", "Dining Out", -645, 3],
 		["Corner Market", "Groceries", -6418, 6],
 		["Fuel Stop", "Transport", -4210, 9],
-		["Bright Pharmacy", "Fun", -1875, 11],
+		["Bright Pharmacy", "Shopping", -1875, 11],
 		["Noodle House", "Dining Out", -2940, 14],
-		["Bookshop on Main", "Fun", -2299, 17],
+		["Bookshop on Main", "Shopping", -2299, 17],
 		["Sunrise Coffee", "Dining Out", -590, 19],
 		["Corner Market", "Groceries", -5336, 22],
 	],
 	travel: [
-		["Skyline Air", "Transport", -18420, 7],
-		["Harbor Hotel", "Fun", -12900, 12],
+		["Skyline Air", "Vacation", -18420, 7],
+		["Harbor Hotel", "Vacation", -12900, 12],
 		["City Rideshare", "Transport", -2360, 13],
 	],
 	store: [
-		["Home Goods Depot", "Fun", -4875, 10],
-		["Trailhead Outfitters", "Fun", -3650, 21],
+		["Home Goods Depot", "Shopping", -4875, 10],
+		["Trailhead Outfitters", "Shopping", -3650, 21],
 	],
 };
 
@@ -136,7 +164,9 @@ const MONTHLY = [
 	["Acme Payroll", "Income", 115000, 1],
 	["Acme Payroll", "Income", 115000, 15],
 	["Maple Street Rentals", "Rent", -145000, 2],
+	["Harbor Mutual", "Renters Insurance", -1800, 3],
 	["City Power", "Utilities", -8640, 8],
+	["StreamBox", "Subscriptions", -1599, 6],
 	["Fiberline", "Internet", -6000, 12],
 	["Corner Market", "Groceries", -9264, 4],
 	["Corner Market", "Groceries", -11237, 11],
@@ -251,11 +281,29 @@ async function seedBudget(page) {
 			categoryIds[category.name] = category.id;
 		}
 	}
-	for (const [groupName, names] of Object.entries(CATEGORIES)) {
-		const group = grouped.find((g) => g.name === groupName) ?? grouped.find((g) => !g.is_income);
-		for (const name of names) {
-			categoryIds[name] ??= await send("category-create", { name, groupId: group.id });
+	for (const [groupName, categories] of Object.entries(CATEGORIES)) {
+		const groupId = await send("category-group-create", { name: groupName });
+		for (const [name, emoji] of Object.entries(categories).reverse()) {
+			const label = `${emoji} ${name}`;
+			if (categoryIds[name]) {
+				await send("category-update", { id: categoryIds[name], name: label });
+				await send("category-move", { id: categoryIds[name], groupId, targetId: null });
+			} else {
+				categoryIds[name] = await send("category-create", { name: label, groupId });
+			}
 		}
+	}
+	for (const [name, emoji] of Object.entries(INCOME)) {
+		await send("category-update", { id: categoryIds[name], name: `${emoji} ${name}` });
+	}
+	// Actual's starter budget, now empty apart from what was moved out above.
+	for (const group of grouped.filter((g) => !g.is_income)) {
+		for (const category of group.categories) {
+			if (category.name !== "Savings") {
+				await send("category-delete", { id: category.id });
+			}
+		}
+		await send("category-group-delete", { id: group.id });
 	}
 
 	const accountIds = {};
@@ -371,7 +419,7 @@ async function seedBudget(page) {
 	await send("budget/budget-amount", {
 		month: "2025-12",
 		category: categoryIds.Savings,
-		amount: 2780000,
+		amount: 2695500,
 	});
 	await send("budget/check-templates");
 
@@ -394,7 +442,7 @@ async function seedBudget(page) {
 	};
 }
 
-async function applySettings(page, { accountIds, budgetId, groupSections }) {
+async function applySettings(page, { accountIds, budgetId, groupSections }, settings) {
 	const icons = Object.fromEntries(
 		ACCOUNTS.map((a) => [accountIds[a.name], { type: "emoji", value: a.emoji }]),
 	);
@@ -410,7 +458,7 @@ async function applySettings(page, { accountIds, budgetId, groupSections }) {
 				JSON.stringify(sections),
 			);
 		},
-		[SETTINGS, icons, SHORTCUTS, budgetId, groupSections],
+		[settings, icons, SHORTCUTS, budgetId, groupSections],
 	);
 }
 
@@ -737,12 +785,54 @@ async function recapShots(page, { accountIds }) {
 	await page.getByText("Needs a category").waitFor();
 	await page.waitForTimeout(1200);
 	await page.getByRole("combobox", { name: "Category for Garden Center" }).selectOption({
-		label: "Fun",
+		label: "🍿 Fun",
 	});
 	await page.waitForTimeout(800);
 	await shot(page, "recap", panel, { room: 0, cutout: true });
 }
 
+/** The same budget with ABT and, with its files blocked, without. */
+async function heroShots(page) {
+	await page.setViewportSize({ width: 1500, height: 853 });
+	const open = async () => {
+		await page.goto(`${BASE}/budget`);
+		await page.locator(BUDGET_TABLE).waitFor();
+		await dismissWelcome(page);
+		await page.waitForTimeout(2000);
+	};
+	await open();
+	await page.keyboard.press("Control+k");
+	await page.locator(".cp-input").fill("insights");
+	await page.keyboard.press("Enter");
+	await page.locator(".abt-tab-overview-toolbar").waitFor();
+	await page.mouse.move(700, 20);
+	await dismissWelcome(page);
+	await page.waitForTimeout(3000);
+	await page.screenshot({ path: resolve(HERO, "hero-abt.png") });
+
+	await page.route("**/abt/**", (route) => route.abort());
+	await open();
+	await page.mouse.move(700, 20);
+	await page.waitForTimeout(800);
+	await page.screenshot({ path: resolve(HERO, "hero-actual.png") });
+	await page.unroute("**/abt/**");
+}
+
+/** Enough left in savings for every template, so the hero isn't a month of overspending. */
+async function fundJune(page, { categoryIds }) {
+	const send = (name, args) =>
+		page.evaluate(([name, args]) => window.$send(name, args), [name, args]);
+	await send("budget/budget-amount", {
+		month: "2025-12",
+		category: categoryIds.Savings,
+		amount: 2569000,
+	});
+	for (const [name, [, amount]] of Object.entries(TEMPLATES)) {
+		await send("budget/budget-amount", { month: "2026-06", category: categoryIds[name], amount });
+	}
+}
+
+const home = process.argv.includes("--home");
 const stop = await startStack();
 const browser = await chromium.launch();
 try {
@@ -750,6 +840,8 @@ try {
 		viewport: { width: 1400, height: 860 },
 		deviceScaleFactor: 2,
 		colorScheme: "light",
+		// A service worker's requests would get past the route that blocks ABT's files.
+		serviceWorkers: home ? "block" : "allow",
 	});
 	const page = await context.newPage();
 	// Fixed prices, so the stock tiles don't change between runs.
@@ -771,15 +863,22 @@ try {
 	await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00`));
 	await createBudget(page);
 	const seeded = await seedBudget(page);
-	await applySettings(page, seeded);
+	if (home) {
+		await fundJune(page, seeded);
+	}
+	await applySettings(page, seeded, home ? HOME_SETTINGS : SETTINGS);
 	await page.reload();
 	await page.waitForFunction(() => typeof window.$send === "function");
-	await reconcileShot(page, seeded);
-	await paletteShots(page);
-	await insightsShots(page);
-	await sidebarShots(page);
-	await inspectorShots(page, seeded);
-	await recapShots(page, seeded);
+	if (home) {
+		await heroShots(page);
+	} else {
+		await reconcileShot(page, seeded);
+		await paletteShots(page);
+		await insightsShots(page);
+		await sidebarShots(page);
+		await inspectorShots(page, seeded);
+		await recapShots(page, seeded);
+	}
 } finally {
 	await browser.close();
 	stop();

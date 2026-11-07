@@ -16,9 +16,6 @@ const confetti = [[79, -4, 144, "#50c878"], [100, 22, 307, "#e8a449"], [93, 82, 
 			<div class="grid" data-stagger>
 				<!-- Themes (full width) -->
 				<article class="card card--light card--wide">
-					<div class="card__demo card__demo--video">
-						<video class="theme-video" loop muted playsinline preload="none" data-lazy-video={`${base}images/theme-demo.mp4`}></video>
-					</div>
 					<div class="card__demo card__demo--carousel">
 						<div class="carousel" aria-hidden="true">
 							<div class="carousel__track" data-duplicate>
@@ -359,18 +356,6 @@ const confetti = [[79, -4, 144, "#50c878"], [100, 22, 307, "#e8a449"], [93, 82, 
 	/* Surface inset override for bento cards */
 	.card .surface {
 		margin: 0.875rem;
-	}
-
-	/* ── Theme video ── */
-	.card__demo--video {
-		padding: 0.875rem 0.875rem 0;
-	}
-
-	.theme-video {
-		inline-size: 100%;
-		block-size: auto;
-		border-radius: 10px;
-		display: block;
 	}
 
 	/* ── Theme carousel ── */
@@ -854,19 +839,6 @@ const confetti = [[79, -4, 144, "#50c878"], [100, 22, 307, "#e8a449"], [93, 82, 
 </style>
 
 <script>
-	// Lazy-load theme video on scroll
-	const lazyVideo = document.querySelector("[data-lazy-video]") as HTMLVideoElement | null;
-	if (lazyVideo) {
-		const vio = new IntersectionObserver(([entry]) => {
-			if (entry.isIntersecting) {
-				lazyVideo.src = lazyVideo.dataset.lazyVideo!;
-				lazyVideo.play();
-				vio.disconnect();
-			}
-		}, { threshold: 0.2 });
-		vio.observe(lazyVideo);
-	}
-
 	// Duplicate carousel track for seamless loop
 	const track = document.querySelector("[data-duplicate]");
 	if (track) track.innerHTML += track.innerHTML;

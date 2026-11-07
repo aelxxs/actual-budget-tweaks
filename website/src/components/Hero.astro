@@ -53,12 +53,34 @@ const base = import.meta.env.BASE_URL;
 					<span class="browser-frame__dot"></span>
 					<span class="browser-frame__dot"></span>
 				</div>
-				<img
-					src={`${base}images/hero.png`}
-					alt="Actual Budget with Tweaks active, showing the redesigned sidebar, month cards and Insights panel"
-					width="1502"
-					height="853"
-				/>
+				<div class="compare" data-compare>
+					<img
+						src={`${base}images/hero-actual.png`}
+						alt="The same budget in Actual without Tweaks"
+						width="1500"
+						height="853"
+					/>
+					<img
+						class="compare__abt"
+						src={`${base}images/hero-abt.png`}
+						alt="Actual Budget with Tweaks: a dark theme, the split sidebar with account icons, month cards and the Insights panel"
+						width="1500"
+						height="853"
+					/>
+					<span class="compare__tag compare__tag--left">With ABT</span>
+					<span class="compare__tag compare__tag--right">Actual</span>
+					<div class="compare__handle" aria-hidden="true">
+						<svg viewBox="0 0 24 24"><path d="m9 7-5 5 5 5M15 7l5 5-5 5" /></svg>
+					</div>
+					<input
+						class="compare__range"
+						type="range"
+						min="0"
+						max="100"
+						value="50"
+						aria-label="Slide between Actual with ABT and Actual on its own"
+					/>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -201,7 +223,85 @@ const base = import.meta.env.BASE_URL;
 		display: block;
 	}
 
+	/* Before and after */
+	.compare {
+		--pos: 50%;
+		position: relative;
+		display: grid;
+		touch-action: pan-y;
+	}
+
+	.browser-frame .compare img { grid-area: 1 / 1; }
+
+	.compare__abt { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+
+	.compare__tag {
+		position: absolute;
+		inset-block-end: 12px;
+		padding: 3px 10px;
+		border-radius: 999px;
+		background: rgba(17, 17, 27, 0.72);
+		font-family: var(--mono);
+		font-size: 0.72rem;
+		color: #fff;
+		pointer-events: none;
+		transition: opacity 0.2s;
+	}
+
+	.compare__tag--left { inset-inline-start: 12px; }
+	.compare__tag--right { inset-inline-end: 12px; }
+
+	.compare__handle {
+		position: absolute;
+		inset-block: 0;
+		inset-inline-start: var(--pos);
+		inline-size: 2px;
+		translate: -1px 0;
+		background: #fff;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+		pointer-events: none;
+	}
+
+	.compare__handle svg {
+		position: absolute;
+		inset-block-start: 50%;
+		inset-inline-start: 50%;
+		translate: -50% -50%;
+		inline-size: 38px;
+		block-size: 38px;
+		padding: 8px;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+		fill: none;
+		stroke: var(--accent);
+		stroke-width: 2.4;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.compare__range {
+		position: absolute;
+		inset: 0;
+		inline-size: 100%;
+		block-size: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: ew-resize;
+	}
+
+	.compare:has(.compare__range:focus-visible) .compare__handle svg {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
 	@media (max-width: 600px) {
+		.compare__handle svg {
+			inline-size: 30px;
+			block-size: 30px;
+			padding: 6px;
+		}
+
 		.hero__content {
 			padding-block: 3rem 2.5rem;
 		}
@@ -212,4 +312,39 @@ const base = import.meta.env.BASE_URL;
 	requestAnimationFrame(() => {
 		document.querySelector(".hero")?.classList.add("hero--entered");
 	});
+
+	const compare = document.querySelector<HTMLElement>("[data-compare]");
+	const range = compare?.querySelector<HTMLInputElement>(".compare__range");
+	if (compare && range) {
+		const place = (pos: number) => {
+			compare.style.setProperty("--pos", `${pos}%`);
+			range.value = String(pos);
+		};
+		let touched = false;
+		range.addEventListener("input", () => {
+			touched = true;
+			place(Number(range.value));
+		});
+
+		// One slow sweep shows it can be dragged, unless the visitor gets there first.
+		if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			const sweep = (now: number, start: number) => {
+				const t = (now - start) / 2600;
+				if (touched || t >= 1) {
+					return;
+				}
+				place(50 + 26 * Math.sin(t * Math.PI * 2) * (1 - t));
+				requestAnimationFrame((next) => sweep(next, start));
+			};
+			const watcher = new IntersectionObserver(([entry]) => {
+				if (entry.isIntersecting) {
+					watcher.disconnect();
+					setTimeout(() => {
+						requestAnimationFrame((now) => sweep(now, now));
+					}, 1100);
+				}
+			}, { threshold: 0.4 });
+			watcher.observe(compare);
+		}
+	}
 </script>
