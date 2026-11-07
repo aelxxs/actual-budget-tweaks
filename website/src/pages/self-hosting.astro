@@ -20,16 +20,16 @@ const compose = `services:
 ---
 
 <Base
-	title="Self-hosting — Actual Budget Tweaks"
+	title="Self-hosting | Actual Budget Tweaks"
 	description="Run Actual Budget Tweaks as a sidecar next to your Actual server, so every browser gets it without installing the extension."
 >
 	<main class="docs center">
 		<header class="docs__header stack stack--sm">
-			<a href="/" class="docs__back">&larr; Back to home</a>
+			<a href="/" class="docs__back">Back to home</a>
 			<h1>Self-hosting</h1>
 			<p class="docs__lead">
 				The sidecar is a small proxy that sits in front of your Actual server and adds Actual Budget
-				Tweaks to every browser that opens it. No extension needed.
+				Tweaks to every browser that opens it, so nobody needs the extension.
 			</p>
 		</header>
 
@@ -82,7 +82,7 @@ const compose = `services:
 			<div class="docs__table-wrap">
 				<table>
 					<thead>
-						<tr><th>Variable</th><th>Default</th><th>What it does</th></tr>
+						<tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
 					</thead>
 					<tbody>
 						<tr><td><code>ACTUAL_ORIGIN</code></td><td><code>http://actual:5006</code></td><td>Where the sidecar reaches your Actual server</td></tr>
@@ -101,13 +101,12 @@ const compose = `services:
 			</p>
 			<p>
 				To try changes before they're released, use <code>edge</code>, built nightly from the main
-				branch after its tests pass. It can include unfinished work, so it's for testing, not your
-				everyday setup. To stay on one build, use its <code>edge-&lt;commit&gt;</code> tag.
+				branch after its tests pass. It can include unfinished work, so use it for testing only. To stay on one build, use its <code>edge-&lt;commit&gt;</code> tag.
 			</p>
 		</section>
 
 		<section class="docs__section">
-			<h2>Where your settings live</h2>
+			<h2>Settings storage</h2>
 			<ul>
 				<li>Tweaks settings are saved in the budget itself, through Actual's synced preferences, so they follow it to every device and browser that opens it. Switching between the extension and the sidecar keeps them.</li>
 				<li>Each budget has its own settings. A budget opened for the first time starts from the settings this browser already has.</li>
@@ -120,7 +119,7 @@ const compose = `services:
 
 		<section class="docs__section">
 			<h2>Security</h2>
-			<p>What the sidecar does to the traffic passing through it:</p>
+			<p>The sidecar:</p>
 			<ul>
 				<li>Adds the Tweaks scripts and styles to Actual's page. Every other request and response passes through unchanged.</li>
 				<li>

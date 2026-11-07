@@ -2,19 +2,19 @@
 const faqs = [
 	{
 		q: "Does this access my financial data?",
-		a: "ABT reads your budget through Actual itself, in your browser, for features like the Inspector and Sync recap. It only changes your budget when you click to, and nothing is sent anywhere else. Its own settings are saved in your budget's synced preferences, so they follow you to every device.",
+		a: "ABT reads your budget through Actual itself, in your browser, for features like the Inspector and Sync recap. It only changes your budget when you click to, and your budget data is not sent anywhere else. Its own settings are saved in your budget's synced preferences, so they follow you to every device.",
 	},
 	{
 		q: "Will it break when Actual Budget updates?",
-		a: "ABT is designed to be resilient to updates. If Actual changes its UI structure, some features may temporarily stop working, but your data is never affected. Just disable the setting and it reverts instantly.",
+		a: "Some features might, until ABT is updated. Your budget data is not affected, and you can turn off any setting that misbehaves.",
 	},
 	{
 		q: "Does this work with any Actual Budget instance?",
-		a: "Yes — any self-hosted instance, regardless of how you host it. The extension detects Actual Budget in your browser tab and activates automatically.",
+		a: "Yes, it works with any self-hosted instance. Enter your Actual URL in the extension's popup, or run the sidecar in front of your server.",
 	},
 	{
 		q: "Can I use only some features?",
-		a: "Every feature is independently toggleable. Enable what you want, ignore the rest. There are no dependencies between settings.",
+		a: "Yes. Each feature has its own switch, and a few need another setting turned on first. Reconcile Confetti, for example, needs Modern Reconcile.",
 	},
 	{
 		q: "Does this work on mobile?",
@@ -28,17 +28,18 @@ const faqs = [
 		<!-- Row 1: trust text + settings demo (original layout) -->
 		<div class="trust__top">
 			<div class="stack stack--md">
-				<h2 class="trust__heading">Built to layer,<br />not to replace</h2>
+				<h2 class="trust__heading">Runs on top of Actual</h2>
 				<p class="trust__body">
-					ABT is a browser extension, not a fork. It reads Actual Budget's existing
-					DOM and layers interface changes on top. Your budget only changes when you
-					ask it to. Disable any setting and the original UI returns instantly.
+					ABT is a browser extension or self-hosted sidecar for the Actual server you
+					already run. It changes the interface in your browser, and your budget
+					only changes when you ask it to. Turn a setting off and Actual's original
+					interface comes back.
 				</p>
 				<ul class="trust__checks stack stack--xs">
-					<li>Designed to feel built-in, not bolted on</li>
+					<li>Uses Actual's theme colors, so it matches any theme</li>
 					<li>Works with any self-hosted Actual instance</li>
 					<li>Settings sync with your budget across devices</li>
-					<li>Open source, always</li>
+					<li>Open source</li>
 				</ul>
 			</div>
 
