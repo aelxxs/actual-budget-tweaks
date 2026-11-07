@@ -2,6 +2,7 @@ import { markBudgetType, refreshBudgetType } from "@lib/utilities/budget-type";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { getCurrentPath, watchRoute } from "@lib/utilities/route-watcher";
+import { findNativeSidebarRoot } from "@lib/utilities/native-ui";
 import { hasSettingsPages } from "@lib/utilities/settings-page";
 import {
 	DIALOG,
@@ -82,6 +83,17 @@ export const nativeHooks = {
 				if (header && !header.closest(TABLE)) {
 					mark(header.parentElement?.parentElement ?? null, "data-abt-card-table");
 				}
+			}
+			// Actual's shell row holds its sidebar's wrapper, then the page's own view. Found from the
+			// sidebar, which renders with the shell; the page's content can come much later.
+			const root = findNativeSidebarRoot();
+			const slot = root?.parentElement ?? null;
+			const shell = slot?.parentElement ?? null;
+			if (root && slot && shell?.firstElementChild === slot && shell.childElementCount > 1) {
+				mark(shell, "data-abt-shell");
+				mark(slot, "data-abt-sidebar-slot");
+				mark(root, "data-abt-sidebar-root");
+				mark(shell.lastElementChild, "data-abt-page-card");
 			}
 			// The page's column, named so base.css can give each page's layout the same gutter.
 			const column = document.querySelector<HTMLElement>(PAGE_COLUMN);

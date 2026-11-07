@@ -48,6 +48,17 @@
 				"writes": null
 			},
 			{
+				"key": "inset-panels",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Inset Panels",
+				"description": "Sets the sidebar and page as rounded panels on a frame that matches the window's title bar.",
+				"icon": "layout",
+				"group": "Style",
+				"writes": null
+			},
+			{
 				"key": "themed-scrollbars",
 				"type": "checkbox",
 				"defaultValue": true,

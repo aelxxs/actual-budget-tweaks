@@ -1,4 +1,9 @@
-import { ACCOUNT_NAME, HELP_BUTTON, NOTIFICATIONS_BUTTON } from "@lib/actual-dom";
+import {
+	ACCOUNT_NAME,
+	ALL_ACCOUNTS_BALANCE,
+	HELP_BUTTON,
+	NOTIFICATIONS_BUTTON,
+} from "@lib/actual-dom";
 /**
  * Actual's "N uncategorized transactions" button, present only while some exist.
  * It's a direct child of the top bar, the closest ancestor holding both test-id'd
@@ -38,6 +43,18 @@ export function findAccountToolbar(): HTMLElement | null {
 		if (el === el.parentElement.firstElementChild && last?.matches(TOOLBAR_SHAPE)) {
 			return last as HTMLElement;
 		}
+	}
+	return null;
+}
+
+/** Actual's sidebar root: the first ancestor of its balance that sizes itself inline. */
+export function findNativeSidebarRoot(): HTMLElement | null {
+	let el = document.querySelector(ALL_ACCOUNTS_BALANCE)?.parentElement ?? null;
+	while (el) {
+		if (el.style.flexShrink === "0" && el.style.minWidth) {
+			return el;
+		}
+		el = el.parentElement;
 	}
 	return null;
 }

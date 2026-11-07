@@ -146,6 +146,8 @@ test("ABT on every page", async ({ page }) => {
 		await expectAttached(page, "[data-abt-live-sidebar]");
 		await expectAttached(page, "[data-abt-header]");
 		await expectAttached(page, "[data-abt-content-grid]");
+		await expectAttached(page, "[data-abt-shell]");
+		await expectAttached(page, "[data-abt-sidebar-slot]");
 		await expectAnchors(page, PAGE_ANCHORS["/budget"]);
 	});
 

@@ -7,21 +7,9 @@ import { NATIVE_ROOT_ATTR } from "./lib/data";
 import { LAYOUT_KEY } from "./lib/layout";
 import { NATIVE_ICON_ATTR, NAV_ICON_ATTR, swapSettingsNavIcons } from "./lib/settings-nav-icons";
 import Sidebar from "./Sidebar.svelte";
-import { ALL_ACCOUNTS_BALANCE } from "@lib/actual-dom";
+import { findNativeSidebarRoot } from "@lib/utilities/native-ui";
 
 const WRAP_ATTR = "data-abt-live-sidebar-wrap";
-
-function findNativeSidebarRoot(): HTMLElement | null {
-	const anchor = document.querySelector(ALL_ACCOUNTS_BALANCE);
-	let el = anchor?.parentElement ?? null;
-	while (el) {
-		if (el.style.flexShrink === "0" && el.style.minWidth) {
-			return el;
-		}
-		el = el.parentElement;
-	}
-	return null;
-}
 
 // No fixed width here — Sidebar.svelte's own `.sidebar` root manages its width
 // (resizable, collapsible) via inline style. This wrapper just needs to be a

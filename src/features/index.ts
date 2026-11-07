@@ -55,6 +55,7 @@ import { mobileTransactionList } from "./mobile/transaction-list";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
 import { headerBorder } from "./readability/top-nav-border";
+import { insetPanels } from "./layout/inset-panels";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/theme-loader";
 import type { CoreSetting, Setting } from "./types";
@@ -96,6 +97,7 @@ export const scriptSections: SettingsSection[] = [
 					backgroundPattern,
 					ambientGlow,
 					ambientGrain,
+					insetPanels,
 					themedScrollbars,
 					headerBorder,
 					privacyStyle,
