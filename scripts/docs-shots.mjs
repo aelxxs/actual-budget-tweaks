@@ -25,6 +25,9 @@ const SETTINGS = {
 	"modern-reconcile": true,
 	"account-icon-picker": true,
 	"sidebar-search-enabled": true,
+	"sidebar-shortcuts-enabled": true,
+	"sidebar-group-totals": true,
+	"experimental-sidebar-layout-mode": "standard",
 };
 
 const CATEGORIES = {
@@ -32,11 +35,88 @@ const CATEGORIES = {
 	"Usual Expenses": ["Groceries", "Dining Out", "Transport", "Fun"],
 };
 
+// `opening` and `monthly` are cents. Everyday Checking gets its history from MONTHLY below.
 const ACCOUNTS = [
 	{ name: "Everyday Checking", emoji: "🏦" },
-	{ name: "Emergency Savings", emoji: "🐷" },
-	{ name: "Rewards Card", emoji: "💳" },
-	{ name: "Brokerage", emoji: "📈", offBudget: true },
+	{ name: "Joint Checking", emoji: "👫", opening: 318240, monthly: 12500 },
+	{
+		name: "Rewards Card",
+		emoji: "💳",
+		group: "Credit Cards",
+		opening: -34012,
+		purchases: "everyday",
+	},
+	{ name: "Travel Card", emoji: "🛫", group: "Credit Cards", opening: -12875, purchases: "travel" },
+	{ name: "Store Card", emoji: "🛍️", group: "Credit Cards", opening: -6150, purchases: "store" },
+	{ name: "Emergency Savings", emoji: "⛈️", group: "Savings", opening: 1250000, monthly: 25000 },
+	{ name: "Vacation Fund", emoji: "🏝️", group: "Savings", opening: 184000, monthly: 15000 },
+	{ name: "New Car", emoji: "🚗", group: "Savings", opening: 320000, monthly: 20000 },
+	{ name: "Home Repairs", emoji: "🔧", group: "Savings", opening: 96000, monthly: 10000 },
+	{ name: "Brokerage", emoji: "📈", offBudget: true, opening: 2850000, monthly: 50000 },
+	{ name: "Company RSUs", emoji: "🎁", offBudget: true, opening: 1842000 },
+	{ name: "Roth IRA", emoji: "🌱", group: "Retirement", offBudget: true, opening: 3120000 },
+	{ name: "401(k)", emoji: "🏛️", group: "Retirement", offBudget: true, opening: 8765000 },
+	{ name: "HSA", emoji: "🩺", group: "Retirement", offBudget: true, opening: 642000 },
+	{ name: "House", emoji: "🏡", offBudget: true, opening: 36500000 },
+];
+
+// [payee, category, cents, day of month]; amounts drift a little each month.
+const PURCHASES = {
+	everyday: [
+		["Sunrise Coffee", "Dining Out", -645, 3],
+		["Corner Market", "Groceries", -6418, 6],
+		["Fuel Stop", "Transport", -4210, 9],
+		["Bright Pharmacy", "Fun", -1875, 11],
+		["Noodle House", "Dining Out", -2940, 14],
+		["Bookshop on Main", "Fun", -2299, 17],
+		["Sunrise Coffee", "Dining Out", -590, 19],
+		["Corner Market", "Groceries", -5336, 22],
+	],
+	travel: [
+		["Skyline Air", "Transport", -18420, 7],
+		["Harbor Hotel", "Fun", -12900, 12],
+		["City Rideshare", "Transport", -2360, 13],
+	],
+	store: [
+		["Home Goods Depot", "Fun", -4875, 10],
+		["Trailhead Outfitters", "Fun", -3650, 21],
+	],
+};
+
+const TICKER = "ACME";
+const tool = (url, label, icon, row) => ({
+	id: url,
+	label,
+	icon,
+	url,
+	type: "tool",
+	size: "small",
+	row,
+});
+const SHORTCUTS = [
+	{
+		id: "rsu",
+		label: `${TICKER} RSU`,
+		icon: "svg:rsu",
+		url: "rsu-tracker",
+		type: "widget",
+		size: "half",
+		row: 0,
+		config: { symbol: TICKER, startDate: "2025-03-03", count: "120" },
+	},
+	tool("calculator", "Calculator", "svg:calc", 0),
+	{
+		id: "stock",
+		label: TICKER,
+		icon: "svg:stock",
+		url: "stock-tracker",
+		type: "widget",
+		size: "half",
+		row: 1,
+		config: { symbol: TICKER },
+	},
+	tool("currency-converter", "Currency Converter", "svg:convert", 1),
+	tool("interest-calculator", "Interest Calculator", "svg:interest", 1),
 ];
 
 // [payee, category, cents, day of month]; every month from January to June.
@@ -153,6 +233,18 @@ async function seedBudget(page) {
 		});
 	}
 
+	const groupIds = {};
+	const groupSections = {};
+	for (const account of ACCOUNTS.filter((a) => a.group)) {
+		groupIds[account.group] ??= await send("account-group-create", { name: account.group });
+		groupSections[groupIds[account.group]] = account.offBudget ? "offbudget" : "onbudget";
+		await send("account-update", {
+			id: accountIds[account.name],
+			name: account.name,
+			account_group_id: groupIds[account.group],
+		});
+	}
+
 	const payeeIds = {};
 	const payee = async (name) => (payeeIds[name] ??= await send("payee-create", { name }));
 
@@ -182,21 +274,47 @@ async function seedBudget(page) {
 			reconciled: row.month < 6,
 		});
 	}
-	for (const [account, amount, name] of [
-		["Emergency Savings", 1250000, "Starting Balance"],
-		["Rewards Card", -34012, "Starting Balance"],
-		["Brokerage", 2850000, "Starting Balance"],
-	]) {
-		added.push({
+	for (const account of ACCOUNTS.filter((a) => a.opening)) {
+		const category = (amount) => {
+			if (account.offBudget) {
+				return null;
+			}
+			return amount > 0 ? categoryIds.Income : categoryIds.Fun;
+		};
+		const row = (date, amount, name, extra) => ({
 			id: randomUUID(),
-			account: accountIds[account],
-			date: "2026-01-01",
+			account: accountIds[account.name],
+			date,
 			amount,
-			payee: await payee(name),
-			category: account === "Brokerage" ? null : categoryIds.Income,
+			category: category(amount),
 			cleared: true,
 			reconciled: true,
+			name,
+			...extra,
 		});
+		const rows = [row("2026-01-01", account.opening, "Starting Balance")];
+		if (account.monthly) {
+			for (let month = 1; month <= 6; month++) {
+				const name = account.monthly > 0 ? "Monthly Contribution" : "Card Purchases";
+				rows.push(row(`2026-${pad(month)}-05`, account.monthly, name));
+			}
+		}
+		for (const [name, categoryName, amount, day] of PURCHASES[account.purchases] ?? []) {
+			for (let month = 1; month <= 6; month++) {
+				const date = `2026-${pad(month)}-${pad(day)}`;
+				if (date <= TODAY) {
+					rows.push(
+						row(date, amount - month * 37, name, {
+							category: categoryIds[categoryName],
+							reconciled: month < 6,
+						}),
+					);
+				}
+			}
+		}
+		for (const { name, ...rest } of rows) {
+			added.push({ ...rest, payee: await payee(name) });
+		}
 	}
 	await send("transactions-batch-update", { added });
 
@@ -205,21 +323,33 @@ async function seedBudget(page) {
 		name: "Everyday Checking",
 		last_reconciled: String(Date.parse("2026-05-31T12:00:00Z")),
 	});
-	return { accountIds };
+	// Actual's own logo, served by the server under test.
+	await send("preferences/save", {
+		id: "abt:budget-icon",
+		value: JSON.stringify({ type: "url", value: "/apple-touch-icon.png" }),
+	});
+
+	const { id: budgetId } = await send("load-prefs");
+	return { accountIds, budgetId, groupSections };
 }
 
-async function applySettings(page, accountIds) {
+async function applySettings(page, { accountIds, budgetId, groupSections }) {
 	const icons = Object.fromEntries(
 		ACCOUNTS.map((a) => [accountIds[a.name], { type: "emoji", value: a.emoji }]),
 	);
 	await page.evaluate(
-		([settings, icons]) => {
+		([settings, icons, shortcuts, budgetId, sections]) => {
 			for (const [key, value] of Object.entries(settings)) {
 				localStorage.setItem(`local:${key}`, JSON.stringify(value));
 			}
 			localStorage.setItem("local:abt-account-icons", JSON.stringify(icons));
+			localStorage.setItem(`local:abt-sidebar-shortcuts:${budgetId}`, JSON.stringify(shortcuts));
+			localStorage.setItem(
+				`local:experimental-sidebar-group-sections:${budgetId}`,
+				JSON.stringify(sections),
+			);
 		},
-		[SETTINGS, icons],
+		[SETTINGS, icons, SHORTCUTS, budgetId, groupSections],
 	);
 }
 
@@ -227,10 +357,13 @@ async function applySettings(page, accountIds) {
 async function annotate(page, marks) {
 	const boxes = [];
 	for (const mark of marks) {
-		boxes.push(await page.locator(mark).first().boundingBox());
+		const { selector, side } = typeof mark === "string" ? { selector: mark } : mark;
+		boxes.push({ ...(await page.locator(selector).first().boundingBox()), side });
 	}
 	await page.evaluate((boxes) => {
+		document.querySelector("[data-docs-marks]")?.remove();
 		const layer = document.createElement("div");
+		layer.setAttribute("data-docs-marks", "");
 		layer.style.cssText = "position:fixed;inset:0;z-index:2147483647;pointer-events:none";
 		document.documentElement.append(layer);
 		boxes.forEach((box, i) => {
@@ -241,7 +374,10 @@ async function annotate(page, marks) {
 				border:2px solid var(--abt-accent);border-radius:8px`;
 			const badge = document.createElement("div");
 			badge.textContent = String(i + 1);
-			badge.style.cssText = `position:absolute;left:-13px;top:-13px;width:24px;height:24px;
+			const left =
+				box.side === "right" ? box.width + gap * 2 - 13 : Math.max(-13, 2 - (box.x - gap));
+			const top = Math.max(-13, 2 - (box.y - gap));
+			badge.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:24px;height:24px;
 				border-radius:50%;background:var(--abt-accent);color:#11111b;font:600 13px/24px system-ui;
 				text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.35)`;
 			outline.append(badge);
@@ -250,10 +386,30 @@ async function annotate(page, marks) {
 	}, boxes);
 }
 
-async function shot(page, name) {
+/** The whole page, or a crop around `around` with room for the callouts' badges. */
+async function shot(page, name, around, { room = 24, width, height, cutout = false } = {}) {
 	const path = resolve(OUT, `${name}.png`);
 	mkdirSync(dirname(path), { recursive: true });
-	await page.screenshot({ path });
+	let clip;
+	if (around) {
+		const box = await page.locator(around).boundingBox();
+		clip = {
+			x: box.x - room,
+			y: box.y - room,
+			width: width ?? box.width + room * 2,
+			height: height ?? box.height + room * 2,
+		};
+	}
+	// A cutout hides everything but the element, so the page can stage it on its own background.
+	const style = cutout
+		? await page.addStyleTag({
+				content: `* { visibility: hidden !important; }
+					${around}, ${around} * { visibility: visible !important; }
+					html, body { background: transparent !important; }`,
+			})
+		: null;
+	await page.screenshot({ path, clip, omitBackground: cutout });
+	await style?.evaluate((el) => el.remove());
 	console.log(`wrote ${path}`);
 }
 
@@ -296,6 +452,85 @@ async function reconcileShot(page, { accountIds }) {
 	await shot(page, "reconcile");
 }
 
+async function paletteShots(page) {
+	await page.goto(`${BASE}/budget`);
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.waitForFunction(() => document.querySelector("[data-abt-live-sidebar]"));
+	await page.waitForTimeout(1000);
+	await page.keyboard.press("Control+k");
+	const input = page.locator(".cp-input");
+	await input.waitFor();
+	await page.waitForTimeout(600);
+	await annotate(page, [".cp-search", ".cp-item", ".cp-foot"]);
+	await shot(page, "palette", ".cp");
+
+	await input.fill("145.20 * 12");
+	await page.waitForTimeout(400);
+	await annotate(page, []);
+	await shot(page, "palette-math", ".cp");
+
+	await input.fill("reconcile");
+	await page.waitForTimeout(400);
+	await annotate(page, [".cp-item", ".cp-state"]);
+	await shot(page, "palette-tweaks", ".cp");
+}
+
+async function sidebarShots(page) {
+	const sidebar = "[data-abt-live-sidebar]";
+	const open = async () => {
+		await page.goto(`${BASE}/budget`);
+		await page.locator(BUDGET_TABLE).waitFor();
+		await page.locator(sidebar).waitFor();
+		await page.waitForTimeout(1500);
+	};
+
+	// Tall enough for every account and the footer, in both layouts.
+	await page.setViewportSize({ width: 1400, height: 980 });
+	await open();
+	await shot(page, "sidebar-standard", sidebar, { room: 0 });
+
+	await page.locator(".account", { hasText: "Everyday Checking" }).hover();
+	await page.locator(".acard").waitFor();
+	await page.waitForTimeout(800);
+	await shot(page, "sidebar-hover", ".acard", { room: 0, cutout: true });
+	await page.mouse.move(700, 500);
+
+	await page.keyboard.press("Control+k");
+	await page.locator(".cp-input").fill("sidebar settings");
+	await page.keyboard.press("Enter");
+	const dialog = ".settings-dialog";
+	await page.locator(dialog).waitFor();
+	const tab = (name) =>
+		page
+			.locator(`${dialog} .abt-tabs button, ${dialog} [role="tab"], ${dialog} button`)
+			.filter({ hasText: name })
+			.first();
+	await tab("Shortcuts").click();
+	await page.waitForTimeout(800);
+	await shot(page, "sidebar-shortcuts", dialog, { room: 0, cutout: true });
+	await tab("Groups").click();
+	await page.waitForTimeout(800);
+	await shot(page, "sidebar-groups", dialog, { room: 0, height: 315, cutout: true });
+	await page.keyboard.press("Escape");
+	await page.waitForTimeout(400);
+
+	// Live, since settings sync would restore the stored layout on a reload.
+	await page.mouse.move(700, 500);
+	await page.evaluate(() =>
+		window.browser.storage.local.set({ "local:experimental-sidebar-layout-mode": "split" }),
+	);
+	await page.waitForTimeout(1200);
+	await shot(page, "sidebar-split", sidebar, { room: 0 });
+
+	await page.locator(".rail-foot .rail-icon").last().click();
+	await page.locator('[aria-label="Collapse Savings"]').click();
+	await page.locator('[aria-label="Collapse Retirement"]').click();
+	await page.locator('[aria-label="Rewards Card"]').click();
+	await page.mouse.move(1000, 30);
+	await page.waitForTimeout(1500);
+	await shot(page, "sidebar-rail", sidebar, { room: 0, width: 640, height: 830 });
+}
+
 const stop = await startStack();
 const browser = await chromium.launch();
 try {
@@ -305,13 +540,31 @@ try {
 		colorScheme: "light",
 	});
 	const page = await context.newPage();
+	// Fixed prices, so the stock tiles don't change between runs.
+	await page.route("**/abt-api/yahoo-chart/**", (route) => {
+		const grant = route.request().url().includes("period1");
+		return route.fulfill({
+			json: {
+				chart: {
+					result: [
+						{
+							meta: { regularMarketPrice: 184.32, chartPreviousClose: 181.1 },
+							indicators: { quote: [{ close: [grant ? 142.5 : 184.32] }] },
+						},
+					],
+				},
+			},
+		});
+	});
 	await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00`));
 	await createBudget(page);
 	const seeded = await seedBudget(page);
-	await applySettings(page, seeded.accountIds);
+	await applySettings(page, seeded);
 	await page.reload();
 	await page.waitForFunction(() => typeof window.$send === "function");
 	await reconcileShot(page, seeded);
+	await paletteShots(page);
+	await sidebarShots(page);
 } finally {
 	await browser.close();
 	stop();

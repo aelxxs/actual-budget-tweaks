@@ -152,3 +152,53 @@
 	border: 1px solid var(--border);
 	border-radius: var(--radius-sm);
 }
+
+.docs__stage {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 1.5rem;
+	padding: clamp(1.25rem, 5vw, 2.5rem);
+	border-radius: var(--radius);
+	background:
+		radial-gradient(120% 90% at 15% 0%, var(--accent-wash-strong), transparent 60%),
+		radial-gradient(100% 90% at 100% 100%, var(--accent-wash), transparent 55%),
+		var(--bg-alt);
+}
+
+.docs__stage figure {
+	margin: 0;
+	text-align: center;
+}
+
+.docs__stage figcaption {
+	margin-block-start: 0.6rem;
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+}
+
+.docs__stage img {
+	display: block;
+	max-inline-size: 100%;
+	block-size: auto;
+	border-radius: var(--radius-sm);
+	filter: drop-shadow(0 12px 28px rgba(30, 31, 48, 0.28));
+}
+
+.docs__stage--dialog img {
+	inline-size: 640px;
+}
+
+.docs__stage--card img {
+	inline-size: 360px;
+}
+
+.docs__stage--pair img {
+	inline-size: auto;
+	block-size: min(860px, 150vw);
+}
+
+.docs__stage--rail img {
+	inline-size: 600px;
+}

@@ -1,0 +1,145 @@
+---
+import Base from "../../layouts/Base.astro";
+import "../../styles/docs.css";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Base
+	title="Live sidebar | Actual Budget Tweaks"
+	description="Account groups, shortcuts, layouts and live balances in the Actual Budget Tweaks sidebar."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/guides" class="docs__back">Back to guides</a>
+			<h1>Live sidebar</h1>
+			<p class="docs__lead">
+				The Live sidebar replaces Actual's sidebar with one that has live balances, account groups,
+				search and shortcuts. Turning it off brings Actual's sidebar back.
+			</p>
+		</header>
+
+		<section class="docs__section">
+			<h2>Pin a shortcut</h2>
+			<p>
+				Click the dashed tile under the navigation links. Sidebar settings opens on its Shortcuts tab.
+				Pick an item on the right to pin it.
+			</p>
+			<div class="docs__stage docs__stage--dialog">
+			<img
+				src={`${base}images/guides/sidebar-shortcuts.png`}
+				width="640"
+				height="620"
+				alt="The Shortcuts tab of Sidebar settings, with pinned tiles on the left and the items you can add on the right"
+			/>
+			</div>
+			<p>
+				Drag a tile to rearrange it, in the sidebar or on this tab. Tiles stay on the rows you put
+				them on. To remove one, hover it on this tab.
+			</p>
+			<p>
+				Clicking a tool tile opens the tool in a window you can drag by its title bar. Clicking the
+				tile again closes it.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Group your accounts</h2>
+			<p>
+				Open the <a href="/guides/command-palette">command palette</a>, choose
+				<strong>Sidebar settings</strong> and go to the Groups tab. Add a group under On budget or Off
+				budget.
+			</p>
+			<div class="docs__stage docs__stage--dialog">
+			<img
+				src={`${base}images/guides/sidebar-groups.png`}
+				width="640"
+				height="315"
+				alt="The Groups tab of Sidebar settings with a Cash group holding two accounts"
+			/>
+			</div>
+			<p>
+				In the sidebar, drag an account onto a group to move it there. Right-click a group to rename
+				or remove it. Removing a group keeps its accounts. Turn on Account Group Totals to show each
+				group's combined balance.
+			</p>
+			<p>
+				On versions of Actual with account groups, the sidebar uses Actual's groups. On older
+				versions, ABT keeps its own.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Choose a layout</h2>
+			<p>
+				Change the layout on the General tab of Sidebar settings. Split is the default, with the
+				navigation on an icon bar so more of the width goes to accounts.
+			</p>
+			<div class="docs__stage docs__stage--pair">
+				<figure>
+					<img
+						src={`${base}images/guides/sidebar-split.png`}
+						width="312"
+						height="980"
+						alt="The Live sidebar in the split layout, with an icon bar beside the accounts panel"
+					/>
+					<figcaption>Split</figcaption>
+				</figure>
+				<figure>
+					<img
+						src={`${base}images/guides/sidebar-standard.png`}
+						width="325"
+						height="980"
+						alt="The Live sidebar in the standard layout, with text navigation links above the accounts"
+					/>
+					<figcaption>Standard</figcaption>
+				</figure>
+			</div>
+		</section>
+
+		<section class="docs__section">
+			<h2>Check an account</h2>
+			<p>
+				Rest the pointer on an account for a moment to see its 30-day balance trend, cleared and
+				uncleared amounts, and any upcoming scheduled transactions.
+			</p>
+			<div class="docs__stage docs__stage--card">
+			<img
+				src={`${base}images/guides/sidebar-hover.png`}
+				width="292"
+				height="265"
+				alt="An account's hover card with a 30-day balance chart and its cleared and uncleared amounts"
+			/>
+			</div>
+		</section>
+
+		<section class="docs__section">
+			<h2>Rename or close an account</h2>
+			<p>
+				Double-click an account to rename it. Right-click it for <strong>Rename</strong> and
+				<strong>Close account</strong>.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Collapse the sidebar</h2>
+			<p>
+				The button at the bottom folds the sidebar down to a rail of account tiles. Hover a tile to
+				see the account's name.
+			</p>
+			<div class="docs__stage docs__stage--rail">
+				<img
+					src={`${base}images/guides/sidebar-rail.png`}
+					width="640"
+					height="830"
+					alt="The collapsed rail, with an open Credit Cards folder and closed Savings and Retirement folders shown as small grids of icons"
+				/>
+			</div>
+			<p>
+				Each account group is a folder on the rail. Click the folder icon above an open group to
+				close it into a grid of its first four accounts, and click the grid to open it again. Closing
+				a folder also collapses that group in the full sidebar.
+			</p>
+		</section>
+	</main>
+</Base>

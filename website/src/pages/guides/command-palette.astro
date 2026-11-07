@@ -1,0 +1,103 @@
+---
+import Base from "../../layouts/Base.astro";
+import "../../styles/docs.css";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Base
+	title="Command palette | Actual Budget Tweaks"
+	description="Search, do quick math and run actions from the command palette in Actual Budget Tweaks."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/guides" class="docs__back">Back to guides</a>
+			<h1>Command palette</h1>
+			<p class="docs__lead">
+				The command palette finds accounts, pages and settings, does quick math, and runs common
+				actions without leaving the keyboard. It comes with the Live sidebar and replaces Actual's
+				own <code>Cmd+K</code> menu.
+			</p>
+		</header>
+
+		<section class="docs__section">
+			<h2>Opening it</h2>
+			<p>
+				Press <code>Cmd+K</code> or <code>Ctrl+K</code>, or click the search bar at the top of the
+				sidebar.
+			</p>
+			<img
+				class="docs__shot"
+				src={`${base}images/guides/palette.png`}
+				width="648"
+				height="488"
+				alt="The command palette with numbered callouts on the search box, the first account row and the keyboard hints"
+			/>
+			<ol>
+				<li>Type here to filter everything in the list.</li>
+				<li>Accounts show their current balance. Choosing one opens it.</li>
+				<li>
+					Use the arrow keys to move and <code>Enter</code> to choose. <code>Esc</code> closes the
+					palette, or goes back from a sub-list such as themes. <code>Backspace</code> in an empty
+					search box also goes back.
+				</li>
+			</ol>
+		</section>
+
+		<section class="docs__section">
+			<h2>Search results</h2>
+			<ul>
+				<li>Accounts and custom reports</li>
+				<li>Pages, including Spending Calendar and Insights when they're turned on</li>
+				<li>
+					The calculator, currency converter and interest calculator, which open in a window you can
+					drag by its title bar
+				</li>
+				<li>Quick actions such as syncing all accounts, changing the theme and hiding amounts</li>
+			</ul>
+		</section>
+
+		<section class="docs__section">
+			<h2>Math</h2>
+			<p>
+				Type a sum and the answer appears at the top of the list. Press <code>Enter</code> to copy it.
+			</p>
+			<img
+				class="docs__shot"
+				src={`${base}images/guides/palette-math.png`}
+				width="648"
+				height="207"
+				alt="The command palette showing the answer to 145.20 times 12"
+			/>
+			<p>
+				It handles <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>,
+				brackets and percentages, so <code>200 * 15%</code> gives 30. You can paste amounts with
+				commas or a currency symbol.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Tweaks and reconciling</h2>
+			<p>
+				Type at least two letters to search ABT's settings. Choosing a switch turns it on or off and
+				keeps the palette open, so you can change several in a row. Any other setting opens Tweaks
+				with that setting found.
+			</p>
+			<img
+				class="docs__shot"
+				src={`${base}images/guides/palette-tweaks.png`}
+				width="648"
+				height="332"
+				alt="The command palette searching for reconcile, with callouts on the Reconcile account action and a setting's On label"
+			/>
+			<ol>
+				<li>
+					With <a href="/guides/modern-reconcile">Modern Reconcile</a> on,
+					<strong>Reconcile account</strong> lists your accounts with the time since each was last
+					reconciled. Picking one opens its reconcile panel.
+				</li>
+				<li>Each switch shows whether it's on or off.</li>
+			</ol>
+		</section>
+	</main>
+</Base>

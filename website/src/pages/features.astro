@@ -16,7 +16,11 @@ interface FeatureSection {
 	items: FeatureItem[];
 }
 
-const GUIDES: Record<string, string> = { "Modern Reconcile": "/guides/modern-reconcile" };
+const GUIDES: Record<string, string> = {
+	"Live sidebar": "/guides/live-sidebar",
+	"Modern Reconcile": "/guides/modern-reconcile",
+	"Sidebar Search Bar": "/guides/command-palette",
+};
 
 const typedSections = sections as FeatureSection[];
 const totalCount = typedSections.reduce((n, s) => n + s.items.length, 0);
