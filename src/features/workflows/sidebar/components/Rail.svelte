@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import {
 		closeCalendar,
@@ -275,7 +276,7 @@
 {#snippet face(account: SidebarAccount, mini = false)}
 	{@const icon = icons[account.id]}
 	{#if icon?.type === "emoji"}
-		<span class="rtile-emoji">{icon.value}</span>
+		<img class="rtile-emoji" src={getEmojiAssetUrl(icon.value)} alt={icon.value} />
 	{:else if icon}
 		<img class="rtile-img" src={icon.value} alt="" />
 	{:else}
@@ -625,8 +626,8 @@
 		transition: filter 0.12s ease;
 	}
 	.rtile-emoji {
-		font-size: 18px;
-		line-height: 1;
+		width: 20px;
+		height: 20px;
 	}
 	.rtile-img {
 		position: absolute;
@@ -686,7 +687,8 @@
 		font-weight: 800;
 	}
 	.rmini .rtile-emoji {
-		font-size: var(--abt-text-2xs);
+		width: 11px;
+		height: 11px;
 	}
 	.rmini .rtile-img {
 		border-radius: 0;
