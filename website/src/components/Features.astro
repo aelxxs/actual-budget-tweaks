@@ -1,5 +1,8 @@
 ---
 const base = import.meta.env.BASE_URL;
+
+// [x, y, spin, colour] for each piece of the reconcile confetti.
+const confetti = [[79, -4, 144, "#50c878"], [100, 22, 307, "#e8a449"], [93, 82, 229, "#d45c72"], [59, 76, 155, "#5ca0d4"], [26, 100, 150, "#c77dba"], [-21, 75, 234, "#9b7dd4"], [-56, 89, 151, "#50c878"], [-73, 59, 233, "#e8a449"], [-107, 57, 268, "#d45c72"], [-102, 2, 412, "#5ca0d4"], [-114, -34, 212, "#c77dba"], [-87, -57, 216, "#9b7dd4"], [-55, -87, 152, "#50c878"], [-17, -106, 374, "#e8a449"], [22, -93, 280, "#d45c72"], [62, -109, 305, "#5ca0d4"], [85, -81, 244, "#c77dba"], [78, -40, 373, "#9b7dd4"]];
 ---
 
 <section class="features" id="features">
@@ -53,7 +56,7 @@ const base = import.meta.env.BASE_URL;
 					</div>
 				</article>
 
-				<!-- Account icons -->
+				<!-- Live sidebar -->
 				<article class="card card--light card--half">
 					<div class="card__demo">
 						<div class="surface" aria-hidden="true">
@@ -68,33 +71,99 @@ const base = import.meta.env.BASE_URL;
 									<span class="dot" style={`background:${a.color}`} />
 									<span class="demo-row__icon" data-animated-icon>{a.emoji}</span>
 									<span class="demo-row__fill">{a.name}</span>
-									<span class={`mono-sm ${a.neg ? "color-neg" : "demo-row__muted"}`}>{a.bal}</span>
+									<span class={`mono-sm ${a.neg ? "color-neg" : "demo-row__muted"}`} data-balance={a.bal}>{a.bal}</span>
 								</div>
 							))}
 						</div>
 					</div>
 					<div class="card__label">
-						<span class="tag">Appearance</span>
-						<strong>Account icons</strong>
-						<p>Assign emoji or images to each sidebar account.</p>
+						<span class="tag">Sidebar</span>
+						<strong>Live sidebar</strong>
+						<p>Live balances, and your own icon on every account.</p>
 					</div>
 				</article>
 
-				<!-- Readability -->
-				<article class="card card--light card--half">
-					<div class="card__demo">
-						<div class="surface" aria-hidden="true">
-							<div class="demo-row"><span class="demo-row__fill">Groceries</span><span class="mono-sm color-pos">$76.83</span></div>
-							<div class="demo-row demo-row--neg"><span class="demo-row__fill">Entertainment</span><span class="mono-sm color-neg">-$47.50</span></div>
-							<div class="demo-row demo-row--dim"><span class="demo-row__fill">Rent</span><span class="mono-sm">$0.00</span></div>
-							<div class="demo-row"><span class="demo-row__fill">Dining Out</span><span class="mono-sm color-pos">$30.75</span></div>
-							<div class="demo-row__badge">$18.42 <span>/ day remaining</span></div>
+				<!-- Command palette -->
+				<article class="card card--dark card--half">
+					<div class="card__demo card__demo--palette" data-palette aria-hidden="true">
+						<div class="palette">
+							<div class="palette__bar">
+								<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+								<span class="palette__text"></span><span class="palette__caret"></span>
+							</div>
+							<div class="palette__result"></div>
 						</div>
 					</div>
 					<div class="card__label">
-						<span class="tag">Readability</span>
-						<strong>Easier-to-read balances</strong>
-						<p>Color your balances, dim rows you rarely need, and show daily amounts inline.</p>
+						<span class="tag">Navigation</span>
+						<strong>Command palette</strong>
+						<p>Find anything, do quick math and run actions from the keyboard.</p>
+					</div>
+				</article>
+
+				<!-- Modern Reconcile -->
+				<article class="card card--light card--half">
+					<div class="card__demo">
+						<div class="surface recon" data-reconcile aria-hidden="true">
+							<div class="recon__head">
+								<span>Left to match</span>
+								<span class="recon__amount">$0.00</span>
+							</div>
+							<div class="recon__track"><i class="recon__fill"></i></div>
+							{[
+								{ name: "Whole Foods Market", cents: 8240 },
+								{ name: "Electric Company", cents: 14500 },
+								{ name: "Netflix", cents: 1599 },
+							].map(t => (
+								<div class="recon__row is-cleared" data-cents={t.cents}>
+									<i class="recon__check"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.8 2.7L12 5.5" /></svg></i>
+									<span class="demo-row__fill">{t.name}</span>
+									<span class="mono-sm demo-row__muted">-${(t.cents / 100).toFixed(2)}</span>
+								</div>
+							))}
+							<div class="recon__burst">
+								{confetti.map(([x, y, spin, color]) => (
+									<i style={`--x:${x}px;--y:${y}px;--spin:${spin}deg;background:${color}`} />
+								))}
+							</div>
+						</div>
+					</div>
+					<div class="card__label">
+						<span class="tag">Accounts</span>
+						<strong>Modern Reconcile</strong>
+						<p>Clear transactions in a side panel until the difference reaches zero.</p>
+					</div>
+				</article>
+
+				<!-- Budget at a glance -->
+				<article class="card card--light card--half">
+					<div class="card__demo">
+						<div class="surface glance" data-glance aria-hidden="true">
+							{[
+								{ name: "Groceries", bal: "$76.83", state: "funded", fill: "100%" },
+								{ name: "Dining Out", bal: "$30.75", state: "short", fill: "55%" },
+								{ name: "Utilities", bal: "$21.60", state: "funded", fill: "100%" },
+								{ name: "Fun", bal: "-$47.50", state: "over", fill: "100%" },
+							].map(c => (
+								<div class="glance__row" style={`--fill:${c.fill}`}>
+									<span class="glance__name">{c.name}</span>
+									<span class={`glance__pill glance__pill--${c.state}`}>
+										<svg viewBox="0 0 16 16">
+											{c.state === "funded" && <path d="m3 8.5 3.2 3L13 4.5" />}
+											{c.state === "short" && <><circle cx="8" cy="8" r="6" /><path d="M8 4.5V8l2.2 1.5" /></>}
+											{c.state === "over" && <><circle cx="8" cy="8" r="6" /><path d="M8 4.5v4M8 11v.2" /></>}
+										</svg>
+										{c.bal}
+									</span>
+									<i class={`glance__bar glance__bar--${c.state}`}></i>
+								</div>
+							))}
+						</div>
+					</div>
+					<div class="card__label">
+						<span class="tag">Budget</span>
+						<strong>Budget at a glance</strong>
+						<p>Template bars show how funded each category is, and balance pills flag what's overspent or short.</p>
 					</div>
 				</article>
 
@@ -105,7 +174,6 @@ const base = import.meta.env.BASE_URL;
 							<div class="radius-grid__box radius-grid__box--tall" />
 							<div class="radius-grid__box" />
 							<div class="radius-grid__box" />
-							<div class="radius-grid__box radius-grid__box--wide" />
 							<div class="radius-grid__box" />
 							<div class="radius-grid__box" />
 						</div>
@@ -407,31 +475,241 @@ const base = import.meta.env.BASE_URL;
 
 	.demo-row__icon.show { scale: 1; opacity: 1; }
 
-	.demo-row--neg { position: relative; }
-	.demo-row--neg::before {
-		content: "";
-		position: absolute;
-		inset: 0 6px;
-		background: rgba(212, 92, 114, 0.08);
-		border-radius: 4px;
-		pointer-events: none;
+	/* ── Budget at a glance ── */
+	.glance {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 10px 14px;
 	}
 
-	.demo-row--dim { opacity: 0.3; }
+	.glance__row {
+		position: relative;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-block: 8px;
+		font-size: 12px;
+		color: var(--dark-text);
+	}
 
-	.demo-row__badge {
-		margin: 4px 14px 0;
-		padding: 4px 8px;
-		background: rgba(80, 200, 120, 0.08);
-		border: 1px solid rgba(80, 200, 120, 0.15);
-		border-radius: 5px;
+	.glance__pill {
+		--tone: var(--color-pos);
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 8px;
+		border-radius: 10px;
+		background: color-mix(in srgb, var(--tone) 16%, transparent);
+		font-family: var(--mono);
 		font-size: 11px;
-		font-weight: 600;
-		color: var(--color-pos);
-		text-align: center;
+		color: var(--tone);
+		scale: 0;
+		opacity: 0;
+		transition: scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+		transition-delay: calc(var(--i, 0) * 140ms + 500ms);
 	}
 
-	.demo-row__badge span { font-weight: 400; font-size: 10px; opacity: 0.7; }
+	.glance__pill--short { --tone: #e8a449; }
+	.glance__pill--over { --tone: var(--color-neg); }
+
+	.glance__pill svg {
+		inline-size: 11px;
+		block-size: 11px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.8;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.glance__bar {
+		position: absolute;
+		inset-inline-start: 0;
+		inset-block-end: 0;
+		block-size: 2px;
+		inline-size: 0;
+		border-radius: 1px;
+		background: var(--color-pos);
+		transition: inline-size 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+		transition-delay: calc(var(--i, 0) * 140ms);
+	}
+
+	.glance__bar--short { background: #e8a449; }
+	.glance__bar--over { background: var(--color-neg); }
+
+	.glance__row:nth-child(2) { --i: 1; }
+	.glance__row:nth-child(3) { --i: 2; }
+	.glance__row:nth-child(4) { --i: 3; }
+
+	.glance.show .glance__pill { scale: 1; opacity: 1; }
+	.glance.show .glance__bar { inline-size: var(--fill); }
+
+	/* ── Command palette ── */
+	.card__demo--palette {
+		align-items: center;
+		padding: 1.5rem;
+	}
+
+	.palette {
+		inline-size: min(340px, 100%);
+		block-size: 96px;
+	}
+
+	.palette__bar {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		block-size: 46px;
+		padding-inline: 14px;
+		border: 1px solid var(--dark-border);
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.04);
+		font-size: 15px;
+		color: var(--dark-text-light);
+	}
+
+	.palette__bar svg {
+		inline-size: 16px;
+		block-size: 16px;
+		flex-shrink: 0;
+		fill: none;
+		stroke: var(--dark-muted);
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+
+	.palette__text { white-space: pre; }
+
+	.palette__caret {
+		inline-size: 1.5px;
+		block-size: 17px;
+		margin-inline-start: -8px;
+		background: var(--dark-accent);
+		animation: caret 1s steps(2) infinite;
+	}
+
+	@keyframes caret { 50% { opacity: 0; } }
+
+	.palette__result {
+		margin-block-start: 8px;
+		padding: 9px 14px;
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--dark-accent) 22%, transparent);
+		font-size: 14px;
+		color: var(--dark-text-light);
+		scale: 0.94;
+		opacity: 0;
+		transition: scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+	}
+
+	.palette__result.show { scale: 1; opacity: 1; }
+
+	/* ── Reconcile ── */
+	.recon {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 12px 14px;
+		font-size: 12px;
+		color: var(--dark-text);
+	}
+
+	.recon__head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		color: var(--dark-muted);
+	}
+
+	.recon__amount {
+		font-family: var(--mono);
+		font-size: 18px;
+		font-variant-numeric: tabular-nums;
+		color: #e8a449;
+		transition: color 0.3s, scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+		transform-origin: right;
+	}
+
+	.recon__track {
+		block-size: 3px;
+		margin-block: 4px 6px;
+		border-radius: 2px;
+		background: var(--dark-border);
+		overflow: hidden;
+	}
+
+	.recon__fill {
+		display: block;
+		block-size: 100%;
+		inline-size: var(--done, 100%);
+		background: #e8a449;
+		transition: background 0.3s;
+	}
+
+	.recon.is-done .recon__amount { color: var(--color-pos); scale: 1.1; }
+	.recon.is-done .recon__fill { background: var(--color-pos); }
+
+	.recon__row {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		padding-block: 5px;
+		white-space: nowrap;
+	}
+
+	.recon__check {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		inline-size: 15px;
+		block-size: 15px;
+		border: 1.5px solid var(--dark-muted);
+		border-radius: 50%;
+		transition: background 0.2s, border-color 0.2s;
+	}
+
+	.recon__check svg {
+		inline-size: 11px;
+		block-size: 11px;
+		fill: none;
+		stroke: var(--dark-bg);
+		stroke-width: 2.4;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		scale: 0;
+		transition: scale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.recon__row.is-cleared .recon__check {
+		background: var(--color-pos);
+		border-color: var(--color-pos);
+	}
+
+	.recon__row.is-cleared .recon__check svg { scale: 1; }
+
+	.recon__burst {
+		position: absolute;
+		inset-block-start: 24px;
+		inset-inline-end: 44px;
+	}
+
+	.recon__burst i {
+		position: absolute;
+		inline-size: 6px;
+		block-size: 9px;
+		border-radius: 1px;
+		opacity: 0;
+	}
+
+	.recon.is-done .recon__burst i { animation: burst 1.1s cubic-bezier(0.15, 0.7, 0.3, 1) both; }
+
+	@keyframes burst {
+		0% { opacity: 1; translate: 0 0; rotate: 0deg; }
+		70% { opacity: 1; }
+		100% { opacity: 0; translate: var(--x) calc(var(--y) + 26px); rotate: var(--spin); }
+	}
 
 	/* ── Radius grid ── */
 	.radius-grid {
@@ -593,16 +871,141 @@ const base = import.meta.env.BASE_URL;
 	const track = document.querySelector("[data-duplicate]");
 	if (track) track.innerHTML += track.innerHTML;
 
-	// Account icons — staggered reveal loop
+	const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
+	const money = (cents: number) =>
+		`${cents < 0 ? "-" : ""}$${(Math.abs(cents) / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+
+	function tween(ms: number, step: (t: number) => void) {
+		return new Promise<void>((done) => {
+			const start = performance.now();
+			const frame = (now: number) => {
+				const t = Math.min((now - start) / ms, 1);
+				step(1 - (1 - t) ** 3);
+				if (t < 1) {
+					requestAnimationFrame(frame);
+				} else {
+					done();
+				}
+			};
+			requestAnimationFrame(frame);
+		});
+	}
+
+	/** Repeats a demo, waiting while it's off screen. */
+	function loopWhileVisible(el: Element, demo: () => Promise<void>) {
+		let visible = false;
+		new IntersectionObserver(([entry]) => (visible = entry.isIntersecting), { threshold: 0.3 }).observe(el);
+		void (async () => {
+			while (true) {
+				if (visible) {
+					await demo();
+				} else {
+					await sleep(300);
+				}
+			}
+		})();
+	}
+
+	// Live sidebar: each icon pops in as its balance counts up
 	const icons = document.querySelectorAll("[data-animated-icon]");
-	if (icons.length) {
+	const balances = [...document.querySelectorAll<HTMLElement>("[data-balance]")];
+	if (icons.length && still) {
+		icons.forEach((el) => el.classList.add("show"));
+	} else if (icons.length) {
 		(function loop() {
 			icons.forEach((el, i) => setTimeout(() => el.classList.add("show"), i * 120));
+			balances.forEach((el, i) => {
+				const [sign, amount] = [el.dataset.balance!.startsWith("-") ? "-" : "", Number(el.dataset.balance!.replace(/[^\d]/g, ""))];
+				setTimeout(() => {
+					void tween(900, (t) => (el.textContent = `${sign}$${Math.round(amount * t).toLocaleString("en-US")}`));
+				}, i * 120);
+			});
 			setTimeout(() => {
 				icons.forEach(el => el.classList.remove("show"));
 				setTimeout(loop, 800);
 			}, 3000);
 		})();
+	}
+
+	// Budget at a glance: template bars fill, then the pills pop in
+	const glance = document.querySelector("[data-glance]");
+	if (glance && still) {
+		glance.classList.add("show");
+	} else if (glance) {
+		loopWhileVisible(glance, async () => {
+			glance.classList.add("show");
+			await sleep(3800);
+			glance.classList.remove("show");
+			await sleep(900);
+		});
+	}
+
+	// Command palette: type, answer, delete
+	const palette = document.querySelector("[data-palette]");
+	if (palette) {
+		const text = palette.querySelector(".palette__text")!;
+		const result = palette.querySelector(".palette__result")!;
+		const queries = [
+			["145.20 * 12", "= 1,742.40"],
+			["rewards", "Open Rewards Card"],
+			["reconcile", "Reconcile account"],
+		];
+		if (still) {
+			text.textContent = queries[0][0];
+			result.textContent = queries[0][1];
+			result.classList.add("show");
+		} else {
+			let next = 0;
+			loopWhileVisible(palette, async () => {
+				const [query, answer] = queries[next++ % queries.length];
+				for (let i = 1; i <= query.length; i++) {
+					text.textContent = query.slice(0, i);
+					await sleep(75);
+				}
+				await sleep(220);
+				result.textContent = answer;
+				result.classList.add("show");
+				await sleep(1700);
+				result.classList.remove("show");
+				for (let i = query.length - 1; i >= 0; i--) {
+					text.textContent = query.slice(0, i);
+					await sleep(22);
+				}
+				await sleep(350);
+			});
+		}
+	}
+
+	// Reconcile: each cleared transaction brings the difference closer to zero
+	const reconcile = document.querySelector<HTMLElement>("[data-reconcile]");
+	if (reconcile && still) {
+		reconcile.classList.add("is-done");
+	} else if (reconcile) {
+		const amount = reconcile.querySelector(".recon__amount")!;
+		const rows = [...reconcile.querySelectorAll<HTMLElement>(".recon__row")];
+		const total = rows.reduce((sum, row) => sum + Number(row.dataset.cents), 0);
+		loopWhileVisible(reconcile, async () => {
+			let left = total;
+			reconcile.classList.remove("is-done");
+			rows.forEach((row) => row.classList.remove("is-cleared"));
+			reconcile.style.setProperty("--done", "0%");
+			amount.textContent = money(-left);
+			await sleep(1000);
+			for (const row of rows) {
+				const from = left;
+				left -= Number(row.dataset.cents);
+				row.classList.add("is-cleared");
+				await tween(520, (t) => {
+					const now = Math.round(from + (left - from) * t);
+					amount.textContent = money(-now);
+					reconcile.style.setProperty("--done", `${(1 - now / total) * 100}%`);
+				});
+				await sleep(420);
+			}
+			reconcile.classList.add("is-done");
+			await sleep(2800);
+		});
 	}
 
 	// Border radius — auto-cycle through presets
