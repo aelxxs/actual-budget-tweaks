@@ -1,0 +1,76 @@
+---
+import Base from "../../layouts/Base.astro";
+import "../../styles/docs.css";
+
+const base = import.meta.env.BASE_URL;
+const image = (name: string) => `${base}images/guides/${name}.png`;
+---
+
+<Base
+	title="Sync recap | Actual Budget Tweaks"
+	description="Review what a bank sync or file import added and categorize it from a side panel."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/guides" class="docs__back">Back to guides</a>
+			<h1>Sync recap</h1>
+			<p class="docs__lead">
+				After a bank sync or file import, Sync recap shows what came in across all your accounts, so
+				you can categorize new transactions without opening each account. It's on by default.
+			</p>
+		</header>
+
+		<section class="docs__section">
+			<h2>Opening the recap</h2>
+			<p>
+				When a sync or import adds transactions, a notification says how many came in, how many
+				accounts they landed in and how many need a category. Click <strong>Review</strong> to open
+				the panel.
+			</p>
+			<div class="docs__stage docs__stage--card">
+				<img
+					src={image("recap-toast")}
+					width="400"
+					height="74"
+					alt="A notification reading Imported 7 transactions, across 3 accounts, 4 need a category, with a Review button"
+				/>
+			</div>
+			<p>
+				The notification stays until you close it, and a newer sync replaces it. Closing it skips the
+				recap. The transactions stay in your accounts either way.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Categorizing transactions</h2>
+			<div class="docs__stage docs__stage--card">
+				<img
+					src={image("recap")}
+					width="350"
+					height="1051"
+					alt="The Sync recap panel with a summary of 7 new transactions, a list of four needing a category, and the new transactions grouped by account"
+				/>
+			</div>
+			<p>
+				<strong>Summary</strong> totals the money in and out. <strong>Matched existing</strong> counts
+				imported transactions that matched ones already in your budget, and these aren't listed. If
+				bank sync failed for an account, the summary names it.
+			</p>
+			<p>
+				<strong>Needs a category</strong> lists new transactions your rules didn't categorize. Pick a
+				category and it saves straight away. The row dims and stays in the list, so nothing moves
+				while you work through it.
+			</p>
+			<p>Transfers, split transactions and off-budget accounts don't need a category, so they aren't listed here.</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Checking each account</h2>
+			<p>
+				Below that, every new transaction appears under its account with its date and category.
+				These sections start open for up to three accounts and collapsed for more.
+				<strong>Done</strong> closes the panel.
+			</p>
+		</section>
+	</main>
+</Base>

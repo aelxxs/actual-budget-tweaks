@@ -29,6 +29,7 @@ const SETTINGS = {
 	"sidebar-group-totals": true,
 	"actual-template-apply-breakdown": true,
 	"experimental-sidebar-layout-mode": "standard",
+	"transaction-inspector": true,
 };
 
 const TEMPLATES = {
@@ -144,6 +145,27 @@ const MONTHLY = [
 	["Metro Transit", "Transport", -7000, 3],
 	["Cinema Nine", "Fun", -2800, 20],
 ];
+
+// What a bank would send on the last day: [account, payee, cents, date]. The Corner Market charge
+// on the 22nd is already in the budget, so the import matches it.
+const IMPORT = [
+	["Rewards Card", "Sunrise Coffee", -645, "2026-06-24"],
+	["Rewards Card", "Corner Market", -7126, "2026-06-23"],
+	["Rewards Card", "Corner Market", -5558, "2026-06-22"],
+	["Rewards Card", "Garden Center", -3840, "2026-06-23"],
+	["Rewards Card", "Lakeside Vet", -8900, "2026-06-22"],
+	["Everyday Checking", "Fuel Stop", -4380, "2026-06-23"],
+	["Everyday Checking", "Acme Expenses", 4200, "2026-06-23"],
+	["Travel Card", "City Rideshare", -1840, "2026-06-24"],
+];
+
+// Payees that always land in one category, as rules. Added after the earlier shots are taken.
+const RULES = {
+	"City Power": "Utilities",
+	"Corner Market": "Groceries",
+	"Sunrise Coffee": "Dining Out",
+	"Fuel Stop": "Transport",
+};
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -360,7 +382,16 @@ async function seedBudget(page) {
 	});
 
 	const { id: budgetId } = await send("load-prefs");
-	return { accountIds, budgetId, groupSections };
+	const june = (name, date) => added.find((t) => t.payee === payeeIds[name] && t.date === date).id;
+	return {
+		accountIds,
+		budgetId,
+		groupSections,
+		categoryIds,
+		payeeIds,
+		cityPower: june("City Power", "2026-06-08"),
+		fuelStop: june("Fuel Stop", "2026-06-09"),
+	};
 }
 
 async function applySettings(page, { accountIds, budgetId, groupSections }) {
@@ -593,6 +624,125 @@ async function sidebarShots(page) {
 	await shot(page, "sidebar-rail", sidebar, { room: 0, width: 640, height: 830 });
 }
 
+/** June's power bill runs high, and a fuel charge was filed by hand against its rule. */
+async function seedInspection(page, { accountIds, categoryIds, payeeIds, cityPower, fuelStop }) {
+	const send = (name, args) =>
+		page.evaluate(([name, args]) => window.$send(name, args), [name, args]);
+	for (const [payee, category] of Object.entries(RULES)) {
+		await send("rule-add", {
+			stage: null,
+			conditionsOp: "and",
+			conditions: [{ op: "is", field: "payee", value: payeeIds[payee], type: "id" }],
+			actions: [{ op: "set", field: "category", value: categoryIds[category], type: "id" }],
+		});
+	}
+	const schedule = await send("schedule/create", {
+		schedule: { name: "Power bill", posts_transaction: false },
+		conditions: [
+			{ op: "is", field: "payee", value: payeeIds["City Power"] },
+			{ op: "is", field: "account", value: accountIds["Everyday Checking"] },
+			{ op: "isapprox", field: "amount", value: -8640 },
+			{
+				op: "isapprox",
+				field: "date",
+				value: {
+					start: "2026-01-08",
+					frequency: "monthly",
+					patterns: [],
+					skipWeekend: false,
+					weekendSolveMode: "after",
+					endMode: "never",
+					endOccurrences: 1,
+					endDate: "2026-12-31",
+					interval: 1,
+				},
+			},
+		],
+	});
+	await send("transactions-batch-update", {
+		updated: [
+			{ id: cityPower, amount: -11740, schedule },
+			{ id: fuelStop, category: categoryIds.Fun },
+		],
+	});
+}
+
+async function inspectorShots(page, seeded) {
+	await seedInspection(page, seeded);
+	const panel = "[data-abt-side-drawer-sidebar]";
+	const options = { room: 0, cutout: true };
+	const inspect = async (account, id) => {
+		await page.goto(`${BASE}/accounts/${seeded.accountIds[account]}`);
+		await page.getByRole("button", { name: "Inspect" }).click();
+		await page.locator(panel).waitFor();
+		await page.locator(`[data-focus-key="${id}"] [data-testid="select"]`).click();
+		await page.locator(".summary").waitFor();
+		await page.mouse.move(700, 30);
+		await page.waitForTimeout(1500);
+	};
+
+	await page.setViewportSize({ width: 1400, height: 760 });
+	await inspect("Everyday Checking", seeded.cityPower);
+	// Actual works out the next date in its worker, which runs on the real clock, not the fixed one.
+	await page.locator(".schedule__next").evaluate((el) => (el.textContent = "next Jul 8"));
+	await shot(page, "inspector", panel, options);
+	await inspect("Rewards Card", seeded.fuelStop);
+	await shot(page, "inspector-rules", panel, { ...options, height: 420 });
+	await page.getByRole("button", { name: "Inspect" }).click();
+}
+
+async function recapShots(page, { accountIds }) {
+	const send = (name, args) =>
+		page.evaluate(([name, args]) => window.$send(name, args), [name, args]);
+	// Tall enough for every account's list above the footer.
+	await page.setViewportSize({ width: 1400, height: 1100 });
+	await page.goto(`${BASE}/budget`);
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.waitForTimeout(1500);
+
+	const result = { added: [], matched: [], failed: [] };
+	for (const account of new Set(IMPORT.map(([name]) => name))) {
+		const { added, updated } = await send("transactions-import", {
+			accountId: accountIds[account],
+			isPreview: false,
+			transactions: IMPORT.filter(([name]) => name === account).map(
+				([, payee, amount, date], i) => ({
+					date,
+					amount,
+					payee_name: payee,
+					imported_payee: payee,
+					imported_id: `docs-${account}-${i}`,
+				}),
+			),
+		});
+		result.added.push(...added);
+		result.matched.push(...updated);
+	}
+	// Actual raises this from its store after a sync; a direct import doesn't reach the store.
+	await page.evaluate(
+		(detail) => document.dispatchEvent(new CustomEvent("abt:api:imported", { detail })),
+		JSON.stringify(result),
+	);
+
+	const review = page.getByRole("button", { name: "Review" });
+	await review.waitFor();
+	await page.waitForTimeout(800);
+	const toast = page.getByText("Imported 7 transactions");
+	await toast.evaluate((el) => {
+		el.closest('[role="alert"], [data-abt-toast]')?.setAttribute("data-docs-toast", "");
+	});
+	await shot(page, "recap-toast", "[data-docs-toast]", { room: 0, cutout: true });
+	await review.click();
+	const panel = "[data-abt-side-drawer-sidebar]";
+	await page.getByText("Needs a category").waitFor();
+	await page.waitForTimeout(1200);
+	await page.getByRole("combobox", { name: "Category for Garden Center" }).selectOption({
+		label: "Fun",
+	});
+	await page.waitForTimeout(800);
+	await shot(page, "recap", panel, { room: 0, cutout: true });
+}
+
 const stop = await startStack();
 const browser = await chromium.launch();
 try {
@@ -628,6 +778,8 @@ try {
 	await paletteShots(page);
 	await insightsShots(page);
 	await sidebarShots(page);
+	await inspectorShots(page, seeded);
+	await recapShots(page, seeded);
 } finally {
 	await browser.close();
 	stop();
