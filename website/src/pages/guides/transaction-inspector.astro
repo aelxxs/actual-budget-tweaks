@@ -15,9 +15,8 @@ const image = (name: string) => `${base}images/guides/${name}.png`;
 			<a href="/guides" class="docs__back">Back to guides</a>
 			<h1>Transaction Inspector</h1>
 			<p class="docs__lead">
-				Transaction Inspector shows a transaction's payee history, the rules for that payee and its
-				schedule in a side panel. Use it to check whether a charge looks right or to find out why a
-				transaction got its category.
+				Transaction Inspector shows a transaction's payee history, rules and schedule in a side panel.
+				Use it to check a charge or find out why a transaction got its category.
 			</p>
 		</header>
 
@@ -26,15 +25,8 @@ const image = (name: string) => `${base}images/guides/${name}.png`;
 			<p>Turn on Transaction Inspector in the Accounts &amp; Transactions section of Tweaks, then:</p>
 			<ol>
 				<li>Open an account and click <strong>Inspect</strong> in its toolbar.</li>
-				<li>
-					Tick a transaction's checkbox. The panel follows your selection, and if you tick several it
-					shows the newest one you ticked.
-				</li>
+				<li>Tick a transaction's checkbox.</li>
 			</ol>
-			<p>
-				The sidebar collapses while the panel is open. Click <strong>Inspect</strong> again or close
-				the panel to bring it back.
-			</p>
 		</section>
 
 		<section class="docs__section">
@@ -47,22 +39,12 @@ const image = (name: string) => `${base}images/guides/${name}.png`;
 					alt="The Inspector panel for a City Power bill marked 28% above usual, with its payee history, the Power bill schedule and two rules"
 				/>
 			</div>
-			<p>
-				The top of the panel shows the transaction's details. A badge such as
-				<strong>+28% vs usual</strong> appears when the amount is at least 25% away from the payee's
-				average, once the payee has three or more transactions. Badges also mark splits and transfers.
-			</p>
-			<p>
-				<strong>Payee history</strong> shows the average amount, how often the payee usually charges
-				you and the six most recent transactions across all accounts.
-			</p>
-			<p>
-				<strong>Schedule</strong> appears if the transaction is linked to one, with its next date.
-			</p>
-			<p>
-				<strong>Rules for this payee</strong> lists each rule in plain words, with rules created by
-				schedules listed separately. The pencil opens the rule or schedule in Actual's editor.
-			</p>
+			<ul>
+				<li>A badge like <strong>+28% vs usual</strong> means the amount is at least 25% away from the payee's average. It's a prompt to check the charge, and it needs three or more transactions from that payee.</li>
+				<li><strong>Payee history</strong> shows the payee's average amount and recent transactions.</li>
+				<li><strong>Schedule</strong> shows the linked schedule and its next date.</li>
+				<li><strong>Rules for this payee</strong> lists each rule in plain words. Click the pencil to edit one.</li>
+			</ul>
 		</section>
 
 		<section class="docs__section">
@@ -75,20 +57,13 @@ const image = (name: string) => `${base}images/guides/${name}.png`;
 					alt="The Inspector panel for a Fuel Stop charge, warning that rules would change its category from Fun to Transport"
 				/>
 			</div>
-			<p>
-				<strong>Your rules would change</strong> appears when running your rules now would give the
-				transaction a different result. Rules run when a transaction is added, so this usually means
-				someone edited it by hand or it was added before the rule existed. The panel only reports the
-				difference and doesn't change the transaction.
-			</p>
+			<p><strong>Your rules would change</strong> appears when your rules would now give the transaction a different result.</p>
+			<p>This usually means it was edited by hand or added before the rule existed. The panel doesn't change the transaction.</p>
 		</section>
 
 		<section class="docs__section">
 			<h2>Creating a rule</h2>
-			<p>
-				<strong>Create rule from this</strong> opens Actual's rule editor with the payee and category
-				filled in. Nothing is saved until you save the rule there.
-			</p>
+			<p><strong>Create rule from this</strong> opens Actual's rule editor with the payee and category filled in.</p>
 		</section>
 	</main>
 </Base>

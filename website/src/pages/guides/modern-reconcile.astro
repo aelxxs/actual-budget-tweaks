@@ -24,20 +24,11 @@ const shot = `${base}images/guides/reconcile.png`;
 			<h2>Starting a reconcile</h2>
 			<p>Turn on Modern Reconcile in the Accounts &amp; Transactions section of Tweaks, then:</p>
 			<ol>
-				<li>
-					Open the account and click <strong>Reconcile</strong> in its toolbar. The label beside it
-					shows how long it's been since the last reconcile. You can also press
-					<code>Cmd+K</code> or <code>Ctrl+K</code>, choose <strong>Reconcile account</strong> and
-					pick the account.
-				</li>
-				<li>
-					Enter the ending balance from your statement or your bank's app. The box starts with your
-					cleared balance. Accounts with bank sync also offer
-					<strong>Use bank's synced balance</strong>.
-				</li>
+				<li>Open the account and click <strong>Reconcile</strong> in its toolbar.</li>
+				<li>Enter the ending balance from your statement or your bank's app.</li>
 				<li>Click <strong>Start reconciling</strong>.</li>
 			</ol>
-			<p>The sidebar collapses to give the transaction table more room, and comes back when you finish.</p>
+			<p>Accounts with bank sync can click <strong>Use bank's synced balance</strong> instead of typing it.</p>
 		</section>
 
 		<section class="docs__section">
@@ -51,40 +42,26 @@ const shot = `${base}images/guides/reconcile.png`;
 				/>
 			</div>
 			<ol>
-				<li>
-					<strong>Left to match</strong> is your statement balance minus your cleared balance. The
-					ring shows how many of the transactions are cleared.
-				</li>
-				<li>
-					<strong>Not cleared</strong> lists your newest uncleared transactions. Click a check mark
-					to clear one. Ticking a transaction in the table updates the panel too.
-				</li>
-				<li>
-					If you can't find the difference, the adjustment button adds a cleared transaction for the
-					exact amount. It runs through your rules and has the note "Reconciliation balance
-					adjustment".
-				</li>
+				<li><strong>Left to match</strong> is your statement balance minus your cleared balance.</li>
+				<li><strong>Not cleared</strong> lists your uncleared transactions. Click a check mark to clear one.</li>
+				<li>If you can't find the difference, the adjustment button adds a cleared transaction for the exact amount. It has no payee or category unless one of your rules sets them.</li>
 				<li><strong>Finish reconciling</strong> is available once the difference is zero.</li>
 			</ol>
 		</section>
 
 		<section class="docs__section">
 			<h2>Finishing</h2>
-			<p>
-				Finishing locks every cleared transaction in the account and records the reconcile date. A
-				notification offers <strong>Undo</strong> for 12 seconds. Reconcile Confetti, on by default,
-				adds a burst of confetti.
-			</p>
+			<p>Finishing locks every cleared transaction in the account. Actual marks locked transactions and asks you to confirm before you change one.</p>
+			<p>To reverse it, click <strong>Undo</strong> on the notification within 12 seconds.</p>
 		</section>
 
 		<section class="docs__section">
 			<h2>Stopping early</h2>
-			<p>
-				<strong>Back</strong> returns to the statement balance so you can change it.
-				<strong>Cancel</strong> ends the reconcile without locking anything, and so does closing the
-				panel or leaving the account. Transactions you cleared stay cleared, and any adjustment stays
-				in the account.
-			</p>
+			<ul>
+				<li><strong>Back</strong> returns to the statement balance so you can change it.</li>
+				<li><strong>Cancel</strong> ends the reconcile without locking anything.</li>
+			</ul>
+			<p>Transactions you cleared stay cleared, and any adjustment stays in the account.</p>
 		</section>
 	</main>
 </Base>

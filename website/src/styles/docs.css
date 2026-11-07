@@ -54,6 +54,23 @@
 	gap: 0.35rem;
 }
 
+/* Native markers right-align, so a narrow "1." sits out of line with the digits below it. */
+.docs__section ol {
+	list-style: none;
+	counter-reset: step;
+}
+
+.docs__section ol > li {
+	position: relative;
+	counter-increment: step;
+}
+
+.docs__section ol > li::before {
+	content: counter(step) ".";
+	position: absolute;
+	inset-inline-start: -1.25rem;
+}
+
 .docs code {
 	font-family: var(--mono);
 	font-size: 0.85em;

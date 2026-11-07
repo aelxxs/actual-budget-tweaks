@@ -22,11 +22,7 @@ const image = (name: string) => `${base}images/guides/${name}.png`;
 
 		<section class="docs__section">
 			<h2>Opening the recap</h2>
-			<p>
-				When a sync or import adds transactions, a notification says how many came in, how many
-				accounts they landed in and how many need a category. Click <strong>Review</strong> to open
-				the panel.
-			</p>
+			<p>When a sync or import adds transactions, a notification appears. Click <strong>Review</strong> to open the panel.</p>
 			<div class="docs__stage docs__stage--card">
 				<img
 					src={image("recap-toast")}
@@ -35,10 +31,7 @@ const image = (name: string) => `${base}images/guides/${name}.png`;
 					alt="A notification reading Imported 7 transactions, across 3 accounts, 4 need a category, with a Review button"
 				/>
 			</div>
-			<p>
-				The notification stays until you close it, and a newer sync replaces it. Closing it skips the
-				recap. The transactions stay in your accounts either way.
-			</p>
+			<p>Closing the notification skips the recap. The transactions stay in your accounts.</p>
 		</section>
 
 		<section class="docs__section">
@@ -51,26 +44,19 @@ const image = (name: string) => `${base}images/guides/${name}.png`;
 					alt="The Sync recap panel with a summary of 7 new transactions, a list of four needing a category, and the new transactions grouped by account"
 				/>
 			</div>
-			<p>
-				<strong>Summary</strong> totals the money in and out. <strong>Matched existing</strong> counts
-				imported transactions that matched ones already in your budget, and these aren't listed. If
-				bank sync failed for an account, the summary names it.
-			</p>
-			<p>
-				<strong>Needs a category</strong> lists new transactions your rules didn't categorize. Pick a
-				category and it saves straight away. The row dims and stays in the list, so nothing moves
-				while you work through it.
-			</p>
-			<p>Transfers, split transactions and off-budget accounts don't need a category, so they aren't listed here.</p>
+			<ul>
+				<li><strong>Summary</strong> totals the money in and out.</li>
+				<li><strong>Matched existing</strong> counts imported transactions that matched ones already in your budget.</li>
+				<li><strong>Needs a category</strong> lists new transactions your rules didn't categorize.</li>
+			</ul>
+			<p>Pick a category and it saves straight away.</p>
+			<p>Transfers, split transactions and off-budget accounts aren't listed, because they don't need a category.</p>
 		</section>
 
 		<section class="docs__section">
 			<h2>Checking each account</h2>
-			<p>
-				Below that, every new transaction appears under its account with its date and category.
-				These sections start open for up to three accounts and collapsed for more.
-				<strong>Done</strong> closes the panel.
-			</p>
+			<p>Every new transaction appears under its account, below the list.</p>
+			<p>Click <strong>Done</strong> to close the panel.</p>
 		</section>
 	</main>
 </Base>

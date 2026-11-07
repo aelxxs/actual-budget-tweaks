@@ -470,12 +470,12 @@ async function applySettings(page, { accountIds, budgetId, groupSections }, sett
 	);
 }
 
-/** Numbered outlines drawn into the page, so they follow the real elements. */
+/** Outlines drawn into the page, so they follow the real elements. Numbered unless `plain`. */
 async function annotate(page, marks) {
 	const boxes = [];
 	for (const mark of marks) {
-		const { selector, side } = typeof mark === "string" ? { selector: mark } : mark;
-		boxes.push({ ...(await page.locator(selector).first().boundingBox()), side });
+		const { selector, side, plain } = typeof mark === "string" ? { selector: mark } : mark;
+		boxes.push({ ...(await page.locator(selector).first().boundingBox()), side, plain });
 	}
 	await page.evaluate((boxes) => {
 		document.querySelector("[data-docs-marks]")?.remove();
@@ -489,6 +489,10 @@ async function annotate(page, marks) {
 			outline.style.cssText = `position:absolute;left:${box.x - gap}px;top:${box.y - gap}px;
 				width:${box.width + gap * 2}px;height:${box.height + gap * 2}px;
 				border:2px solid var(--abt-accent);border-radius:8px`;
+			layer.append(outline);
+			if (box.plain) {
+				return;
+			}
 			const badge = document.createElement("div");
 			badge.textContent = String(i + 1);
 			const left =
@@ -498,7 +502,6 @@ async function annotate(page, marks) {
 				border-radius:50%;background:var(--abt-accent);color:#11111b;font:600 13px/24px system-ui;
 				text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.35)`;
 			outline.append(badge);
-			layer.append(outline);
 		});
 	}, boxes);
 }
@@ -670,6 +673,9 @@ async function sidebarShots(page) {
 	);
 	await page.waitForTimeout(1200);
 	await shot(page, "sidebar-split", sidebar, { room: 0 });
+	await annotate(page, [{ selector: `${sidebar} .edit-btn`, plain: true }]);
+	await shot(page, "sidebar-add-shortcut", sidebar, { room: 0, height: 300 });
+	await page.evaluate(() => document.querySelector("[data-docs-marks]")?.remove());
 
 	await page.locator(".rail-foot .rail-icon").last().click();
 	await page.locator('[aria-label="Collapse Savings"]').click();

@@ -21,10 +21,10 @@ const base = import.meta.env.BASE_URL;
 
 		<section class="docs__section">
 			<h2>Open the panel</h2>
-			<p>
-				Turn on Budget Insights in Tweaks, then click <strong>Insights</strong> on the budget page. You
-				can also choose Insights from the <a href="/guides/command-palette">command palette</a>.
-			</p>
+			<ol>
+				<li>Turn on Budget Insights in Tweaks.</li>
+				<li>Click <strong>Insights</strong> on the budget page.</li>
+			</ol>
 		</section>
 
 		<section class="docs__section">
@@ -40,24 +40,22 @@ const base = import.meta.env.BASE_URL;
 			</div>
 			<ul>
 				<li><strong>Overspent</strong> appears when any category is below zero.</li>
-				<li><strong>This Month</strong> shows where your available funds went, and your pace for the month.</li>
-				<li>
-					<strong>Next Month</strong> compares money held for next month with what it needs. The Next
-					Month Target setting measures that against your templates or your recent average spending.
-				</li>
+				<li><strong>This Month</strong> shows where your available funds went.</li>
+				<li><strong>Next Month</strong> compares money held for next month with what it needs.</li>
 				<li><strong>Goals to Fund</strong> lists categories whose templates aren't met yet.</li>
 				<li><strong>Spent vs Budgeted</strong> covers the last six months.</li>
 				<li><strong>Coming Up</strong> lists scheduled transactions for the next 30 days.</li>
 			</ul>
+			<p>
+				Next Month measures against your goal templates. To use your recent average spending
+				instead, change the Next Month Target setting in Tweaks.
+			</p>
 		</section>
 
 		<section class="docs__section">
 			<h2>Preview your templates</h2>
-			<p>
-				The Priority plan tab shows what your budget templates ask for this month and how far your
-				available money goes, one priority at a time. It doesn't change your budget.
-			</p>
-			<div class="docs__stage docs__stage--card">
+			<p>The Priority plan tab shows how far your available money goes, one priority at a time.</p>
+						<div class="docs__stage docs__stage--card">
 				<img
 					src={`${base}images/guides/insights-priority.png`}
 					width="350"
@@ -65,15 +63,22 @@ const base = import.meta.env.BASE_URL;
 					alt="The Priority plan tab, with priorities 0 and 1 funded, priority 2 partly funded, and priorities 3 and 4 unfunded"
 				/>
 			</div>
+			<p>Priorities are funded in order, lowest number first.</p>
+			<ul>
+				<li>Funded priorities get everything they asked for.</li>
+				<li>The partly funded priority is where the money runs out.</li>
+				<li>Unfunded priorities come after it and get nothing.</li>
+				<li><strong>Gap remaining</strong> is how much more you need to fund everything.</li>
+			</ul>
+			<p>This tab is a preview and doesn't change your budget.</p>
 		</section>
 
 		<section class="docs__section">
 			<h2>Apply templates and see what moved</h2>
-			<p>
-				Click <strong>Apply</strong> on the Overview tab to apply the month's templates. The Breakdown
-				tab then lists how much each priority received and how each category changed. It also fills
-				in when you fund targets or cover overspending from Actual's budget menu.
-			</p>
+			<ol>
+				<li>Click <strong>Apply</strong> on the Overview tab.</li>
+				<li>Open the Breakdown tab to see what each priority and category received.</li>
+			</ol>
 			<div class="docs__stage docs__stage--card">
 				<img
 					src={`${base}images/guides/insights-breakdown.png`}
@@ -82,7 +87,7 @@ const base = import.meta.env.BASE_URL;
 					alt="The Breakdown tab listing the amount each priority and category received after applying templates"
 				/>
 			</div>
-			<p>Apply changes your budget through Actual, so Actual's undo reverses it.</p>
+			<p>To reverse it, use Actual's undo.</p>
 		</section>
 	</main>
 </Base>
