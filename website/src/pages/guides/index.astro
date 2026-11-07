@@ -44,10 +44,10 @@ const guides = [
 		</header>
 
 		<div class="guides">
-			{guides.map((guide) => (
-				<a class="guide" href={guide.href}>
+			{guides.map((guide, i) => (
+				<a class="guide" href={guide.href} style={`--i:${i}`}>
 					<div class="guide__preview">
-						<img src={`${base}images/guides/${guide.image}`} alt="" loading="lazy" />
+						<img src={`${base}images/guides/${guide.image}`} alt="" />
 					</div>
 					<div class="guide__text">
 						<h2>{guide.title}</h2>
@@ -79,6 +79,21 @@ const guides = [
 		transition:
 			box-shadow 0.15s ease,
 			transform 0.15s ease;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.guide {
+			/* backwards, not both: a held final frame would override the hover lift. */
+			animation: guide-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+			animation-delay: calc(150ms + var(--i) * 110ms);
+		}
+	}
+
+	@keyframes guide-in {
+		from {
+			opacity: 0;
+			transform: translateY(28px);
+		}
 	}
 
 	.guide:hover {

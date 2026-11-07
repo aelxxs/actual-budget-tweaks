@@ -322,3 +322,43 @@ a:hover {
 		transition-duration: 0.01ms !important;
 	}
 }
+
+.page-glow {
+	position: absolute;
+	inset: -80px 0 auto;
+	z-index: -1;
+	block-size: 460px;
+	background:
+		radial-gradient(ellipse 50% 60% at 15% 30%, rgba(107, 79, 162, 0.13) 0%, transparent 70%),
+		radial-gradient(ellipse 40% 50% at 70% 50%, rgba(139, 111, 192, 0.09) 0%, transparent 70%),
+		radial-gradient(ellipse 45% 40% at 85% 20%, rgba(212, 92, 114, 0.05) 0%, transparent 70%);
+	filter: blur(60px);
+	pointer-events: none;
+}
+
+/* Inner pages. The landing page animates its hero, and the guide cards and settings sections
+   have their own, stronger entrance. */
+@media (prefers-reduced-motion: no-preference) {
+	main > :not(.guides, .settings-section) {
+		animation: page-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+	}
+
+	main > :nth-child(2) {
+		animation-delay: 60ms;
+	}
+
+	main > :nth-child(3) {
+		animation-delay: 120ms;
+	}
+
+	main > :nth-child(n + 4) {
+		animation-delay: 180ms;
+	}
+}
+
+@keyframes page-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+}
