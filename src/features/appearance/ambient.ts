@@ -22,6 +22,8 @@ const SURFACES = `
 	.abt-side-drawer-header,
 	.abt-side-drawer-body,
 	.abt-side-drawer-body .abt-tabs,
+	[data-abt-tweaks-host],
+	[data-abt-tweaks-host] .settings-page,
 	.settings-toolbar,
 	[data-abt-calendar] .cal-day-name,
 	${MAIN},
