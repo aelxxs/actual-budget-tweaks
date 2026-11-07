@@ -1,0 +1,33 @@
+---
+import Base from "../../layouts/Base.astro";
+import "../../styles/docs.css";
+
+const guides = [
+	{
+		href: "/guides/modern-reconcile",
+		title: "Modern Reconcile",
+		description: "Match an account to your statement from a side panel.",
+	},
+];
+---
+
+<Base
+	title="Guides | Actual Budget Tweaks"
+	description="How to use the larger features in Actual Budget Tweaks."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/" class="docs__back">Back to home</a>
+			<h1>Guides</h1>
+			<p class="docs__lead">How to use the larger features in Actual Budget Tweaks.</p>
+		</header>
+
+		<section class="docs__section">
+			<ul>
+				{guides.map((guide) => (
+					<li><a href={guide.href}>{guide.title}</a>: {guide.description}</li>
+				))}
+			</ul>
+		</section>
+	</main>
+</Base>

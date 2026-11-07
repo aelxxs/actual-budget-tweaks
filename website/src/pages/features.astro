@@ -16,6 +16,8 @@ interface FeatureSection {
 	items: FeatureItem[];
 }
 
+const GUIDES: Record<string, string> = { "Modern Reconcile": "/guides/modern-reconcile" };
+
 const typedSections = sections as FeatureSection[];
 const totalCount = typedSections.reduce((n, s) => n + s.items.length, 0);
 
@@ -79,6 +81,9 @@ function groupItems(items: FeatureItem[]): { label: string | null; items: Featur
 												{item.writes && (
 													<span class="writes-mark" title={item.writes}>✎ Edits budget</span>
 												)}
+												{GUIDES[item.label] && (
+													<a class="settings-list__guide" href={GUIDES[item.label]}>Guide</a>
+												)}
 											</span>
 											{item.description && (
 												<span class="settings-list__desc">{item.description}</span>
@@ -100,6 +105,12 @@ function groupItems(items: FeatureItem[]): { label: string | null; items: Featur
 </Base>
 
 <style>
+	.settings-list__guide {
+		margin-inline-start: 0.4rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
 	.features-page {
 		padding-block: 3rem 5rem;
 		max-inline-size: 760px;

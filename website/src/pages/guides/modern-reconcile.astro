@@ -1,0 +1,92 @@
+---
+import Base from "../../layouts/Base.astro";
+import "../../styles/docs.css";
+
+const base = import.meta.env.BASE_URL;
+const shot = `${base}images/guides/reconcile.png`;
+---
+
+<Base
+	title="Modern Reconcile | Actual Budget Tweaks"
+	description="Match an account to your statement from a side panel in Actual Budget Tweaks."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/guides" class="docs__back">Back to guides</a>
+			<h1>Modern Reconcile</h1>
+			<p class="docs__lead">
+				Modern Reconcile replaces Actual's reconcile popover and banner with a side panel. The panel
+				shows live balances and lists the transactions you haven't cleared.
+			</p>
+		</header>
+
+		<section class="docs__section">
+			<h2>Starting a reconcile</h2>
+			<p>Turn on Modern Reconcile in the Accounts &amp; Transactions section of Tweaks, then:</p>
+			<ol>
+				<li>
+					Open the account and click <strong>Reconcile</strong> in its toolbar. The label beside it
+					shows how long it's been since the last reconcile. You can also press
+					<code>Cmd+K</code> or <code>Ctrl+K</code>, choose <strong>Reconcile account</strong> and
+					pick the account.
+				</li>
+				<li>
+					Enter the ending balance from your statement or your bank's app. The box starts with your
+					cleared balance. Accounts with bank sync also offer
+					<strong>Use bank's synced balance</strong>.
+				</li>
+				<li>Click <strong>Start reconciling</strong>.</li>
+			</ol>
+			<p>The sidebar collapses to give the transaction table more room, and comes back when you finish.</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Using the panel</h2>
+			<a href={shot} target="_blank" rel="noopener">
+				<img
+					class="docs__shot"
+					src={shot}
+					width="1400"
+					height="860"
+					alt="An account being reconciled, with numbered callouts on the toolbar button and on the side panel's amount left to match, list of uncleared transactions, adjustment button and finish button"
+				/>
+			</a>
+			<ol>
+				<li>The toolbar button reads <strong>Reconciling...</strong> until you finish.</li>
+				<li>
+					<strong>Left to match</strong> is your statement balance minus your cleared balance. The
+					ring shows how many of the transactions are cleared.
+				</li>
+				<li>
+					<strong>Not cleared</strong> lists your newest uncleared transactions. Click a check mark
+					to clear one. Ticking a transaction in the table updates the panel too.
+				</li>
+				<li>
+					If you can't find the difference, the adjustment button adds a cleared transaction for the
+					exact amount. It runs through your rules and has the note "Reconciliation balance
+					adjustment".
+				</li>
+				<li><strong>Finish reconciling</strong> is available once the difference is zero.</li>
+			</ol>
+		</section>
+
+		<section class="docs__section">
+			<h2>Finishing</h2>
+			<p>
+				Finishing locks every cleared transaction in the account and records the reconcile date. A
+				notification offers <strong>Undo</strong> for 12 seconds. Reconcile Confetti, on by default,
+				adds a burst of confetti.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Stopping early</h2>
+			<p>
+				<strong>Back</strong> returns to the statement balance so you can change it.
+				<strong>Cancel</strong> ends the reconcile without locking anything, and so does closing the
+				panel or leaving the account. Transactions you cleared stay cleared, and any adjustment stays
+				in the account.
+			</p>
+		</section>
+	</main>
+</Base>

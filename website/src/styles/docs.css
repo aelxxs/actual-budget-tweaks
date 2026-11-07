@@ -144,3 +144,11 @@
 	font-size: 0.85rem;
 	color: var(--text-tertiary);
 }
+
+.docs__shot {
+	display: block;
+	inline-size: 100%;
+	block-size: auto;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+}
