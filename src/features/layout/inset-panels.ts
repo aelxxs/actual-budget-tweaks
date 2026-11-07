@@ -25,6 +25,13 @@ const CSS = `
 		box-sizing: border-box;
 		background: var(--color-mobileViewTheme) !important;
 	}
+	/* An installed app's title bar takes the frame's colour, so the panels meet it; a browser tab's
+	   toolbar doesn't, so they keep a gap there too. */
+	@media (display-mode: browser) {
+		[data-abt-shell] {
+			padding-top: ${EDGE};
+		}
+	}
 	[data-abt-page-card] {
 		${CARD}
 	}
