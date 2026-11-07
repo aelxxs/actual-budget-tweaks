@@ -19,6 +19,7 @@
 		"check:tokens": "node scripts/check-tokens.mjs",
 		"test": "node --experimental-vm-modules --test scripts/*.test.mjs",
 		"test:smoke": "playwright test",
+		"docs:shots": "node scripts/docs-shots.mjs",
 		"test:coverage": "node --experimental-vm-modules --test scripts/next-month-coverage.test.mjs",
 		"test:lifecycle": "node --experimental-vm-modules --test scripts/template-plan-lifecycle.test.mjs",
 		"lint": "eslint .",
