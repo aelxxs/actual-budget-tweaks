@@ -101,6 +101,19 @@
 		return days.find((d) => d.isToday)?.iso ?? days.find((d) => d.isCurrentMonth)?.iso ?? null;
 	});
 
+	// Chrome keeps what the weekday cells painted mid-slide, when the moving grid made their
+	// window-fixed background (Ambient Glow/Grain) move with them; a no-op outline repaints them.
+	async function repaintWeekdays(e: Event) {
+		const cells = (e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>(".cal-day-name");
+		for (const cell of cells) {
+			cell.style.outline = "1px solid transparent";
+		}
+		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+		for (const cell of cells) {
+			cell.style.outline = "";
+		}
+	}
+
 	function setMonth(y: number, m: number): boolean {
 		if (monthsFromNow(y, m) > MAX_FUTURE_MONTHS) {
 			return false;
@@ -451,6 +464,7 @@
 				role="main"
 				bind:this={gridEl}
 				in:fly={{ x: navDir * 16, duration: reducedMotion ? 0 : 180, easing: cubicOut }}
+				onintroend={repaintWeekdays}
 			>
 				{@render weekdays()}
 				{#each days as day, idx (idx)}
