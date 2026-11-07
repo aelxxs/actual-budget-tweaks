@@ -21,33 +21,21 @@ const base = import.meta.env.BASE_URL;
 		</header>
 
 		<section class="docs__section">
-			<h2>Opening it</h2>
+			<h2>Find anything</h2>
 			<p>
 				Press <code>Cmd+K</code> or <code>Ctrl+K</code>, or click the search bar at the top of the
-				sidebar.
+				sidebar. Type to filter the list, then use the arrow keys and <code>Enter</code> to choose.
 			</p>
-			<img
-				class="docs__shot"
-				src={`${base}images/guides/palette.png`}
-				width="648"
-				height="488"
-				alt="The command palette with numbered callouts on the search box, the first account row and the keyboard hints"
-			/>
-			<ol>
-				<li>Type here to filter everything in the list.</li>
-				<li>Accounts show their current balance. Choosing one opens it.</li>
-				<li>
-					Use the arrow keys to move and <code>Enter</code> to choose. <code>Esc</code> closes the
-					palette, or goes back from a sub-list such as themes. <code>Backspace</code> in an empty
-					search box also goes back.
-				</li>
-			</ol>
-		</section>
-
-		<section class="docs__section">
-			<h2>Search results</h2>
+			<div class="docs__stage docs__stage--dialog">
+				<img
+					src={`${base}images/guides/palette.png`}
+					width="600"
+					height="440"
+					alt="The command palette listing accounts with their balances and pages to go to"
+				/>
+			</div>
 			<ul>
-				<li>Accounts and custom reports</li>
+				<li>Accounts, with their balances, and custom reports</li>
 				<li>Pages, including Spending Calendar and Insights when they're turned on</li>
 				<li>
 					The calculator, currency converter and interest calculator, which open in a window you can
@@ -55,20 +43,25 @@ const base = import.meta.env.BASE_URL;
 				</li>
 				<li>Quick actions such as syncing all accounts, changing the theme and hiding amounts</li>
 			</ul>
+			<p>
+				<code>Esc</code> closes the palette, or goes back from a sub-list such as themes.
+				<code>Backspace</code> in an empty search box also goes back.
+			</p>
 		</section>
 
 		<section class="docs__section">
-			<h2>Math</h2>
+			<h2>Do quick math</h2>
 			<p>
 				Type a sum and the answer appears at the top of the list. Press <code>Enter</code> to copy it.
 			</p>
-			<img
-				class="docs__shot"
-				src={`${base}images/guides/palette-math.png`}
-				width="648"
-				height="207"
-				alt="The command palette showing the answer to 145.20 times 12"
-			/>
+			<div class="docs__stage docs__stage--dialog">
+				<img
+					src={`${base}images/guides/palette-math.png`}
+					width="600"
+					height="159"
+					alt="The command palette showing the answer to 145.20 times 12"
+				/>
+			</div>
 			<p>
 				It handles <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>,
 				brackets and percentages, so <code>200 * 15%</code> gives 30. You can paste amounts with
@@ -77,27 +70,25 @@ const base = import.meta.env.BASE_URL;
 		</section>
 
 		<section class="docs__section">
-			<h2>Tweaks and reconciling</h2>
+			<h2>Change a setting or start a reconcile</h2>
 			<p>
 				Type at least two letters to search ABT's settings. Choosing a switch turns it on or off and
 				keeps the palette open, so you can change several in a row. Any other setting opens Tweaks
 				with that setting found.
 			</p>
-			<img
-				class="docs__shot"
-				src={`${base}images/guides/palette-tweaks.png`}
-				width="648"
-				height="332"
-				alt="The command palette searching for reconcile, with callouts on the Reconcile account action and a setting's On label"
-			/>
-			<ol>
-				<li>
-					With <a href="/guides/modern-reconcile">Modern Reconcile</a> on,
-					<strong>Reconcile account</strong> lists your accounts with the time since each was last
-					reconciled. Picking one opens its reconcile panel.
-				</li>
-				<li>Each switch shows whether it's on or off.</li>
-			</ol>
+			<div class="docs__stage docs__stage--dialog">
+				<img
+					src={`${base}images/guides/palette-tweaks.png`}
+					width="600"
+					height="284"
+					alt="The command palette searching for reconcile, showing the Reconcile account action and three settings marked On"
+				/>
+			</div>
+			<p>
+				With <a href="/guides/modern-reconcile">Modern Reconcile</a> on,
+				<strong>Reconcile account</strong> lists your accounts with the time since each was last
+				reconciled. Picking one opens its reconcile panel.
+			</p>
 		</section>
 	</main>
 </Base>

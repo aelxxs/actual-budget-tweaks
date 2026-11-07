@@ -27,7 +27,18 @@ const SETTINGS = {
 	"sidebar-search-enabled": true,
 	"sidebar-shortcuts-enabled": true,
 	"sidebar-group-totals": true,
+	"actual-template-apply-breakdown": true,
 	"experimental-sidebar-layout-mode": "standard",
+};
+
+const TEMPLATES = {
+	Rent: ["#template 1450", 145000],
+	Utilities: ["#template-1 90", 9000],
+	Internet: ["#template-1 60", 6000],
+	Groceries: ["#template-2 450", 45000],
+	Transport: ["#template-2 350", 35000],
+	"Dining Out": ["#template-3 150", 15000],
+	Fun: ["#template-4 320", 32000],
 };
 
 const CATEGORIES = {
@@ -292,7 +303,7 @@ async function seedBudget(page) {
 			name,
 			...extra,
 		});
-		const rows = [row("2026-01-01", account.opening, "Starting Balance")];
+		const rows = [row("2025-12-01", account.opening, "Starting Balance")];
 		if (account.monthly) {
 			for (let month = 1; month <= 6; month++) {
 				const name = account.monthly > 0 ? "Monthly Contribution" : "Card Purchases";
@@ -323,6 +334,25 @@ async function seedBudget(page) {
 		name: "Everyday Checking",
 		last_reconciled: String(Date.parse("2026-05-31T12:00:00Z")),
 	});
+	for (const [name, [note, amount]] of Object.entries(TEMPLATES)) {
+		await send("notes-save", { id: categoryIds[name], note });
+		for (let month = 1; month <= 5; month++) {
+			await send("budget/budget-amount", {
+				month: `2026-${pad(month)}`,
+				category: categoryIds[name],
+				amount,
+			});
+		}
+	}
+
+	// The opening balances count as income: most of it sits in savings, leaving June short.
+	await send("budget/budget-amount", {
+		month: "2025-12",
+		category: categoryIds.Savings,
+		amount: 2780000,
+	});
+	await send("budget/check-templates");
+
 	// Actual's own logo, served by the server under test.
 	await send("preferences/save", {
 		id: "abt:budget-icon",
@@ -461,18 +491,47 @@ async function paletteShots(page) {
 	const input = page.locator(".cp-input");
 	await input.waitFor();
 	await page.waitForTimeout(600);
-	await annotate(page, [".cp-search", ".cp-item", ".cp-foot"]);
-	await shot(page, "palette", ".cp");
+	const palette = { room: 0, cutout: true };
+	await shot(page, "palette", ".cp", palette);
 
 	await input.fill("145.20 * 12");
 	await page.waitForTimeout(400);
-	await annotate(page, []);
-	await shot(page, "palette-math", ".cp");
+	await shot(page, "palette-math", ".cp", palette);
 
 	await input.fill("reconcile");
 	await page.waitForTimeout(400);
-	await annotate(page, [".cp-item", ".cp-state"]);
-	await shot(page, "palette-tweaks", ".cp");
+	await shot(page, "palette-tweaks", ".cp", palette);
+	await page.keyboard.press("Escape");
+}
+
+async function insightsShots(page) {
+	await page.setViewportSize({ width: 1400, height: 980 });
+	await page.goto(`${BASE}/budget`);
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.waitForTimeout(1500);
+	await page.keyboard.press("Control+k");
+	await page.locator(".cp-input").fill("insights");
+	await page.keyboard.press("Enter");
+	await page.locator(".abt-tab-overview-toolbar").waitFor();
+	await page.waitForTimeout(2500);
+
+	const panel = "[data-abt-side-drawer-sidebar]";
+	const options = { room: 0, cutout: true };
+	const tab = (name) => page.locator(".abt-tabs__tab", { hasText: name }).click();
+
+	await page.locator(".abt-tab-overview-toolbar button").first().click();
+	await page.waitForTimeout(3000);
+	await tab("Breakdown");
+	await page.waitForTimeout(1500);
+	await shot(page, "insights-breakdown", panel, { ...options, height: 640 });
+
+	await tab("Priority plan");
+	await page.waitForTimeout(2500);
+	await shot(page, "insights-priority", panel, { ...options, height: 640 });
+
+	await tab("Overview");
+	await page.waitForTimeout(2500);
+	await shot(page, "insights-overview", panel, options);
 }
 
 async function sidebarShots(page) {
@@ -564,6 +623,7 @@ try {
 	await page.waitForFunction(() => typeof window.$send === "function");
 	await reconcileShot(page, seeded);
 	await paletteShots(page);
+	await insightsShots(page);
 	await sidebarShots(page);
 } finally {
 	await browser.close();
