@@ -1,6 +1,5 @@
 import type { Account, Payee, Schedule, Transaction } from "@lib/types/actual-schema";
-import { query } from "@lib/utilities/actual-api";
-import { readCell } from "@lib/utilities/budget-cells";
+import { calculate, query } from "@lib/utilities/actual-api";
 import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 import { isoDaysAgo } from "@lib/utilities/months";
 import type { SyncStatus } from "./data";
@@ -89,12 +88,21 @@ export function invalidateAccountDetail(accountId: string): void {
 	cache.delete(accountId);
 }
 
+async function sumAmounts(account: string, cleared: boolean): Promise<number> {
+	const sum = await calculate<number | null>(
+		"transactions",
+		{ $sum: "$amount" },
+		{ filter: { account, cleared }, options: { splits: "none" } },
+	);
+	return sum ?? 0;
+}
+
 async function computeAccountDetail(
 	accountId: string,
 	status: SyncStatus,
 	currentBalance: number,
 ): Promise<AccountDetail> {
-	const [, accounts, recentTxs, clearedCell, unclearedCell, schedules] = await Promise.all([
+	const [, accounts, recentTxs, clearedBalance, unclearedAmount, schedules] = await Promise.all([
 		loadDatePrefs(),
 		query<Pick<Account, "id" | "bankName" | "last_sync">[]>("accounts", {
 			filter: { id: accountId },
@@ -106,8 +114,9 @@ async function computeAccountDetail(
 				date: { $gte: isoDaysAgo(TREND_WINDOW_DAYS) },
 			},
 		}),
-		readCell("__global", `balanceCleared-${accountId}`),
-		readCell("__global", `balanceUncleared-${accountId}`),
+		// Actual's balanceCleared cells stay empty until its own account page asks for them.
+		sumAmounts(accountId, true),
+		sumAmounts(accountId, false),
 		query<Schedule[]>("schedules"),
 	]);
 
@@ -136,12 +145,8 @@ async function computeAccountDetail(
 	const deltaPct = points[0] !== 0 ? (deltaAbs / Math.abs(points[0])) * 100 : 0;
 
 	// ---- cleared / uncleared ----
-	// The balances themselves come from the same real sheet cells Actual's
-	// own Reconcile screen reads; the count has no precomputed cell, so it's
-	// counted over the same trailing window already fetched for the trend.
+	// Counted over the same trailing window already fetched for the trend.
 	const unclearedCount = recentTxs.filter((t) => !t.cleared && !t.is_child).length;
-	const clearedBalance = clearedCell ?? currentBalance;
-	const unclearedAmount = unclearedCell ?? 0;
 
 	// ---- upcoming scheduled transactions ----
 	const upcomingRaw = schedules
