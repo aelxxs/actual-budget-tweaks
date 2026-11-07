@@ -158,7 +158,22 @@
 		}
 		const measure = () => {
 			const style = getComputedStyle(el);
-			const inner = el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+			let inner = el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+			// While the sidebar's width animates, rows split for each frame would jump (and a panel
+			// mounting mid-animation would re-split once it ends), so they take the width it's headed to.
+			const sidebar = el.closest(".sidebar");
+			const transition = sidebar
+				?.getAnimations()
+				.find((a) => a instanceof CSSTransition && a.transitionProperty === "width");
+			const effect = transition?.effect;
+			const target =
+				effect instanceof KeyframeEffect
+					? parseFloat(String(effect.getKeyframes().at(-1)?.width))
+					: 0;
+			if (sidebar && target) {
+				inner = Math.round(inner + target - sidebar.getBoundingClientRect().width);
+				void transition?.finished.then(measure, () => {});
+			}
 			if (inner > 0 && inner !== width) {
 				resizing = true;
 				clearTimeout(resizeTimer);

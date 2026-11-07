@@ -537,51 +537,50 @@
 				onTogglePanel={() => (isCollapsed ? expandSidebar() : collapseSidebar())}
 			/>
 		</div>
-		{#if !isCollapsed}
-			<div class="split-panel">
-				<BudgetHeader
-					name={budgetName}
-					showBudgetIcon={false}
-					onBudgetChange={refreshBudgetContext}
+		<!-- Hidden rather than removed, so reopening it doesn't rebuild its groups and shortcut rows. -->
+		<div class="split-panel" style:display={isCollapsed ? "none" : null}>
+			<BudgetHeader
+				name={budgetName}
+				showBudgetIcon={false}
+				onBudgetChange={refreshBudgetContext}
+			/>
+			{#if searchEnabled || shortcutsFeatureEnabled}
+				<div
+					style="padding-inline: 0.65rem; padding-block: 0.65rem; display: flex; gap: 0.5rem; flex-direction: column;"
+				>
+					{#if searchEnabled}
+						<button type="button" class="search" onclick={openPalette}>
+							<span class="search-left">
+								<Search class="search-icon" color="var(--abt-soft)" strokeWidth={1.75} />
+								<span class="search-placeholder">Search...</span>
+							</span>
+							<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
+						</button>
+					{/if}
+					{#if shortcutsFeatureEnabled}
+						<ShortcutsBar noPadding {budgetId} />
+					{/if}
+				</div>
+			{/if}
+			{#if loading}
+				<AccountListSkeleton />
+			{:else if failed}
+				<div class="load-status">Couldn't load account data.</div>
+			{:else}
+				<AccountList
+					{accounts}
+					icons={shownIcons}
+					iconPicker={iconsEnabled}
+					{groupAccounts}
+					{budgetId}
+					split
+					onToggleGroupMode={toggleGroupMode}
+					onRenameAccount={handleRenameAccount}
+					onCloseAccount={closeAccount}
 				/>
-				{#if searchEnabled || shortcutsFeatureEnabled}
-					<div
-						style="padding-inline: 0.65rem; padding-block: 0.65rem; display: flex; gap: 0.5rem; flex-direction: column;"
-					>
-						{#if searchEnabled}
-							<button type="button" class="search" onclick={openPalette}>
-								<span class="search-left">
-									<Search class="search-icon" color="var(--abt-soft)" strokeWidth={1.75} />
-									<span class="search-placeholder">Search...</span>
-								</span>
-								<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
-							</button>
-						{/if}
-						{#if shortcutsFeatureEnabled}
-							<ShortcutsBar noPadding {budgetId} />
-						{/if}
-					</div>
-				{/if}
-				{#if loading}
-					<AccountListSkeleton />
-				{:else if failed}
-					<div class="load-status">Couldn't load account data.</div>
-				{:else}
-					<AccountList
-						{accounts}
-						icons={shownIcons}
-						iconPicker={iconsEnabled}
-						{groupAccounts}
-						{budgetId}
-						split
-						onToggleGroupMode={toggleGroupMode}
-						onRenameAccount={handleRenameAccount}
-						onCloseAccount={closeAccount}
-					/>
-				{/if}
-				<Footer {accounts} />
-			</div>
-		{/if}
+			{/if}
+			<Footer {accounts} />
+		</div>
 	{:else if isCollapsed}
 		<Rail
 			{budgetName}
