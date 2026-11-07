@@ -1,6 +1,6 @@
 import { spawn, execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 
@@ -9,6 +9,8 @@ import { chromium } from "@playwright/test";
  * a fixed date, then each shot driven and annotated. Needs Docker and `pnpm build`.
  *
  * `--home` makes the home page's hero comparison instead, and `--readme` the README's screenshots.
+ * `--export [file.zip]` saves the README's budget, with its account icons and sidebar shortcuts, for
+ * Actual's Import file > Actual, and takes no shots.
  */
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -896,6 +898,15 @@ async function fundJune(page, { categoryIds }) {
 
 const home = process.argv.includes("--home");
 const readme = process.argv.includes("--readme");
+const exportAt = process.argv.indexOf("--export");
+const exportPath =
+	exportAt === -1
+		? null
+		: resolve(
+				process.argv[exportAt + 1]?.endsWith(".zip")
+					? process.argv[exportAt + 1]
+					: "abt-demo-budget.zip",
+			);
 const stop = await startStack();
 const browser = await chromium.launch();
 try {
@@ -926,6 +937,59 @@ try {
 	await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00`));
 	await createBudget(page);
 	const seeded = await seedBudget(page);
+	if (exportPath) {
+		await fundJune(page, seeded);
+		await seedInspection(page, seeded);
+		// Only the budget's own data; look-and-feel settings would follow the budget into the
+		// importer's ABT.
+		await saveBudgetData(page, seeded);
+		await exportBudget(page, exportPath);
+	} else {
+		await shoot(page, seeded);
+	}
+} finally {
+	await browser.close();
+	stop();
+}
+
+/**
+ * Saves the budget's ABT data (icons, shortcuts, group sections) into its prefs, under the keys
+ * ABT syncs them with. Saved directly rather than by ABT on a reload, which can drop unwritten saves.
+ */
+async function saveBudgetData(page, { accountIds, groupSections }) {
+	const icons = Object.fromEntries(
+		ACCOUNTS.map((a) => [accountIds[a.name], { type: "emoji", value: a.emoji }]),
+	);
+	const prefs = {
+		"abt:abt-account-icons": icons,
+		"abt:abt-sidebar-shortcuts": SHORTCUTS,
+		"abt:experimental-sidebar-group-sections": groupSections,
+	};
+	await page.evaluate(async (prefs) => {
+		for (const [id, value] of Object.entries(prefs)) {
+			await window.$send("preferences/save", { id, value: JSON.stringify(value) });
+		}
+	}, prefs);
+}
+
+/** Actual's own export, as Settings > Export data makes it. */
+async function exportBudget(page, path) {
+	const base64 = await page.evaluate(async () => {
+		const { data, error } = await window.$send("export-budget");
+		if (error || !data) {
+			throw new Error(`export-budget failed: ${error ?? "no data"}`);
+		}
+		let binary = "";
+		for (const byte of new Uint8Array(data)) {
+			binary += String.fromCharCode(byte);
+		}
+		return btoa(binary);
+	});
+	writeFileSync(path, Buffer.from(base64, "base64"));
+	console.log(`Saved ${path}`);
+}
+
+async function shoot(page, seeded) {
 	if (home || readme) {
 		await fundJune(page, seeded);
 	}
@@ -944,7 +1008,4 @@ try {
 		await inspectorShots(page, seeded);
 		await recapShots(page, seeded);
 	}
-} finally {
-	await browser.close();
-	stop();
 }
