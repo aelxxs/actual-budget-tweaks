@@ -1,4 +1,5 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
+import { ambientGlow, ambientGrain } from "./appearance/ambient";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
@@ -90,7 +91,15 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: "Style",
-				items: [borderRadius, backgroundPattern, themedScrollbars, headerBorder, privacyStyle],
+				items: [
+					borderRadius,
+					backgroundPattern,
+					ambientGlow,
+					ambientGrain,
+					themedScrollbars,
+					headerBorder,
+					privacyStyle,
+				],
 			},
 			{ label: "Components", items: [modernTitlebar, modernToasts] },
 		],

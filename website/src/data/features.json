@@ -26,6 +26,28 @@
 				"writes": null
 			},
 			{
+				"key": "ambient-glow",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Ambient Glow",
+				"description": "A soft glow of the theme's accent across the sidebar, header, page and side panel.",
+				"icon": "sparkles",
+				"group": "Style",
+				"writes": null
+			},
+			{
+				"key": "ambient-grain",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Ambient Grain",
+				"description": "A fine grain across the sidebar, header, page and side panel.",
+				"icon": "image",
+				"group": "Style",
+				"writes": null
+			},
+			{
 				"key": "themed-scrollbars",
 				"type": "checkbox",
 				"defaultValue": true,
