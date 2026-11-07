@@ -434,7 +434,9 @@ async function shot(page, name, around, { room = 24, width, height, cutout = fal
 	const style = cutout
 		? await page.addStyleTag({
 				content: `* { visibility: hidden !important; }
-					${around}, ${around} * { visibility: visible !important; }
+					${around}, ${around} *, [data-docs-marks], [data-docs-marks] * {
+						visibility: visible !important;
+					}
 					html, body { background: transparent !important; }`,
 			})
 		: null;
@@ -472,14 +474,15 @@ async function reconcileShot(page, { accountIds }) {
 	await page.getByRole("button", { name: "Start reconciling" }).click();
 	await page.locator(".rp__list").waitFor();
 	await page.waitForTimeout(1500);
+	const panel = "[data-abt-side-drawer-sidebar]";
+	await shot(page, "reconcile-preview", panel, { room: 0, cutout: true });
 	await annotate(page, [
-		"[data-abt-reconcile]",
 		".rp__hero",
 		".rp__list",
 		".rp__adjust .abt-btn",
 		".rp__footer .abt-tone-accent",
 	]);
-	await shot(page, "reconcile");
+	await shot(page, "reconcile", panel, { room: 0, cutout: true });
 }
 
 async function paletteShots(page) {

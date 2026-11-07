@@ -2,26 +2,32 @@
 import Base from "../../layouts/Base.astro";
 import "../../styles/docs.css";
 
+const base = import.meta.env.BASE_URL;
+
 const guides = [
-	{
-		href: "/guides/budget-insights",
-		title: "Budget Insights",
-		description: "Month summary, template previews and what each change moved.",
-	},
 	{
 		href: "/guides/live-sidebar",
 		title: "Live sidebar",
 		description: "Account groups, shortcuts, layouts and live balances.",
+		image: "sidebar-split.png",
 	},
 	{
 		href: "/guides/command-palette",
 		title: "Command palette",
 		description: "Search, do quick math and run actions from the keyboard.",
+		image: "palette.png",
 	},
 	{
 		href: "/guides/modern-reconcile",
 		title: "Modern Reconcile",
 		description: "Match an account to your statement from a side panel.",
+		image: "reconcile-preview.png",
+	},
+	{
+		href: "/guides/budget-insights",
+		title: "Budget Insights",
+		description: "Month summary, template previews and what each change moved.",
+		image: "insights-overview.png",
 	},
 ];
 ---
@@ -37,12 +43,82 @@ const guides = [
 			<p class="docs__lead">How to use the larger features in Actual Budget Tweaks.</p>
 		</header>
 
-		<section class="docs__section">
-			<ul>
-				{guides.map((guide) => (
-					<li><a href={guide.href}>{guide.title}</a>: {guide.description}</li>
-				))}
-			</ul>
-		</section>
+		<div class="guides">
+			{guides.map((guide) => (
+				<a class="guide" href={guide.href}>
+					<div class="guide__preview">
+						<img src={`${base}images/guides/${guide.image}`} alt="" loading="lazy" />
+					</div>
+					<div class="guide__text">
+						<h2>{guide.title}</h2>
+						<p>{guide.description}</p>
+					</div>
+				</a>
+			))}
+		</div>
 	</main>
 </Base>
+
+<style>
+	.guides {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1.25rem;
+		margin-block-start: 2.5rem;
+	}
+
+	.guide {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: inherit;
+		text-decoration: none;
+		transition:
+			box-shadow 0.15s ease,
+			transform 0.15s ease;
+	}
+
+	.guide:hover {
+		box-shadow: var(--shadow-md);
+		transform: translateY(-2px);
+	}
+
+	.guide__preview {
+		display: flex;
+		justify-content: center;
+		block-size: 200px;
+		padding-block-start: 1.5rem;
+		overflow: hidden;
+		background:
+			radial-gradient(120% 90% at 15% 0%, var(--accent-wash-strong), transparent 60%),
+			var(--bg-alt);
+	}
+
+	.guide__preview img {
+		inline-size: 72%;
+		block-size: auto;
+		align-self: flex-start;
+		border-radius: var(--radius-sm);
+		filter: drop-shadow(0 8px 20px rgba(30, 31, 48, 0.28));
+	}
+
+	.guide__text {
+		padding: 1rem 1.15rem 1.2rem;
+	}
+
+	.guide__text h2 {
+		font-size: 1.05rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+
+	.guide__text p {
+		margin-block-start: 0.25rem;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--text-secondary);
+	}
+</style>
