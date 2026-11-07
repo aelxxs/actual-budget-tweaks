@@ -362,3 +362,27 @@ a:hover {
 		transform: translateY(10px);
 	}
 }
+
+.docs__back::before,
+.features-page__back::before,
+.checklist__back::before {
+	content: "\2190";
+	content: "\2190" / "";
+	display: inline-block;
+	margin-inline-end: 0.4em;
+	transition: transform 0.15s ease;
+}
+
+.docs__back:hover::before,
+.features-page__back:hover::before,
+.checklist__back:hover::before {
+	transform: translateX(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.docs__back::before,
+	.features-page__back::before,
+	.checklist__back::before {
+		transition: none;
+	}
+}
