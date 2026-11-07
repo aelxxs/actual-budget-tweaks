@@ -2,7 +2,7 @@ import { getTheme, themes } from "@lib/design";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { editorState } from "./editor-state.svelte";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
-import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER } from "@lib/actual-dom";
+import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
 
 export type RemoteTheme = {
 	name: string;
@@ -385,16 +385,35 @@ export function applyUserCSSTheme(id: string, css: string) {
 }
 
 export function applyOverrides(key: string) {
-	const overrides = editorState.overrides[key];
-	if (!overrides || Object.keys(overrides).length === 0) {
-		return;
-	}
+	const overrides = editorState.overrides[key] ?? {};
 	const root = document.querySelector<HTMLElement>(":root");
-	if (!root) {
+	if (root) {
+		for (const [prop, val] of Object.entries(overrides)) {
+			setRootProperty(root, prop, val);
+		}
+	}
+	syncWindowColor();
+}
+
+/**
+ * The window's title bar (an installed app, or a Safari web app) takes the theme-color tag and the
+ * body's background, which Actual resolves only when its own theme changes. Re-resolved after
+ * each theme ABT applies; only with a budget open, since the budget list sets its own colour.
+ */
+function syncWindowColor() {
+	const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+	if (!meta || !document.querySelector(BUDGET_LINK)) {
 		return;
 	}
-	for (const [prop, val] of Object.entries(overrides)) {
-		setRootProperty(root, prop, val);
+	// Through a probe so a color-mix() or var() comes back as a colour the tag can hold.
+	const probe = document.createElement("div");
+	probe.style.color = "var(--color-mobileViewTheme)";
+	document.body.append(probe);
+	const color = getComputedStyle(probe).color;
+	probe.remove();
+	if (color && meta.content !== color) {
+		meta.content = color;
+		document.body.style.backgroundColor = color;
 	}
 }
 
