@@ -71,7 +71,7 @@ Adds user-configurable interface options to Actual Budget — dynamic themes, la
 
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="images/calendar-light.png">
-  <img src="images/calendar-dark.png" alt="A spending calendar of the month's transactions and upcoming schedules">
+  <img src="images/calendar-dark.png" alt="A spending calendar of the month's transactions">
 </picture>
 
 ### Built with AI

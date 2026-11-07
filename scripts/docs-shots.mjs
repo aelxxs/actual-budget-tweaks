@@ -8,7 +8,7 @@ import { chromium } from "@playwright/test";
  * Regenerates the guide screenshots: a throwaway Actual behind the sidecar, a seeded demo budget at
  * a fixed date, then each shot driven and annotated. Needs Docker and `pnpm build`.
  *
- * `--home` makes the home page's hero comparison instead.
+ * `--home` makes the home page's hero comparison instead, and `--readme` the README's screenshots.
  */
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -20,6 +20,7 @@ const CONTAINER = "abt-docs-shots";
 const IMAGE = `actualbudget/actual-server:${process.env.ACTUAL_TAG ?? "latest"}`;
 const PASSWORD = "abt-docs-shots";
 const HERO = resolve(ROOT, "website/public/images");
+const README_IMAGES = resolve(ROOT, "images");
 const TODAY = "2026-06-24";
 const BUDGET_TABLE = '[data-testid="budget-table"]';
 
@@ -42,6 +43,13 @@ const HOME_SETTINGS = {
 	"budget-summary-row": true,
 	"category-progress-indicators": true,
 	"balance-status-pills": true,
+};
+
+const README_SETTINGS = {
+	...HOME_SETTINGS,
+	"budget-month-header": true,
+	"budget-category-filter": true,
+	"spending-calendar-enabled": true,
 };
 
 const TEMPLATES = {
@@ -818,6 +826,54 @@ async function heroShots(page) {
 	await page.unroute("**/abt/**");
 }
 
+/** Dark, then light, in one session: settings sync would undo the theme change on a reload. */
+async function readmeShots(page, seeded) {
+	await page.setViewportSize({ width: 1512, height: 865 });
+	await page.goto(`${BASE}/budget`);
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.waitForTimeout(1500);
+	await seedInspection(page, seeded);
+	await page.goto(`${BASE}/budget`);
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.addStyleTag({ content: '[role="alert"] { display: none !important; }' });
+	await page.waitForTimeout(1500);
+
+	const input = page.locator(".cp-input");
+	const snap = async (name) => {
+		await page.mouse.move(800, 20);
+		await page.waitForTimeout(2500);
+		await page.screenshot({ path: resolve(README_IMAGES, `${name}.png`) });
+		console.log(`wrote ${name}`);
+	};
+
+	const calendar = async () => {
+		await page.keyboard.press("Control+k");
+		await input.fill("spending calendar");
+		await page.keyboard.press("Enter");
+		await page.locator("[data-abt-calendar]").waitFor();
+	};
+
+	await page.keyboard.press("Control+k");
+	await input.fill("insights");
+	await page.keyboard.press("Enter");
+	await page.locator(".abt-tab-overview-toolbar").waitFor();
+	await snap("budget-dark");
+	await calendar();
+	await snap("calendar-dark");
+
+	// Running anything from the palette closes the calendar, so this lands back on the budget.
+	await page.keyboard.press("Control+k");
+	await input.fill("change theme");
+	await page.keyboard.press("Enter");
+	await page.waitForTimeout(400);
+	await input.fill("daylight");
+	await page.waitForTimeout(300);
+	await page.keyboard.press("Enter");
+	await snap("budget-light");
+	await calendar();
+	await snap("calendar-light");
+}
+
 /** Enough left in savings for every template, so the hero isn't a month of overspending. */
 async function fundJune(page, { categoryIds }) {
 	const send = (name, args) =>
@@ -833,6 +889,7 @@ async function fundJune(page, { categoryIds }) {
 }
 
 const home = process.argv.includes("--home");
+const readme = process.argv.includes("--readme");
 const stop = await startStack();
 const browser = await chromium.launch();
 try {
@@ -863,14 +920,16 @@ try {
 	await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00`));
 	await createBudget(page);
 	const seeded = await seedBudget(page);
-	if (home) {
+	if (home || readme) {
 		await fundJune(page, seeded);
 	}
-	await applySettings(page, seeded, home ? HOME_SETTINGS : SETTINGS);
+	await applySettings(page, seeded, readme ? README_SETTINGS : home ? HOME_SETTINGS : SETTINGS);
 	await page.reload();
 	await page.waitForFunction(() => typeof window.$send === "function");
 	if (home) {
 		await heroShots(page);
+	} else if (readme) {
+		await readmeShots(page, seeded);
 	} else {
 		await reconcileShot(page, seeded);
 		await paletteShots(page);
