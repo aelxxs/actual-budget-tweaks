@@ -259,6 +259,17 @@
 	// error) is saved to the account, so it's read back once one finishes.
 	let syncingIds = new Set<string>();
 
+	// The table still says "ok" for an account mid-sync, so a reload would flip it back and
+	// restart its spinner.
+	function withSyncing(list: SidebarAccount[]): SidebarAccount[] {
+		for (const account of list) {
+			if (syncingIds.has(account.id)) {
+				account.status = "syncing";
+			}
+		}
+		return list;
+	}
+
 	$effect(() =>
 		onSyncingAccounts((nowSyncing) => {
 			for (const account of accounts) {
@@ -421,7 +432,7 @@
 		if (seq !== reloadSeq) {
 			return;
 		}
-		accounts = loaded;
+		accounts = withSyncing(loaded);
 		await refreshUncategorizedCounts(accounts);
 	}
 
@@ -457,7 +468,7 @@
 				refreshBudgetContext(),
 				loadSidebarAccounts(),
 			]);
-			accounts = loadedAccounts;
+			accounts = withSyncing(loadedAccounts);
 			loading = false;
 			await refreshUncategorizedCounts(accounts);
 		} catch (err) {
