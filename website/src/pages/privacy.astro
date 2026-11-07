@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import "../styles/docs.css";
 ---
 
 <Base
@@ -15,7 +16,7 @@ import Base from "../layouts/Base.astro";
 				features to Actual Budget. It has no servers, no accounts and no analytics. The developer
 				never receives your budget data or anything about you.
 			</p>
-			<p>Last updated: October 17, 2026</p>
+			<p class="docs__updated">Last updated: October 17, 2026</p>
 		</header>
 
 		<section class="docs__section">
@@ -55,7 +56,7 @@ import Base from "../layouts/Base.astro";
 				ABT contacts these third-party services only to provide a feature you use. None of them
 				receive your budget data.
 			</p>
-			<div class="docs__table-wrap">
+			<div class="docs__table-wrap docs__table-wrap--wrap">
 				<table>
 					<thead>
 						<tr><th>Service</th><th>When</th><th>Data sent</th></tr>
