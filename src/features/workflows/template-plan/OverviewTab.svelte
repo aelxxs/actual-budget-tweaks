@@ -18,6 +18,8 @@
 		data ? (useGoalTemplates ? data.nextMonthGoalTotal : data.recentAvgSpending) : null,
 	);
 	const loading = $derived(templatePlanState.overviewLoading);
+	// Close to the whole budget reads as neither good nor bad, so it isn't green.
+	const NEAR_LIMIT = 90;
 
 	function triggerRefresh() {
 		if (!loading) {
@@ -95,7 +97,9 @@
 						? "negative"
 						: isCurrentMonth && spentAhead
 							? "warning"
-							: "positive"}>{spentPct}% spent</Badge
+							: spentPct >= NEAR_LIMIT
+								? "neutral"
+								: "positive"}>{spentPct}% spent</Badge
 				>
 			{/if}
 		{/snippet}

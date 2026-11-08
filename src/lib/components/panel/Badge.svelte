@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 
-	let { tone, children }: { tone: "positive" | "warning" | "negative"; children: Snippet } =
-		$props();
+	let {
+		tone,
+		children,
+	}: { tone: "positive" | "neutral" | "warning" | "negative"; children: Snippet } = $props();
 </script>
 
 <span class="badge" data-tone={tone}>{@render children()}</span>
@@ -22,6 +24,10 @@
 	.badge[data-tone="positive"] {
 		background: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 15%, transparent);
 		color: var(--color-budgetNumberPositive, #4caf50);
+	}
+	.badge[data-tone="neutral"] {
+		background: var(--abt-ink-2);
+		color: var(--abt-muted);
 	}
 	.badge[data-tone="warning"] {
 		background: color-mix(in srgb, var(--color-warningText, #e0c590) 15%, transparent);
