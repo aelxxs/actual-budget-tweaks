@@ -1,7 +1,7 @@
 import { send } from "@lib/utilities/actual-api";
 import { readCell } from "@lib/utilities/budget-cells";
 import { getCurrencyCode } from "@lib/utilities/currency";
-import { CELL } from "@lib/actual-dom";
+import { CELL, leftoverCellOf } from "@lib/actual-dom";
 import { loadTemplatesByCategoryId } from "@lib/template-plan/actual-data";
 import { comparePriority, type PriorityValue } from "@lib/template-plan/constants";
 import { isRemainderTemplate } from "@lib/template-plan/templates";
@@ -180,6 +180,22 @@ export function openToBudgetMenu(toBudgetCard: Element | null | undefined): void
 	// That menu closes when focus is outside it, and the clicked card button still holds focus.
 	(document.activeElement as HTMLElement | null)?.blur();
 	(target as HTMLElement | null)?.click();
+}
+
+/**
+ * Opens Actual's balance menu for an overspent category, whose Cover overspending takes the money
+ * from a category you pick. False when the row isn't rendered (its group is collapsed).
+ */
+export function coverFromCategory(sheet: string, id: string): boolean {
+	const button = document.querySelector(leftoverCellOf(sheet, id))?.closest<HTMLElement>("button");
+	if (!button) {
+		return false;
+	}
+	// The menu closes when focus is outside it, and the clicked card button still holds focus.
+	(document.activeElement as HTMLElement | null)?.blur();
+	button.scrollIntoView({ block: "nearest" });
+	button.click();
+	return true;
 }
 
 export type TemplateAction =

@@ -134,28 +134,13 @@
 				resetKey={sheet}
 				class="sr__value abt-num abt-privacy-number"
 			/>
-			{#if totals.overIds.length}
-				<span
-					class="sr__sub abt-cluster abt-gap-2 is-bad"
-					title="Overspending comes out of next month's To Budget unless you cover it"
-				>
-					<i class="sr__dot"></i><RollingNumber
-						value={totals.overspentNow}
-						resetKey={sheet}
-						class="abt-privacy-number"
-					/>
-					overspent · {totals.overIds.length}
-					{totals.overIds.length === 1 ? "category" : "categories"}
-				</span>
-			{:else}
-				<span class="sr__sub abt-cluster abt-gap-2">
-					{#if totals.budgeted > 0}
-						of <RollingNumber value={totals.budgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
-					{:else}
-						Nothing budgeted yet
-					{/if}
-				</span>
-			{/if}
+			<span class="sr__sub abt-cluster abt-gap-2">
+				{#if totals.budgeted > 0}
+					of <RollingNumber value={totals.budgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
+				{:else}
+					Nothing budgeted yet
+				{/if}
+			</span>
 		</div>
 		{#if totals.goals}
 			<div
@@ -283,20 +268,6 @@
 		font-size: var(--abt-text-base);
 		color: var(--color-tableHeaderText);
 		white-space: nowrap;
-	}
-
-	.sr__sub.is-bad {
-		color: var(--color-errorText);
-	}
-
-	.sr__dot {
-		width: 6px;
-		height: 6px;
-		border-radius: var(--abt-radius-pill);
-		background: currentColor;
-		display: inline-block;
-		margin-right: var(--abt-space-2);
-		vertical-align: 1px;
 	}
 
 	.sr > .sr__card.is-fill {

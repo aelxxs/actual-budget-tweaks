@@ -93,6 +93,9 @@ export const SHEET_BALANCES =
 export const ENVELOPE_AMOUNT = '[data-testid^="budget2"][data-testid*="!sum-amount-"]';
 /** Spreadsheet cells by name: a category's leftover, envelope budgets' Available funds. */
 export const LEFTOVER_CELL = '[data-cellname*="!leftover-"]';
+/** One category's balance cell in one month, e.g. "budget202611!leftover-<id>". */
+export const leftoverCellOf = (sheet: string, id: string) =>
+	`[data-cellname="${sheet}!leftover-${id}"]`;
 export const AVAILABLE_FUNDS_CELL = '[data-cellname*="!available-funds"]';
 /** To Budget's cell, whose name Actual builds from an object, so it reads "[object Object]". */
 export const TO_BUDGET_CELL = '[data-cellname*="object Object"]';

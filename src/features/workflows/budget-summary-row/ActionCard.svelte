@@ -4,6 +4,7 @@
 		type TrackedAction,
 	} from "@features/workflows/template-plan/state.svelte";
 	import { BUDGET_SUMMARY } from "@lib/actual-dom";
+	import { loadCategories } from "@lib/template-plan/actual-data";
 	import Icon from "@lib/components/Icon.svelte";
 	import { notify } from "@lib/utilities/actual-api";
 	import { bulkEdit } from "@lib/utilities/bulk-edit";
@@ -11,6 +12,7 @@
 	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
 	import { onMount } from "svelte";
 	import {
+		coverFromCategory,
 		coverOverspending,
 		fundTargets,
 		openToBudgetMenu,
@@ -48,11 +50,14 @@
 	} = $props();
 
 	type Suggestion = {
-		tone: "danger" | "primary" | "quiet";
+		/** Alert: a problem to fix, on a plain card; danger washes the card for a serious one. */
+		tone: "danger" | "alert" | "primary" | "quiet";
 		icon: "alert" | "shield" | "target" | "sparkles";
 		title: string;
 		short: string;
-		/** Leads the subtitle; only this part is private, not the words after it. */
+		/** Before the amount, e.g. the overspent category's name. */
+		lead?: string;
+		/** Only this part of the subtitle is private, not the words around it. */
 		amount?: number;
 		sub: string;
 		run: (() => void) | null;
@@ -65,8 +70,12 @@
 	let busy = $state(false);
 
 	let templates = $state(false);
+	let names = $state(new Map<string, string>());
 	onMount(() => {
 		void templatesEnabled().then((on) => (templates = on));
+		void loadCategories()
+			.then((cats) => (names = new Map(cats.map((c) => [c.id, c.name]))))
+			.catch(() => {});
 	});
 
 	const TEMPLATE_ITEMS: {
@@ -109,6 +118,20 @@
 	const fundable = $derived(Math.min(needs, Math.max(0, toBudget)));
 	const coverable = $derived(Math.min(overspent, Math.max(0, toBudget)));
 
+	/** One category by name; several as a total. */
+	function overspentText(): Omit<Suggestion, "run"> {
+		const name = overIds.length === 1 ? names.get(overIds[0]) : undefined;
+		return {
+			tone: "alert",
+			icon: "shield",
+			title: "Cover overspending",
+			short: "Cover",
+			lead: name ? `${name} is` : undefined,
+			amount: overspent,
+			sub: name ? "over" : `over in ${overIds.length} categories`,
+		};
+	}
+
 	const suggestion = $derived.by((): Suggestion => {
 		if (toBudget < 0) {
 			return {
@@ -123,13 +146,23 @@
 		}
 		if (coverable > 0) {
 			return {
-				tone: "danger",
-				icon: "shield",
-				title: "Cover overspending",
-				short: "Cover",
-				amount: coverable,
-				sub: "from To Budget",
+				...overspentText(),
 				run: () => perform(() => tracked("cover", () => coverOverspending(sheet, overIds))),
+			};
+		}
+		// Nothing left in To Budget: the money has to come from another category, one at a time.
+		if (overIds.length) {
+			const first = overIds[0];
+			return {
+				...overspentText(),
+				run: () => {
+					if (!coverFromCategory(sheet, first)) {
+						void notify({
+							type: "message",
+							message: `Expand ${names.get(first) ?? "its group"}'s group to cover it`,
+						});
+					}
+				},
 			};
 		}
 		// Apply first: Fund targets only tops up goals, which can be stale until templates run.
@@ -166,7 +199,7 @@
 	});
 
 	const toneClass = $derived(
-		suggestion.tone === "danger"
+		suggestion.tone === "danger" || suggestion.tone === "alert"
 			? "abt-tone-danger"
 			: suggestion.tone === "primary"
 				? "abt-tone-accent"
@@ -284,10 +317,13 @@
 			<span class="ac__title abt-cluster abt-gap-3">
 				<Icon name={suggestion.icon} size={15} />
 				{busy ? "Working…" : suggestion.title}
+				{#if suggestion.run && !busy}<span class="ac__go"
+						><Icon name="chevronRight" size={14} /></span
+					>{/if}
 			</span>
 			<span class="ac__sub"
-				>{#if suggestion.amount != null}<span class="abt-privacy-number"
-						>{fmtMoney(suggestion.amount)}</span
+				>{#if suggestion.lead}{suggestion.lead}&nbsp;{/if}{#if suggestion.amount != null}<span
+						class="abt-privacy-number">{fmtMoney(suggestion.amount)}</span
 					>&nbsp;{/if}{suggestion.sub}</span
 			>
 		</button>
@@ -410,11 +446,11 @@
 	}
 
 	/* Without a suggestion's wash, a fill is what says the whole card is a button. */
-	.ac.is-quiet:has(.ac__main:hover) {
+	.ac:is(.is-quiet, .is-alert):has(.ac__main:hover) {
 		background: linear-gradient(var(--abt-ink-1), var(--abt-ink-1)), var(--abt-panel-surface);
 	}
 
-	.ac.is-quiet:has(.ac__main:active) {
+	.ac:is(.is-quiet, .is-alert):has(.ac__main:active) {
 		background: linear-gradient(var(--abt-ink-2), var(--abt-ink-2)), var(--abt-panel-surface);
 	}
 
@@ -507,12 +543,34 @@
 		white-space: nowrap;
 	}
 
+	.ac__title :global(svg) {
+		flex: none;
+	}
+
 	.ac.is-primary .ac__title {
 		color: var(--abt-accent);
 	}
 
-	.ac.is-danger .ac__title {
+	.ac:is(.is-danger, .is-alert) .ac__title {
 		color: var(--color-errorText);
+	}
+
+	.ac.is-alert {
+		border-left: 2px solid var(--color-errorText);
+	}
+
+	/* Says the card runs its suggestion, nudging along on hover. */
+	.ac__go {
+		display: inline-flex;
+		opacity: 0.7;
+		transition:
+			transform 0.15s ease,
+			opacity 0.15s ease;
+	}
+
+	.ac__main:hover .ac__go {
+		opacity: 1;
+		transform: translateX(2px);
 	}
 
 	.ac__sub {
