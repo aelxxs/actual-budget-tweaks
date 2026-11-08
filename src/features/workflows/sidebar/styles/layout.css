@@ -81,15 +81,16 @@
 	.sidebar.settle-b {
 		animation: sidebar-settle-b 0.12s cubic-bezier(0.4, 0, 0.2, 1);
 	}
-	.sidebar > .budget,
-	.sidebar > .body,
-	.sidebar .split-panel,
-	.sidebar.collapsed > .rail-avatar,
-	.sidebar.collapsed > .rail-icon,
-	.sidebar.collapsed > .rail-nav,
-	.sidebar.collapsed > .rail-divider,
-	.sidebar.collapsed > .rail-list,
-	.sidebar.collapsed > .rail-foot {
+	/* Only once it's been toggled: on load the content is already in place. */
+	.sidebar.toggled > .budget,
+	.sidebar.toggled > .body,
+	.sidebar.toggled .split-panel,
+	.sidebar.toggled.collapsed > .rail-avatar,
+	.sidebar.toggled.collapsed > .rail-icon,
+	.sidebar.toggled.collapsed > .rail-nav,
+	.sidebar.toggled.collapsed > .rail-divider,
+	.sidebar.toggled.collapsed > .rail-list,
+	.sidebar.toggled.collapsed > .rail-foot {
 		animation: sidebar-content-in 0.12s ease;
 	}
 }

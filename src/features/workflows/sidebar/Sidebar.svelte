@@ -18,6 +18,7 @@
 	import { createLogger } from "@lib/utilities/logger";
 	import { Page, matchesPage } from "@lib/utilities/pages";
 	import { getValue, removeValue, setValue } from "@lib/utilities/store";
+	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import { FolderTree, LayoutGrid, Search, SlidersHorizontal } from "@lucide/svelte";
 	import { onMount, tick, untrack } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
@@ -66,21 +67,25 @@
 		paletteRef?.openPalette();
 	}
 
-	let loading = $state(true);
+	// The last load's accounts and name show until this one's arrive, so nothing shifts as they do.
+	const shownAccounts = lastShown<SidebarAccount[]>("sidebar-accounts", []);
+	let accounts = $state(shownAccounts);
+	let loading = $state(shownAccounts.length === 0);
 	let failed = $state(false);
-	let budgetName = $state("Budget");
+	let budgetName = $state(lastShown("sidebar-budget-name", "Budget"));
 	let budgetId = $state<string | undefined>(undefined);
+	// Set once the open budget's id has been asked for, so its groups and order load for it alone.
+	let budgetReady = $state(false);
 
 	$effect(() => {
 		setLiveSidebarBudget(budgetId);
 		return () => setLiveSidebarBudget(undefined);
 	});
-	let accounts = $state<SidebarAccount[]>([]);
 	let icons = $state<Record<string, AccountIconData>>({});
 
 	// ---- grouped (sub-categories) vs flat accounts list ----
 	const GROUP_MODE_KEY = "experimental-sidebar-group-mode";
-	let groupAccounts = $state(true);
+	let groupAccounts = $state(lastShown("sidebar-group-mode", true));
 
 	function toggleGroupMode() {
 		groupAccounts = !groupAccounts;
@@ -123,7 +128,11 @@
 		return () => mq.removeEventListener("change", update);
 	});
 
+	// Set by the first expand or collapse; the content's entrance animation waits for it.
+	let toggled = $state(false);
+
 	function expandSidebar() {
+		toggled = true;
 		if (narrow) {
 			openWhileNarrow = true;
 			return;
@@ -132,6 +141,7 @@
 		clearAutoCollapse();
 	}
 	function collapseSidebar() {
+		toggled = true;
 		if (narrow) {
 			openWhileNarrow = false;
 			return;
@@ -144,7 +154,7 @@
 	// "split" (icon-only activity bar + a dedicated accounts panel). Chosen
 	// from the extension settings (see ./layout) ----
 	const ACTIVITY_BAR_WIDTH = RAIL_WIDTH;
-	let layoutMode = $state<SidebarLayout>("split");
+	let layoutMode = $state<SidebarLayout>(toLayout(lastShown("sidebar-layout", "split")));
 
 	// ---- resize ----
 	const MIN_WIDTH = 240;
@@ -241,9 +251,21 @@
 	const { key: SHORTCUTS_KEY, defaultValue: SHORTCUTS_DEFAULT } = sidebarShortcuts.context;
 	const { key: ICONS_KEY, defaultValue: ICONS_DEFAULT } = accountIconPicker.context;
 
-	let shortcutsFeatureEnabled = $state(SHORTCUTS_DEFAULT);
-	let searchEnabled = $state(SEARCH_DEFAULT);
+	let shortcutsFeatureEnabled = $state(lastShown("sidebar-shortcuts-on", SHORTCUTS_DEFAULT));
+	let searchEnabled = $state(lastShown("sidebar-search-on", SEARCH_DEFAULT));
 	let iconsEnabled = $state(ICONS_DEFAULT);
+	$effect(() => {
+		rememberShown("sidebar-shortcuts-on", shortcutsFeatureEnabled);
+		rememberShown("sidebar-search-on", searchEnabled);
+		rememberShown("sidebar-group-mode", groupAccounts);
+		rememberShown("sidebar-layout", layoutMode);
+		rememberShown("sidebar-budget-name", budgetName);
+	});
+	$effect(() => {
+		if (!loading) {
+			rememberShown("sidebar-accounts", $state.snapshot(accounts));
+		}
+	});
 	const shownIcons = $derived(iconsEnabled ? icons : {});
 
 	$effect(() => {
@@ -433,7 +455,9 @@
 			loadCurrency(true),
 			loadCurrentBudgetName().then((name) => (budgetName = name)),
 			// Shortcuts and groups wait on the id alone, so it isn't held back by the rest.
-			loadCurrentBudgetId().then((id) => (budgetId = id)),
+			loadCurrentBudgetId()
+				.then((id) => (budgetId = id))
+				.finally(() => (budgetReady = true)),
 		]);
 	}
 
@@ -545,6 +569,7 @@
 	class:split={layoutMode === "split"}
 	class:collapsed={isCollapsed && layoutMode === "standard"}
 	class:rail-only={isCollapsed && layoutMode === "split"}
+	class:toggled
 	bind:this={sidebarEl}
 	style="width: {sidebarTotalWidth}"
 	oncontextmenu={openSettingsMenu}
@@ -555,6 +580,7 @@
 			<Rail
 				{budgetName}
 				{budgetId}
+				{budgetReady}
 				{accounts}
 				icons={shownIcons}
 				onExpand={expandSidebar}
@@ -601,6 +627,7 @@
 					iconPicker={iconsEnabled}
 					{groupAccounts}
 					{budgetId}
+					{budgetReady}
 					split
 					onToggleGroupMode={toggleGroupMode}
 					onRenameAccount={handleRenameAccount}
@@ -613,6 +640,7 @@
 		<Rail
 			{budgetName}
 			{budgetId}
+			{budgetReady}
 			{accounts}
 			icons={shownIcons}
 			onExpand={expandSidebar}
@@ -647,6 +675,7 @@
 					iconPicker={iconsEnabled}
 					{groupAccounts}
 					{budgetId}
+					{budgetReady}
 					onToggleGroupMode={toggleGroupMode}
 					onRenameAccount={handleRenameAccount}
 					onCloseAccount={closeAccount}

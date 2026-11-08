@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
 	import { getValue, watchValue } from "@lib/utilities/store";
+	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import { onMount } from "svelte";
 	import { sidebarShortcutsAddTile } from ".";
 	import Tiles from "./components/Tiles.svelte";
@@ -12,7 +13,8 @@
 
 	const ADD_TILE_KEY = sidebarShortcutsAddTile.context.key;
 
-	let shortcuts = $state<Shortcut[]>([]);
+	// The last load's tiles show until this budget's arrive, so the accounts below don't shift.
+	let shortcuts = $state<Shortcut[]>(lastShown("sidebar-shortcuts", []));
 	let showAddTile = $state(true);
 
 	onMount(() => {
@@ -20,20 +22,23 @@
 		return watchValue<boolean>(ADD_TILE_KEY, (v) => (showAddTile = v ?? true));
 	});
 
-	// Reloaded for each budget opened; none show until the budget is known.
+	// Reloaded for each budget opened.
 	$effect(() => {
 		const id = budgetId;
-		shortcuts = [];
 		if (!id) {
 			return;
 		}
 		let current = true;
+		const show = (stored: Shortcut[]) => {
+			shortcuts = stored;
+			rememberShown("sidebar-shortcuts", stored);
+		};
 		loadShortcuts(id).then((stored) => {
 			if (current) {
-				shortcuts = stored;
+				show(stored);
 			}
 		});
-		const stop = watchShortcuts(id, (stored) => (shortcuts = stored));
+		const stop = watchShortcuts(id, show);
 		return () => {
 			current = false;
 			stop();
@@ -42,6 +47,7 @@
 
 	function save(items: Shortcut[]) {
 		shortcuts = items;
+		rememberShown("sidebar-shortcuts", items);
 		if (budgetId) {
 			saveShortcuts(budgetId, items);
 		}

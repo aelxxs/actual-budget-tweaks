@@ -10,6 +10,7 @@
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
 	import { getValue } from "@lib/utilities/store";
+	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import {
 		CalendarDays,
 		Folder,
@@ -78,6 +79,7 @@
 	const {
 		budgetName,
 		budgetId,
+		budgetReady = true,
 		accounts,
 		icons,
 		onExpand,
@@ -89,6 +91,8 @@
 	}: {
 		budgetName: string;
 		budgetId?: string;
+		/** The open budget's id has been asked for; until then the last load's groups show. */
+		budgetReady?: boolean;
 		accounts: SidebarAccount[];
 		icons: Record<string, AccountIconData>;
 		onExpand: () => void;
@@ -204,20 +208,33 @@
 	}
 
 	// The same groups, order and collapsed state as the account list.
-	let order = $state<string[]>([]);
-	let groupState = $state<GroupState>({
-		groups: {},
-		assignments: {},
-		native: false,
-		importable: false,
-	});
-	let collapsedGroups = $state<Record<string, boolean>>({});
+	// Starting from the last load's, shared with the account list, which also keeps them.
+	let order = $state<string[]>(lastShown("sidebar-order", []));
+	let groupState = $state<GroupState>(
+		lastShown("sidebar-groups", { groups: {}, assignments: {}, native: false, importable: false }),
+	);
+	let collapsedGroups = $state<Record<string, boolean>>(lastShown("sidebar-collapsed-groups", {}));
 
 	$effect(() => {
-		loadAccountOrder(budgetId).then((stored) => (order = stored));
-		return watchAccountOrder(budgetId, (stored) => (order = stored));
+		if (!budgetReady) {
+			return;
+		}
+		const show = (stored: string[]) => {
+			order = stored;
+			rememberShown("sidebar-order", stored);
+		};
+		loadAccountOrder(budgetId).then(show);
+		return watchAccountOrder(budgetId, show);
 	});
-	$effect(() => watchGroupState(budgetId, (state) => (groupState = state)));
+	$effect(() => {
+		if (!budgetReady) {
+			return;
+		}
+		return watchGroupState(budgetId, (state) => {
+			groupState = state;
+			rememberShown("sidebar-groups", state);
+		});
+	});
 	$effect(() => {
 		loadCollapsedGroups().then((stored) => (collapsedGroups = stored));
 		return watchCollapsedGroups((stored) => (collapsedGroups = stored));

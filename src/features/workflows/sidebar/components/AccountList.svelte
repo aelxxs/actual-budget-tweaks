@@ -4,6 +4,7 @@
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { getValue, setValue, watchValue } from "@lib/utilities/store";
+	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
 	import { ChevronDown, List, ListTree, Plus } from "@lucide/svelte";
 	import { overlayScrollbar } from "../actions/overlay-scrollbar";
@@ -41,6 +42,7 @@
 		iconPicker = true,
 		groupAccounts,
 		budgetId,
+		budgetReady = true,
 		split = false,
 		onToggleGroupMode,
 		onRenameAccount,
@@ -51,6 +53,8 @@
 		iconPicker?: boolean;
 		groupAccounts: boolean;
 		budgetId: string | undefined;
+		/** The open budget's id has been asked for; until then the last load's groups show. */
+		budgetReady?: boolean;
 		split?: boolean;
 		onToggleGroupMode: () => void;
 		onRenameAccount: (accountId: string, name: string) => void;
@@ -63,14 +67,16 @@
 
 	const STORAGE_KEY = "experimental-sidebar-collapsed-sections";
 
-	let collapsed = $state<Record<string, boolean>>({});
-	let collapsedGroups = $state<Record<string, boolean>>({});
-	let order = $state<string[]>([]);
-	let groupState = $state<GroupState>({
-		groups: {},
-		assignments: {},
-		native: false,
-		importable: false,
+	// The last load's groups and order show until this one's arrive, so accounts don't regroup.
+	let collapsed = $state<Record<string, boolean>>(lastShown("sidebar-collapsed-sections", {}));
+	let collapsedGroups = $state<Record<string, boolean>>(lastShown("sidebar-collapsed-groups", {}));
+	let order = $state<string[]>(lastShown("sidebar-order", []));
+	let groupState = $state<GroupState>(
+		lastShown("sidebar-groups", { groups: {}, assignments: {}, native: false, importable: false }),
+	);
+	$effect(() => {
+		rememberShown("sidebar-collapsed-sections", collapsed);
+		rememberShown("sidebar-collapsed-groups", collapsedGroups);
 	});
 	const groups = $derived(groupState.groups);
 	const assignments = $derived(groupState.assignments);
@@ -94,10 +100,25 @@
 	// since this component persists across a budget switch instead of
 	// remounting.
 	$effect(() => {
-		loadAccountOrder(budgetId).then((stored) => (order = stored));
-		return watchAccountOrder(budgetId, (stored) => (order = stored));
+		if (!budgetReady) {
+			return;
+		}
+		const show = (stored: string[]) => {
+			order = stored;
+			rememberShown("sidebar-order", stored);
+		};
+		loadAccountOrder(budgetId).then(show);
+		return watchAccountOrder(budgetId, show);
 	});
-	$effect(() => watchGroupState(budgetId, (state) => (groupState = state)));
+	$effect(() => {
+		if (!budgetReady) {
+			return;
+		}
+		return watchGroupState(budgetId, (state) => {
+			groupState = state;
+			rememberShown("sidebar-groups", state);
+		});
+	});
 
 	function toggle(label: string) {
 		collapsed = { ...collapsed, [label]: !collapsed[label] };
