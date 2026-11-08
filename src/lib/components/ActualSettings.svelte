@@ -325,7 +325,6 @@
 		"local:abt-account-icons": {},
 		"local:abt-category-icons": {},
 		"local:abt-sidebar-shortcuts": [],
-		"local:abt-sidebar-groups-collapsed": {},
 		"local:user-themes": {},
 		"local:side-panel-width": 420,
 		"local:side-panel-persist": null,

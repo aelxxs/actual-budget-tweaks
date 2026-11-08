@@ -69,12 +69,15 @@
 		storage: {
 			local: {
 				get: async (keys) => {
+					// null asks for everything, as the extension's settings export does.
 					const list =
-						typeof keys === "string"
-							? [keys]
-							: Array.isArray(keys)
-								? keys
-								: Object.keys(keys || {});
+						keys == null
+							? Object.keys(localStorage).filter((k) => k.startsWith(LOCAL_PREFIX))
+							: typeof keys === "string"
+								? [keys]
+								: Array.isArray(keys)
+									? keys
+									: Object.keys(keys || {});
 					const out = {};
 					for (const k of list) {
 						const v = readLocalStorage(k);
