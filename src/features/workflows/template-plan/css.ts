@@ -135,6 +135,29 @@ export const CSS = `
 		margin-top: 0;
 	}
 
+	/* Each day, or a day's moves out of one category, set apart by a rule. */
+	.abt-tab-overview-move-group + .abt-tab-overview-move-group {
+		margin-top: 8px;
+		padding-top: 8px;
+		border-top: 1px solid var(--abt-ink-2);
+	}
+
+	/* The income categories under the total, set apart like the moves' days. */
+	.abt-tab-overview-split-rows {
+		margin-top: 8px;
+		padding-top: 8px;
+		border-top: 1px solid var(--abt-ink-2);
+	}
+
+	.abt-tab-overview-cat-icon {
+		width: 14px;
+		height: 14px;
+		margin-right: 6px;
+		flex-shrink: 0;
+		object-fit: contain;
+		border-radius: 2px;
+	}
+
 	/* The Reassigned card's "Show all": a quiet link under the list. */
 	.abt-tab-overview-more {
 		display: block;

@@ -6,6 +6,7 @@
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { monthOf } from "@lib/utilities/months";
 	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
+	import { type CategoryIcons, followCategoryIcons } from "@lib/utilities/category-icons";
 	import { onMount } from "svelte";
 	import { templatePlanState } from "./state.svelte";
 	import { flip } from "svelte/animate";
@@ -57,11 +58,19 @@
 		}
 	}
 
+	/** Actual's notes write the day as "November 08"; anything else is shown as written. */
+	const shortDay = (day: string) => day.replace(/^([A-Za-z]{3})[A-Za-z]* 0?(\d{1,2})$/, "$1 $2");
+
+	/** Icons people picked for their categories, shown beside the income rows. */
+	let categoryIcons = $state<CategoryIcons>({});
+
 	onMount(() => {
+		const stopIcons = followCategoryIcons((icons) => (categoryIcons = icons));
 		loadDatePrefs();
 		if (!templatePlanState.overviewData && !templatePlanState.overviewLoading) {
 			templatePlanState.onTabChange?.("overview");
 		}
+		return stopIcons;
 	});
 </script>
 
@@ -214,11 +223,6 @@
 			monthKey={data.nextMonthKey}
 			held={heldForNextMonth(data)}
 			need={nextNeed}
-			needLabel={!useGoalTemplates
-				? "your usual spending"
-				: data.nextMonthBudgeted + (coverageTarget ?? 0) > 0
-					? "for its goals"
-					: "for a typical month"}
 			projected={unplannedBetween}
 			loading={useGoalTemplates && data.aheadTemplateNeeds === null}
 			later={useGoalTemplates
@@ -290,27 +294,28 @@
 						data-status="goal"
 					></div>
 				</div>
-				{@const months =
-					income.usualMonths === 1
-						? "last month"
-						: `the average of your last ${income.usualMonths} months`}
+				{@const average =
+					income.usualMonths === 1 ? "last month" : `your ${income.usualMonths}-month average`}
 				<p class="abt-tab-overview-note">
-					{#if income.received <= 0}
-						Nothing received{isCurrentMonth || isFutureMonth ? " yet" : ""}. Usually
-						<span class="abt-privacy-number">{fmtMoney(income.usual)}</span>, {months}.
-					{:else if income.received >= income.usual}
-						<span class="abt-privacy-number">{fmtMoney(income.received - income.usual)}</span> more
-						than usual ({months}).
-					{:else}
-						<span class="abt-privacy-number">{fmtMoney(income.usual - income.received)}</span> less
-						than usual ({months}).
-					{/if}
+					<span class="abt-privacy-number"
+						>{fmtMoney(Math.abs(income.received - income.usual))}</span
+					>
+					{income.received >= income.usual ? "above" : "below"}
+					{average}
 				</p>
 			{/if}
 			{#if income.categories.length > 1}
-				{#each income.categories as cat (cat.id)}
-					<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted" />
-				{/each}
+				<div class="abt-tab-overview-split-rows">
+					{#each income.categories as cat (cat.id)}
+						<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted">
+							{#snippet leading()}
+								{#if categoryIcons[cat.id]}
+									<img class="abt-tab-overview-cat-icon" src={categoryIcons[cat.id].value} alt="" />
+								{/if}
+							{/snippet}
+						</Row>
+					{/each}
+				</div>
 			{/if}
 		</Section>
 	{/snippet}
@@ -321,11 +326,19 @@
 		{@const rowCount = days.reduce((n, d) => n + d.rows.length, 0)}
 		<Section title="Reassigned" count={moves.length || undefined}>
 			{#if moves.length}
-				{#each allMoves ? days : firstMoveRows(days, MOVES_SHOWN) as { day, rows } (day)}
-					<div class="abt-tab-overview-day">{day}</div>
-					{#each rows as row (row.key)}
-						<Row name="{row.from} → {row.to}" count={row.count} value={fmtMoney(row.amount)} />
-					{/each}
+				{#each allMoves ? days : firstMoveRows(days, MOVES_SHOWN) as group (group.key)}
+					<div class="abt-tab-overview-move-group">
+						<div class="abt-tab-overview-day">
+							{shortDay(group.day)}{#if group.from}&nbsp;· from {group.from}{/if}
+						</div>
+						{#each group.rows as row (row.key)}
+							<Row
+								name={group.from ? row.to : `${row.from} → ${row.to}`}
+								count={row.count}
+								value={fmtMoney(row.amount)}
+							/>
+						{/each}
+					</div>
 				{/each}
 				{#if rowCount > MOVES_SHOWN}
 					<button
@@ -347,7 +360,9 @@
 	{#snippet comingUpCard()}
 		<Section
 			title="Coming Up"
-			count={data.upcomingSchedules.length > 0 ? data.upcomingSchedules.length : undefined}
+			count={data.upcomingSchedules.length > 0
+				? `From today · ${data.upcomingSchedules.length}`
+				: undefined}
 		>
 			{#if data.upcomingSchedules.length > 0}
 				{#each data.upcomingSchedules as s (s.id)}

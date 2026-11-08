@@ -194,13 +194,16 @@ export interface MoveRow {
 }
 
 export interface MoveDay {
+	key: string;
 	day: string;
+	/** Set when every row moved money out of this one category; its rows then name only `to`. */
+	from?: string;
 	rows: MoveRow[];
 }
 
 /**
  * The month's moves by the day they were made, newest first, with repeat moves between the same
- * two categories that day added up into one row.
+ * two categories that day added up into one row. A day's moves out of one category share a heading.
  */
 export function groupMoves(moves: BudgetMove[]): MoveDay[] {
 	const days = new Map<string, Map<string, MoveRow>>();
@@ -218,19 +221,71 @@ export function groupMoves(moves: BudgetMove[]): MoveDay[] {
 		rows.delete(key);
 		rows.set(key, row);
 	}
-	return [...days].reverse().map(([day, rows]) => ({ day, rows: [...rows.values()].reverse() }));
+	return [...days].reverse().flatMap(([day, byPair]) => {
+		const rows = [...byPair.values()].reverse();
+		const bySource = new Map<string, MoveRow[]>();
+		for (const row of rows) {
+			bySource.set(row.from, [...(bySource.get(row.from) ?? []), row]);
+		}
+		const groups: MoveDay[] = [];
+		const loose: MoveRow[] = [];
+		for (const [from, sourced] of bySource) {
+			if (sourced.length > 1) {
+				groups.push({ key: `${day}\u0000${from}`, day, from, rows: sourced });
+			} else {
+				loose.push(...sourced);
+			}
+		}
+		if (loose.length) {
+			groups.push({ key: day, day, rows: loose });
+		}
+		return groups;
+	});
 }
 
 /** The first `limit` rows across the days, keeping their headings. */
 export function firstMoveRows(days: MoveDay[], limit: number): MoveDay[] {
 	const out: MoveDay[] = [];
 	let left = limit;
-	for (const { day, rows } of days) {
+	for (const group of days) {
 		if (left <= 0) {
 			break;
 		}
-		out.push({ day, rows: rows.slice(0, left) });
-		left -= rows.length;
+		out.push({ ...group, rows: group.rows.slice(0, left) });
+		left -= group.rows.length;
 	}
 	return out;
+}
+
+export interface RunwayMonth {
+	key: string;
+	/** How much of the month's need the held money still covers, 0 to 1. */
+	fill: number;
+}
+
+export interface Runway {
+	/** From next month on, at least `shown` long, each month against its own need. */
+	months: RunwayMonth[];
+	/** Index of the last fully covered month; -1 when next month isn't. */
+	lastCovered: number;
+}
+
+/** Spends what's held month by month from `monthKey`, each against its own need. */
+export function runway(monthKey: string, held: number, needs: number[], shown = 6): Runway | null {
+	if (!needs.length || needs[0] <= 0) {
+		return null;
+	}
+	const months: RunwayMonth[] = [];
+	let left = Math.max(0, held);
+	for (const [i, n] of needs.entries()) {
+		if (n <= 0) {
+			break;
+		}
+		months.push({ key: addMonths(monthKey, i), fill: Math.min(1, left / n) });
+		left = Math.max(0, left - n);
+	}
+	while (months.length < shown) {
+		months.push({ key: addMonths(monthKey, months.length), fill: 0 });
+	}
+	return { months, lastCovered: months.findLastIndex((m) => m.fill >= 1) };
 }
