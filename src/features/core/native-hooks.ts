@@ -5,6 +5,9 @@ import { getCurrentPath, watchRoute } from "@lib/utilities/route-watcher";
 import { findNativeSidebarRoot } from "@lib/utilities/native-ui";
 import { hasSettingsPages } from "@lib/utilities/settings-page";
 import {
+	BALANCE_CELL,
+	BUDGET_TABLE,
+	CATEGORY_NAME,
 	DIALOG,
 	HELP_BUTTON,
 	MAIN,
@@ -107,6 +110,15 @@ export const nativeHooks = {
 			const dashboard = !!reports && DASHBOARD_PATH.test(pathOf(reports, path));
 			if (reports && reports.hasAttribute("data-abt-reports-dashboard") !== dashboard) {
 				reports.toggleAttribute("data-abt-reports-dashboard", dashboard);
+			}
+			// Expense group rows: a balance but no category name. Each row sits in its own wrapper.
+			if (matchesPage(Page.Budget)) {
+				for (const row of document.querySelectorAll(`${BUDGET_TABLE} ${ROW}`)) {
+					if (row.querySelector(BALANCE_CELL) && !row.querySelector(CATEGORY_NAME)) {
+						const box = row.parentElement?.childElementCount === 1 ? row.parentElement : row;
+						mark(box, "data-abt-budget-group");
+					}
+				}
 			}
 			for (const input of document.querySelectorAll("input[data-rac]")) {
 				if (input.previousElementSibling instanceof SVGElement) {

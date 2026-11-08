@@ -236,6 +236,17 @@
 				"writes": null
 			},
 			{
+				"key": "budget-group-spacing",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Taller Group Rows",
+				"description": "Makes category group rows taller so each group stands apart from its categories.",
+				"icon": "rows",
+				"group": "Layout",
+				"writes": null
+			},
+			{
 				"key": "hide-months-on-scroll",
 				"type": "checkbox",
 				"defaultValue": false,

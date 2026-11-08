@@ -15,6 +15,9 @@ export const budgetTableRowHeight = defineSetting({
 		defaultValue: "2.25rem",
 		css: (value: string) =>
 			desktopOnly(`
+			:root {
+				--abt-budget-row-height: ${value};
+			}
 			div${BUDGET_TOTALS} + div div${ROW} {
 				height: ${value};
 				flex: 0 0 ${value};
