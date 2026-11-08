@@ -3,20 +3,13 @@
 	import { openInsights } from "@features/workflows/template-plan";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import Icon from "@lib/components/Icon.svelte";
-	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
 	import ActionCard from "./ActionCard.svelte";
 	import Breakdown from "./Breakdown.svelte";
 	import NativeRoll from "./NativeRoll.svelte";
+	import SlotCard from "./SlotCard.svelte";
 	import { smoothRow } from "./smooth-row";
 	import { summaryState } from "./state.svelte";
-	import {
-		cachedTotals,
-		expectsTargets,
-		loadMonthTotals,
-		prefetchNeighbours,
-		type MonthTotals,
-	} from "./totals";
+	import { cachedTotals, loadMonthTotals, prefetchNeighbours, type MonthTotals } from "./totals";
 
 	const { sheet }: { sheet: string } = $props();
 
@@ -127,59 +120,8 @@
 			<!-- The breakdown lives in Insights when it's on; the hover only stands in without it. -->
 			<Breakdown anchors={[toBudgetCard]} {sheet} {totals} />
 		{/if}
-		<div class="sr__card abt-card abt-stack">
-			<span class="sr__label abt-label">Spent</span>
-			<RollingNumber
-				value={totals.spent}
-				resetKey={sheet}
-				class="sr__value abt-num abt-privacy-number"
-			/>
-			<span class="sr__sub abt-cluster abt-gap-2">
-				{#if totals.budgeted > 0}
-					of <RollingNumber value={totals.budgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
-				{:else}
-					Nothing budgeted yet
-				{/if}
-			</span>
-		</div>
-		{#if totals.goals}
-			<div
-				class="sr__card sr__targets abt-card abt-stack"
-				title="{totals.funded} of {totals.goals} targets funded"
-			>
-				<span class="sr__label abt-label">Targets funded</span>
-				<span class="sr__targets-row abt-cluster">
-					<span class="sr__bar"><i style:width="{(totals.funded / totals.goals) * 100}%"></i></span>
-					<span class="sr__count abt-num"
-						><RollingNumber value={totals.funded} format={String} resetKey={sheet} />/<RollingNumber
-							value={totals.goals}
-							format={String}
-							resetKey={sheet}
-						/></span
-					>
-				</span>
-				<span class="sr__sub abt-cluster abt-gap-2">
-					{#if totals.short.length}
-						Needs <RollingNumber
-							value={totals.short.reduce((t, c) => t + c.shortfall, 0)}
-							resetKey={sheet}
-							class="abt-privacy-number"
-						/>
-						{@const needs = totals.short.reduce((t, c) => t + c.shortfall, 0)}
-						{#if totals.fromMoves >= needs}
-							· from moving money
-						{:else if totals.fromMoves > 0}
-							· <span class="abt-privacy-number">{fmtMoney(totals.fromMoves)}</span> from moving money
-						{/if}
-					{:else}
-						All targets met
-						{#if totals.settled}
-							· <span class="abt-privacy-number">{fmtMoney(totals.fromMoves)}</span> moved to other categories
-						{/if}
-					{/if}
-				</span>
-			</div>
-		{/if}
+		<SlotCard slot={0} {sheet} {totals} />
+		<SlotCard slot={1} {sheet} {totals} />
 		<ActionCard
 			{sheet}
 			toBudget={totals.toBudget}
@@ -190,10 +132,10 @@
 		/>
 	</div>
 {:else}
-	<!-- Laid out like the real row (Spent, Targets when the budget has them, the suggestion),
-	     so the cards replace it in place. -->
+	<!-- Laid out like the real row (the two chosen cards, then the suggestion), so the cards
+	     replace it in place. -->
 	<div class="sr" aria-hidden="true">
-		{#each expectsTargets() ? ["", "sr__targets", "is-action"] : ["", "is-fill"] as kind (kind)}
+		{#each ["", "sr__flex", "is-action"] as kind (kind)}
 			<div class="sr__card abt-card abt-stack is-skeleton {kind}">
 				<span class="sr__label">&nbsp;</span>
 				<span class="sr__value">&nbsp;</span>
@@ -210,9 +152,9 @@
 	}
 
 	/*
-	 * Cards size to their content; the Targets card, whose bar can stretch or shrink, takes the
-	 * slack. So a longer suggestion only resizes that bar, nothing moves the To Budget or Spent
-	 * cards, and secondary lines truncate only once the bar is at its minimum.
+	 * Cards size to their content; cards with a bar, which can stretch or shrink, take the
+	 * slack. So a longer suggestion only resizes a bar, nothing moves the To Budget card, and
+	 * secondary lines truncate only once the bars are at their minimum.
 	 */
 	.sr > :global(*) {
 		order: 1;
@@ -220,14 +162,14 @@
 		min-width: 0;
 	}
 
-	/* Narrowest that still fits its label, a short bar, the count and "Needs …". */
-	.sr > .sr__targets {
+	/* Narrowest that still fits a label, a short bar, its figure and the line below. */
+	.sr > :global(.sr__flex) {
 		flex: 1 1 0;
 		min-width: 150px;
 	}
 
-	/* Without targets, the suggestion card takes the slack instead. */
-	.sr:not(:has(> .sr__targets)) > :global(.ac) {
+	/* Without a card that stretches, the suggestion card takes the slack instead. */
+	.sr:not(:has(> :global(.sr__flex))) > :global(.ac) {
 		flex-grow: 1;
 	}
 
@@ -236,21 +178,23 @@
 		min-width: 210px;
 	}
 
-	.sr > .sr__card:not(.sr__targets) {
+	.sr > :global(.sr__card:not(.sr__flex)) {
 		min-width: 160px;
 	}
 
-	.sr__card {
+	.sr :global(.sr__card) {
 		--abt-pad: var(--abt-space-3) var(--abt-space-5);
 		justify-content: center;
 	}
 
 	/* Fixed line heights keep every card, placeholders included, at the row's shared height. */
-	.sr__label {
+	.sr :global(.sr__label) {
+		overflow: hidden;
 		line-height: 14px;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	/* Rendered by RollingNumber, so outside this component's scope. */
 	.sr :global(.sr__value) {
 		line-height: 22px;
 		font-size: var(--abt-text-xl);
@@ -259,7 +203,7 @@
 	}
 
 	/* A plain line, not a flex row, so it can end in an ellipsis when the card is tight. */
-	.sr .sr__sub {
+	.sr :global(.sr__sub) {
 		display: block;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -268,11 +212,6 @@
 		font-size: var(--abt-text-base);
 		color: var(--color-tableHeaderText);
 		white-space: nowrap;
-	}
-
-	.sr > .sr__card.is-fill {
-		flex: 1 1 0;
-		min-width: 210px;
 	}
 
 	.sr > .sr__card.is-action {
@@ -294,44 +233,5 @@
 		position: absolute;
 		top: var(--abt-space-2);
 		right: var(--abt-space-2);
-	}
-
-	.sr__targets {
-		flex-basis: 140px;
-	}
-
-	.sr__targets-row {
-		flex-wrap: nowrap;
-		height: 22px;
-	}
-
-	.sr__count {
-		font-size: var(--abt-text-base);
-		font-weight: 600;
-		color: var(--color-pageTextSubdued);
-	}
-
-	.sr__bar {
-		flex: 1;
-		min-width: 60px;
-		height: 6px;
-		border-radius: 3px;
-		background: var(--abt-panel-track);
-		overflow: hidden;
-	}
-
-	.sr__bar i {
-		display: block;
-		height: 100%;
-		border-radius: inherit;
-		background: var(--color-noticeTextLight);
-		/* Same easing and length as the rolling numbers, so the card moves as one. */
-		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.sr__bar i {
-			transition: none;
-		}
 	}
 </style>

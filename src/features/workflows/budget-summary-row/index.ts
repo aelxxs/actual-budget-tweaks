@@ -13,6 +13,8 @@ import { currentMonth, monthToSheet } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import MonthMeta from "./MonthMeta.svelte";
+import { getValue, watchValue } from "@lib/utilities/store";
+import { SLOTS_KEY, toSlots } from "./slots";
 import { summaryState } from "./state.svelte";
 import SummaryRow from "./SummaryRow.svelte";
 import TrackingMeta from "./TrackingMeta.svelte";
@@ -656,7 +658,9 @@ export const budgetSummaryRow = defineSetting({
 			color: var(--color-errorText) !important;
 		}
 	`,
-	init: () => {
+	init: async () => {
+		summaryState.slots = toSlots(await getValue<unknown>(SLOTS_KEY, null));
+		const unwatchSlots = watchValue<unknown>(SLOTS_KEY, (v) => (summaryState.slots = toSlots(v)));
 		changes = collectChanges(REFRESH_MS, (sheets) => {
 			for (const sheet of sheets) {
 				summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
@@ -671,6 +675,7 @@ export const budgetSummaryRow = defineSetting({
 			sync();
 		});
 		return () => {
+			unwatchSlots();
 			unwatch();
 			unwatchTable();
 			unwatchCells();

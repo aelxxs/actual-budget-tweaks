@@ -661,10 +661,13 @@ function checkSheetChange(): void {
 
 function refreshOpenTab(): void {
 	if (!drawerOpen || !isBudgetPage()) {
-		overviewSeq++;
 		prioritySeq++;
-		templatePlanState.overviewLoading = false;
 		templatePlanState.priorityLoading = false;
+		// The summary row's Months ahead card asks for the new month itself.
+		if (!templatePlanState.overviewWanted) {
+			overviewSeq++;
+			templatePlanState.overviewLoading = false;
+		}
 		return;
 	}
 	if (templatePlanState.activeTab === "priority") {
@@ -822,6 +825,7 @@ export const templatePlan = defineSetting({
 		};
 
 		templatePlanState.trackBreakdown = trackBreakdown;
+		templatePlanState.loadOverview = (quiet) => void refreshOverview({ quiet });
 
 		// Back in this browser tab: other devices may have synced changes meanwhile.
 		const onVisible = () => {
@@ -859,6 +863,7 @@ export const templatePlan = defineSetting({
 			templatePlanState.onTabChange = null;
 			templatePlanState.applyTemplates = null;
 			templatePlanState.trackBreakdown = null;
+			templatePlanState.loadOverview = null;
 			templatePlanState.overviewData = null;
 			templatePlanState.breakdownLoading = false;
 			lastSheetKey = null;

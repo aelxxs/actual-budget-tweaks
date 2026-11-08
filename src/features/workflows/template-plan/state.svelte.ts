@@ -140,4 +140,8 @@ export const templatePlanState = $state({
 	applyTemplates: null as (() => Promise<void>) | null,
 	/** Runs `work` and shows what it changed in Breakdown; null while Insights is off. */
 	trackBreakdown: null as (<T>(kind: TrackedAction, work: () => Promise<T>) => Promise<T>) | null,
+	/** Re-reads the shown month's overview, quietly once there is one; null while Insights is off. */
+	loadOverview: null as ((quiet: boolean) => void) | null,
+	/** Views outside the panel showing the overview, e.g. the summary row's Months ahead card. */
+	overviewWanted: 0,
 });
