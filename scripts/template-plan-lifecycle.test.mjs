@@ -57,6 +57,7 @@ async function setup({ deferRestore = false } = {}) {
 		defineSetting: (setting) => setting,
 		templatePlanState: state,
 		getValue: async (_key, fallback) => fallback,
+		watchValue: () => () => {},
 		Page: { Budget: "budget" },
 		matchesPage: () => true,
 		isBudgetPage: () => true,
