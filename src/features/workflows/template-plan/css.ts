@@ -124,6 +124,34 @@ export const CSS = `
 		border-top: 1px solid var(--abt-panel-border);
 	}
 
+	/* Money Moves' date headings, one per day. */
+	.abt-tab-overview-day {
+		margin: 8px 0 2px;
+		font-size: var(--abt-text-xs);
+		color: var(--color-pageTextSubdued);
+	}
+
+	.abt-tab-overview-day:first-child {
+		margin-top: 0;
+	}
+
+	/* Money Moves' "Show all": a quiet link under the list. */
+	.abt-tab-overview-more {
+		display: block;
+		margin: 6px 0 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-accent);
+		cursor: pointer;
+	}
+
+	.abt-tab-overview-more:hover {
+		text-decoration: underline;
+	}
+
 	.abt-tab-overview-note {
 		margin: 6px 0 0;
 		font-size: var(--abt-text-xs);

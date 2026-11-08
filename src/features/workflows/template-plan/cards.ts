@@ -3,9 +3,11 @@ import { defineSetting } from "@features/types";
 /** Overview's cards that can be moved and hidden; Overspent stays first, as an alert. */
 export const OVERVIEW_CARDS = [
 	{ id: "this-month", label: "This Month" },
+	{ id: "income", label: "Income" },
 	{ id: "next-month", label: "Next Month" },
 	{ id: "goals", label: "Goals to Fund" },
 	{ id: "trend", label: "Over / Under Budget" },
+	{ id: "moves", label: "Money Moves" },
 	{ id: "coming-up", label: "Coming Up" },
 ] as const;
 

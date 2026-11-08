@@ -4,6 +4,7 @@
 	let {
 		name,
 		meta,
+		count,
 		value,
 		tone,
 		strong = false,
@@ -15,6 +16,8 @@
 	}: {
 		name: string;
 		meta?: string | null;
+		/** Folded repeats, shown as a "×n" chip after the name when over one. */
+		count?: number;
 		value?: string;
 		tone?: "positive" | "negative" | "warning" | "muted";
 		strong?: boolean;
@@ -28,12 +31,15 @@
 	} = $props();
 </script>
 
-<div class="panel-row" class:strong class:indent class:dim>
+<div class="panel-row" class:strong class:indent class:dim class:counted={!!count && count > 1}>
 	<div class="line">
 		{@render leading?.()}
 		<span class="name" class:abt-privacy-number={sensitive}>
 			{name}{#if meta}<span class="meta">{meta}</span>{/if}
 		</span>
+		{#if count && count > 1}
+			<span class="abt-count">×{count}</span>
+		{/if}
 		{#if value !== undefined}
 			<span class="value abt-privacy-number" data-tone={tone}>{value}</span>
 		{/if}
@@ -67,6 +73,14 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	/* The chip sits right after the name, as in the calendar; the value keeps to the end. */
+	.counted .name {
+		flex: 0 1 auto;
+	}
+	.counted .value {
+		margin-left: auto;
 	}
 
 	.meta {

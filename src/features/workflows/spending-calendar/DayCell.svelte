@@ -97,7 +97,7 @@
 					></span>
 					<span class="cal-tx__payee abt-privacy-number">{tx.payee}</span>
 					{#if tx.count > 1}
-						<span class="cal-tx__count">×{tx.count}</span>
+						<span class="abt-count">×{tx.count}</span>
 					{/if}
 				</div>
 			{/each}
@@ -288,17 +288,6 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		opacity: 0.8;
-	}
-
-	.cal-tx__count {
-		font-size: var(--abt-text-2xs);
-		font-weight: 600;
-		color: var(--color-pageTextSubdued);
-		background: var(--abt-ink-3);
-		padding: 0 4px;
-		border-radius: var(--abt-radius-sm);
-		flex-shrink: 0;
-		line-height: 1.5;
 	}
 
 	.cal-more {

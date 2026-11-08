@@ -1,3 +1,4 @@
+import { loadMonthMoves } from "@lib/utilities/budget-moves";
 import { isPanelPersistedOpen, sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
 import { icon } from "@lib/utilities/icons";
@@ -50,6 +51,7 @@ import {
 	nextMonthGoalNeed,
 	recentAverageSpending,
 	summarizeCategories,
+	summarizeIncome,
 	trendCellNames,
 	trendMonths,
 	upcomingSchedules,
@@ -339,20 +341,27 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 		const months = trendMonths(monthKey);
 		const nextMonthKey = addMonths(monthKey, 1);
 
-		const [cells, schedules, pastCells, nextCells, nextMonthGoalTotal, templatePreview, templates] =
-			await Promise.all([
-				readCells(sheet, monthCellNames(cats)),
-				query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
-				Promise.all(
-					months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats))),
-				),
-				readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
-				previewMonthTemplateTotal(nextMonthKey, cats),
-				// Goal cells can't tell what's left: they fill once templates run, and Actual can set them
-				// without budgeting anything (actualbudget/actual#9304).
-				previewMonthTemplates(monthKey, cats),
-				loadTemplatesByCategoryId(),
-			]);
+		const [
+			cells,
+			schedules,
+			pastCells,
+			nextCells,
+			nextMonthGoalTotal,
+			templatePreview,
+			templates,
+			moves,
+		] = await Promise.all([
+			readCells(sheet, monthCellNames(cats)),
+			query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
+			Promise.all(months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats)))),
+			readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
+			previewMonthTemplateTotal(nextMonthKey, cats),
+			// Goal cells can't tell what's left: they fill once templates run, and Actual can set them
+			// without budgeting anything (actualbudget/actual#9304).
+			previewMonthTemplates(monthKey, cats),
+			loadTemplatesByCategoryId(),
+			loadMonthMoves(monthKey).catch(() => []),
+		]);
 
 		const toBudget = cells.get("to-budget") ?? 0;
 		const totalBudgeted = Math.abs(cells.get("total-budgeted") ?? 0);
@@ -376,6 +385,8 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 			templateRemaining: templatePreview?.remaining ?? null,
 			templateToApply: templatePreview?.onApply ?? null,
 			hasTemplates: cats.some((c) => templates.has(c.id)),
+			income: summarizeIncome(cats, cells, trend),
+			moves,
 			// An edit keeps the last walk on screen until the new one is in; another month waits.
 			aheadTemplateNeeds:
 				quiet && previous?.monthKey === monthKey ? previous.aheadTemplateNeeds : null,

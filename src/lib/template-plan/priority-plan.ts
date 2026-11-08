@@ -22,6 +22,7 @@ export interface Category {
 	sort_order: number;
 	group_sort_order: number;
 	hidden?: boolean;
+	is_income?: boolean;
 }
 
 export interface DemandRow {

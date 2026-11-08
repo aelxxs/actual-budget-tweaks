@@ -3,6 +3,8 @@
 	import Switch from "@lib/components/Switch.svelte";
 	import { setValue } from "@lib/utilities/store";
 	import {
+		ArrowLeftRight,
+		Banknote,
 		CalendarClock,
 		CalendarDays,
 		ChartColumn,
@@ -30,6 +32,8 @@
 
 	const ICONS: Record<CardId, LucideIcon> = {
 		"this-month": CalendarDays,
+		income: Banknote,
+		moves: ArrowLeftRight,
 		"next-month": CalendarClock,
 		goals: Target,
 		trend: ChartColumn,

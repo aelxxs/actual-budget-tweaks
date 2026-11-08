@@ -10,7 +10,7 @@
 	import { flip } from "svelte/animate";
 	import { fade, slide } from "svelte/transition";
 	import { type CardId, TEMPLATES_BAR, cardLabel } from "./cards";
-	import { heldForNextMonth, nextMonthGoalNeed } from "./overview";
+	import { firstMoveRows, groupMoves, heldForNextMonth, nextMonthGoalNeed } from "./overview";
 	import NextMonth from "./NextMonth.svelte";
 	import OverviewToolbar from "./OverviewToolbar.svelte";
 	import TabSkeleton from "./TabSkeleton.svelte";
@@ -26,6 +26,9 @@
 		templatePlanState.cards.order.filter((id) => !templatePlanState.cards.hidden.includes(id)),
 	);
 	const motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220;
+	// Money Moves lists the latest few; the rest open on request.
+	const MOVES_SHOWN = 5;
+	let allMoves = $state(false);
 
 	// While the card menu points at a card, it's outlined.
 	const spot = (id: string) => ({
@@ -264,6 +267,78 @@
 		{/if}
 	{/snippet}
 
+	{#snippet incomeCard()}
+		{@const income = data.income}
+		{@const share = income.usual ? Math.round((income.received / income.usual) * 100) : null}
+		<Section title="Income">
+			{#snippet badges()}
+				{#if share !== null && income.received > 0}
+					<Badge tone={share >= 100 ? "positive" : "neutral"}>{share}% of usual</Badge>
+				{/if}
+			{/snippet}
+			<Row name="Received" value={fmtMoney(income.received)} strong />
+			{#if income.usual}
+				<div class="abt-tab-overview-mini-bar-wrap">
+					<div
+						class="abt-tab-overview-mini-bar"
+						style:width="{Math.min(100, (income.received / income.usual) * 100)}%"
+						data-status="goal"
+					></div>
+				</div>
+				{@const months =
+					income.usualMonths === 1
+						? "last month"
+						: `the average of your last ${income.usualMonths} months`}
+				<p class="abt-tab-overview-note">
+					{#if income.received <= 0}
+						Nothing received{isCurrentMonth || isFutureMonth ? " yet" : ""}. Usually
+						<span class="abt-privacy-number">{fmtMoney(income.usual)}</span>, {months}.
+					{:else if income.received >= income.usual}
+						<span class="abt-privacy-number">{fmtMoney(income.received - income.usual)}</span> more
+						than usual ({months}).
+					{:else}
+						<span class="abt-privacy-number">{fmtMoney(income.usual - income.received)}</span> less
+						than usual ({months}).
+					{/if}
+				</p>
+			{/if}
+			{#if income.categories.length > 1}
+				{#each income.categories as cat (cat.id)}
+					<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted" />
+				{/each}
+			{/if}
+		</Section>
+	{/snippet}
+
+	{#snippet movesCard()}
+		{@const moves = data.moves}
+		{@const days = groupMoves(moves)}
+		{@const rowCount = days.reduce((n, d) => n + d.rows.length, 0)}
+		<Section title="Money Moves" count={moves.length || undefined}>
+			{#if moves.length}
+				{#each allMoves ? days : firstMoveRows(days, MOVES_SHOWN) as { day, rows } (day)}
+					<div class="abt-tab-overview-day">{day}</div>
+					{#each rows as row (row.key)}
+						<Row name="{row.from} → {row.to}" count={row.count} value={fmtMoney(row.amount)} />
+					{/each}
+				{/each}
+				{#if rowCount > MOVES_SHOWN}
+					<button
+						type="button"
+						class="abt-tab-overview-more"
+						onclick={() => (allMoves = !allMoves)}
+					>
+						{allMoves ? "Show fewer" : `Show all ${rowCount}`}
+					</button>
+				{/if}
+			{:else}
+				<div class="abt-tab-overview-empty-row">
+					No money moved with Transfer or Cover this month
+				</div>
+			{/if}
+		</Section>
+	{/snippet}
+
 	{#snippet comingUpCard()}
 		<Section
 			title="Coming Up"
@@ -326,6 +401,10 @@
 				{@render trendCard()}
 			{:else if id === "coming-up"}
 				{@render comingUpCard()}
+			{:else if id === "income"}
+				{@render incomeCard()}
+			{:else if id === "moves"}
+				{@render movesCard()}
 			{/if}
 		</div>
 	{/each}

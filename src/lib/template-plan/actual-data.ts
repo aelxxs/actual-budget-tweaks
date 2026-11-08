@@ -77,6 +77,7 @@ export async function loadCategories(force?: boolean): Promise<Category[]> {
 						name: c.name,
 						sort_order: c.sort_order || 0,
 						hidden: !!c.hidden,
+						is_income: !!c.is_income,
 						group_name: g?.name || "Uncategorized",
 						group_sort_order: g?.sort_order || 0,
 					};

@@ -1,3 +1,4 @@
+import type { BudgetMove } from "@lib/utilities/budget-moves";
 import { type CardId, type CardLayout, TEMPLATES_BAR, defaultLayout } from "./cards";
 import type { BreakdownSummary, PriorityCache } from "@lib/template-plan/priority-plan";
 
@@ -7,6 +8,16 @@ export interface MonthTrend {
 	budgeted: number;
 	spent: number;
 	toBudget: number;
+	income: number;
+}
+
+export interface OverviewIncome {
+	received: number;
+	/** The average of the last three earlier months with income; null without any. */
+	usual: number | null;
+	/** How many months `usual` averages. */
+	usualMonths: number;
+	categories: { id: string; name: string; amount: number }[];
 }
 
 export interface OverviewCategoryRow {
@@ -53,6 +64,9 @@ export interface OverviewData {
 	recentAvgSpending: number;
 	/** Template needs for the months after next, as far as the spare money could reach; null while loading. */
 	aheadTemplateNeeds: number[] | null;
+	income: OverviewIncome;
+	/** Moves made with Actual's transfer and cover menus, oldest first. */
+	moves: BudgetMove[];
 }
 
 export type BreakdownGroup = {
