@@ -20,6 +20,7 @@ export const monthCellNames = (cats: Category[]): string[] => [
 		`leftover-${c.id}`,
 		`budget-${c.id}`,
 		`goal-${c.id}`,
+		`long-goal-${c.id}`,
 	]),
 ];
 
@@ -60,8 +61,9 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 			overspentCategories.push({ ...row, leftover });
 		}
 
-		// Met by this month's assignment (rent, drawn to 0) or by the balance (a savings fund).
-		const progress = Math.max(leftover, budgeted);
+		// Actual's rule, as the summary row's Targets funded: a #goal by the balance, a template by
+		// this month's budget (a carried balance doesn't fund next month's rent).
+		const progress = cells.get(`long-goal-${cat.id}`) === 1 ? leftover : budgeted;
 		if (goal <= 0) {
 			continue;
 		}
