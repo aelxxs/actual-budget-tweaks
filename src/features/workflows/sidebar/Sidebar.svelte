@@ -517,6 +517,7 @@
 	}}
 	class:split={layoutMode === "split"}
 	class:collapsed={isCollapsed && layoutMode === "standard"}
+	class:rail-only={isCollapsed && layoutMode === "split"}
 	bind:this={sidebarEl}
 	style="width: {sidebarTotalWidth}"
 	oncontextmenu={openSettingsMenu}

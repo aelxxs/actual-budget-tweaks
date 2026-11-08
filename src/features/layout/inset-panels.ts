@@ -49,6 +49,15 @@ const CSS = `
 	[data-abt-sidebar-slot] .sidebar .activity-bar {
 		border-radius: ${INNER} 0 0 ${INNER};
 	}
+	/* With the accounts panel hidden, the rail is the whole panel: the panel widens by its own
+	   border so the rail fits inside it at its usual width, and the rail drops its divider. */
+	[data-abt-sidebar-slot] .sidebar.rail-only {
+		width: calc(4rem + 2px) !important; /* raw: the rail's width plus the panel's border */
+	}
+	[data-abt-sidebar-slot] .sidebar.rail-only .activity-bar {
+		border-right-color: transparent;
+		border-radius: ${INNER};
+	}
 	/* The drag area is centred on the gap between the panels (its offset starts inside the sidebar's
 	   1px border); the line and grip centre in the drag area. */
 	[data-abt-sidebar-slot] .sidebar {
