@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { scrollLaidOutIntoView } from "@lib/utilities/dom";
 	import Badge from "@lib/components/panel/Badge.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
@@ -35,12 +36,16 @@
 		"data-spot": templatePlanState.highlightCard === id ? "" : undefined,
 	});
 
+	// Also as the order changes, so a card being moved doesn't scroll out from under the menu.
 	$effect(() => {
 		const lit = templatePlanState.highlightCard;
+		void templatePlanState.cards.order;
 		if (lit) {
-			document
-				.querySelector(`.abt-card-slot[data-card="${lit}"]`)
-				?.scrollIntoView({ block: "nearest", behavior: motion ? "smooth" : "auto" });
+			// Right away, to where it lands: the slide's transform is left out.
+			const slot = document.querySelector<HTMLElement>(`.abt-card-slot[data-card="${lit}"]`);
+			if (slot) {
+				scrollLaidOutIntoView(slot, motion ? "smooth" : "auto");
+			}
 		}
 	});
 	// Close to the whole budget reads as neither good nor bad, so it isn't green.

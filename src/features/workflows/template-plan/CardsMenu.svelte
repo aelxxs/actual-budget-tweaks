@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
+	import { scrollParent } from "@lib/utilities/dom";
 	import Switch from "@lib/components/Switch.svelte";
 	import { setValue } from "@lib/utilities/store";
 	import {
@@ -78,7 +79,7 @@
 					sx: m.right,
 					sy: row.top + row.height / 2,
 					tx: card.left,
-					ty: card.top + Math.min(card.height / 2, 20),
+					ty: clampToCards(card.top + Math.min(card.height / 2, 20), slot),
 				};
 			}
 		}
@@ -93,6 +94,16 @@
 			tx: panel.getBoundingClientRect().left,
 			ty: tabs.top + tabs.height / 2,
 		};
+	}
+
+	// Within the scrolling cards, never up on the panel's header, while its card is out of view.
+	function clampToCards(y: number, card: Element | null): number {
+		const box = card && scrollParent(card);
+		if (!box) {
+			return y;
+		}
+		const { top, bottom } = box.getBoundingClientRect();
+		return Math.min(Math.max(y, top + 12), bottom - 12);
 	}
 
 	// Each frame while open: the menu keeps beside the panel as it resizes, and the edge's ends ease
@@ -171,6 +182,9 @@
 		document.addEventListener("keydown", onKey, true);
 		return () => {
 			cancelAnimationFrame(raf);
+			removeEventListener("pointermove", onHandleMove);
+			removeEventListener("pointerup", onHandleUp);
+			removeEventListener("pointercancel", onHandleUp);
 			document.removeEventListener("pointerdown", onPointer, true);
 			document.removeEventListener("keydown", onKey, true);
 			templatePlanState.highlightCard = null;
@@ -198,42 +212,72 @@
 	// Moved with the arrow keys, until its handle loses focus.
 	let keyMoving = $state<CardId | null>(null);
 
-	function onDragStart(e: DragEvent, id: CardId) {
-		dragging = id;
-		templatePlanState.highlightCard = id;
-		const row = (e.currentTarget as HTMLElement).closest(".row");
-		if (e.dataTransfer) {
-			e.dataTransfer.effectAllowed = "move";
-			e.dataTransfer.setData("text/plain", id);
-			if (row) {
-				e.dataTransfer.setDragImage(row, 16, 16);
-			}
-		}
-	}
+	// Dragged by pointer, not the browser's drag and drop, so the row stays under the cursor.
+	// Slots are measured once at the start: the row's offset is from its slot, wherever that moves.
+	let grab: {
+		pointer: number;
+		startIndex: number;
+		tops: number[];
+		mids: number[];
+		height: number;
+	} | null = null;
+	let dragOffset = $state(0);
+	let settling = $state<CardId | null>(null);
 
-	function onDragOver(e: DragEvent, id: CardId) {
-		if (!dragging) {
+	function onHandleDown(e: PointerEvent, id: CardId) {
+		if (e.button !== 0) {
 			return;
 		}
 		e.preventDefault();
-		const from = layout.order.indexOf(dragging);
-		const to = layout.order.indexOf(id);
-		if (from === to) {
-			return;
-		}
-		// Only past the row's middle, or the row sliding out from under the pointer swaps it back.
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		const past = e.clientY > rect.top + rect.height / 2;
-		if ((to > from && past) || (to < from && !past)) {
-			templatePlanState.cards = moved(dragging, to);
-		}
+		// On the window: the row's element moves as the order changes, which drops pointer capture.
+		addEventListener("pointermove", onHandleMove);
+		addEventListener("pointerup", onHandleUp);
+		addEventListener("pointercancel", onHandleUp);
+		const rects = [...listEl.querySelectorAll("[data-row]")].map((row) =>
+			row.getBoundingClientRect(),
+		);
+		const startIndex = layout.order.indexOf(id);
+		grab = {
+			pointer: e.clientY,
+			startIndex,
+			tops: rects.map((r) => r.top),
+			mids: rects.map((r) => r.top + r.height / 2),
+			height: rects[startIndex]?.height ?? 0,
+		};
+		dragging = id;
+		settling = null;
+		dragOffset = 0;
+		templatePlanState.highlightCard = id;
 	}
 
-	function onDragEnd() {
-		if (dragging) {
-			save(templatePlanState.cards);
+	function onHandleMove(e: PointerEvent) {
+		if (!dragging || !grab) {
+			return;
 		}
+		// Where the row's top would be, moved from its starting slot by the pointer.
+		const top = grab.tops[grab.startIndex] + (e.clientY - grab.pointer);
+		const middle = top + grab.height / 2;
+		const { startIndex, mids } = grab;
+		const to = mids.filter((mid, i) => i !== startIndex && mid < middle).length;
+		if (to !== templatePlanState.cards.order.indexOf(dragging)) {
+			templatePlanState.cards = moved(dragging, to);
+		}
+		dragOffset = top - grab.tops[to];
+	}
+
+	function onHandleUp() {
+		removeEventListener("pointermove", onHandleMove);
+		removeEventListener("pointerup", onHandleUp);
+		removeEventListener("pointercancel", onHandleUp);
+		if (!dragging) {
+			return;
+		}
+		save(templatePlanState.cards);
+		// Eases the last few pixels into its slot instead of snapping.
+		settling = dragging;
 		dragging = null;
+		grab = null;
+		dragOffset = 0;
 	}
 
 	async function onHandleKey(e: KeyboardEvent, id: CardId) {
@@ -314,24 +358,22 @@
 				<div
 					class="row"
 					class:dragging={dragging === id}
+					class:settling={settling === id}
+					style:transform={dragging === id ? `translateY(${dragOffset}px)` : undefined}
+					ontransitionend={(e) => e.propertyName === "transform" && (settling = null)}
 					role="listitem"
 					data-row={id}
-					ondragover={(e) => onDragOver(e, id)}
-					ondrop={(e) => e.preventDefault()}
 					onpointerenter={spotlight(id)}
 					onpointerleave={spotlight(null)}
 					onfocusin={spotlight(id)}
-					animate:flip={{ duration: motion }}
+					animate:flip={{ duration: dragging === id ? 0 : motion }}
 				>
 					<button
 						type="button"
 						class="handle"
-						draggable="true"
 						data-handle={id}
-						title="Drag to reorder, or use the arrow keys"
 						aria-label="Move {cardLabel(id)}"
-						ondragstart={(e) => onDragStart(e, id)}
-						ondragend={onDragEnd}
+						onpointerdown={(e) => onHandleDown(e, id)}
 						onkeydown={(e) => onHandleKey(e, id)}
 						onblur={() => (keyMoving = null)}
 					>
@@ -455,10 +497,21 @@
 	}
 
 	.row.dragging {
+		position: relative;
+		z-index: 1;
 		background: var(--abt-accent-2);
+		box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.5);
+		cursor: grabbing;
+	}
+
+	.row.settling {
+		transition:
+			background 0.12s,
+			transform 0.15s ease-out;
 	}
 
 	.handle {
+		touch-action: none;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;

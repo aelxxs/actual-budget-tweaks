@@ -138,3 +138,36 @@ export function waitForElement(
 		check();
 	});
 }
+
+/** The nearest ancestor that scrolls `el` vertically, or null. */
+export function scrollParent(el: Element): HTMLElement | null {
+	for (let node = el.parentElement; node; node = node.parentElement) {
+		const { overflowY } = getComputedStyle(node);
+		if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) {
+			return node;
+		}
+	}
+	return null;
+}
+
+/**
+ * Scrolls `el` into its scroll parent's view where it's laid out, leaving out a running transform
+ * (a FLIP slide, say) that scrollIntoView would aim at instead.
+ */
+export function scrollLaidOutIntoView(el: HTMLElement, behavior: ScrollBehavior): void {
+	const box = scrollParent(el);
+	if (!box) {
+		return;
+	}
+	const transform = getComputedStyle(el).transform;
+	const shift = transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42;
+	const top =
+		el.getBoundingClientRect().top - shift - box.getBoundingClientRect().top + box.scrollTop;
+	const bottom = top + el.offsetHeight;
+	const gap = 8;
+	if (top < box.scrollTop) {
+		box.scrollTo({ top: top - gap, behavior });
+	} else if (bottom > box.scrollTop + box.clientHeight) {
+		box.scrollTo({ top: bottom - box.clientHeight + gap, behavior });
+	}
+}
