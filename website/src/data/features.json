@@ -313,6 +313,17 @@
 				"writes": null
 			},
 			{
+				"key": "group-overspent",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Flag Overspent Groups",
+				"description": "Show how many categories are overspent next to each group's name, even collapsed.",
+				"icon": "alert",
+				"group": "Readability",
+				"writes": null
+			},
+			{
 				"key": "schedule-icon-details",
 				"type": "checkbox",
 				"defaultValue": false,

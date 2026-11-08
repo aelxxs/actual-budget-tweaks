@@ -37,6 +37,7 @@ import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
 import { dimReconciled } from "./readability/dim-reconciled";
+import { groupOverspent } from "./readability/group-overspent";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { newTransactionStyle } from "./readability/new-transactions";
 import { reportCardBorders } from "./readability/report-card-borders";
@@ -145,6 +146,7 @@ export const scriptSections: SettingsSection[] = [
 					budgetCardStyling,
 					categoryProgress,
 					balancePills,
+					groupOverspent,
 					scheduleIconDetails,
 					showDailyAvailable,
 					budgetTotalsLabelStyling,
