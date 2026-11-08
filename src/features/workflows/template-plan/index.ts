@@ -32,7 +32,8 @@ import {
 	previewMonthTemplates,
 	previewMonthTemplateTotal,
 } from "@lib/template-plan/next-month-coverage";
-import { createPriorityPlanner } from "@lib/template-plan/priority-plan";
+import { type Category, createPriorityPlanner } from "@lib/template-plan/priority-plan";
+import type { TemplateEntry } from "@lib/template-plan/templates";
 import {
 	BREAKDOWN_STORAGE_KEY,
 	PRIO_COLLAPSE_STORAGE_KEY,
@@ -43,7 +44,9 @@ import {
 import { CSS } from "./css";
 import {
 	buildTrend,
+	heldForNextMonth,
 	monthCellNames,
+	nextMonthGoalNeed,
 	recentAverageSpending,
 	summarizeCategories,
 	trendCellNames,
@@ -56,6 +59,7 @@ import {
 	type BreakdownDiff,
 	type InsightsTab,
 	type BreakdownState,
+	type OverviewData,
 	type TrackedAction,
 } from "./state.svelte";
 import TemplatePlanPanel from "./TemplatePlanPanel.svelte";
@@ -268,11 +272,60 @@ let overviewSeq = 0;
 let prioritySeq = 0;
 
 /** `quiet` keeps the current numbers undimmed, for live updates while the user edits. */
+// Next month and eleven after it; each month is a template dry run per category, and Actual's
+// worker runs them one at a time, so previewing months in parallel doesn't save anything.
+const AHEAD_MONTHS = 11;
+
+/**
+ * Template needs for the months after next (assigned plus what templates still need), as far as
+ * the money held for next month could reach. Stops at the first month that can't be previewed.
+ */
+async function aheadTemplateNeeds(
+	d: OverviewData,
+	cats: Category[],
+	templates: Map<string, TemplateEntry[]>,
+	/** True once another refresh has started; the worker runs dry runs in turn, so stop early. */
+	stale: () => boolean,
+): Promise<number[]> {
+	const need = nextMonthGoalNeed(d);
+	let spare = heldForNextMonth(d) - (need ?? 0);
+	if (!d.hasTemplates || need === null || need <= 0) {
+		return [];
+	}
+	const needs: number[] = [];
+	let month = d.nextMonthKey;
+	while (spare > 0 && needs.length < AHEAD_MONTHS && !stale()) {
+		month = addMonths(month, 1);
+		const [remaining, cells] = await Promise.all([
+			previewMonthTemplateTotal(month, cats, templates),
+			readCells(monthToSheet(month), ["total-budgeted"]),
+		]);
+		const n = remaining === null ? 0 : Math.abs(cells.get("total-budgeted") ?? 0) + remaining;
+		if (n <= 0) {
+			break;
+		}
+		needs.push(n);
+		spare -= n;
+	}
+	return needs;
+}
+
+/**
+ * Walks already done, by the month and the figures they started from, so going back to a month
+ * shows its months ahead at once. An edit clears them: it can change a later month's need alone.
+ */
+const aheadCache = new Map<string, number[]>();
+
 async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Promise<void> {
 	if (!isBudgetPage()) {
 		return;
 	}
 	const seq = ++overviewSeq;
+	const previous = templatePlanState.overviewData;
+	// Quiet refreshes follow edits.
+	if (quiet) {
+		aheadCache.clear();
+	}
 	if (!quiet) {
 		templatePlanState.overviewLoading = true;
 	}
@@ -307,10 +360,7 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 		const totalBudgeted = Math.abs(cells.get("total-budgeted") ?? 0);
 		const trend = buildTrend(months, [...pastCells, cells], cats);
 
-		if (seq !== overviewSeq) {
-			return;
-		}
-		templatePlanState.overviewData = {
+		const data: OverviewData = {
 			sheet,
 			monthKey,
 			availableFunds: cells.get("available-funds") ?? toBudget + totalBudgeted,
@@ -328,7 +378,34 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 			templateRemaining: templatePreview?.remaining ?? null,
 			templateToApply: templatePreview?.onApply ?? null,
 			hasTemplates: cats.some((c) => templates.has(c.id)),
+			// An edit keeps the last walk on screen until the new one is in; another month waits.
+			aheadTemplateNeeds:
+				quiet && previous?.monthKey === monthKey ? previous.aheadTemplateNeeds : null,
 		};
+		if (seq !== overviewSeq) {
+			return;
+		}
+		// Nothing to walk without money past next month, so there's nothing to wait for.
+		const need = nextMonthGoalNeed(data);
+		if (!data.hasTemplates || need === null || heldForNextMonth(data) <= need) {
+			templatePlanState.overviewData = { ...data, aheadTemplateNeeds: [] };
+			return;
+		}
+		const key = [monthKey, heldForNextMonth(data), need].join();
+		const cached = aheadCache.get(key);
+		if (cached) {
+			templatePlanState.overviewData = { ...data, aheadTemplateNeeds: cached };
+			return;
+		}
+		// The rest of the overview shows now; the months ahead are slower, and follow.
+		templatePlanState.overviewData = data;
+		templatePlanState.overviewLoading = false;
+		const ahead = await aheadTemplateNeeds(data, cats, templates, () => seq !== overviewSeq);
+		if (seq !== overviewSeq) {
+			return;
+		}
+		aheadCache.set(key, ahead);
+		templatePlanState.overviewData = { ...data, aheadTemplateNeeds: ahead };
 	} catch (e) {
 		log.warn("overview refresh failed", e);
 	} finally {

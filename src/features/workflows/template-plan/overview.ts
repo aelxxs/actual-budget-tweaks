@@ -1,7 +1,12 @@
 import type { Schedule } from "@lib/types/actual-schema";
 import { addMonths, isoDate } from "@lib/utilities/months";
 import type { Category } from "@lib/template-plan/priority-plan";
-import type { MonthTrend, OverviewCategoryRow, OverviewSchedule } from "./state.svelte";
+import type {
+	MonthTrend,
+	OverviewCategoryRow,
+	OverviewData,
+	OverviewSchedule,
+} from "./state.svelte";
 
 type Cells = Map<string, number>;
 
@@ -85,6 +90,36 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 		fullyFundedGoalCount,
 		totalGoalCount,
 	};
+}
+
+/** The average assigned in months that had anything assigned. */
+export function typicalMonth(trend: MonthTrend[]): number {
+	const assigned = trend.filter((t) => t.budgeted > 0);
+	return assigned.reduce((sum, t) => sum + t.budgeted, 0) / (assigned.length || 1);
+}
+
+type CoverageInputs = Pick<
+	OverviewData,
+	| "bufferedSelected"
+	| "toBudget"
+	| "hasTemplates"
+	| "templateRemaining"
+	| "nextMonthBudgeted"
+	| "nextMonthGoalTotal"
+	| "trend"
+>;
+
+/** Money held for next month: what's set aside, plus To Budget once this month's templates are funded. */
+export function heldForNextMonth(d: CoverageInputs): number {
+	const pending = d.hasTemplates ? Math.max(0, d.templateRemaining ?? 0) : 0;
+	return d.bufferedSelected + Math.max(0, d.toBudget - pending);
+}
+
+/** Next month's need by its goal templates; null when they couldn't be previewed. */
+export function nextMonthGoalNeed(d: CoverageInputs): number | null {
+	return d.nextMonthGoalTotal === null
+		? null
+		: d.nextMonthBudgeted + d.nextMonthGoalTotal || typicalMonth(d.trend);
 }
 
 export function upcomingSchedules(schedules: Schedule[], today = new Date()): OverviewSchedule[] {

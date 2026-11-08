@@ -1,7 +1,7 @@
 import { send } from "@lib/utilities/actual-api";
 import { monthToSheet } from "@lib/utilities/months";
 import { loadTemplatesByCategoryId } from "./actual-data";
-import { isRemainderTemplate } from "./templates";
+import { isRemainderTemplate, type TemplateEntry } from "./templates";
 import { createLogger } from "@lib/utilities/logger";
 
 const log = createLogger("template-plan");
@@ -12,8 +12,9 @@ const CONCURRENCY = 8;
 export async function previewMonthTemplateTotal(
 	month: string,
 	categories: { id: string }[],
+	templates?: Map<string, TemplateEntry[]>,
 ): Promise<number | null> {
-	return (await previewMonthTemplates(month, categories))?.remaining ?? null;
+	return (await previewMonthTemplates(month, categories, templates))?.remaining ?? null;
 }
 
 /**
@@ -23,9 +24,11 @@ export async function previewMonthTemplateTotal(
 export async function previewMonthTemplates(
 	month: string,
 	categories: { id: string }[],
+	/** Already loaded, for previewing several months at once. */
+	templates?: Map<string, TemplateEntry[]>,
 ): Promise<{ remaining: number; onApply: number } | null> {
 	try {
-		const templatesByCategory = await loadTemplatesByCategoryId(true);
+		const templatesByCategory = templates ?? (await loadTemplatesByCategoryId(true));
 		let remaining = 0;
 		let onApply = 0;
 		// Bound bridge traffic for budgets with many categories.

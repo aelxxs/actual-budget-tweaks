@@ -50,6 +50,8 @@ export interface OverviewData {
 	templateToApply: number | null;
 	hasTemplates: boolean;
 	recentAvgSpending: number;
+	/** Template needs for the months after next, as far as the spare money could reach; null while loading. */
+	aheadTemplateNeeds: number[] | null;
 }
 
 export type BreakdownGroup = {

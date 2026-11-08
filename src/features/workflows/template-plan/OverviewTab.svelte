@@ -7,6 +7,7 @@
 	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 	import { onMount } from "svelte";
 	import { templatePlanState } from "./state.svelte";
+	import { heldForNextMonth, nextMonthGoalNeed } from "./overview";
 	import NextMonth from "./NextMonth.svelte";
 	import OverviewToolbar from "./OverviewToolbar.svelte";
 	import TabSkeleton from "./TabSkeleton.svelte";
@@ -63,9 +64,6 @@
 		isFutureMonth &&
 		(data.trend[0].monthKey > thisMonth ||
 			data.trend.some((t) => t.monthKey >= thisMonth && t.budgeted <= 0))}
-	{@const assignedMonths = data.trend.filter((t) => t.budgeted > 0)}
-	{@const typicalMonth =
-		assignedMonths.reduce((sum, t) => sum + t.budgeted, 0) / (assignedMonths.length || 1)}
 	{@const overMonths = data.trend.filter((t) => t.budgeted > 0 && t.spent > t.budgeted).length}
 
 	{#snippet toBudgetRow()}
@@ -166,16 +164,10 @@
 		</div>
 	</Section>
 
-	{@const pending = data.hasTemplates ? Math.max(0, data.templateRemaining ?? 0) : 0}
-	{@const nextNeed =
-		coverageTarget === null
-			? null
-			: useGoalTemplates
-				? data.nextMonthBudgeted + coverageTarget || typicalMonth
-				: coverageTarget}
+	{@const nextNeed = useGoalTemplates ? nextMonthGoalNeed(data) : coverageTarget}
 	<NextMonth
 		monthKey={data.nextMonthKey}
-		held={data.bufferedSelected + Math.max(0, data.toBudget - pending)}
+		held={heldForNextMonth(data)}
 		need={nextNeed}
 		needLabel={!useGoalTemplates
 			? "your usual spending"
@@ -183,6 +175,10 @@
 				? "for its goals"
 				: "for a typical month"}
 		projected={unplannedBetween}
+		loading={useGoalTemplates && data.aheadTemplateNeeds === null}
+		later={useGoalTemplates
+			? (data.aheadTemplateNeeds ?? [])
+			: Array.from({ length: 11 }, () => coverageTarget ?? 0)}
 		emptyText={coverageTarget === null
 			? "Couldn't preview next month's goal templates. Refresh to try again."
 			: "Not enough spending history to compare next month against."}
