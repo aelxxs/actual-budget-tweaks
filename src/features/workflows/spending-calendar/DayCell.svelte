@@ -308,7 +308,6 @@
 
 	.cal-tx.is-upcoming {
 		opacity: 0.45;
-		font-style: italic;
 	}
 
 	.cal-tx.is-missed {

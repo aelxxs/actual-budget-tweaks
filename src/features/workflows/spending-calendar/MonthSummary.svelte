@@ -66,7 +66,6 @@
 		color: var(--color-errorText);
 	}
 	.is-upcoming dd {
-		font-style: italic;
 		opacity: 0.65;
 	}
 

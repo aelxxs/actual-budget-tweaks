@@ -86,7 +86,6 @@
 	.meta {
 		margin-left: 5px;
 		font-size: var(--abt-text-xs);
-		font-style: italic;
 		opacity: 0.45;
 	}
 
