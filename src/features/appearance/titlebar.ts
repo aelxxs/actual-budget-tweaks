@@ -131,13 +131,13 @@ const CSS = `
 
 	${UNCATEGORIZED} {
 		margin-right: var(--abt-space-4);
-		/* Actual's bare-button hover would swap the red for its default text colour. */
-		color: var(--color-errorText) !important;
-		background: color-mix(in srgb, var(--color-errorText) 12%, transparent) !important;
+		/* Actual's bare-button hover would swap the amber for its default text colour. */
+		color: var(--color-warningText) !important;
+		background: color-mix(in srgb, var(--color-warningText) 12%, transparent) !important;
 	}
 
 	${UNCATEGORIZED}[data-hovered] {
-		background: color-mix(in srgb, var(--color-errorText) 20%, transparent) !important;
+		background: color-mix(in srgb, var(--color-warningText) 20%, transparent) !important;
 	}
 
 	/*
