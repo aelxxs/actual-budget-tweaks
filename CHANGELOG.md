@@ -1,6 +1,93 @@
 # Changelog
 
 
+## v0.1.105
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.104...v0.1.105)
+
+### 🚀 Enhancements
+
+- Show account icons in the transaction table's Account column ([6cd72ab](https://github.com/aelxxs/actual-budget-tweaks/commit/6cd72ab))
+- Arrange sidebar shortcuts in saved rows with live drag and drop ([34740c4](https://github.com/aelxxs/actual-budget-tweaks/commit/34740c4))
+- Publish a nightly edge build of the sidecar ([4e8abe6](https://github.com/aelxxs/actual-budget-tweaks/commit/4e8abe6))
+- Add tools, math, ABT pages and settings to the command palette ([b219ddc](https://github.com/aelxxs/actual-budget-tweaks/commit/b219ddc))
+- Make shortcut tools draggable and keep the page usable behind them ([0238e12](https://github.com/aelxxs/actual-budget-tweaks/commit/0238e12))
+- Reconcile an account from the command palette ([088f6af](https://github.com/aelxxs/actual-budget-tweaks/commit/088f6af))
+- Add a guides section with a Modern Reconcile guide ([b826f1b](https://github.com/aelxxs/actual-budget-tweaks/commit/b826f1b))
+- Add command palette and Live sidebar guides ([377742c](https://github.com/aelxxs/actual-budget-tweaks/commit/377742c))
+- Add a Budget Insights guide and restage the command palette guide ([121eb70](https://github.com/aelxxs/actual-budget-tweaks/commit/121eb70))
+- Add Sync recap and Transaction Inspector guides ([f41d371](https://github.com/aelxxs/actual-budget-tweaks/commit/f41d371))
+- Refresh the home page demos with sidebar, palette, reconcile and budget cards ([eed42a7](https://github.com/aelxxs/actual-budget-tweaks/commit/eed42a7))
+- Add a before and after hero slider and reseed the demo budget ([ee06ac0](https://github.com/aelxxs/actual-budget-tweaks/commit/ee06ac0))
+- Rewrite the guides as short steps and add an annotated sidebar shot ([9adf93d](https://github.com/aelxxs/actual-budget-tweaks/commit/9adf93d))
+- Add Ambient Glow and Ambient Grain style options ([a7e3a92](https://github.com/aelxxs/actual-budget-tweaks/commit/a7e3a92))
+- Add Inset Panels style option ([6849c8c](https://github.com/aelxxs/actual-budget-tweaks/commit/6849c8c))
+- Name the overspent category on the suggestion card and cover it from another category when To Budget is empty ([c584f30](https://github.com/aelxxs/actual-budget-tweaks/commit/c584f30))
+- Flag category groups that hold overspent categories, even collapsed ([c5478ae](https://github.com/aelxxs/actual-budget-tweaks/commit/c5478ae))
+- Add Taller Group Rows to set category groups apart from their categories ([7f5d308](https://github.com/aelxxs/actual-budget-tweaks/commit/7f5d308))
+- Chart each month over or under budget in Insights, the running month by its pace ([7894c2d](https://github.com/aelxxs/actual-budget-tweaks/commit/7894c2d))
+- Show how far the money held for next month lasts in Insights ([1aa67aa](https://github.com/aelxxs/actual-budget-tweaks/commit/1aa67aa))
+- Reorder and hide Insights Overview cards from a menu linked to the panel ([4ff4c9e](https://github.com/aelxxs/actual-budget-tweaks/commit/4ff4c9e))
+- Add Income and Money Moves cards to Insights Overview ([12cb4f8](https://github.com/aelxxs/actual-budget-tweaks/commit/12cb4f8))
+- Show the update toast to sidecar users, and keep it to the top features and a count of fixes ([3d6bfaa](https://github.com/aelxxs/actual-budget-tweaks/commit/3d6bfaa))
+
+### 🩹 Fixes
+
+- Quiet new transactions in the Uncategorized view and as soon as they're marked ([805f653](https://github.com/aelxxs/actual-budget-tweaks/commit/805f653))
+- Stop the sidecar loading ABT's stylesheets twice ([36f44f6](https://github.com/aelxxs/actual-budget-tweaks/commit/36f44f6))
+- Stop hidden Insights overwriting the side panel title ([6de3fba](https://github.com/aelxxs/actual-budget-tweaks/commit/6de3fba))
+- Center emoji account icons in the collapsed sidebar ([1816996](https://github.com/aelxxs/actual-budget-tweaks/commit/1816996))
+- Show real cleared and uncleared amounts in the account hover card ([8bdde72](https://github.com/aelxxs/actual-budget-tweaks/commit/8bdde72))
+- Keep syncing accounts' spinner steady when the account list reloads ([bf517b6](https://github.com/aelxxs/actual-budget-tweaks/commit/bf517b6))
+- Paint the calendar's weekday row with the ambient glow and grain ([72f3d15](https://github.com/aelxxs/actual-budget-tweaks/commit/72f3d15))
+- Keep the accounts panel and its shortcuts steady while it opens and closes ([e015046](https://github.com/aelxxs/actual-budget-tweaks/commit/e015046))
+- Paint the Tweaks page with the ambient glow and grain ([2f30b26](https://github.com/aelxxs/actual-budget-tweaks/commit/2f30b26))
+- Match the window's title bar to the applied ABT theme ([fbe8cb1](https://github.com/aelxxs/actual-budget-tweaks/commit/fbe8cb1))
+- Keep the window's title bar on the theme when Actual sets it first ([3b15224](https://github.com/aelxxs/actual-budget-tweaks/commit/3b15224))
+- Repaint the calendar's weekday row after a month slides in ([e74faeb](https://github.com/aelxxs/actual-budget-tweaks/commit/e74faeb))
+- Re-measure shortcut tiles once when the sidebar's animation ends ([d9840b7](https://github.com/aelxxs/actual-budget-tweaks/commit/d9840b7))
+- Keep the inset sidebar's border and corners whole with the accounts panel collapsed ([0aa7242](https://github.com/aelxxs/actual-budget-tweaks/commit/0aa7242))
+- Restore the sidebar at its saved size from the first frame, without animating ([331ae54](https://github.com/aelxxs/actual-budget-tweaks/commit/331ae54))
+- Count Insights goals the way Actual and Targets funded do ([732edb3](https://github.com/aelxxs/actual-budget-tweaks/commit/732edb3))
+- Stop month changes counting as edits in Insights, and dim only slow refreshes ([958ef13](https://github.com/aelxxs/actual-budget-tweaks/commit/958ef13))
+- Start the sidebar from what it showed last time, so it doesn't shift on load ([24f7437](https://github.com/aelxxs/actual-budget-tweaks/commit/24f7437))
+- Don't open Insights under the calendar when reloading on it ([75f1a9d](https://github.com/aelxxs/actual-budget-tweaks/commit/75f1a9d))
+- Keep the calendar's background and weekdays still while months slide, and show the first month without fading in ([53aaa97](https://github.com/aelxxs/actual-budget-tweaks/commit/53aaa97))
+- Call the Money Moves card Reassigned, as Actual's notes do ([0335bd9](https://github.com/aelxxs/actual-budget-tweaks/commit/0335bd9))
+- Give the Insights lifecycle test a watchValue stand-in ([085a939](https://github.com/aelxxs/actual-budget-tweaks/commit/085a939))
+- Drag Insights cards with the pointer and keep the moved card and its edge in view ([aa52110](https://github.com/aelxxs/actual-budget-tweaks/commit/aa52110))
+- Give calendar cells their solid table background again ([bb73c7c](https://github.com/aelxxs/actual-budget-tweaks/commit/bb73c7c))
+- Give the calendar skeleton's cells their solid background again ([f1e85e3](https://github.com/aelxxs/actual-budget-tweaks/commit/f1e85e3))
+- Skip the update toast on nightly edge builds ([d73d576](https://github.com/aelxxs/actual-budget-tweaks/commit/d73d576))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.104 ([96eef51](https://github.com/aelxxs/actual-budget-tweaks/commit/96eef51))
+- Rewrite the website copy and correct its claims ([c55286a](https://github.com/aelxxs/actual-budget-tweaks/commit/c55286a))
+- Generate annotated guide screenshots from a seeded budget ([61a372a](https://github.com/aelxxs/actual-budget-tweaks/commit/61a372a))
+- Replace the README screenshots with the seeded demo budget ([2c9af4e](https://github.com/aelxxs/actual-budget-tweaks/commit/2c9af4e))
+- Export the seeded demo budget with docs-shots --export ([16cb910](https://github.com/aelxxs/actual-budget-tweaks/commit/16cb910))
+
+### 🎨 Styles
+
+- Slim the sidebar search bar and shortcut tiles, and drop their hover tooltips ([071e3a0](https://github.com/aelxxs/actual-budget-tweaks/commit/071e3a0))
+- Match the sidebar search bar's corners to the shortcut tiles ([c9cb86a](https://github.com/aelxxs/actual-budget-tweaks/commit/c9cb86a))
+- Share the docs page styles with the privacy page ([52403d0](https://github.com/aelxxs/actual-budget-tweaks/commit/52403d0))
+- Turn the guides page into preview cards and restage the reconcile shot ([9f77fa3](https://github.com/aelxxs/actual-budget-tweaks/commit/9f77fa3))
+- Add entrance animations and a page glow to the website ([3b26a22](https://github.com/aelxxs/actual-budget-tweaks/commit/3b26a22))
+- Restore the back arrow on website back links ([ca812bc](https://github.com/aelxxs/actual-budget-tweaks/commit/ca812bc))
+- Remove the eyebrow line from the home page hero ([80bd624](https://github.com/aelxxs/actual-budget-tweaks/commit/80bd624))
+- Fix the inset panel corners and put the resize line in the gap ([6cbb032](https://github.com/aelxxs/actual-budget-tweaks/commit/6cbb032))
+- Keep the inset panels' top gap in a browser tab ([19f622a](https://github.com/aelxxs/actual-budget-tweaks/commit/19f622a))
+- Brighten the budget table's headings, summary subtext and sidebar sub-groups ([9e363bb](https://github.com/aelxxs/actual-budget-tweaks/commit/9e363bb))
+- Show uncategorized transactions in amber, as a to-do rather than an error ([54e255f](https://github.com/aelxxs/actual-budget-tweaks/commit/54e255f))
+- Show a month near its whole budget as neutral, not green ([71fdc73](https://github.com/aelxxs/actual-budget-tweaks/commit/71fdc73))
+- Drop italic from upcoming totals, scheduled rows and row notes ([9a3ea84](https://github.com/aelxxs/actual-budget-tweaks/commit/9a3ea84))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.104
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.103...v0.1.104)
