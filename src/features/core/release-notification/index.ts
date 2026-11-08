@@ -34,7 +34,8 @@ export const releaseNotification = {
 		const seen = await getValue<string | null>(SEEN_KEY, null);
 		if (seen !== current) {
 			await setValue(SEEN_KEY, current);
-			if (seen) {
+			// Nightly edge builds (1.2.3-edge.sha) have no changelog section or release page.
+			if (seen && !current.includes("-")) {
 				await setValue(PENDING_KEY, current);
 			}
 		}
