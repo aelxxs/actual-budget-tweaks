@@ -58,6 +58,8 @@ async function setup({ deferRestore = false } = {}) {
 		templatePlanState: state,
 		getValue: async (_key, fallback) => fallback,
 		watchValue: () => () => {},
+		loadCurrentBudgetId: async () => "budget",
+		followBudgetValue: () => ({ save: async () => {}, stop: () => {} }),
 		Page: { Budget: "budget" },
 		matchesPage: () => true,
 		isBudgetPage: () => true,

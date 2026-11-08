@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { CELL } from "@lib/actual-dom";
-	import { openInsights } from "@features/workflows/template-plan";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
-	import Icon from "@lib/components/Icon.svelte";
 	import ActionCard from "./ActionCard.svelte";
 	import Breakdown from "./Breakdown.svelte";
 	import NativeRoll from "./NativeRoll.svelte";
 	import SlotCard from "./SlotCard.svelte";
+	import { untrack } from "svelte";
 	import { smoothRow } from "./smooth-row";
 	import { summaryState } from "./state.svelte";
 	import { cachedTotals, loadMonthTotals, prefetchNeighbours, type MonthTotals } from "./totals";
@@ -14,6 +13,11 @@
 	const { sheet }: { sheet: string } = $props();
 
 	let totals = $derived<MonthTotals | null>(cachedTotals(sheet));
+
+	$effect(() => {
+		untrack(() => summaryState.rowsShown++);
+		return () => untrack(() => summaryState.rowsShown--);
+	});
 	let root = $state<HTMLElement | null>(null);
 
 	// Tints Actual's own To Budget card, which sits outside this component.
@@ -31,16 +35,6 @@
 	});
 
 	const toBudgetCard = $derived(root?.closest("[data-abt-summary-row]")?.lastElementChild ?? null);
-
-	// Lets the card's CSS make room for the shortcut without a :has() rule.
-	$effect(() => {
-		const card = toBudgetCard?.parentElement;
-		if (!card || !templatePlanState.enabled) {
-			return;
-		}
-		card.setAttribute("data-abt-summary-has-more", "");
-		return () => card.removeAttribute("data-abt-summary-has-more");
-	});
 
 	// The To Budget card and ours, eased between widths when content outgrows their floors.
 	$effect(() => {
@@ -75,11 +69,6 @@
 		return () => watch.disconnect();
 	});
 
-	function portal(node: HTMLElement, target: Element = document.body) {
-		target.appendChild(node);
-		return { destroy: () => node.remove() };
-	}
-
 	$effect(() => {
 		void summaryState.versions[sheet];
 		let stale = false;
@@ -104,19 +93,7 @@
 		{/key}
 	{/if}
 	<div class="sr" bind:this={root}>
-		{#if templatePlanState.enabled && toBudgetCard}
-			<button
-				type="button"
-				class="sr__more abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
-				data-abt-summary-more
-				title="This month in Insights"
-				aria-label="This month in Insights"
-				use:portal={toBudgetCard}
-				onclick={() => openInsights("overview")}
-			>
-				<Icon name="layout" size={17} />
-			</button>
-		{:else if toBudgetCard}
+		{#if !templatePlanState.enabled && toBudgetCard}
 			<!-- The breakdown lives in Insights when it's on; the hover only stands in without it. -->
 			<Breakdown anchors={[toBudgetCard]} {sheet} {totals} />
 		{/if}
@@ -226,12 +203,5 @@
 
 	.sr__card.is-skeleton > span + span {
 		width: 80%;
-	}
-
-	/* Sits in Actual's To Budget card, so it's placed against that card's corner. */
-	.sr__more {
-		position: absolute;
-		top: var(--abt-space-2);
-		right: var(--abt-space-2);
 	}
 </style>

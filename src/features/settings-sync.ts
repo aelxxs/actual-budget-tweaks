@@ -38,12 +38,15 @@ interface BudgetScoped {
 	write: (budgetId: string, value: unknown) => Promise<void>;
 	/** Its readers watch storage, so adopting it needs no reload. */
 	watched: boolean;
+	/** One person's look and feel rather than the budget's data: kept per user, as remoteKey does. */
+	personal?: boolean;
 }
 
-function perBudgetKey(base: string): BudgetScoped {
+function perBudgetKey(base: string, personal = false): BudgetScoped {
 	const local = (id: string) => `${base}:${id}`;
 	return {
 		remote: base,
+		personal,
 		fromWrite: (key, value, id) => (key === local(id) ? { value } : null),
 		read: async (id) => ((await hasValue(local(id))) ? getValue(local(id), null) : undefined),
 		write: (id, value) => setValue(local(id), value),
@@ -58,6 +61,9 @@ const BUDGET_SCOPED: BudgetScoped[] = [
 	perBudgetKey("experimental-sidebar-group-sections"),
 	perBudgetKey("experimental-sidebar-account-order"),
 	perBudgetKey("abt-sidebar-shortcuts"),
+	// Card layouts: each budget its own, and on a shared budget each person their own.
+	perBudgetKey("insights-cards", true),
+	perBudgetKey("summary-slots", true),
 	{
 		// One map here for every budget; each budget keeps only its own icon, null once removed.
 		remote: "budget-icon",
@@ -124,9 +130,15 @@ function sameValue(a: unknown, b: unknown): boolean {
 	);
 }
 
-async function push(key: string, value: unknown): Promise<void> {
+/** Where a budget-scoped key lives in the budget. */
+async function scopedRemoteKey(scoped: BudgetScoped): Promise<string> {
+	const id = scoped.personal ? await currentUser() : null;
+	return id ? `${PREFIX}${id}:${scoped.remote}` : PREFIX + scoped.remote;
+}
+
+async function push(key: string, value: unknown, remote?: string): Promise<void> {
 	log.info(`saving "${key}" to the budget`);
-	const id = await remoteKey(key);
+	const id = remote ?? (await remoteKey(key));
 	return send<void>("preferences/save", { id, value: JSON.stringify(value) }).catch((err) =>
 		log.error(`failed to save "${key}"`, err),
 	);
@@ -175,7 +187,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 		for (const scoped of BUDGET_SCOPED) {
 			const write = scoped.fromWrite(key, value, budgetId);
 			if (write) {
-				void push(scoped.remote, write.value);
+				void scopedRemoteKey(scoped).then((id) => push(scoped.remote, write.value, id));
 			}
 		}
 	});
@@ -242,11 +254,12 @@ export function startSettingsSync(settings: Setting[]): () => void {
 		const id = budgetId;
 		if (id) {
 			for (const scoped of BUDGET_SCOPED) {
-				const remote = prefs[PREFIX + scoped.remote];
+				const remoteId = await scopedRemoteKey(scoped);
+				const remote = prefs[remoteId];
 				const local = await scoped.read(id);
 				if (remote === undefined) {
 					if (local !== undefined) {
-						void push(scoped.remote, local);
+						void push(scoped.remote, local, remoteId);
 					}
 					continue;
 				}

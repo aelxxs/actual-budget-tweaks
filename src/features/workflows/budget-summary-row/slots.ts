@@ -1,5 +1,3 @@
-import { defineSetting } from "@features/types";
-
 /** The cards that can fill the summary row's two middle slots. */
 export const SLOT_CARDS = [
 	{ id: "spent", label: "Spent" },
@@ -41,14 +39,3 @@ export function toSlots(raw: unknown): SummarySlots {
 }
 
 export const slotLabel = (id: SlotCardId) => SLOT_CARDS.find((card) => card.id === id)!.label;
-
-/** Listed for settings sync only; it's edited from the summary row's cards. */
-export const summarySlots = defineSetting({
-	type: "custom",
-	label: "Summary row cards",
-	context: {
-		key: SLOTS_KEY,
-		defaultValue: null,
-	},
-	init: () => {},
-});

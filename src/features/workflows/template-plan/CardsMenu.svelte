@@ -2,7 +2,6 @@
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 	import { scrollParent } from "@lib/utilities/dom";
 	import Switch from "@lib/components/Switch.svelte";
-	import { setValue } from "@lib/utilities/store";
 	import {
 		ArrowLeftRight,
 		Banknote,
@@ -19,14 +18,7 @@
 	import { backOut } from "svelte/easing";
 	import { flip } from "svelte/animate";
 	import { fade } from "svelte/transition";
-	import {
-		CARDS_KEY,
-		TEMPLATES_BAR,
-		type CardId,
-		type CardLayout,
-		cardLabel,
-		defaultLayout,
-	} from "./cards";
+	import { TEMPLATES_BAR, type CardId, type CardLayout, cardLabel, defaultLayout } from "./cards";
 	import { templatePlanState } from "./state.svelte";
 
 	const { anchor }: { anchor: HTMLElement } = $props();
@@ -193,7 +185,7 @@
 
 	function save(next: CardLayout) {
 		templatePlanState.cards = next;
-		void setValue(CARDS_KEY, $state.snapshot(next));
+		templatePlanState.saveCards?.($state.snapshot(next));
 	}
 
 	function moved(id: CardId, to: number): CardLayout {

@@ -8,6 +8,7 @@
 	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 	import { type CategoryIcons, followCategoryIcons } from "@lib/utilities/category-icons";
 	import { onMount } from "svelte";
+	import { cardsInRow } from "@features/workflows/budget-summary-row/state.svelte";
 	import { templatePlanState } from "./state.svelte";
 	import { flip } from "svelte/animate";
 	import { fade, slide } from "svelte/transition";
@@ -27,6 +28,8 @@
 	const shownCards = $derived(
 		templatePlanState.cards.order.filter((id) => !templatePlanState.cards.hidden.includes(id)),
 	);
+	/** Cards the summary row shows, which this tab leaves out or trims so nothing shows twice. */
+	const inRow = $derived(cardsInRow());
 	const motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220;
 	// The Reassigned card lists the latest few; the rest open on request.
 	const MOVES_SHOWN = 5;
@@ -137,7 +140,7 @@
 	{#snippet thisMonthCard()}
 		<Section title="This Month">
 			{#snippet badges()}
-				{#if data.totalBudgeted > 0 && !isFutureMonth}
+				{#if data.totalBudgeted > 0 && !isFutureMonth && !inRow.includes("spent")}
 					<Badge
 						tone={spentPct >= 100
 							? "negative"
@@ -281,41 +284,60 @@
 		{@const share = income.usual ? Math.round((income.received / income.usual) * 100) : null}
 		<Section title="Income">
 			{#snippet badges()}
-				{#if share !== null && income.received > 0}
+				{#if share !== null && income.received > 0 && !inRow.includes("income")}
 					<Badge tone={share >= 100 ? "positive" : "neutral"}>{share}% of usual</Badge>
 				{/if}
 			{/snippet}
-			<Row name="Received" value={fmtMoney(income.received)} strong />
-			{#if income.usual}
-				<div class="abt-tab-overview-mini-bar-wrap">
-					<div
-						class="abt-tab-overview-mini-bar"
-						style:width="{Math.min(100, (income.received / income.usual) * 100)}%"
-						data-status="goal"
-					></div>
-				</div>
-				{@const average =
-					income.usualMonths === 1 ? "last month" : `your ${income.usualMonths}-month average`}
-				<p class="abt-tab-overview-note">
-					<span class="abt-privacy-number"
-						>{fmtMoney(Math.abs(income.received - income.usual))}</span
-					>
-					{income.received >= income.usual ? "above" : "below"}
-					{average}
-				</p>
-			{/if}
-			{#if income.categories.length > 1}
-				<div class="abt-tab-overview-split-rows">
-					{#each income.categories as cat (cat.id)}
-						<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted">
-							{#snippet leading()}
-								{#if categoryIcons[cat.id]}
-									<img class="abt-tab-overview-cat-icon" src={categoryIcons[cat.id].value} alt="" />
-								{/if}
-							{/snippet}
-						</Row>
-					{/each}
-				</div>
+			{#if inRow.includes("income")}
+				<!-- The row's Income card has the total and how it compares; this keeps where it came from. -->
+				{#each income.categories as cat (cat.id)}
+					<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted">
+						{#snippet leading()}
+							{#if categoryIcons[cat.id]}
+								<img class="abt-tab-overview-cat-icon" src={categoryIcons[cat.id].value} alt="" />
+							{/if}
+						{/snippet}
+					</Row>
+				{:else}
+					<div class="abt-tab-overview-empty-row">Nothing received yet</div>
+				{/each}
+			{:else}
+				<Row name="Received" value={fmtMoney(income.received)} strong />
+				{#if income.usual}
+					<div class="abt-tab-overview-mini-bar-wrap">
+						<div
+							class="abt-tab-overview-mini-bar"
+							style:width="{Math.min(100, (income.received / income.usual) * 100)}%"
+							data-status="goal"
+						></div>
+					</div>
+					{@const average =
+						income.usualMonths === 1 ? "last month" : `your ${income.usualMonths}-month average`}
+					<p class="abt-tab-overview-note">
+						<span class="abt-privacy-number"
+							>{fmtMoney(Math.abs(income.received - income.usual))}</span
+						>
+						{income.received >= income.usual ? "above" : "below"}
+						{average}
+					</p>
+				{/if}
+				{#if income.categories.length > 1}
+					<div class="abt-tab-overview-split-rows">
+						{#each income.categories as cat (cat.id)}
+							<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted">
+								{#snippet leading()}
+									{#if categoryIcons[cat.id]}
+										<img
+											class="abt-tab-overview-cat-icon"
+											src={categoryIcons[cat.id].value}
+											alt=""
+										/>
+									{/if}
+								{/snippet}
+							</Row>
+						{/each}
+					</div>
+				{/if}
 			{/if}
 		</Section>
 	{/snippet}
@@ -383,6 +405,7 @@
 	{/snippet}
 
 	{@const hasContent = (id: CardId) =>
+		(id !== "next-month" || !inRow.includes("runway")) &&
 		(id !== "goals" || data.underfundedGoals.length > 0) &&
 		(id !== "trend" || data.trend.length > 0)}
 	<!-- While the card menu is open, cards with nothing to show stand in, so moving them shows. -->
@@ -391,11 +414,13 @@
 	{#snippet standIn(id: CardId)}
 		<Section title={cardLabel(id)} collapsible={false}>
 			<div class="abt-tab-overview-empty-row">
-				{id === "trend"
-					? "Shows once there's a month of history"
-					: data.totalGoalCount > 0
-						? "Every goal is funded, so it's hidden for now"
-						: "Shows when a category has a goal to fund"}
+				{id === "next-month"
+					? "Months ahead is in the summary row above the budget"
+					: id === "trend"
+						? "Shows once there's a month of history"
+						: data.totalGoalCount > 0
+							? "Every goal is funded, so it's hidden for now"
+							: "Shows when a category has a goal to fund"}
 			</div>
 		</Section>
 	{/snippet}

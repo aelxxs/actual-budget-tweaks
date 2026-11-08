@@ -13,9 +13,10 @@ import { currentMonth, monthToSheet } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import MonthMeta from "./MonthMeta.svelte";
-import { getValue, watchValue } from "@lib/utilities/store";
+import { followBudgetValue } from "@lib/utilities/budget-value";
+import { removeValue } from "@lib/utilities/store";
 import { SLOTS_KEY, toSlots } from "./slots";
-import { summaryState } from "./state.svelte";
+import { slotStore, summaryState } from "./state.svelte";
 import SummaryRow from "./SummaryRow.svelte";
 import TrackingMeta from "./TrackingMeta.svelte";
 import TrackingRow from "./TrackingRow.svelte";
@@ -30,7 +31,6 @@ const MONTH_META_ATTR = "data-abt-month-meta";
 const CURRENT_MONTH_ATTR = "data-abt-current-month";
 const RESIZING_ATTR = "data-abt-month-count-changing";
 // Set in JS: as :has() rules, every cell Actual rewrites on a month switch restyled the page.
-const HAS_MORE_ATTR = "data-abt-summary-has-more";
 const MONTH_LABEL_ATTR = "data-abt-month-label";
 // Actual's "To Budget:" label, holding its text without the colon for CSS to draw.
 const TO_BUDGET_LABEL_ATTR = "data-abt-to-budget-label";
@@ -95,7 +95,6 @@ function restoreNative(): void {
 		FULL_WIDTH_ATTR,
 		RESIZING_ATTR,
 		CURRENT_MONTH_ATTR,
-		HAS_MORE_ATTR,
 		MONTH_LABEL_ATTR,
 		TO_BUDGET_LABEL_ATTR,
 		CARD_SLOT_ATTR,
@@ -427,18 +426,14 @@ export const budgetSummaryRow = defineSetting({
 			padding: 0 !important;
 		}
 		${SUMMARY_CARD} > :first-child > :not(:last-child) { display: none !important; }
-		/* Offsets include the card's 1px border, to line up with the Insights shortcut inside it. */
+		/* Offsets include the card's 1px border, so it sits in the card's corner. */
 		${SUMMARY_CARD} > :first-child > :last-child {
 			position: absolute !important;
 			top: calc(var(--abt-space-2) + 1px);
 			right: calc(var(--abt-space-2) + 1px);
 			z-index: 1;
 		}
-		/* Beside the Insights breakdown shortcut, when that's in the corner. */
-		${SUMMARY_CARD}[${HAS_MORE_ATTR}] > :first-child > :last-child {
-			right: calc(var(--abt-space-2) + 1px + var(--abt-control-h-sm) + var(--abt-space-1));
-		}
-		/* Actual's notes button, sized and styled like the shortcut beside it. */
+		/* Actual's notes button, sized and styled like ABT's small icon buttons. */
 		${SUMMARY_CARD} > :first-child > :last-child button {
 			display: grid !important;
 			place-items: center;
@@ -535,7 +530,7 @@ export const budgetSummaryRow = defineSetting({
 		${ENVELOPE} ${SUMMARY_CARD} > :last-child .abt-to-budget-label {
 			color: var(--color-tableHeaderText) !important;
 		}
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child *:not([data-abt-summary-more], [data-abt-summary-more] *) {
+		${ENVELOPE} ${SUMMARY_CARD} > :last-child * {
 			align-items: flex-start !important;
 			text-align: left !important;
 			padding-left: 0 !important;
@@ -658,9 +653,12 @@ export const budgetSummaryRow = defineSetting({
 			color: var(--color-errorText) !important;
 		}
 	`,
-	init: async () => {
-		summaryState.slots = toSlots(await getValue<unknown>(SLOTS_KEY, null));
-		const unwatchSlots = watchValue<unknown>(SLOTS_KEY, (v) => (summaryState.slots = toSlots(v)));
+	init: () => {
+		// Per budget: a budget with no choice of its own starts from the defaults.
+		const slots = followBudgetValue(SLOTS_KEY, (v) => (summaryState.slots = toSlots(v)));
+		slotStore.save = (next) => void slots.save(next);
+		// From when the choice was one setting for every budget.
+		void removeValue(SLOTS_KEY);
 		changes = collectChanges(REFRESH_MS, (sheets) => {
 			for (const sheet of sheets) {
 				summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
@@ -675,7 +673,8 @@ export const budgetSummaryRow = defineSetting({
 			sync();
 		});
 		return () => {
-			unwatchSlots();
+			slots.stop();
+			slotStore.save = () => {};
 			unwatch();
 			unwatchTable();
 			unwatchCells();

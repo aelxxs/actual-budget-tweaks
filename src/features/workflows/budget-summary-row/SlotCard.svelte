@@ -3,7 +3,6 @@
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import { setValue } from "@lib/utilities/store";
 	import { ArrowLeftRight } from "@lucide/svelte";
 	import { type CategoryIcons, followCategoryIcons } from "@lib/utilities/category-icons";
 	import { untrack } from "svelte";
@@ -23,8 +22,8 @@
 		nextMonthPlan,
 		pinnedCache,
 	} from "./slot-data";
-	import { SLOTS_KEY, type SlotCardId, slotLabel } from "./slots";
-	import { summaryState } from "./state.svelte";
+	import { type SlotCardId, slotLabel } from "./slots";
+	import { slotStore, summaryState } from "./state.svelte";
 	import type { MonthTotals } from "./totals";
 
 	const {
@@ -59,7 +58,7 @@
 		}
 		cards[slot] = next;
 		summaryState.slots = { cards, pinned: pinned ?? summaryState.slots.pinned };
-		void setValue(SLOTS_KEY, $state.snapshot(summaryState.slots));
+		slotStore.save($state.snapshot(summaryState.slots));
 	}
 
 	// ── Per-card data, each read only while its card shows ──────────
@@ -126,12 +125,19 @@
 	$effect(() => {
 		void version;
 		if (runwayOn) {
-			templatePlanState.loadOverview?.(templatePlanState.overviewData?.sheet === sheet);
+			// Untracked: the overview it loads would otherwise ask for itself again, and each new
+			// request cancels the months-ahead walk before it finishes.
+			untrack(() =>
+				templatePlanState.loadOverview?.(templatePlanState.overviewData?.sheet === sheet),
+			);
 		}
 	});
 
+	// A month Insights worked out ahead draws at once, before its refresh gets going.
 	const overview = $derived(
-		templatePlanState.overviewData?.sheet === sheet ? templatePlanState.overviewData : null,
+		templatePlanState.overviewData?.sheet === sheet
+			? templatePlanState.overviewData
+			: (templatePlanState.peekOverview?.(sheet) ?? null),
 	);
 	const goalTemplates = $derived(templatePlanState.coverageMethod === "goal-templates");
 	const plan = $derived(overview ? nextMonthPlan(overview, goalTemplates) : null);
@@ -158,9 +164,9 @@
 	const label = $derived(
 		id === "pinned" && pinned
 			? pinned.name
-			: id === "runway" && ahead && ahead.lastCovered < 0
+			: id === "runway" && ahead && !aheadLoading && ahead.lastCovered < 0
 				? "Next month"
-				: id === "runway" && ahead
+				: id === "runway" && ahead && !aheadLoading
 					? "Covered through"
 					: slotLabel(id),
 	);
@@ -233,6 +239,10 @@
 				{#if !templatePlanState.enabled}
 					<span class="sr__value abt-num sr__none">Off</span>
 					<span class="sr__sub">Turn on Insights to see this</span>
+				{:else if aheadLoading}
+					<!-- Before the answer: until the months ahead are in, it would stop at next month. -->
+					<span class="sr__value abt-skeleton sr__ghost"></span>
+					<span class="sr__sub abt-skeleton sr__ghost"></span>
 				{:else if ahead}
 					{@const covered = ahead.lastCovered >= 0}
 					<span class="sr__row">
@@ -257,9 +267,6 @@
 							short for {monthName(ahead.months[0].key)}
 						{/if}
 					</span>
-				{:else if aheadLoading}
-					<span class="sr__value abt-skeleton sr__ghost"></span>
-					<span class="sr__sub abt-skeleton sr__ghost"></span>
 				{:else}
 					<span class="sr__value abt-num sr__none">—</span>
 					<span class="sr__sub">Not enough to work out next month</span>
@@ -499,9 +506,18 @@
 		cursor: pointer;
 	}
 
+	/* Taking up its line's full height, so the label doesn't move when the answer arrives. */
 	.sr__ghost {
 		width: 70%;
+	}
+	.sr__value.sr__ghost {
 		height: 14px;
+		margin: 4px 0;
+	}
+	.sr__sub.sr__ghost {
+		width: 85%;
+		height: 10px;
+		margin: 3px 0;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

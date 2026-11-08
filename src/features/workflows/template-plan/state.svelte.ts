@@ -142,6 +142,10 @@ export const templatePlanState = $state({
 	trackBreakdown: null as (<T>(kind: TrackedAction, work: () => Promise<T>) => Promise<T>) | null,
 	/** Re-reads the shown month's overview, quietly once there is one; null while Insights is off. */
 	loadOverview: null as ((quiet: boolean) => void) | null,
+	/** Saves the Overview card layout under the open budget; null while Insights is off. */
+	saveCards: null as ((layout: unknown) => void) | null,
+	/** A month's overview worked out ahead, if there is one; null while Insights is off. */
+	peekOverview: null as ((sheet: string) => OverviewData | null) | null,
 	/** Views outside the panel showing the overview, e.g. the summary row's Months ahead card. */
 	overviewWanted: 0,
 });

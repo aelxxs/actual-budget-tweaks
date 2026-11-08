@@ -14,7 +14,8 @@ import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
-import { getValue, removeValue, setValue, watchValue } from "@lib/utilities/store";
+import { getValue, removeValue, setValue } from "@lib/utilities/store";
+import { followBudgetValue } from "@lib/utilities/budget-value";
 import { CARDS_KEY, toLayout } from "./cards";
 import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
 import {
@@ -311,110 +312,260 @@ async function aheadTemplateNeeds(
 }
 
 /**
- * Walks already done, by the month and the figures they started from, so going back to a month
- * shows its months ahead at once. An edit clears them: it can change a later month's need alone.
+ * Walks already done, by the budget, month and the figures they started from, so going back to a
+ * month shows its months ahead at once. An edit clears them: it can change a later month's need
+ * alone. They're kept in this browser too; those are walked again once, in the background, since
+ * another device may have changed a later month meanwhile.
  */
 const aheadCache = new Map<string, number[]>();
+const unverified = new Set<string>();
+const AHEAD_STORE = "abt-insights-ahead";
+const AHEAD_STORED = 60;
+let cacheBudget: string | undefined;
+
+/** Overviews of the months either side of the one shown, worked out ahead so stepping draws at once. */
+const overviewCache = new Map<string, OverviewData>();
+const OVERVIEWS_KEPT = 12;
+
+function readStoredAhead(): Record<string, number[]> {
+	try {
+		const raw = JSON.parse(localStorage.getItem(AHEAD_STORE) ?? "{}");
+		return raw && typeof raw === "object" ? raw : {};
+	} catch {
+		return {};
+	}
+}
+
+function writeStoredAhead(stored: Record<string, number[]>): void {
+	try {
+		localStorage.setItem(AHEAD_STORE, JSON.stringify(stored));
+	} catch {
+		// Only this browser's head start is lost.
+	}
+}
+
+function rememberAhead(key: string, needs: number[]): void {
+	aheadCache.set(key, needs);
+	unverified.delete(key);
+	const stored = readStoredAhead();
+	delete stored[key];
+	stored[key] = needs;
+	const keys = Object.keys(stored);
+	for (const old of keys.slice(0, Math.max(0, keys.length - AHEAD_STORED))) {
+		delete stored[old];
+	}
+	writeStoredAhead(stored);
+}
+
+function forgetAhead(): void {
+	aheadCache.clear();
+	unverified.clear();
+	overviewCache.clear();
+	const stored = readStoredAhead();
+	for (const key of Object.keys(stored)) {
+		if (key.startsWith(`${cacheBudget}|`)) {
+			delete stored[key];
+		}
+	}
+	writeStoredAhead(stored);
+}
+
+/** Switches the caches to the open budget, taking up what this browser kept for it; true if it changed. */
+async function useBudgetCache(): Promise<boolean> {
+	const id = await loadCurrentBudgetId().catch(() => undefined);
+	if (id === cacheBudget) {
+		return false;
+	}
+	cacheBudget = id;
+	aheadCache.clear();
+	unverified.clear();
+	overviewCache.clear();
+	for (const [key, needs] of Object.entries(readStoredAhead())) {
+		if (key.startsWith(`${id}|`) && Array.isArray(needs)) {
+			aheadCache.set(key, needs);
+			unverified.add(key);
+		}
+	}
+	return true;
+}
+
+/** Where a month's walk is kept, or null when there's nothing to walk. */
+function aheadKey(d: OverviewData): string | null {
+	const need = nextMonthGoalNeed(d);
+	if (!d.hasTemplates || need === null || heldForNextMonth(d) <= need) {
+		return null;
+	}
+	return [cacheBudget, d.monthKey, heldForNextMonth(d), need].join("|");
+}
+
+/** The months-ahead walk for `d`, from the cache or walked now; null if a newer refresh took over. */
+async function resolveAhead(
+	d: OverviewData,
+	cats: Category[],
+	templates: Map<string, TemplateEntry[]>,
+	stale: () => boolean,
+): Promise<number[] | null> {
+	const key = aheadKey(d);
+	if (key === null) {
+		return [];
+	}
+	const cached = aheadCache.get(key);
+	if (cached && !unverified.has(key)) {
+		return cached;
+	}
+	const ahead = await aheadTemplateNeeds(d, cats, templates, stale);
+	if (stale()) {
+		return null;
+	}
+	rememberAhead(key, ahead);
+	return ahead;
+}
+
+function keepOverview(d: OverviewData): void {
+	overviewCache.delete(d.sheet);
+	overviewCache.set(d.sheet, d);
+	if (overviewCache.size > OVERVIEWS_KEPT) {
+		overviewCache.delete(overviewCache.keys().next().value!);
+	}
+}
+
+/** One month's overview, without its months ahead (`aheadTemplateNeeds` is null). */
+async function loadOverview(sheet: string): Promise<{
+	data: OverviewData;
+	cats: Category[];
+	templates: Map<string, TemplateEntry[]>;
+}> {
+	const cats = (await loadCategories()).filter((c) => !c.hidden);
+	const monthKey = sheetToMonth(sheet) ?? "";
+	const months = trendMonths(monthKey);
+	const nextMonthKey = addMonths(monthKey, 1);
+
+	const [
+		cells,
+		schedules,
+		pastCells,
+		nextCells,
+		nextMonthGoalTotal,
+		templatePreview,
+		templates,
+		moves,
+	] = await Promise.all([
+		readCells(sheet, monthCellNames(cats)),
+		query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
+		Promise.all(months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats)))),
+		readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
+		previewMonthTemplateTotal(nextMonthKey, cats),
+		// Goal cells can't tell what's left: they fill once templates run, and Actual can set them
+		// without budgeting anything (actualbudget/actual#9304).
+		previewMonthTemplates(monthKey, cats),
+		loadTemplatesByCategoryId(),
+		loadMonthMoves(monthKey).catch(() => []),
+	]);
+
+	const toBudget = cells.get("to-budget") ?? 0;
+	const totalBudgeted = Math.abs(cells.get("total-budgeted") ?? 0);
+	const trend = buildTrend(months, [...pastCells, cells], cats);
+
+	const data: OverviewData = {
+		sheet,
+		monthKey,
+		availableFunds: cells.get("available-funds") ?? toBudget + totalBudgeted,
+		toBudget,
+		totalBudgeted,
+		lastMonthOverspent: cells.get("last-month-overspent") ?? 0,
+		bufferedSelected: cells.get("buffered-selected") ?? 0,
+		...summarizeCategories(cats, cells),
+		upcomingSchedules: upcomingSchedules(schedules ?? []),
+		trend,
+		nextMonthKey,
+		nextMonthBudgeted: Math.abs(nextCells.get("total-budgeted") ?? 0),
+		nextMonthGoalTotal,
+		recentAvgSpending: recentAverageSpending(trend, totalBudgeted),
+		templateRemaining: templatePreview?.remaining ?? null,
+		templateToApply: templatePreview?.onApply ?? null,
+		hasTemplates: cats.some((c) => templates.has(c.id)),
+		income: summarizeIncome(cats, cells, trend),
+		moves,
+		aheadTemplateNeeds: null,
+	};
+	return { data, cats, templates };
+}
+
+/**
+ * Works out the months either side once the shown one is done, while nothing else is asked of
+ * Actual's worker; a new refresh stops it between dry runs.
+ */
+async function prefetchAround(monthKey: string, seq: number): Promise<void> {
+	for (const step of [1, -1]) {
+		const sheet = monthToSheet(addMonths(monthKey, step));
+		if (seq !== overviewSeq) {
+			return;
+		}
+		if (overviewCache.has(sheet)) {
+			continue;
+		}
+		try {
+			const { data, cats, templates } = await loadOverview(sheet);
+			const ahead = await resolveAhead(data, cats, templates, () => seq !== overviewSeq);
+			if (ahead === null) {
+				return;
+			}
+			keepOverview({ ...data, aheadTemplateNeeds: ahead });
+		} catch (e) {
+			log.debug("prefetch failed", e);
+		}
+	}
+}
 
 async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Promise<void> {
 	if (!isBudgetPage()) {
 		return;
 	}
 	const seq = ++overviewSeq;
+	const stale = () => seq !== overviewSeq;
 	const previous = templatePlanState.overviewData;
-	// Quiet refreshes follow edits.
-	if (quiet) {
-		aheadCache.clear();
+	const sheet = getCurrentSheet();
+	if (!sheet) {
+		templatePlanState.overviewData = null;
+		return;
 	}
-	if (!quiet) {
+	// A month worked out ahead shows at once, before anything is awaited, and is checked below.
+	let kept = quiet ? null : (overviewCache.get(sheet) ?? null);
+	if (kept) {
+		templatePlanState.overviewData = kept;
+	} else if (!quiet) {
 		templatePlanState.overviewLoading = true;
 	}
+	if (await useBudgetCache()) {
+		kept = null;
+	}
+	// Quiet refreshes follow edits.
+	if (quiet) {
+		forgetAhead();
+	}
+	if (stale()) {
+		return;
+	}
 	try {
-		const sheet = getCurrentSheet();
-		if (!sheet) {
-			templatePlanState.overviewData = null;
+		const { data, cats, templates } = await loadOverview(sheet);
+		if (stale()) {
 			return;
 		}
-
-		const cats = (await loadCategories()).filter((c) => !c.hidden);
-		const monthKey = sheetToMonth(sheet) ?? "";
-		const months = trendMonths(monthKey);
-		const nextMonthKey = addMonths(monthKey, 1);
-
-		const [
-			cells,
-			schedules,
-			pastCells,
-			nextCells,
-			nextMonthGoalTotal,
-			templatePreview,
-			templates,
-			moves,
-		] = await Promise.all([
-			readCells(sheet, monthCellNames(cats)),
-			query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
-			Promise.all(months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats)))),
-			readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
-			previewMonthTemplateTotal(nextMonthKey, cats),
-			// Goal cells can't tell what's left: they fill once templates run, and Actual can set them
-			// without budgeting anything (actualbudget/actual#9304).
-			previewMonthTemplates(monthKey, cats),
-			loadTemplatesByCategoryId(),
-			loadMonthMoves(monthKey).catch(() => []),
-		]);
-
-		const toBudget = cells.get("to-budget") ?? 0;
-		const totalBudgeted = Math.abs(cells.get("total-budgeted") ?? 0);
-		const trend = buildTrend(months, [...pastCells, cells], cats);
-
-		const data: OverviewData = {
-			sheet,
-			monthKey,
-			availableFunds: cells.get("available-funds") ?? toBudget + totalBudgeted,
-			toBudget,
-			totalBudgeted,
-			lastMonthOverspent: cells.get("last-month-overspent") ?? 0,
-			bufferedSelected: cells.get("buffered-selected") ?? 0,
-			...summarizeCategories(cats, cells),
-			upcomingSchedules: upcomingSchedules(schedules ?? []),
-			trend,
-			nextMonthKey,
-			nextMonthBudgeted: Math.abs(nextCells.get("total-budgeted") ?? 0),
-			nextMonthGoalTotal,
-			recentAvgSpending: recentAverageSpending(trend, totalBudgeted),
-			templateRemaining: templatePreview?.remaining ?? null,
-			templateToApply: templatePreview?.onApply ?? null,
-			hasTemplates: cats.some((c) => templates.has(c.id)),
-			income: summarizeIncome(cats, cells, trend),
-			moves,
-			// An edit keeps the last walk on screen until the new one is in; another month waits.
-			aheadTemplateNeeds:
-				quiet && previous?.monthKey === monthKey ? previous.aheadTemplateNeeds : null,
-		};
-		if (seq !== overviewSeq) {
-			return;
-		}
-		// Nothing to walk without money past next month, so there's nothing to wait for.
-		const need = nextMonthGoalNeed(data);
-		if (!data.hasTemplates || need === null || heldForNextMonth(data) <= need) {
-			templatePlanState.overviewData = { ...data, aheadTemplateNeeds: [] };
-			return;
-		}
-		const key = [monthKey, heldForNextMonth(data), need].join();
-		const cached = aheadCache.get(key);
-		if (cached) {
-			templatePlanState.overviewData = { ...data, aheadTemplateNeeds: cached };
-			return;
-		}
-		// The rest of the overview shows now; the months ahead are slower, and follow.
-		templatePlanState.overviewData = data;
+		const key = aheadKey(data);
+		const cached = key === null ? [] : aheadCache.get(key);
+		// An edit keeps the last walk on screen until the new one is in; another month waits.
+		const showing =
+			previous?.sheet === sheet || kept ? (kept ?? previous)!.aheadTemplateNeeds : null;
+		templatePlanState.overviewData = { ...data, aheadTemplateNeeds: cached ?? showing };
 		templatePlanState.overviewLoading = false;
-		const ahead = await aheadTemplateNeeds(data, cats, templates, () => seq !== overviewSeq);
-		if (seq !== overviewSeq) {
+		const ahead = await resolveAhead(data, cats, templates, stale);
+		if (ahead === null) {
 			return;
 		}
-		aheadCache.set(key, ahead);
-		templatePlanState.overviewData = { ...data, aheadTemplateNeeds: ahead };
+		const done = { ...data, aheadTemplateNeeds: ahead };
+		templatePlanState.overviewData = done;
+		keepOverview(done);
+		void prefetchAround(data.monthKey, seq);
 	} catch (e) {
 		log.warn("overview refresh failed", e);
 	} finally {
@@ -788,12 +939,11 @@ export const templatePlan = defineSetting({
 		templatePlanState.enabled = true;
 		loadCurrency();
 		await loadPersistedState();
-		templatePlanState.cards = toLayout(await getValue<unknown>(CARDS_KEY, null));
-		// Another device's change, through settings sync.
-		const stopCards = watchValue<unknown>(
-			CARDS_KEY,
-			(v) => (templatePlanState.cards = toLayout(v)),
-		);
+		// Per budget, and followed through settings sync: a budget with none starts from the default.
+		const cards = followBudgetValue(CARDS_KEY, (v) => (templatePlanState.cards = toLayout(v)));
+		templatePlanState.saveCards = (layout) => void cards.save(layout);
+		// From when the layout was one setting for every budget.
+		void removeValue(CARDS_KEY);
 		// Not awaited: it waits for the budget page, and every feature's init blocks the settings panel.
 		loadCategories();
 
@@ -826,6 +976,7 @@ export const templatePlan = defineSetting({
 
 		templatePlanState.trackBreakdown = trackBreakdown;
 		templatePlanState.loadOverview = (quiet) => void refreshOverview({ quiet });
+		templatePlanState.peekOverview = (sheet) => overviewCache.get(sheet) ?? null;
 
 		// Back in this browser tab: other devices may have synced changes meanwhile.
 		const onVisible = () => {
@@ -849,7 +1000,8 @@ export const templatePlan = defineSetting({
 			stopCategories();
 			stopClickListener();
 			stopKeyboard();
-			stopCards();
+			cards.stop();
+			templatePlanState.saveCards = null;
 			document.removeEventListener("visibilitychange", onVisible);
 			templatePlanState.customizingCards = false;
 			stopWatchingCells();
@@ -864,6 +1016,7 @@ export const templatePlan = defineSetting({
 			templatePlanState.applyTemplates = null;
 			templatePlanState.trackBreakdown = null;
 			templatePlanState.loadOverview = null;
+			templatePlanState.peekOverview = null;
 			templatePlanState.overviewData = null;
 			templatePlanState.breakdownLoading = false;
 			lastSheetKey = null;

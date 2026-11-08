@@ -75,8 +75,6 @@ import { syncRecap } from "./workflows/sync-recap";
 import { transactionInspector } from "./workflows/transaction-inspector";
 import { templatePlan } from "./workflows/template-plan";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
-import { insightsCards } from "./workflows/template-plan/cards";
-import { summarySlots } from "./workflows/budget-summary-row/slots";
 
 export type PageSetting = Exclude<Setting<any>, CoreSetting>;
 
@@ -265,6 +263,6 @@ export const coreScripts = [
 ];
 
 // Bootstrap-only settings with no settings-page row (no `group`), still activated.
-const hiddenScripts = [themeLoader, insightsCards, summarySlots];
+const hiddenScripts = [themeLoader];
 
 export const scripts: Setting<any>[][] = [...scriptSections.map(sectionItems), hiddenScripts];

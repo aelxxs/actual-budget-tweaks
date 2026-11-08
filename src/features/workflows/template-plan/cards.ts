@@ -1,5 +1,3 @@
-import { defineSetting } from "@features/types";
-
 /** Overview's cards that can be moved and hidden; Overspent stays first, as an alert. */
 export const OVERVIEW_CARDS = [
 	{ id: "this-month", label: "This Month" },
@@ -48,14 +46,3 @@ export function toLayout(raw: unknown): CardLayout {
 }
 
 export const cardLabel = (id: CardId) => OVERVIEW_CARDS.find((card) => card.id === id)?.label ?? id;
-
-/** Listed for settings sync only; it's edited from Insights → Overview. */
-export const insightsCards = defineSetting({
-	type: "custom",
-	label: "Insights cards",
-	context: {
-		key: CARDS_KEY,
-		defaultValue: null,
-	},
-	init: () => {},
-});
