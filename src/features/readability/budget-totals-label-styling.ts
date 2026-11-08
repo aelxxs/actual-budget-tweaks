@@ -8,7 +8,7 @@ const CATEGORY_ATTR = "data-abt-budget-category-label";
 
 const CSS = `
 	[${LABEL_ATTR}] {
-		color: var(--color-pageTextSubdued);
+		color: var(--color-tableHeaderText);
 		font-size: var(--abt-text-xs);
 		font-weight: 500;
 		letter-spacing: 0.04em;
@@ -16,7 +16,7 @@ const CSS = `
 		margin-bottom: 0.25rem;
 	}
 	[${CATEGORY_ATTR}] {
-		color: var(--color-pageTextSubdued);
+		color: var(--color-tableHeaderText);
 		font-size: var(--abt-text-xs);
 		font-weight: 500;
 		letter-spacing: 0.04em;

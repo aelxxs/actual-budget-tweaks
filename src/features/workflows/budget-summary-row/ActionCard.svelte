@@ -518,7 +518,7 @@
 	.ac__sub {
 		line-height: 16px;
 		font-size: var(--abt-text-base);
-		color: var(--color-pageTextSubdued);
+		color: var(--color-tableHeaderText);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;

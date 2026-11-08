@@ -130,7 +130,7 @@
 		flex: 0 1 auto;
 		font-size: var(--abt-text-sm);
 		letter-spacing: 0.115px;
-		color: var(--abt-ink-5);
+		color: var(--abt-subtle);
 	}
 	/* sub-category counts appear on hover, or always once collapsed (no rows
 	   visible underneath to show the count some other way) */
@@ -163,7 +163,7 @@
 		margin-left: auto;
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
-		color: var(--abt-ink-5);
+		color: var(--abt-subtle);
 		font-variant-numeric: tabular-nums;
 	}
 	/* inline category rename */
