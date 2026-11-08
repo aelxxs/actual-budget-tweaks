@@ -146,8 +146,11 @@
 		overflow: hidden;
 		transition: background 0.1s;
 		--heat: var(--heat-raw, 0);
-		/* Over the page's own background, so the cells don't repaint it as they slide. */
-		--cell-bg: color-mix(in srgb, var(--color-errorText) calc(var(--heat) * 10%), transparent);
+		--cell-bg: color-mix(
+			in srgb,
+			var(--color-errorText) calc(var(--heat) * 10%),
+			var(--color-tableBackground)
+		);
 		background: var(--cell-bg);
 	}
 	/* The tint would reveal spending patterns that privacy mode blurs. */
@@ -194,7 +197,9 @@
 		opacity: 1;
 	}
 
+	/* Half step between table and page, matching the budget table's other-month columns. */
 	.cal-cell.is-muted {
+		background: color-mix(in srgb, var(--color-tableBackground), var(--color-pageBackground));
 		border-color: color-mix(in srgb, var(--color-tableBorder) 50%, var(--color-pageBackground));
 	}
 	.cal-cell.is-muted > * {
