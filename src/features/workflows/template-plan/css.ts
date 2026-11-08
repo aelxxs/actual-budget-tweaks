@@ -9,6 +9,26 @@ export const CSS = `
 		background: var(--abt-panel-surface);
 	}
 
+	/* Each card's own box, so cards can move and fold; spaced as the sections were. */
+	.section + .abt-card-slot,
+	.abt-card-slot:not([data-card="templates"]) + .abt-card-slot {
+		margin-top: 10px;
+	}
+
+	.abt-tab-body .abt-card-slot:not(:last-child) > .section {
+		padding-bottom: 0;
+	}
+
+	.abt-card-slot > .section > .card,
+	.abt-card-slot > .abt-tab-overview-toolbar {
+		transition: border-color 0.2s ease;
+	}
+
+	.abt-card-slot[data-spot] > .section > .card,
+	.abt-card-slot[data-spot] > .abt-tab-overview-toolbar {
+		border-color: var(--abt-accent-4);
+	}
+
 	.abt-tab-overview-toolbar-status {
 		min-width: 0;
 		overflow: hidden;
@@ -19,6 +39,10 @@ export const CSS = `
 	}
 	.abt-tab-overview-toolbar-status[data-tone="warn"] { color: var(--color-warningText); }
 	.abt-tab-overview-toolbar-status[data-tone="ok"] { color: var(--color-noticeTextLight); }
+	.abt-tab-actions .abt-btn[aria-pressed="true"] {
+		background: var(--abt-accent-2);
+		color: var(--abt-accent);
+	}
 
 	.abt-tab-overview-load-btn {
 		appearance: none;

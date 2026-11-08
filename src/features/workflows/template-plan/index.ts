@@ -13,7 +13,8 @@ import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
-import { getValue, removeValue, setValue } from "@lib/utilities/store";
+import { getValue, removeValue, setValue, watchValue } from "@lib/utilities/store";
+import { CARDS_KEY, toLayout } from "./cards";
 import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
 import {
 	diffSnapshots,
@@ -186,12 +187,9 @@ function openPanel(): void {
 	removeTriggerButton();
 	const bodyNode = ensurePanelMounted();
 	sidepanel.open({ title: panelTitle, bodyNode, persist: true, width: SIDE_PANEL_WIDTH });
-	if (
-		templatePlanState.activeTab === "overview" &&
-		!templatePlanState.overviewLoading &&
-		!templatePlanState.overviewData
-	) {
-		refreshOverview();
+	if (templatePlanState.activeTab === "overview" && !templatePlanState.overviewLoading) {
+		// Kept numbers may be stale: schedules or transactions changed on another page.
+		refreshOverview({ quiet: !!templatePlanState.overviewData });
 	} else if (
 		templatePlanState.activeTab === "priority" &&
 		!templatePlanState.priorityLoading &&
@@ -776,6 +774,12 @@ export const templatePlan = defineSetting({
 		templatePlanState.enabled = true;
 		loadCurrency();
 		await loadPersistedState();
+		templatePlanState.cards = toLayout(await getValue<unknown>(CARDS_KEY, null));
+		// Another device's change, through settings sync.
+		const stopCards = watchValue<unknown>(
+			CARDS_KEY,
+			(v) => (templatePlanState.cards = toLayout(v)),
+		);
 		// Not awaited: it waits for the budget page, and every feature's init blocks the settings panel.
 		loadCategories();
 
@@ -808,6 +812,14 @@ export const templatePlan = defineSetting({
 
 		templatePlanState.trackBreakdown = trackBreakdown;
 
+		// Back in this browser tab: other devices may have synced changes meanwhile.
+		const onVisible = () => {
+			if (!document.hidden && drawerOpen && templatePlanState.activeTab === "overview") {
+				void refreshOverview({ quiet: true });
+			}
+		};
+		document.addEventListener("visibilitychange", onVisible);
+
 		const stopClickListener = installClickListener();
 		const stopKeyboard = installKeyboard();
 		const unwatch = watchDom(tick);
@@ -822,6 +834,9 @@ export const templatePlan = defineSetting({
 			stopCategories();
 			stopClickListener();
 			stopKeyboard();
+			stopCards();
+			document.removeEventListener("visibilitychange", onVisible);
+			templatePlanState.customizingCards = false;
 			stopWatchingCells();
 			clearTimeout(monthRefresh);
 			removeTriggerButton();

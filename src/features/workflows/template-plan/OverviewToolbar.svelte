@@ -4,7 +4,6 @@
 	import { templatePlanState } from "./state.svelte";
 
 	const data = $derived(templatePlanState.overviewData);
-	const loading = $derived(templatePlanState.overviewLoading);
 	const remaining = $derived(data?.hasTemplates ? data.templateToApply : null);
 	const toApply = $derived(remaining !== null && remaining > 0);
 </script>
@@ -39,16 +38,6 @@
 		>
 			<Icon name="sparkles" size={13} />
 			Apply
-		</button>
-		<button
-			type="button"
-			class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
-			onclick={() => templatePlanState.onTabChange?.("overview")}
-			disabled={loading}
-			title="Refresh overview"
-			aria-label="Refresh overview"
-		>
-			<Icon name="rotateCcw" size={13} />
 		</button>
 	</div>
 </div>

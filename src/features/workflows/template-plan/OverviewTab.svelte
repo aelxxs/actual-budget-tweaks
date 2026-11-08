@@ -7,6 +7,9 @@
 	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
 	import { onMount } from "svelte";
 	import { templatePlanState } from "./state.svelte";
+	import { flip } from "svelte/animate";
+	import { fade, slide } from "svelte/transition";
+	import { type CardId, TEMPLATES_BAR, cardLabel } from "./cards";
 	import { heldForNextMonth, nextMonthGoalNeed } from "./overview";
 	import NextMonth from "./NextMonth.svelte";
 	import OverviewToolbar from "./OverviewToolbar.svelte";
@@ -19,6 +22,24 @@
 		data ? (useGoalTemplates ? data.nextMonthGoalTotal : data.recentAvgSpending) : null,
 	);
 	const loading = $derived(templatePlanState.overviewLoading);
+	const shownCards = $derived(
+		templatePlanState.cards.order.filter((id) => !templatePlanState.cards.hidden.includes(id)),
+	);
+	const motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220;
+
+	// While the card menu points at a card, it's outlined.
+	const spot = (id: string) => ({
+		"data-spot": templatePlanState.highlightCard === id ? "" : undefined,
+	});
+
+	$effect(() => {
+		const lit = templatePlanState.highlightCard;
+		if (lit) {
+			document
+				.querySelector(`.abt-card-slot[data-card="${lit}"]`)
+				?.scrollIntoView({ block: "nearest", behavior: motion ? "smooth" : "auto" });
+		}
+	});
 	// Close to the whole budget reads as neither good nor bad, so it isn't green.
 	const NEAR_LIMIT = 90;
 
@@ -36,7 +57,16 @@
 	});
 </script>
 
-<OverviewToolbar />
+{#if !templatePlanState.cards.hidden.includes(TEMPLATES_BAR)}
+	<div
+		class="abt-card-slot"
+		data-card={TEMPLATES_BAR}
+		{...spot(TEMPLATES_BAR)}
+		transition:slide={{ duration: motion }}
+	>
+		<OverviewToolbar />
+	</div>
+{/if}
 
 {#if !data && loading}
 	<TabSkeleton tab="overview" />
@@ -87,159 +117,216 @@
 		</Section>
 	{/if}
 
-	<Section title="This Month">
-		{#snippet badges()}
-			{#if data.totalBudgeted > 0 && !isFutureMonth}
-				<Badge
-					tone={spentPct >= 100
-						? "negative"
-						: isCurrentMonth && spentAhead
-							? "warning"
-							: spentPct >= NEAR_LIMIT
-								? "neutral"
-								: "positive"}>{spentPct}% spent</Badge
-				>
+	{#snippet thisMonthCard()}
+		<Section title="This Month">
+			{#snippet badges()}
+				{#if data.totalBudgeted > 0 && !isFutureMonth}
+					<Badge
+						tone={spentPct >= 100
+							? "negative"
+							: isCurrentMonth && spentAhead
+								? "warning"
+								: spentPct >= NEAR_LIMIT
+									? "neutral"
+									: "positive"}>{spentPct}% spent</Badge
+					>
+				{/if}
+			{/snippet}
+			{@const spentShare = Math.min(data.totalSpent, data.totalBudgeted)}
+			{@const parts = [
+				{
+					key: "overspent",
+					label: "Overspent last month",
+					value: Math.abs(data.lastMonthOverspent),
+				},
+				{ key: "spent", label: "Spent", value: spentShare },
+				{ key: "left", label: "Assigned, not spent yet", value: data.totalBudgeted - spentShare },
+				{ key: "held", label: "Held for next month", value: data.bufferedSelected },
+				{ key: "free", label: "Not assigned yet", value: Math.max(0, data.toBudget) },
+			].filter((p) => p.value > 0)}
+			{@const whole = parts.reduce((sum, p) => sum + p.value, 0)}
+			{@const leadUnassigned = data.toBudget !== 0}
+			{#if leadUnassigned}
+				{@render toBudgetRow()}
+			{:else}
+				<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
 			{/if}
-		{/snippet}
-		{@const spentShare = Math.min(data.totalSpent, data.totalBudgeted)}
-		{@const parts = [
-			{ key: "overspent", label: "Overspent last month", value: Math.abs(data.lastMonthOverspent) },
-			{ key: "spent", label: "Spent", value: spentShare },
-			{ key: "left", label: "Assigned, not spent yet", value: data.totalBudgeted - spentShare },
-			{ key: "held", label: "Held for next month", value: data.bufferedSelected },
-			{ key: "free", label: "Not assigned yet", value: Math.max(0, data.toBudget) },
-		].filter((p) => p.value > 0)}
-		{@const whole = parts.reduce((sum, p) => sum + p.value, 0)}
-		{@const leadUnassigned = data.toBudget !== 0}
-		{#if leadUnassigned}
-			{@render toBudgetRow()}
-		{:else}
-			<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
-		{/if}
-		{@const onPace = Math.round(data.totalBudgeted * elapsed)}
-		{@const showPace = isCurrentMonth && data.totalBudgeted > 0 && whole > 0}
-		{#if whole > 0}
-			<div class="abt-tab-overview-split-wrap">
-				<div class="abt-tab-overview-split" aria-hidden="true">
-					{#each parts as p (p.key)}
-						<span data-part={p.key} style:flex-grow={p.value / whole}></span>
-					{/each}
+			{@const onPace = Math.round(data.totalBudgeted * elapsed)}
+			{@const showPace = isCurrentMonth && data.totalBudgeted > 0 && whole > 0}
+			{#if whole > 0}
+				<div class="abt-tab-overview-split-wrap">
+					<div class="abt-tab-overview-split" aria-hidden="true">
+						{#each parts as p (p.key)}
+							<span data-part={p.key} style:flex-grow={p.value / whole}></span>
+						{/each}
+					</div>
+					{#if showPace}
+						<span
+							class="abt-tab-overview-pace-tick"
+							aria-hidden="true"
+							style:left="{((Math.abs(data.lastMonthOverspent) + onPace) / whole) * 100}%"
+						></span>
+					{/if}
 				</div>
-				{#if showPace}
-					<span
-						class="abt-tab-overview-pace-tick"
-						aria-hidden="true"
-						style:left="{((Math.abs(data.lastMonthOverspent) + onPace) / whole) * 100}%"
-					></span>
+			{/if}
+			{#if showPace}
+				<p class="abt-tab-overview-pace-note" data-ahead={data.totalSpent > onPace}>
+					{#if data.totalSpent > onPace}
+						Ahead of pace by <span class="abt-privacy-number"
+							>{fmtMoney(data.totalSpent - onPace)}</span
+						>
+					{:else}
+						On pace, <span class="abt-privacy-number">{fmtMoney(onPace - data.totalSpent)}</span> under
+					{/if}
+					<span class="abt-tab-overview-pace-day">· day {dayOfMonth} of {daysInMonth}</span>
+				</p>
+			{/if}
+			{#each parts as p (p.key)}
+				{#if p.key !== "free"}
+					<Row name={p.label} value={fmtMoney(p.value)} tone="muted">
+						{#snippet leading()}
+							<span class="abt-tab-overview-swatch" data-part={p.key}></span>
+						{/snippet}
+					</Row>
+				{/if}
+			{/each}
+			<div class="abt-tab-overview-total">
+				{#if leadUnassigned}
+					<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
+				{:else}
+					{@render toBudgetRow()}
 				{/if}
 			</div>
+		</Section>
+	{/snippet}
+
+	{#snippet nextMonthCard()}
+		{@const nextNeed = useGoalTemplates ? nextMonthGoalNeed(data) : coverageTarget}
+		<NextMonth
+			monthKey={data.nextMonthKey}
+			held={heldForNextMonth(data)}
+			need={nextNeed}
+			needLabel={!useGoalTemplates
+				? "your usual spending"
+				: data.nextMonthBudgeted + (coverageTarget ?? 0) > 0
+					? "for its goals"
+					: "for a typical month"}
+			projected={unplannedBetween}
+			loading={useGoalTemplates && data.aheadTemplateNeeds === null}
+			later={useGoalTemplates
+				? (data.aheadTemplateNeeds ?? [])
+				: Array.from({ length: 11 }, () => coverageTarget ?? 0)}
+			emptyText={coverageTarget === null
+				? "Couldn't preview next month's goal templates. Refresh to try again."
+				: "Not enough spending history to compare next month against."}
+		/>
+	{/snippet}
+
+	{#snippet goalsCard()}
+		{#if data.underfundedGoals.length > 0}
+			<Section title="Goals to Fund" count={`${data.fullyFundedGoalCount}/${data.totalGoalCount}`}>
+				{#each data.underfundedGoals as cat (cat.id)}
+					{@const goal = cat.goal ?? 0}
+					<Row name={cat.name} value={fmtMoney(goal - cat.leftover)}>
+						<div class="abt-tab-overview-mini-bar-wrap">
+							<div
+								class="abt-tab-overview-mini-bar"
+								style="width:{goal > 0
+									? Math.min(100, Math.max(0, (cat.leftover / goal) * 100))
+									: 0}%"
+								data-status="goal"
+							></div>
+						</div>
+					</Row>
+				{/each}
+			</Section>
 		{/if}
-		{#if showPace}
-			<p class="abt-tab-overview-pace-note" data-ahead={data.totalSpent > onPace}>
-				{#if data.totalSpent > onPace}
-					Ahead of pace by <span class="abt-privacy-number"
-						>{fmtMoney(data.totalSpent - onPace)}</span
+	{/snippet}
+
+	{#snippet trendCard()}
+		{#if data.trend.length > 0}
+			<Section title="Over / Under Budget">
+				<div class="abt-tab-overview-legend" aria-hidden="true">
+					<span
+						><i
+							style="background:color-mix(in srgb, var(--color-budgetNumberPositive) 75%, transparent)"
+						></i>Under</span
 					>
-				{:else}
-					On pace, <span class="abt-privacy-number">{fmtMoney(onPace - data.totalSpent)}</span> under
-				{/if}
-				<span class="abt-tab-overview-pace-day">· day {dayOfMonth} of {daysInMonth}</span>
-			</p>
+					<span><i style="background:var(--color-errorText)"></i>Over</span>
+				</div>
+				<TrendChart trend={data.trend} currentMonthKey={data.monthKey} />
+				<p class="abt-tab-overview-note">
+					{overMonths > 0
+						? `Over budget in ${overMonths} of the last ${data.trend.length} months.`
+						: `Total spending stayed under budget every month.`}
+				</p>
+			</Section>
 		{/if}
-		{#each parts as p (p.key)}
-			{#if p.key !== "free"}
-				<Row name={p.label} value={fmtMoney(p.value)} tone="muted">
-					{#snippet leading()}
-						<span class="abt-tab-overview-swatch" data-part={p.key}></span>
-					{/snippet}
-				</Row>
-			{/if}
-		{/each}
-		<div class="abt-tab-overview-total">
-			{#if leadUnassigned}
-				<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
+	{/snippet}
+
+	{#snippet comingUpCard()}
+		<Section
+			title="Coming Up"
+			count={data.upcomingSchedules.length > 0 ? data.upcomingSchedules.length : undefined}
+		>
+			{#if data.upcomingSchedules.length > 0}
+				{#each data.upcomingSchedules as s (s.id)}
+					<Row
+						name={s.name}
+						value={s.amount === null ? undefined : fmtMoney(s.amount)}
+						tone={s.amount !== null && s.amount > 0 ? "positive" : undefined}
+					>
+						{#snippet leading()}
+							<span class="abt-tab-overview-sched-date">{formatDayMonth(s.nextDate)}</span>
+						{/snippet}
+					</Row>
+				{/each}
 			{:else}
-				{@render toBudgetRow()}
+				<div class="abt-tab-overview-empty-row">Nothing scheduled in the next 30 days</div>
+			{/if}
+		</Section>
+	{/snippet}
+
+	{@const hasContent = (id: CardId) =>
+		(id !== "goals" || data.underfundedGoals.length > 0) &&
+		(id !== "trend" || data.trend.length > 0)}
+	<!-- While the card menu is open, cards with nothing to show stand in, so moving them shows. -->
+	{@const present = templatePlanState.customizingCards ? shownCards : shownCards.filter(hasContent)}
+
+	{#snippet standIn(id: CardId)}
+		<Section title={cardLabel(id)} collapsible={false}>
+			<div class="abt-tab-overview-empty-row">
+				{id === "trend"
+					? "Shows once there's a month of history"
+					: data.totalGoalCount > 0
+						? "Every goal is funded, so it's hidden for now"
+						: "Shows when a category has a goal to fund"}
+			</div>
+		</Section>
+	{/snippet}
+
+	{#each present as id (id)}
+		<div
+			class="abt-card-slot"
+			data-card={id}
+			{...spot(id)}
+			animate:flip={{ duration: motion }}
+			in:fade={{ duration: motion }}
+			out:fade={{ duration: motion * 0.6 }}
+		>
+			{#if !hasContent(id)}
+				{@render standIn(id)}
+			{:else if id === "this-month"}
+				{@render thisMonthCard()}
+			{:else if id === "next-month"}
+				{@render nextMonthCard()}
+			{:else if id === "goals"}
+				{@render goalsCard()}
+			{:else if id === "trend"}
+				{@render trendCard()}
+			{:else if id === "coming-up"}
+				{@render comingUpCard()}
 			{/if}
 		</div>
-	</Section>
-
-	{@const nextNeed = useGoalTemplates ? nextMonthGoalNeed(data) : coverageTarget}
-	<NextMonth
-		monthKey={data.nextMonthKey}
-		held={heldForNextMonth(data)}
-		need={nextNeed}
-		needLabel={!useGoalTemplates
-			? "your usual spending"
-			: data.nextMonthBudgeted + (coverageTarget ?? 0) > 0
-				? "for its goals"
-				: "for a typical month"}
-		projected={unplannedBetween}
-		loading={useGoalTemplates && data.aheadTemplateNeeds === null}
-		later={useGoalTemplates
-			? (data.aheadTemplateNeeds ?? [])
-			: Array.from({ length: 11 }, () => coverageTarget ?? 0)}
-		emptyText={coverageTarget === null
-			? "Couldn't preview next month's goal templates. Refresh to try again."
-			: "Not enough spending history to compare next month against."}
-	/>
-
-	{#if data.underfundedGoals.length > 0}
-		<Section title="Goals to Fund" count={`${data.fullyFundedGoalCount}/${data.totalGoalCount}`}>
-			{#each data.underfundedGoals as cat (cat.id)}
-				{@const goal = cat.goal ?? 0}
-				<Row name={cat.name} value={fmtMoney(goal - cat.leftover)}>
-					<div class="abt-tab-overview-mini-bar-wrap">
-						<div
-							class="abt-tab-overview-mini-bar"
-							style="width:{goal > 0
-								? Math.min(100, Math.max(0, (cat.leftover / goal) * 100))
-								: 0}%"
-							data-status="goal"
-						></div>
-					</div>
-				</Row>
-			{/each}
-		</Section>
-	{/if}
-
-	{#if data.trend.length > 0}
-		<Section title="Over / Under Budget">
-			<div class="abt-tab-overview-legend" aria-hidden="true">
-				<span
-					><i
-						style="background:color-mix(in srgb, var(--color-budgetNumberPositive) 75%, transparent)"
-					></i>Under</span
-				>
-				<span><i style="background:var(--color-errorText)"></i>Over</span>
-			</div>
-			<TrendChart trend={data.trend} currentMonthKey={data.monthKey} />
-			<p class="abt-tab-overview-note">
-				{overMonths > 0
-					? `Over budget in ${overMonths} of the last ${data.trend.length} months.`
-					: `Total spending stayed under budget every month.`}
-			</p>
-		</Section>
-	{/if}
-
-	<Section
-		title="Coming Up"
-		count={data.upcomingSchedules.length > 0 ? data.upcomingSchedules.length : undefined}
-	>
-		{#if data.upcomingSchedules.length > 0}
-			{#each data.upcomingSchedules as s (s.id)}
-				<Row
-					name={s.name}
-					value={s.amount === null ? undefined : fmtMoney(s.amount)}
-					tone={s.amount !== null && s.amount > 0 ? "positive" : undefined}
-				>
-					{#snippet leading()}
-						<span class="abt-tab-overview-sched-date">{formatDayMonth(s.nextDate)}</span>
-					{/snippet}
-				</Row>
-			{/each}
-		{:else}
-			<div class="abt-tab-overview-empty-row">Nothing scheduled in the next 30 days</div>
-		{/if}
-	</Section>
+	{/each}
 {/if}

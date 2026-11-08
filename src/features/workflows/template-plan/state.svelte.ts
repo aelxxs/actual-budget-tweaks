@@ -1,3 +1,4 @@
+import { type CardId, type CardLayout, TEMPLATES_BAR, defaultLayout } from "./cards";
 import type { BreakdownSummary, PriorityCache } from "@lib/template-plan/priority-plan";
 
 // ── Overview tab ──────────────────────────────────────────────────
@@ -98,6 +99,12 @@ export const INSIGHTS_TABS = ["overview", "breakdown", "priority"] as const;
 export type InsightsTab = (typeof INSIGHTS_TABS)[number];
 
 export const templatePlanState = $state({
+	/** Overview's card order and the hidden ones. */
+	cards: defaultLayout() as CardLayout,
+	/** Whether Overview's card menu is open. */
+	customizingCards: false,
+	/** The card the menu points at, spotlit in the panel. */
+	highlightCard: null as CardId | typeof TEMPLATES_BAR | null,
 	coverageMethod: "goal-templates" as "goal-templates" | "spending-average",
 	activeTab: "overview" as InsightsTab,
 	/** Whether the Insights feature is on, for other features that link into it. */

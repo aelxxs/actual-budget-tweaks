@@ -1,9 +1,11 @@
 <script lang="ts">
+	import Icon from "@lib/components/Icon.svelte";
 	import Tabs from "@lib/components/Tabs.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { monthLabelForHeader } from "@lib/template-plan/actual-data";
 	import { setValue } from "@lib/utilities/store";
 	import BreakdownTab from "./BreakdownTab.svelte";
+	import CardsMenu from "./CardsMenu.svelte";
 	import { TAB_STORAGE_KEY } from "./constants";
 	import OverviewTab from "./OverviewTab.svelte";
 	import PriorityTab from "./PriorityTab.svelte";
@@ -60,6 +62,8 @@
 				: false,
 	);
 
+	let customizeButton = $state<HTMLElement>();
+
 	const showFooter = $derived(
 		templatePlanState.activeTab === "breakdown" && !!templatePlanState.breakdownState,
 	);
@@ -76,7 +80,28 @@
 		setValue(TAB_STORAGE_KEY, tab);
 		templatePlanState.onTabChange?.(tab);
 	}}
-/>
+>
+	{#snippet trailing()}
+		{#if templatePlanState.activeTab === "overview"}
+			<div class="abt-tab-actions">
+				<button
+					bind:this={customizeButton}
+					type="button"
+					class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+					aria-pressed={templatePlanState.customizingCards}
+					onclick={() => (templatePlanState.customizingCards = !templatePlanState.customizingCards)}
+					title="Customize cards"
+					aria-label="Customize cards"
+				>
+					<Icon name="sliders" size={13} />
+				</button>
+			</div>
+			{#if templatePlanState.customizingCards && customizeButton}
+				<CardsMenu anchor={customizeButton} />
+			{/if}
+		{/if}
+	{/snippet}
+</Tabs>
 
 <div class="abt-tab-body" data-updating={updating || undefined} aria-busy={updating}>
 	{#if templatePlanState.activeTab === "overview"}
