@@ -21,7 +21,7 @@
 		<Section title="Next Month" collapsible={false}>
 			{@render rows(4)}
 		</Section>
-		<Section title="Spent vs Budgeted" collapsible={false}>
+		<Section title="Over / Under Budget" collapsible={false}>
 			<span class="abt-skeleton" style:width="100%" style:height="96px"></span>
 		</Section>
 		<Section title="Coming Up" collapsible={false}>

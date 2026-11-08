@@ -143,46 +143,6 @@ export const CSS = `
 	.abt-tab-overview-mini-bar[data-status="over"]    { background: var(--color-errorText, #e57373); }
 	.abt-tab-overview-mini-bar[data-status="goal"]    { background: linear-gradient(90deg, var(--abt-accent) 0%, var(--abt-panel-accent-secondary) 100%); }
 
-	/* ── Trend bar charts ────────────────────────────────────────── */
-	.abt-tab-overview-chart {
-		display: block;
-		width: 100%;
-		height: auto;
-		color: inherit;
-		overflow: visible;
-	}
-
-	.abt-tab-overview-chart-footer {
-		display: flex;
-		align-items: baseline;
-		gap: 6px;
-		margin-top: 6px;
-		font-size: var(--abt-text-sm);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.abt-tab-overview-chart-delta {
-		font-size: var(--abt-text-xs);
-		font-weight: 700;
-		padding: 1px 5px;
-		border-radius: var(--abt-radius-pill);
-	}
-	.abt-tab-overview-chart-delta[data-sign="neg"] {
-		background: color-mix(in srgb, var(--color-errorText, #e57373) 15%, transparent);
-		color: var(--color-errorText, #e57373);
-	}
-	.abt-tab-overview-chart-delta[data-sign="pos"] {
-		background: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 15%, transparent);
-		color: var(--color-budgetNumberPositive, #4caf50);
-	}
-
-	.abt-tab-overview-chart-avg {
-		margin-left: auto;
-		font-size: var(--abt-text-xs);
-		color: var(--abt-muted);
-		white-space: nowrap;
-	}
-
 	/* ── Scheduled transaction rows ──────────────────────────────── */
 
 	.abt-tab-overview-sched-dot {

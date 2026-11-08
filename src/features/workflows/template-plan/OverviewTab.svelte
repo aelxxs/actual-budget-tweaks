@@ -204,19 +204,16 @@
 	{/if}
 
 	{#if data.trend.length > 0}
-		<Section title="Spent vs Budgeted">
+		<Section title="Over / Under Budget">
 			<div class="abt-tab-overview-legend" aria-hidden="true">
-				<span><i style="background:var(--abt-ink-5)"></i>Budgeted</span>
-				<span><i style="background:var(--abt-accent)"></i>Spent</span>
+				<span
+					><i
+						style="background:color-mix(in srgb, var(--color-budgetNumberPositive) 75%, transparent)"
+					></i>Under</span
+				>
+				<span><i style="background:var(--color-errorText)"></i>Over</span>
 			</div>
-			<TrendChart
-				trend={data.trend}
-				valueKey="spent"
-				currentMonthKey={data.monthKey}
-				barColor="var(--abt-accent)"
-				barColorDim="var(--abt-ink-5)"
-				withBudget
-			/>
+			<TrendChart trend={data.trend} currentMonthKey={data.monthKey} />
 			<p class="abt-tab-overview-note">
 				{overMonths > 0
 					? `Over budget in ${overMonths} of the last ${data.trend.length} months.`

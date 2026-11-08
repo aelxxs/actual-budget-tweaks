@@ -1,37 +1,42 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear } from "d3";
 	import { fmtMoney } from "@lib/utilities/currency";
+	import { currentMonth } from "@lib/utilities/months";
 	import type { MonthTrend } from "./state.svelte";
 
 	interface Props {
 		trend: MonthTrend[];
-		valueKey: "spent" | "budgeted";
 		currentMonthKey: string;
-		barColor: string;
-		barColorDim: string;
-		higherIsBad?: boolean;
-		/** Draws each month's budget behind its bar, and drops the footer. */
-		withBudget?: boolean;
 	}
 
-	let {
-		trend,
-		valueKey,
-		currentMonthKey,
-		barColor,
-		barColorDim,
-		higherIsBad = false,
-		withBudget = false,
-	}: Props = $props();
+	let { trend, currentMonthKey }: Props = $props();
 
 	const CHART_H = 80;
 	const LABEL_H = 16;
 	const R = 2;
-	const TIP_W = $derived(withBudget ? 132 : 88);
-	const TIP_H = 32;
+	const BAR_MAX = 22;
+	const TIP_W = 140;
+	const TIP_H = 46;
+	const UNDER = "color-mix(in srgb, var(--color-budgetNumberPositive) 75%, transparent)";
+	const OVER = "var(--color-errorText)";
 
 	let w = $state(0);
 	let hovered = $state<number | null>(null);
+
+	/** How much of the running month has passed; the rest are whole months. */
+	function elapsed(key: string): number {
+		if (key !== currentMonth()) {
+			return 1;
+		}
+		const today = new Date();
+		return today.getDate() / new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+	}
+
+	/**
+	 * Budgeted less spent: above the line is money left, below is overspending. The running month
+	 * counts only the budget due so far, or it would always tower over the finished ones.
+	 */
+	const diffs = $derived(trend.map((t) => t.budgeted * elapsed(t.monthKey) - t.spent));
 
 	const xScale = $derived.by(() => {
 		if (w <= 0) {
@@ -44,22 +49,22 @@
 			.paddingOuter(0.1);
 	});
 
-	const maxVal = $derived(
-		Math.max(
-			...trend.map((t) => (withBudget ? Math.max(t[valueKey], t.budgeted) : t[valueKey])),
-			1,
-		),
+	const yScale = $derived(
+		scaleLinear()
+			.domain([Math.min(0, ...diffs), Math.max(0, ...diffs, 1)])
+			.range([CHART_H, 0])
+			.nice(),
 	);
 
-	const yScale = $derived(scaleLinear().domain([0, maxVal]).range([CHART_H, 0]).nice());
-
-	function bar(x: number, bw: number, top: number, h: number): string {
-		const safeH = Math.max(h, 2);
-		const r = Math.min(R, safeH, bw / 2);
-		if (safeH <= r * 2) {
-			return `M${x},${top + safeH} h${bw} v${-safeH} h${-bw}z`;
+	/** A bar from the zero line, rounded at its far end, up or down. */
+	function bar(x: number, bw: number, diff: number): string {
+		const zero = yScale(0);
+		const h = Math.max(Math.abs(yScale(diff) - zero), 2);
+		const r = Math.min(R, h / 2, bw / 2);
+		if (diff >= 0) {
+			return `M${x},${zero} v${-(h - r)} a${r},${r} 0 0 1 ${r},${-r} h${bw - 2 * r} a${r},${r} 0 0 1 ${r},${r} v${h - r}z`;
 		}
-		return `M${x},${top + safeH} v${-(safeH - r)} a${r},${r} 0 0 1 ${r},${-r} h${bw - 2 * r} a${r},${r} 0 0 1 ${r},${r} v${safeH - r}z`;
+		return `M${x},${zero} v${h - r} a${r},${r} 0 0 0 ${r},${r} h${bw - 2 * r} a${r},${r} 0 0 0 ${r},${-r} v${-(h - r)}z`;
 	}
 
 	function shortMonth(key: string): string {
@@ -71,14 +76,6 @@
 		const [y, m] = key.split("-").map(Number);
 		return new Date(y, m - 1, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
 	}
-
-	const currVal = $derived(trend.find((t) => t.monthKey === currentMonthKey)?.[valueKey] ?? 0);
-	const prevVal = $derived(trend[trend.length - 2]?.[valueKey] ?? 0);
-	const deltaPct = $derived(prevVal > 0 ? Math.round(((currVal - prevVal) / prevVal) * 100) : null);
-	const nonZero = $derived(trend.filter((t) => t[valueKey] > 0));
-	const avg = $derived(
-		nonZero.length > 0 ? nonZero.reduce((s, t) => s + t[valueKey], 0) / nonZero.length : 0,
-	);
 </script>
 
 <div bind:clientWidth={w} style="width:100%;position:relative">
@@ -90,42 +87,33 @@
 			style="display:block;overflow:visible"
 			onmouseleave={() => (hovered = null)}
 		>
+			<line
+				x1={0}
+				x2={w}
+				y1={yScale(0)}
+				y2={yScale(0)}
+				stroke="var(--abt-ink-4)"
+				stroke-width="1"
+				shape-rendering="crispEdges"
+			/>
 			{#each trend as point, i (point.monthKey)}
-				{@const x = xScale(point.monthKey) ?? 0}
-				{@const bw = xScale.bandwidth()}
-				{@const top = yScale(point[valueKey])}
-				{@const h = CHART_H - top}
+				{@const band = xScale(point.monthKey) ?? 0}
+				{@const bw = Math.min(BAR_MAX, xScale.bandwidth())}
+				{@const x = band + (xScale.bandwidth() - bw) / 2}
 				{@const curr = point.monthKey === currentMonthKey}
-				{@const isHovered = hovered === i}
-				{@const over = withBudget && point.budgeted > 0 && point[valueKey] > point.budgeted}
-				{#if withBudget}
-					{@const pw = Math.min(14, (bw - 2) / 2)}
-					{@const bTop = yScale(point.budgeted)}
-					<path
-						d={bar(x + bw / 2 - pw - 1, pw, bTop, CHART_H - bTop)}
-						fill={barColorDim}
-						opacity={hovered !== null && !isHovered ? 0.45 : 1}
-						style="transition:opacity 0.1s"
-					/>
-					<path
-						d={bar(x + bw / 2 + 1, pw, top, h)}
-						fill={over ? "var(--color-errorText)" : barColor}
-						opacity={hovered !== null && !isHovered ? 0.45 : 1}
-						style="transition:opacity 0.1s"
-					/>
-				{:else}
-					<path
-						d={bar(x, bw, top, h)}
-						fill={curr ? barColor : barColorDim}
-						opacity={hovered !== null && !isHovered ? 0.45 : 1}
-						style="transition:opacity 0.1s"
-					/>
-				{/if}
-				<!-- Full-column hover target -->
+				{@const diff = diffs[i]}
+				<!-- The running month is drawn faint: it can still change. -->
+				<path
+					d={bar(x, bw, diff)}
+					fill={diff < 0 ? OVER : UNDER}
+					opacity={(hovered !== null && hovered !== i ? 0.45 : 1) *
+						(elapsed(point.monthKey) < 1 ? 0.55 : 1)}
+					style="transition:opacity 0.1s"
+				/>
 				<rect
-					{x}
+					x={band}
 					y={0}
-					width={bw}
+					width={xScale.bandwidth()}
 					height={CHART_H}
 					fill="transparent"
 					role="presentation"
@@ -133,26 +121,27 @@
 					onmouseenter={() => (hovered = i)}
 				/>
 				<text
-					x={x + bw / 2}
+					x={band + xScale.bandwidth() / 2}
 					y={CHART_H + LABEL_H - 2}
 					text-anchor="middle"
 					font-size="10"
 					font-family="inherit"
 					fill="currentColor"
 					font-weight={curr ? 700 : 400}
-					opacity={hovered !== null ? (isHovered ? 0.9 : 0.2) : curr ? 0.75 : 0.35}
+					opacity={hovered !== null ? (hovered === i ? 0.9 : 0.2) : curr ? 0.75 : 0.35}
 					style="transition:opacity 0.1s">{shortMonth(point.monthKey)}</text
 				>
 			{/each}
 
-			<!-- Tooltip -->
-			{#if hovered !== null && xScale}
+			{#if hovered !== null}
 				{@const point = trend[hovered]}
-				{@const x = xScale(point.monthKey) ?? 0}
-				{@const bw = xScale.bandwidth()}
-				{@const barTop = yScale(point[valueKey])}
-				{@const tipCX = Math.max(TIP_W / 2 + 2, Math.min(w - TIP_W / 2 - 2, x + bw / 2))}
-				{@const tipY = Math.max(TIP_H + 4, barTop) - TIP_H - 6}
+				{@const diff = diffs[hovered]}
+				{@const band = xScale(point.monthKey) ?? 0}
+				{@const tipCX = Math.max(
+					TIP_W / 2 + 2,
+					Math.min(w - TIP_W / 2 - 2, band + xScale.bandwidth() / 2),
+				)}
+				{@const tipY = Math.max(0, Math.min(yScale(Math.max(0, diff)), CHART_H) - TIP_H - 6)}
 				<g transform="translate({tipCX}, {tipY})" pointer-events="none">
 					<rect
 						x={-TIP_W / 2}
@@ -169,7 +158,8 @@
 						text-anchor="middle"
 						font-size="9"
 						font-family="inherit"
-						fill="rgba(255,255,255,0.45)">{longMonth(point.monthKey)}</text
+						fill="rgba(255,255,255,0.45)"
+						>{longMonth(point.monthKey)}{elapsed(point.monthKey) < 1 ? " · on pace" : ""}</text
 					>
 					<text
 						y={25}
@@ -178,27 +168,20 @@
 						font-weight="700"
 						font-family="inherit"
 						style="font-variant-numeric:tabular-nums"
-						fill="white"
-						>{fmtMoney(point[valueKey])}{withBudget ? ` of ${fmtMoney(point.budgeted)}` : ""}</text
+						fill={diff < 0 ? OVER : "white"}
+						>{fmtMoney(Math.abs(diff))} {diff < 0 ? "over" : "under"}</text
+					>
+					<text
+						y={39}
+						text-anchor="middle"
+						font-size="9"
+						font-family="inherit"
+						style="font-variant-numeric:tabular-nums"
+						fill="rgba(255,255,255,0.55)"
+						>{fmtMoney(point.spent)} of {fmtMoney(point.budgeted)}</text
 					>
 				</g>
 			{/if}
 		</svg>
 	{/if}
 </div>
-
-{#if !withBudget}
-	<div class="abt-tab-overview-chart-footer">
-		<span class="abt-privacy-number" style="font-weight:600;font-variant-numeric:tabular-nums"
-			>{fmtMoney(currVal)}</span
-		>
-		{#if deltaPct !== null}
-			<span
-				class="abt-tab-overview-chart-delta"
-				data-sign={deltaPct === 0 ? "neutral" : deltaPct > 0 === higherIsBad ? "neg" : "pos"}
-				>{deltaPct > 0 ? "↑" : "↓"}{Math.abs(deltaPct)}%</span
-			>
-		{/if}
-		<span class="abt-tab-overview-chart-avg abt-privacy-number">6-mo avg {fmtMoney(avg)}</span>
-	</div>
-{/if}
