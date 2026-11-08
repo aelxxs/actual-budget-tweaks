@@ -19,7 +19,6 @@
 		border: 1px solid var(--color-tableBorder);
 		margin: -0.5px;
 		padding: 6px;
-		background: var(--color-tableBackground);
 	}
 	.cell[data-corner="tl"] {
 		border-top-left-radius: var(--abt-radius);

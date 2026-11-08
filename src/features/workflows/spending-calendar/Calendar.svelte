@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { sidepanel } from "@features/core/side-panel";
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
+	import { SCHEDULE_EDITOR } from "@lib/actual-dom";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import { onListChange } from "@lib/utilities/actual-api";
 	import { loadCategoryColors } from "@lib/utilities/category-colors";
@@ -12,17 +13,18 @@
 		weekdayNames,
 	} from "@lib/utilities/date-format.svelte";
 	import { watchDom } from "@lib/utilities/dom-watcher";
+	import { createLogger } from "@lib/utilities/logger";
+	import { isoDate } from "@lib/utilities/months";
 	import { mount, onMount, tick, unmount } from "svelte";
 	import { cubicOut } from "svelte/easing";
 	import { fly } from "svelte/transition";
 	import CalendarFilters from "./CalendarFilters.svelte";
-	import { SCHEDULE_EDITOR } from "@lib/actual-dom";
-	import { loadFilters, saveFilters, type CalendarFilters as Filters } from "./filters";
 	import CalendarSkeleton from "./CalendarSkeleton.svelte";
 	import DayCell from "./DayCell.svelte";
 	import DayDetail from "./DayDetail.svelte";
 	import DayHeader from "./DayHeader.svelte";
 	import MonthSummary from "./MonthSummary.svelte";
+	import { loadFilters, saveFilters, type CalendarFilters as Filters } from "./filters";
 	import {
 		MAX_FUTURE_MONTHS,
 		cellCorner,
@@ -30,10 +32,8 @@
 		hasTransactions,
 		monthsFromNow,
 	} from "./month-data";
-	import { isoDate } from "@lib/utilities/months";
 	import { dayHeat, maxDaySpent, summarizeMonth } from "./summary";
 	import type { DayData } from "./types";
-	import { createLogger } from "@lib/utilities/logger";
 
 	const log = createLogger("calendar");
 
@@ -100,19 +100,6 @@
 		}
 		return days.find((d) => d.isToday)?.iso ?? days.find((d) => d.isCurrentMonth)?.iso ?? null;
 	});
-
-	// Chrome keeps what the weekday cells painted mid-slide, when the moving grid made their
-	// window-fixed background (Ambient Glow/Grain) move with them; a no-op outline repaints them.
-	async function repaintWeekdays(e: Event) {
-		const cells = (e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>(".cal-day-name");
-		for (const cell of cells) {
-			cell.style.outline = "1px solid transparent";
-		}
-		await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-		for (const cell of cells) {
-			cell.style.outline = "";
-		}
-	}
 
 	function setMonth(y: number, m: number): boolean {
 		if (monthsFromNow(y, m) > MAX_FUTURE_MONTHS) {
@@ -384,12 +371,6 @@
 	});
 </script>
 
-{#snippet weekdays()}
-	{#each dayNames as name (name)}
-		<div class="cal-day-name">{name}</div>
-	{/each}
-{/snippet}
-
 <div class="cal-page" bind:this={pageEl}>
 	<div class="cal-header">
 		<div class="cal-header__left">
@@ -451,9 +432,15 @@
 		</div>
 	</div>
 
+	<!-- Outside the grid, so it stays put while the month slides. -->
+	<div class="cal-weekdays">
+		{#each dayNames as name (name)}
+			<div class="cal-day-name">{name}</div>
+		{/each}
+	</div>
+
 	{#if loading && !hasLoadedOnce}
 		<div class="cal-grid" aria-busy="true" aria-label="Loading calendar">
-			{@render weekdays()}
 			<CalendarSkeleton />
 		</div>
 	{:else}
@@ -463,10 +450,13 @@
 				class:is-loading={loading}
 				role="main"
 				bind:this={gridEl}
-				in:fly={{ x: navDir * 16, duration: reducedMotion ? 0 : 180, easing: cubicOut }}
-				onintroend={repaintWeekdays}
+				in:fly={{
+					x: navDir * 16,
+					// The first grid replaces the skeleton in place; fading it in from nothing blinked.
+					duration: reducedMotion || gridVersion === 1 ? 0 : 180,
+					easing: cubicOut,
+				}}
 			>
-				{@render weekdays()}
 				{#each days as day, idx (idx)}
 					<DayCell
 						{day}
@@ -530,14 +520,23 @@
 		background: var(--abt-line);
 	}
 
+	/* The same gutter on both, so the columns line up when the grid scrolls. */
+	.cal-weekdays,
 	.cal-grid {
-		flex: 1;
 		display: grid;
 		grid-template-columns: repeat(7, 1fr);
-		grid-template-rows: min-content;
+		padding: 0 var(--abt-page-gutter);
+		scrollbar-gutter: stable;
+	}
+	.cal-weekdays {
+		flex-shrink: 0;
+		overflow: hidden;
+	}
+	.cal-grid {
+		flex: 1;
 		grid-auto-rows: 1fr;
 		overflow-y: auto;
-		padding: 0 var(--abt-page-gutter) var(--abt-page-gutter);
+		padding-bottom: var(--abt-page-gutter);
 	}
 
 	/* Delayed so quick loads don't flicker. */
@@ -554,11 +553,6 @@
 		color: var(--color-pageTextSubdued);
 		text-align: center;
 		padding: 10px 0;
-		position: sticky;
-		top: 0;
-		/* Sticky over scrolling cells, so opaque. */
-		background: var(--color-pageBackground);
-		z-index: 1;
 		margin-bottom: 1px;
 	}
 </style>

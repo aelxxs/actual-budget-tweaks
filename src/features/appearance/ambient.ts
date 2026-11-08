@@ -25,8 +25,8 @@ const SURFACES = `
 	[data-abt-tweaks-host],
 	[data-abt-tweaks-host] .settings-page,
 	.settings-toolbar,
-	[data-abt-calendar] .cal-day-name,
-	${MAIN},
+	/* Not the calendar's grid: it slides on a transform, which unfixes a fixed background. */
+	${MAIN}:not([data-abt-calendar] *),
 	${REPORTS_PAGE},
 	${REPORTS_PAGE} > div:not([data-abt-calendar]),
 	${REPORTS_PAGE} > div:not([data-abt-calendar]) > div:first-of-type
