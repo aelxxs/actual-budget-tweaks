@@ -75,6 +75,9 @@ const STORAGE_KEY = "side-panel";
 const WIDTH_KEY = "side-panel-width";
 const PERSIST_KEY = "side-panel-persist";
 
+// With the hash: an overlay page (the calendar) shares its path with the page under it.
+const here = () => location.pathname + location.hash;
+
 /** Mirrors PERSIST_KEY so a page coming back can reopen its panel before it paints. */
 let persistedRoute: string | null | undefined;
 
@@ -150,7 +153,7 @@ export const sidePanel = {
 		persistedRoute = storedPersist?.route ?? null;
 		let widthStored = await hasValue(WIDTH_KEY);
 
-		let isOpen = storedPersist?.route === location.pathname;
+		let isOpen = storedPersist?.route === here();
 		// Whether the open panel is the persisted one: closing another (say the calendar's day
 		// details) mustn't forget that Insights was left open on the budget page.
 		let showingPersisted = isOpen;
@@ -285,7 +288,7 @@ export const sidePanel = {
 
 			showingPersisted = !!detail.persist;
 			if (detail.persist) {
-				setPersistedRoute(location.pathname);
+				setPersistedRoute(here());
 			}
 			if (typeof detail.width === "number") {
 				requestedWidth = clamp(Math.round(detail.width), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
@@ -320,7 +323,7 @@ export const sidePanel = {
 
 		document.addEventListener("abt:navigate", async () => {
 			const persisted = await getValue<{ route: string } | null>(PERSIST_KEY, null);
-			if (persisted?.route === location.pathname) {
+			if (persisted?.route === here()) {
 				if (!isOpen) {
 					isOpen = true;
 					sync();
@@ -368,12 +371,12 @@ export const sidePanel = {
  */
 export async function wasPanelPersistedOpen(): Promise<boolean> {
 	const persisted = await getValue<{ route: string } | null>(PERSIST_KEY, null);
-	return persisted?.route === location.pathname;
+	return persisted?.route === here();
 }
 
 /** wasPanelPersistedOpen without the wait; undefined until the side panel has loaded. */
 export function isPanelPersistedOpen(): boolean | undefined {
-	return persistedRoute === undefined ? undefined : persistedRoute === location.pathname;
+	return persistedRoute === undefined ? undefined : persistedRoute === here();
 }
 
 export { sidepanel } from "./api";

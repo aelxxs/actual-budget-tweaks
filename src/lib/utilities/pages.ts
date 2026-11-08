@@ -30,6 +30,15 @@ export function clearOverlayPage(): void {
 	overlay = null;
 }
 
+/** An overlay's address: the page under it plus this hash, so a reload brings it back. */
+export const overlayHash = (page: Page) => `#${page}`;
+const OVERLAY_PAGES: readonly Page[] = [Page.Calendar];
+
+/** The overlay the address names; on a reload it counts before it has mounted, so the page under it stays untouched. */
+function addressedOverlay(): Page | undefined {
+	return OVERLAY_PAGES.find((page) => location.hash === overlayHash(page));
+}
+
 /** Pages Actual can put under /settings/ (actualbudget/actual#9110, #9193). */
 const SETTINGS_PAGES: readonly Page[] = [
 	Page.Schedules,
@@ -49,6 +58,10 @@ export function setSidebarPages(pages: readonly Page[]): void {
 export function matchesPage(page: Page): boolean {
 	if (overlay?.el.isConnected && overlay.path === getCurrentPath()) {
 		return page === overlay.page;
+	}
+	const addressed = addressedOverlay();
+	if (addressed) {
+		return page === addressed;
 	}
 	const path = getCurrentPath();
 	// On /settings/payees, Payees is the page, not Settings.

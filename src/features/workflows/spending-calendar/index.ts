@@ -2,7 +2,13 @@ import { sidepanel } from "@features/core/side-panel";
 import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, clearOverlayPage, matchesPage, setOverlayPage } from "@lib/utilities/pages";
+import {
+	Page,
+	clearOverlayPage,
+	matchesPage,
+	overlayHash,
+	setOverlayPage,
+} from "@lib/utilities/pages";
 import { watchRoute } from "@lib/utilities/route-watcher";
 import { mount, unmount } from "svelte";
 import Calendar from "./Calendar.svelte";
@@ -10,8 +16,7 @@ import { CONTENT_GRID, SCHEDULES_LINK } from "@lib/actual-dom";
 
 const LINK_ATTR = "data-abt-calendar-link";
 const CALENDAR_ATTR = "data-abt-calendar";
-/** Marks the page's address while the calendar is open, so a reload brings it back. */
-const CALENDAR_HASH = "#calendar";
+const CALENDAR_HASH = overlayHash(Page.Calendar);
 
 const CALENDAR_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="7" y="13" width="3" height="3" rx="0.5"/><rect x="14" y="13" width="3" height="3" rx="0.5"/></svg>`;
 
