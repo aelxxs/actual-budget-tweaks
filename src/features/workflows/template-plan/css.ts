@@ -124,7 +124,7 @@ export const CSS = `
 		border-top: 1px solid var(--abt-panel-border);
 	}
 
-	/* Money Moves' date headings, one per day. */
+	/* The Reassigned card's date headings, one per day. */
 	.abt-tab-overview-day {
 		margin: 8px 0 2px;
 		font-size: var(--abt-text-xs);
@@ -135,7 +135,7 @@ export const CSS = `
 		margin-top: 0;
 	}
 
-	/* Money Moves' "Show all": a quiet link under the list. */
+	/* The Reassigned card's "Show all": a quiet link under the list. */
 	.abt-tab-overview-more {
 		display: block;
 		margin: 6px 0 0;

@@ -26,7 +26,7 @@
 		templatePlanState.cards.order.filter((id) => !templatePlanState.cards.hidden.includes(id)),
 	);
 	const motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220;
-	// Money Moves lists the latest few; the rest open on request.
+	// The Reassigned card lists the latest few; the rest open on request.
 	const MOVES_SHOWN = 5;
 	let allMoves = $state(false);
 
@@ -314,7 +314,7 @@
 		{@const moves = data.moves}
 		{@const days = groupMoves(moves)}
 		{@const rowCount = days.reduce((n, d) => n + d.rows.length, 0)}
-		<Section title="Money Moves" count={moves.length || undefined}>
+		<Section title="Reassigned" count={moves.length || undefined}>
 			{#if moves.length}
 				{#each allMoves ? days : firstMoveRows(days, MOVES_SHOWN) as { day, rows } (day)}
 					<div class="abt-tab-overview-day">{day}</div>

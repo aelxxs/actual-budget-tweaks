@@ -7,7 +7,7 @@ export const OVERVIEW_CARDS = [
 	{ id: "next-month", label: "Next Month" },
 	{ id: "goals", label: "Goals to Fund" },
 	{ id: "trend", label: "Over / Under Budget" },
-	{ id: "moves", label: "Money Moves" },
+	{ id: "moves", label: "Reassigned" },
 	{ id: "coming-up", label: "Coming Up" },
 ] as const;
 
