@@ -5,6 +5,7 @@ import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import ReleaseNotification from "./ReleaseNotification.svelte";
 
 const PENDING_KEY = "release-notes-pending-version";
+const SEEN_KEY = "release-notes-seen-version";
 const OPT_OUT_KEY = "release-notes-opted-out";
 const WRAP_CLASS = "abt-release-toast-wrap";
 const RELEASES_BASE_URL = "https://github.com/aelxxs/actual-budget-tweaks/releases/tag";
@@ -26,6 +27,16 @@ export const releaseNotification = {
 		const optedOut = await getValue(OPT_OUT_KEY, false);
 		if (optedOut) {
 			return;
+		}
+
+		// The sidecar has no background script to see updates, so the page compares versions too.
+		const current = browser.runtime.getManifest().version;
+		const seen = await getValue<string | null>(SEEN_KEY, null);
+		if (seen !== current) {
+			await setValue(SEEN_KEY, current);
+			if (seen) {
+				await setValue(PENDING_KEY, current);
+			}
 		}
 
 		const version = await getValue<string | null>(PENDING_KEY, null);

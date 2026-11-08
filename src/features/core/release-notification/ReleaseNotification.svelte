@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
-	import type { ReleaseNoteSection } from "@lib/utilities/changelog";
+	import { summarizeReleaseNotes, type ReleaseNoteSection } from "@lib/utilities/changelog";
 
 	const {
 		version,
@@ -15,6 +15,8 @@
 	} = $props();
 
 	let dontShowAgain = $state(false);
+	const summary = $derived(sections ? summarizeReleaseNotes(sections) : null);
+	const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 	const iconUrl = browser.runtime.getURL("/icon.svg");
 </script>
 
@@ -37,17 +39,25 @@
 	</div>
 
 	<div class="toast__body">
-		{#if sections && sections.length}
-			{#each sections as section, i (i)}
-				{#if section.heading}
-					<div class="toast__section-heading">{section.heading}</div>
-				{/if}
+		{#if summary && (summary.features.length || summary.fixes)}
+			{#if summary.features.length}
+				<div class="toast__section-heading">New</div>
 				<ul class="toast__list">
-					{#each section.items as item, i (i)}
+					{#each summary.features as item, i (i)}
 						<li>{item}</li>
 					{/each}
 				</ul>
-			{/each}
+			{/if}
+			{#if summary.moreFeatures || summary.fixes}
+				<div class="toast__more">
+					Plus {[
+						summary.moreFeatures && plural(summary.moreFeatures, "more feature", "more features"),
+						summary.fixes && plural(summary.fixes, "fix", "fixes"),
+					]
+						.filter(Boolean)
+						.join(" and ")}.
+				</div>
+			{/if}
 		{:else}
 			<div class="toast__empty">Release notes aren't available for this version.</div>
 		{/if}
@@ -186,6 +196,12 @@
 		height: 4px;
 		border-radius: var(--abt-radius-pill);
 		background: color-mix(in srgb, var(--abt-accent) 70%, var(--color-pageTextSubdued));
+	}
+
+	.toast__more {
+		margin-top: 10px;
+		font-size: var(--abt-text-sm);
+		color: var(--color-pageTextSubdued);
 	}
 
 	.toast__empty {

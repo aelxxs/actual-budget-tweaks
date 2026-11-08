@@ -79,3 +79,23 @@ export async function fetchReleaseNotes(version: string): Promise<ReleaseNoteSec
 		return null;
 	}
 }
+
+const SHOWN_FEATURES = 5;
+
+export interface ReleaseNoteSummary {
+	features: string[];
+	moreFeatures: number;
+	fixes: number;
+}
+
+/** Keeps a release toast short: the first few features, and only a count of fixes and polish. */
+export function summarizeReleaseNotes(sections: ReleaseNoteSection[]): ReleaseNoteSummary {
+	const count = (pattern: RegExp) =>
+		sections.filter((s) => pattern.test(s.heading)).reduce((n, s) => n + s.items.length, 0);
+	const features = sections.filter((s) => /enhancement/i.test(s.heading)).flatMap((s) => s.items);
+	return {
+		features: features.slice(0, SHOWN_FEATURES),
+		moreFeatures: Math.max(0, features.length - SHOWN_FEATURES),
+		fixes: count(/fix|style|performance/i),
+	};
+}
