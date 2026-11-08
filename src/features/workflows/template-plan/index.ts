@@ -598,10 +598,11 @@ let liveEdits: ReturnType<typeof collectChanges> | null = null;
  * Follows the month shown, and re-reads the Overview when its cells change (assigning, a
  * synced transaction), so it stays current without a refresh.
  */
-function onTableChange({ changed }: BudgetTableChange): void {
+function onTableChange({ changed, moved }: BudgetTableChange): void {
 	// Every batch, not only `moved` ones: the cells' sheet names can settle a render after the header.
 	checkSheetChange();
-	if (!drawerOpen || templatePlanState.activeTab !== "overview") {
+	// Navigating fills in the new month's cells, which isn't an edit; checkSheetChange refreshes it.
+	if (moved || !drawerOpen || templatePlanState.activeTab !== "overview") {
 		return;
 	}
 	const sheet = getCurrentSheet();

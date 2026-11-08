@@ -174,10 +174,10 @@ export const CSS = `
 		transition: opacity 0.15s;
 	}
 
-	/* Delayed, so a quick refresh swaps the numbers without a flicker. */
+	/* Delayed past a typical refresh (a month change is ~250ms), so only slow ones dim. */
 	.abt-tab-body[data-updating] {
 		opacity: 0.55;
-		transition: opacity 0.2s 0.15s;
+		transition: opacity 0.2s 0.4s;
 	}
 
 	.abt-tab-pad {
