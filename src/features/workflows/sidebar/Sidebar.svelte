@@ -17,9 +17,9 @@
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { createLogger } from "@lib/utilities/logger";
 	import { Page, matchesPage } from "@lib/utilities/pages";
-	import { getValue, setValue, watchValue } from "@lib/utilities/store";
+	import { getValue, removeValue, setValue } from "@lib/utilities/store";
 	import { FolderTree, LayoutGrid, Search, SlidersHorizontal } from "@lucide/svelte";
-	import { onMount, untrack } from "svelte";
+	import { onMount, tick, untrack } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
 	import { portal } from "./actions/portal";
 	import { tipState } from "./actions/tooltip.svelte";
@@ -32,7 +32,14 @@
 	import Rail from "./components/Rail.svelte";
 	import { invalidateAccountDetail } from "./lib/account-detail";
 	import { loadCurrentBudgetName } from "./lib/budgets";
-	import { clearAutoCollapse, SIDEBAR_COLLAPSED_KEY, undoAutoCollapse } from "./lib/collapse";
+	import {
+		adoptOldCollapsed,
+		clearAutoCollapse,
+		isSidebarCollapsed,
+		setSidebarCollapsed,
+		undoAutoCollapse,
+		watchSidebarCollapsed,
+	} from "./lib/collapse";
 	import type { SidebarAccount } from "./lib/data";
 	import {
 		closeAccount,
@@ -81,9 +88,8 @@
 	}
 
 	// ---- collapsed rail ----
-	const COLLAPSED_KEY = SIDEBAR_COLLAPSED_KEY;
 	const RAIL_WIDTH = "4rem"; // matches .activity-bar's width in styles/layout.css
-	let collapsed = $state(false);
+	let collapsed = $state(isSidebarCollapsed());
 
 	// Gates .sidebar.transitions-ready (styles/layout.css) so hydrating a persisted
 	// collapsed/width value on mount doesn't itself animate.
@@ -98,7 +104,7 @@
 	);
 
 	// Other features (Modern Reconcile) collapse it for a while and put it back.
-	$effect(() => watchValue<boolean>(COLLAPSED_KEY, (v) => (collapsed = !!v)));
+	$effect(() => watchSidebarCollapsed((v) => (collapsed = v)));
 	$effect(() => watchAccountIcons((v) => (icons = v)));
 
 	// Narrow windows show just the rail; opening it there doesn't change the saved choice.
@@ -122,8 +128,7 @@
 			openWhileNarrow = true;
 			return;
 		}
-		collapsed = false;
-		setValue(COLLAPSED_KEY, false);
+		setSidebarCollapsed(false);
 		clearAutoCollapse();
 	}
 	function collapseSidebar() {
@@ -131,8 +136,7 @@
 			openWhileNarrow = false;
 			return;
 		}
-		collapsed = true;
-		setValue(COLLAPSED_KEY, true);
+		setSidebarCollapsed(true);
 		clearAutoCollapse();
 	}
 
@@ -147,10 +151,28 @@
 	const MAX_WIDTH = 560;
 	// Split's accounts panel sits beside the rail, so it needs less than the single column.
 	const defaultWidth = (mode: SidebarLayout) => (mode === "split" ? 260 : 325);
-	const WIDTH_KEY = "experimental-sidebar-width";
-	let sidebarWidth = $state(defaultWidth("split"));
+	// In the page's own storage, like Actual's sidebar width: read synchronously, so the first frame
+	// is already the saved size. Per browser, as it was in the extension's storage.
+	const WIDTH_KEY = "abt-sidebar-width";
+	const OLD_WIDTH_KEY = "experimental-sidebar-width";
+	function readWidth(): number | null {
+		try {
+			const width = Number(localStorage.getItem(WIDTH_KEY));
+			return width > 0 ? width : null;
+		} catch {
+			return null;
+		}
+	}
+	function saveWidth(width: number): void {
+		try {
+			localStorage.setItem(WIDTH_KEY, String(width));
+		} catch {
+			// Kept for this page, just not remembered.
+		}
+	}
+	let sidebarWidth = $state(readWidth() ?? defaultWidth("split"));
 	// Until the user sizes it, the width follows the layout's default.
-	let widthStored = false;
+	let widthStored = readWidth() !== null;
 	// total on-screen width covers both modes: the classic single-column
 	// rail/expanded sidebar, and split mode's fixed activity bar plus its
 	// optional (collapsible) resizable accounts panel.
@@ -205,11 +227,11 @@
 		resizing = false;
 		(e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
 		widthStored = true;
-		setValue(WIDTH_KEY, sidebarWidth);
+		saveWidth(sidebarWidth);
 	}
 	function resetWidth() {
 		sidebarWidth = defaultWidth(layoutMode);
-		setValue(WIDTH_KEY, sidebarWidth);
+		saveWidth(sidebarWidth);
 	}
 
 	let sidebarEl: HTMLDivElement | undefined = $state();
@@ -443,24 +465,29 @@
 	onMount(async () => {
 		// Panels don't survive a reload, so a fold one made is undone here.
 		await undoAutoCollapse();
-		const [storedCollapsed, storedWidth, storedGroupMode, storedLayoutMode, loadedIcons] =
-			await Promise.all([
-				getValue<boolean>(COLLAPSED_KEY, false),
-				getValue<number | null>(WIDTH_KEY, null),
-				getValue<boolean>(GROUP_MODE_KEY, true),
-				getValue<unknown>(LAYOUT_KEY, "split"),
-				loadIconCache(),
-			]);
-		collapsed = storedCollapsed;
+		const [oldWidth, storedGroupMode, storedLayoutMode, loadedIcons] = await Promise.all([
+			// Saved in the extension's storage before; moved here once.
+			getValue<number | null>(OLD_WIDTH_KEY, null),
+			getValue<boolean>(GROUP_MODE_KEY, true),
+			getValue<unknown>(LAYOUT_KEY, "split"),
+			loadIconCache(),
+			adoptOldCollapsed(),
+		]);
+		if (oldWidth != null) {
+			saveWidth(oldWidth);
+			void removeValue(OLD_WIDTH_KEY);
+		}
 		groupAccounts = storedGroupMode;
 		layoutMode = toLayout(storedLayoutMode);
-		widthStored = storedWidth != null;
-		sidebarWidth = Math.min(
-			MAX_WIDTH,
-			Math.max(MIN_WIDTH, storedWidth ?? defaultWidth(layoutMode)),
-		);
+		const stored = readWidth();
+		widthStored = stored !== null;
+		sidebarWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, stored ?? defaultWidth(layoutMode)));
 		icons = loadedIcons;
-		requestAnimationFrame(() => (transitionsReady = true));
+		// A frame callback runs before that frame's style update, so the restored width and the
+		// transition would land together and animate from the default; reading layout commits it.
+		await tick();
+		void sidebarEl?.offsetWidth;
+		transitionsReady = true;
 
 		try {
 			const [, , loadedAccounts] = await Promise.all([
