@@ -12,6 +12,7 @@
 		trailing,
 		privateTrailing = true,
 		muted = false,
+		caps = true,
 		onToggle,
 		children,
 	}: {
@@ -29,6 +30,8 @@
 		privateTrailing?: boolean;
 		/** A quieter title, for panels made of many sections. */
 		muted?: boolean;
+		/** Off for a list of settings rows, where a capitalised label on every row reads loud. */
+		caps?: boolean;
 		onToggle?: (open: boolean) => void;
 		children: Snippet;
 	} = $props();
@@ -71,20 +74,21 @@
 	{/if}
 {/snippet}
 
-<section class="section">
+<section class="section" data-open={expanded}>
 	{#if collapsible}
 		<button
 			type="button"
 			class="head"
 			data-tone={tone}
 			data-muted={muted}
+			data-caps={caps}
 			aria-expanded={open}
 			onclick={toggle}
 		>
 			{@render headerContent()}
 		</button>
 	{:else}
-		<div class="head" data-tone={tone} data-muted={muted}>
+		<div class="head" data-tone={tone} data-muted={muted} data-caps={caps}>
 			{@render headerContent()}
 		</div>
 	{/if}
@@ -140,6 +144,18 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.7px;
+	}
+	.head[data-caps="false"] .title {
+		font-size: var(--abt-text-base);
+		font-weight: 500;
+		text-transform: none;
+		letter-spacing: normal;
+		color: var(--abt-ink);
+	}
+	/* The value is the quieter half of a settings row. */
+	.head[data-caps="false"] .trailing {
+		font-weight: 500;
+		color: var(--abt-soft);
 	}
 
 	.count {
