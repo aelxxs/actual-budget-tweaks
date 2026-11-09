@@ -131,6 +131,7 @@
 		place();
 		const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		document.addEventListener("keydown", onKey, true);
+		document.addEventListener("pointerdown", onPointer, true);
 		const stops = [...SHOW, ...ACCOUNTS].map(({ setting: s }) => {
 			const { key, defaultValue } = s.context;
 			void getValue<boolean>(key, defaultValue).then((v) => (values[key] = Boolean(v)));
@@ -149,6 +150,7 @@
 			resize.disconnect();
 			removeEventListener("resize", place);
 			document.removeEventListener("keydown", onKey, true);
+			document.removeEventListener("pointerdown", onPointer, true);
 			if (opener?.isConnected && !opener.closest(".ctx")) {
 				opener.focus({ preventScroll: true });
 			}
@@ -220,6 +222,18 @@
 		} else {
 			finishCustomizing();
 		}
+	}
+
+	// A click on the page finishes, like Done; the sidebar and its menus are part of the editing.
+	function onPointer(e: PointerEvent) {
+		const target = e.target as Element | null;
+		if (!target?.isConnected || layer.contains(target) || sidebar.contains(target)) {
+			return;
+		}
+		if (target.closest(".sb-portal-root")) {
+			return;
+		}
+		finishCustomizing();
 	}
 
 	// Each page takes focus as it opens, so the keyboard carries on from where it was.
