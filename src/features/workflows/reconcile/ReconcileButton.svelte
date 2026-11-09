@@ -2,7 +2,7 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { calculate, send } from "@lib/utilities/actual-api";
 	import { openPanel } from "./panel";
-	import { compactAge, relativeTime } from "./relative-time";
+	import { compactAge, reconciledOn } from "./relative-time";
 	import { collapseSidebar, reconcile } from "./state.svelte";
 
 	const { accountId }: { accountId: string } = $props();
@@ -21,7 +21,7 @@
 	const title = $derived(
 		!loaded
 			? "Reconcile"
-			: `${lastReconciled ? `Last reconciled ${relativeTime(lastReconciled)}` : "Never reconciled"}` +
+			: `${lastReconciled ? `Last reconciled ${reconciledOn(lastReconciled)}` : "Never reconciled"}` +
 					` · ${uncleared === 1 ? "1 transaction" : `${uncleared} transactions`} not cleared`,
 	);
 

@@ -1,3 +1,5 @@
+import { formatDayMonth } from "@lib/utilities/date-format.svelte";
+
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 	["year", 365 * 24 * 3600e3],
 	["month", 30 * 24 * 3600e3],
@@ -29,4 +31,23 @@ export function compactAge(days: number): string {
 		return `${Math.floor(days / 30)}mo`;
 	}
 	return `${Math.floor(days / 365)}y`;
+}
+
+/** "Oct 6 · 33 days ago": the date, so it can be found on a statement, then how long since. */
+export function reconciledOn(ms: number): string {
+	const when = new Date(ms);
+	const now = new Date();
+	const date = formatDayMonth(when);
+	const shown = when.getFullYear() === now.getFullYear() ? date : `${date}, ${when.getFullYear()}`;
+	const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+	const days = Math.round((midnight(now) - midnight(when)) / (24 * 3600e3));
+	const ago =
+		days <= 0
+			? "today"
+			: days === 1
+				? "yesterday"
+				: days < 60
+					? `${days} days ago`
+					: relativeTime(ms);
+	return `${shown} · ${ago}`;
 }

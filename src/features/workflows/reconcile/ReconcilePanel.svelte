@@ -12,7 +12,7 @@
 	import { onMount } from "svelte";
 	import { reconcileConfetti } from "./confetti";
 	import { closePanel } from "./panel";
-	import { relativeTime } from "./relative-time";
+	import { reconciledOn } from "./relative-time";
 	import {
 		addAdjustment,
 		back,
@@ -39,12 +39,18 @@
 	const progress = $derived(balanced ? 1 : total ? reconcile.checked / total : 0);
 	const lastReconciled = $derived(
 		reconcile.lastReconciled
-			? `Last reconciled ${relativeTime(Number(reconcile.lastReconciled))}`
+			? `Last reconciled ${reconciledOn(Number(reconcile.lastReconciled))}`
 			: "Never reconciled",
 	);
 
 	let text = $state("");
 	const parsed = $derived(parseMoney(text));
+	// A card's statement shows what's owed as a positive number, but Actual keeps it negative.
+	const flipped = $derived(
+		parsed != null && parsed > 0 && (reconcile.bankBalance ?? reconcile.cleared) < 0
+			? -parsed
+			: null,
+	);
 	let editing = $state(false);
 	let clearing = $state<Set<string>>(new Set());
 
@@ -163,6 +169,17 @@
 						use:select
 						aria-invalid={parsed == null}
 					/>
+					{#if flipped != null}
+						<button
+							type="button"
+							class="rp__chip rp__chip--warn"
+							onclick={() => (text = formatMoneyInput(flipped ?? 0))}
+						>
+							<Icon name="alert" size={13} />
+							<span>Did you mean</span>
+							<span class="abt-privacy-number">{fmtMoney(flipped)}?</span>
+						</button>
+					{/if}
 					<span class="rp__muted">The ending balance on your statement or in your bank's app.</span>
 					{#if reconcile.bankBalance != null}
 						<button
@@ -357,8 +374,8 @@
 	{#if started}
 		<footer class="rp__footer">
 			<button type="button" class="abt-btn abt-btn--sm abt-btn--ghost" onclick={goBack}>
-				<Icon name="chevronLeft" size={13} />
-				Back
+				<Icon name="pencil" size={13} />
+				Edit balance
 			</button>
 			<button type="button" class="abt-btn abt-btn--sm abt-btn--ghost rp__cancel" onclick={stop}
 				>Cancel</button
@@ -441,6 +458,16 @@
 
 	.rp__chip :global(svg) {
 		color: var(--abt-accent-text);
+	}
+
+	/* The sign hint: a likely slip, so it's noticed before Start. */
+	.rp__chip--warn {
+		border-style: solid;
+		border-color: color-mix(in srgb, var(--color-warningText) 45%, transparent);
+	}
+
+	.rp__chip--warn :global(svg) {
+		color: var(--color-warningText);
 	}
 
 	.rp__chip span:last-child {
