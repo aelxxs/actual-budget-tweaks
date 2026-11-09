@@ -60,6 +60,23 @@ function findPageSlot(table: HTMLElement): { column: HTMLElement; page: HTMLElem
 	return column?.parentElement?.matches(CONTENT_GRID) ? { column, page } : null;
 }
 
+// Arriving on the page, Actual's selector shows its default count for a frame before measuring.
+// Every DOM change re-runs sync, so a newer count cancels the pending one.
+let pendingMax: ReturnType<typeof setTimeout> | null = null;
+function settleDisplayMax(value: number): void {
+	if (pendingMax) {
+		clearTimeout(pendingMax);
+		pendingMax = null;
+	}
+	if (value === budgetNav.displayMax) {
+		return;
+	}
+	pendingMax = setTimeout(() => {
+		pendingMax = null;
+		budgetNav.displayMax = value;
+	}, 150);
+}
+
 const sameMonths = (a: string[], b: string[]) =>
 	a.length === b.length && a.every((m, i) => m === b[i]);
 
@@ -106,10 +123,7 @@ function sync(): void {
 	if (!sameMonths(months, budgetNav.months)) {
 		budgetNav.months = months;
 	}
-	const displayMax = countSelector ? countMonthIcons(countSelector) : 1;
-	if (displayMax !== budgetNav.displayMax) {
-		budgetNav.displayMax = displayMax;
-	}
+	settleDisplayMax(countSelector ? countMonthIcons(countSelector) : 1);
 
 	if (host?.isConnected && host.nextElementSibling?.contains(table)) {
 		return;
@@ -166,6 +180,10 @@ export const budgetMonthHeader = defineSetting({
 		const unwatch = watchDom(sync);
 		const unwatchTable = watchElement(BUDGET_TABLE, sync);
 		return () => {
+			if (pendingMax) {
+				clearTimeout(pendingMax);
+				pendingMax = null;
+			}
 			release();
 			stopFallback();
 			unwatch();
