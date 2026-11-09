@@ -1,20 +1,8 @@
 import type { GlowLight, GrainSize, Mode, Recipe } from "./generator";
 
-/** What Shuffle can reroll, each lockable on its own. */
-export type Trait = "mode" | "background" | "accent" | "palette" | "glow" | "grain";
-
-export const TRAITS: { trait: Trait; label: string; title: string }[] = [
-	{ trait: "mode", label: "Mode", title: "Light or dark, and contrast" },
-	{ trait: "background", label: "Background", title: "Background colour and sidebar" },
-	{ trait: "accent", label: "Accent", title: "Accent colour" },
-	{ trait: "palette", label: "Palette", title: "Link, chart and budget colours" },
-	{ trait: "glow", label: "Glow", title: "Glow lights" },
-	{ trait: "grain", label: "Grain", title: "Grain amount and size" },
-];
-
-const corner = (strength = 55, colour = "accent"): GlowLight[] => [
-	{ x: 0, y: 0, size: 0.55, strength, colour },
-	{ x: 1, y: 1, size: 0.42, strength: Math.round(strength * 0.375), colour },
+const corner = (strength = 55, color = "accent"): GlowLight[] => [
+	{ x: 0, y: 0, size: 0.55, strength, color },
+	{ x: 1, y: 1, size: 0.42, strength: Math.round(strength * 0.375), color },
 ];
 
 export const PRESETS: Recipe[] = [
@@ -57,7 +45,7 @@ export const PRESETS: Recipe[] = [
 		budget: "muted",
 		contrast: 0.45,
 		sidebar: "deeper",
-		glow: { on: true, lights: [{ x: 0.62, y: 0.08, size: 0.6, strength: 45, colour: "accent" }] },
+		glow: { on: true, lights: [{ x: 0.62, y: 0.08, size: 0.6, strength: 45, color: "accent" }] },
 		grain: { amount: 30, size: "medium" },
 	},
 	{
@@ -74,8 +62,8 @@ export const PRESETS: Recipe[] = [
 		glow: {
 			on: true,
 			lights: [
-				{ x: 0, y: 1, size: 0.6, strength: 70, colour: "accent" },
-				{ x: 1, y: 0, size: 0.4, strength: 35, colour: "second" },
+				{ x: 0, y: 1, size: 0.6, strength: 70, color: "accent" },
+				{ x: 1, y: 0, size: 0.4, strength: 35, color: "second" },
 			],
 		},
 		grain: { amount: 12, size: "fine" },
@@ -105,7 +93,7 @@ export const PRESETS: Recipe[] = [
 		budget: "vivid",
 		contrast: 0.45,
 		sidebar: "tinted",
-		glow: { on: true, lights: [{ x: 0.5, y: -0.05, size: 0.65, strength: 50, colour: "second" }] },
+		glow: { on: true, lights: [{ x: 0.5, y: -0.05, size: 0.65, strength: 50, color: "second" }] },
 		grain: { amount: 0, size: "fine" },
 	},
 ];
@@ -116,21 +104,19 @@ const chance = (p: number) => Math.random() < p;
 const anyHue = () => Math.floor(Math.random() * 360);
 const wrap = (h: number) => ((h % 360) + 360) % 360;
 
-function randomLights(strength: number, colours: string[] = ["accent"]): GlowLight[] {
+function randomLights(strength: number, colors: string[] = ["accent"]): GlowLight[] {
 	const s = Math.round(strength);
 	const kind = pick(["corner", "top", "both", "loose"] as const);
 	if (kind === "corner") {
-		return corner(s, pick(colours));
+		return corner(s, pick(colors));
 	}
 	if (kind === "top") {
-		return [
-			{ x: rnd(0.3, 0.7), y: -0.05, size: rnd(0.5, 0.7), strength: s, colour: pick(colours) },
-		];
+		return [{ x: rnd(0.3, 0.7), y: -0.05, size: rnd(0.5, 0.7), strength: s, color: pick(colors) }];
 	}
 	if (kind === "both") {
 		return [
-			{ x: 0, y: 0, size: 0.5, strength: s, colour: pick(colours) },
-			{ x: 1, y: 1, size: 0.5, strength: Math.round(s * 0.8), colour: pick(colours) },
+			{ x: 0, y: 0, size: 0.5, strength: s, color: pick(colors) },
+			{ x: 1, y: 1, size: 0.5, strength: Math.round(s * 0.8), color: pick(colors) },
 		];
 	}
 	return Array.from({ length: pick([1, 2, 2, 3]) }, () => ({
@@ -138,7 +124,7 @@ function randomLights(strength: number, colours: string[] = ["accent"]): GlowLig
 		y: rnd(0, 1),
 		size: rnd(0.25, 0.55),
 		strength: Math.round(s * rnd(0.6, 1)),
-		colour: pick(colours),
+		color: pick(colors),
 	}));
 }
 
@@ -298,42 +284,23 @@ const STYLES: Style[] = [
 
 let lastStyle: Style | null = null;
 
-/** Rerolls the unlocked traits from one style; the locked ones are kept as they are. */
-export function shuffleRecipe(current: Recipe, locks: Record<Trait, boolean>): Recipe {
-	const fits = STYLES.filter((s) => !locks.mode || s.modes.includes(current.mode));
-	let style = pick(fits);
-	while (fits.length > 1 && style === lastStyle) {
-		style = pick(fits);
+/** A new theme from one of the styles, never the same style twice in a row. */
+export function shuffleRecipe(current: Recipe): Recipe {
+	let style = pick(STYLES);
+	while (style === lastStyle) {
+		style = pick(STYLES);
 	}
 	lastStyle = style;
 	const d = style.make();
-	const next = copyRecipe(current);
-	next.name = style.name;
-	if (!locks.mode) {
-		next.mode = pick(style.modes);
-		next.contrast = d.contrast;
-	}
-	if (!locks.background) {
-		next.baseHue = d.baseHue;
-		next.tint = d.tint;
-		next.sidebar = d.sidebar;
-		next.backgroundLink = null;
-	}
-	if (!locks.accent) {
-		next.accentHue = d.accentHue;
-		next.accentChroma = d.accentChroma;
-	}
-	if (!locks.palette) {
-		next.family = d.family;
-		next.budget = d.budget;
-	}
-	if (!locks.glow) {
-		next.glow = d.glow;
-	}
-	if (!locks.grain) {
-		next.grain = d.grain;
-	}
-	return followAccent(next);
+	return followAccent({
+		...copyRecipe(current),
+		...d,
+		name: style.name,
+		mode: pick(style.modes),
+		backgroundLink: null,
+		depth: d.depth,
+		accentLift: d.accentLift,
+	});
 }
 
 /** A linked background takes its hue from the accent. */
@@ -349,13 +316,4 @@ export function followAccent(r: Recipe): Recipe {
 // Recipes come out of Svelte state as proxies, which structuredClone can't copy.
 export function copyRecipe(r: Recipe): Recipe {
 	return JSON.parse(JSON.stringify(r)) as Recipe;
-}
-
-/** Rerolls one trait and keeps everything else, the theme's name included. */
-export function rerollTrait(current: Recipe, trait: Trait): Recipe {
-	const locks = Object.fromEntries(TRAITS.map((t) => [t.trait, t.trait !== trait])) as Record<
-		Trait,
-		boolean
-	>;
-	return { ...shuffleRecipe(current, locks), name: current.name };
 }

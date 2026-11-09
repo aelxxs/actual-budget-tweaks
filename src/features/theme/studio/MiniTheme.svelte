@@ -7,9 +7,9 @@
 <span
 	class="mini"
 	style:--m-side={g.sidebar.bg}
-	style:--m-page={g.colours.crust}
-	style:--m-card={g.colours.mantle}
-	style:--m-text={g.colours.text}
+	style:--m-page={g.colors.crust}
+	style:--m-card={g.colors.mantle}
+	style:--m-text={g.colors.text}
 	style:--m-accent={g.sidebar.sel}
 	aria-hidden="true"
 >

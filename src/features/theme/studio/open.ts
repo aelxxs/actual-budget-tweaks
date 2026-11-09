@@ -4,8 +4,10 @@ import { navigate } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { getCurrentPath } from "@lib/utilities/route-watcher";
 import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
+import { userThemeState } from "../user-themes.svelte";
 import { restoreSavedTheme } from "./apply";
-import { clearPreviewState } from "./preview-states";
+import { recipeFromPalette } from "./generator";
+import { copyRecipe } from "./recipes";
 import { studio } from "./state.svelte";
 import StudioHeader from "./StudioHeader.svelte";
 import ThemeStudio from "./ThemeStudio.svelte";
@@ -17,8 +19,26 @@ let header: Mounted | null = null;
 let stop: (() => void) | null = null;
 let waitingForBudget = false;
 
-/** Opens the theme studio beside the Budget page, which serves as its live preview. */
-export function openThemeStudio(): void {
+/**
+ * Opens the theme studio beside the Budget page, which serves as its live preview. With a saved
+ * studio theme's id, it opens on that theme and Save updates it; with another palette theme's, it
+ * starts from an approximation and saves alongside, so the original keeps its exact colors.
+ */
+export function openThemeStudio(themeId?: string): void {
+	const saved = themeId ? userThemeState.themes[themeId] : undefined;
+	const recipe = saved?.recipe;
+	studio.editing = recipe ? themeId! : null;
+	if (!recipe && saved?.keys) {
+		studio.recipe = recipeFromPalette(saved.keys, `${saved.name} (Studio)`);
+		studio.recent = [];
+	}
+	if (recipe) {
+		studio.recipe = copyRecipe(recipe);
+		for (const light of studio.recipe.glow.lights) {
+			light.color ??= (light as { colour?: string }).colour ?? "accent";
+		}
+		studio.recent = [];
+	}
 	if (mounted?.node.isConnected) {
 		return;
 	}
@@ -39,7 +59,10 @@ function sync(): void {
 		}
 		waitingForBudget = false;
 		mounted = { ...mountToPanelBody(ThemeStudio, {}), shown: false };
-		header = mountToNodeWithReturn(StudioHeader, {});
+		// The panel's header slot is display: contents, so this wrapper is the flex item that grows.
+		const slot = document.createElement("div");
+		slot.style.cssText = "flex: 1; min-width: 0;";
+		header = mountToNodeWithReturn(StudioHeader, {}, slot);
 		sidepanel.open({
 			title: "Theme Studio",
 			bodyNode: mounted.node,
@@ -68,7 +91,5 @@ function close(): void {
 	header = null;
 	stop?.();
 	stop = null;
-	studio.preview = "healthy";
-	clearPreviewState();
 	void restoreSavedTheme();
 }

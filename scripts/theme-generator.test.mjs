@@ -13,8 +13,15 @@ await module.link(() => {
 	throw new Error("generator.ts should have no imports");
 });
 await module.evaluate();
-const { generate, contrastReport, contrastRatio, hexToOklch, oklchToHex, contrastToPass } =
-	module.namespace;
+const {
+	generate,
+	contrastReport,
+	contrastRatio,
+	hexToOklch,
+	oklchToHex,
+	contrastToPass,
+	recipeFromPalette,
+} = module.namespace;
 
 const base = {
 	name: "Test",
@@ -38,12 +45,12 @@ test("hex survives a round trip through OKLCH", () => {
 	}
 });
 
-test("every colour is a six-digit hex, in both modes and every sidebar", () => {
+test("every color is a six-digit hex, in both modes and every sidebar", () => {
 	for (const mode of ["dark", "light"]) {
 		for (const sidebar of ["match", "deeper", "dark", "tinted"]) {
 			const g = generate({ ...base, mode, sidebar });
-			assert.equal(Object.keys(g.colours).length, 26);
-			for (const value of [...Object.values(g.colours), ...Object.values(g.sidebar)]) {
+			assert.equal(Object.keys(g.colors).length, 26);
+			for (const value of [...Object.values(g.colors), ...Object.values(g.sidebar)]) {
 				assert.match(value, /^#[0-9a-f]{6}$/);
 			}
 		}
@@ -56,7 +63,7 @@ test("body text reads against the cards at any setting", () => {
 			for (const tint of [0, 1]) {
 				const g = generate({ ...base, mode, contrast, tint });
 				assert.ok(
-					contrastRatio(g.colours.text, g.colours.mantle) >= 7,
+					contrastRatio(g.colors.text, g.colors.mantle) >= 7,
 					`${mode} ${contrast} ${tint}`,
 				);
 			}
@@ -70,7 +77,7 @@ test("budget figures stay legible on every surface", () => {
 			const g = generate({ ...base, mode, budget });
 			for (const key of ["red", "green", "yellow", "overlay1"]) {
 				for (const bg of ["crust", "mantle", "base"]) {
-					assert.ok(contrastRatio(g.colours[key], g.colours[bg]) >= 4.5, `${mode} ${key}/${bg}`);
+					assert.ok(contrastRatio(g.colors[key], g.colors[bg]) >= 4.5, `${mode} ${key}/${bg}`);
 				}
 			}
 		}
@@ -97,4 +104,43 @@ test("fixing contrast passes every pair, whatever the sidebar", () => {
 test("fixing contrast lands on a passing value", () => {
 	const fixed = contrastToPass({ ...base, mode: "light", contrast: 0 });
 	assert.ok(contrastReport(generate({ ...base, mode: "light", contrast: fixed })).passes);
+});
+
+test("a palette reads back to the recipe that made it", () => {
+	const hueGap = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+	for (const mode of ["dark", "light"]) {
+		for (const tint of [0.2, 0.8]) {
+			const made = {
+				...base,
+				mode,
+				tint,
+				family: "custom",
+				linkHue: 180,
+				depth: mode === "dark" ? 0.05 : -0.03,
+				accentLift: mode === "dark" ? 0.06 : -0.04,
+			};
+			const keys = Object.fromEntries(
+				Object.entries(generate(made).colors).map(([k, hex]) => [`--ctp-${k}`, hex]),
+			);
+			const back = recipeFromPalette(keys, "Back");
+			const where = `${mode} tint ${tint}`;
+			assert.equal(back.mode, mode, where);
+			assert.ok(Math.abs(back.tint - tint) < 0.1, `${where}: tint ${back.tint}`);
+			assert.ok(
+				Math.abs(back.contrast - made.contrast) < 0.15,
+				`${where}: contrast ${back.contrast}`,
+			);
+			assert.ok(hueGap(back.baseHue, made.baseHue) < 10, `${where}: base hue ${back.baseHue}`);
+			assert.ok(
+				hueGap(back.accentHue, made.accentHue) < 5,
+				`${where}: accent hue ${back.accentHue}`,
+			);
+			assert.ok(hueGap(back.linkHue, 180) < 8, `${where}: link hue ${back.linkHue}`);
+			assert.ok(Math.abs(back.depth - made.depth) < 0.015, `${where}: depth ${back.depth}`);
+			assert.ok(
+				Math.abs(back.accentLift - made.accentLift) < 0.03,
+				`${where}: lift ${back.accentLift}`,
+			);
+		}
+	}
 });

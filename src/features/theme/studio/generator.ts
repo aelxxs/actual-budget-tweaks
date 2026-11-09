@@ -1,16 +1,16 @@
 /*
- * Turns a theme recipe into the palette ABT themes are built from. Colours are worked out in
+ * Turns a theme recipe into the palette ABT themes are built from. Colors are worked out in
  * OKLCH, so equal lightness steps look equal across hues. No imports, so the unit test loads it.
  */
 
 export type Mode = "dark" | "light";
-export type Family = "close" | "opposite" | "rainbow";
+export type Family = "close" | "opposite" | "rainbow" | "custom";
 export type BudgetTone = "vivid" | "muted";
 export type SidebarStyle = "match" | "deeper" | "dark" | "tinted";
 export type GrainSize = "fine" | "medium" | "coarse";
 
-/** A glow light, placed in fractions of the window. `colour` is "accent", "second" or a hex. */
-export type GlowLight = { x: number; y: number; size: number; strength: number; colour: string };
+/** A glow light, placed in fractions of the window. `color` is "accent", "second" or a hex. */
+export type GlowLight = { x: number; y: number; size: number; strength: number; color: string };
 
 export type Recipe = {
 	name: string;
@@ -21,9 +21,15 @@ export type Recipe = {
 	accentHue: number;
 	accentChroma: number;
 	family: Family;
+	/** The links' hue when the family is "custom"; the chart colours sit around it. */
+	linkHue?: number;
 	budget: BudgetTone;
 	/** 0 soft to 1 crisp. */
 	contrast: number;
+	/** Shifts every background's lightness (OKLCH L) from the studio's default; see DEPTH_RANGE. */
+	depth?: number;
+	/** Shifts the accent's lightness from the one the mode and contrast give; see LIFT_RANGE. */
+	accentLift?: number;
 	sidebar: SidebarStyle;
 	/** The background's hue kept on the accent's, or opposite it, as the accent turns. */
 	backgroundLink?: "accent" | "opposite" | null;
@@ -32,7 +38,7 @@ export type Recipe = {
 	grain: { amount: number; size: GrainSize };
 };
 
-export type SidebarColours = {
+export type SidebarColors = {
 	bg: string;
 	text: string;
 	sub: string;
@@ -46,8 +52,8 @@ export type SidebarColours = {
 
 export type Generated = {
 	/** Keyed by the palette's names (text, mantle, mauve...), as hex. */
-	colours: Record<string, string>;
-	sidebar: SidebarColours;
+	colors: Record<string, string>;
+	sidebar: SidebarColors;
 };
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
@@ -84,7 +90,7 @@ export function maxChroma(L: number, h: number, ceiling = 0.4, steps = 14): numb
 	return lo;
 }
 
-/** sRGB 0-255, with chroma pulled in until the colour fits on screen. */
+/** sRGB 0-255, with chroma pulled in until the color fits on screen. */
 export function oklchToRgb(L: number, C: number, h: number): [number, number, number] {
 	L = clamp(L, 0, 1);
 	C = Math.max(0, C);
@@ -127,7 +133,7 @@ export function hexToOklch(hex: string): { L: number; C: number; h: number } {
 	return { L, C: Math.hypot(A, B), h: ((Math.atan2(B, A) * 180) / Math.PI + 360) % 360 };
 }
 
-/** WCAG contrast ratio between two hex colours. */
+/** WCAG contrast ratio between two hex colors. */
 export function contrastRatio(a: string, b: string): number {
 	const lum = (hex: string) => {
 		const [r, g, bl] = hexChannels(hex);
@@ -143,7 +149,7 @@ function worstRatio(fg: string, bg: string | string[]): number {
 	return Math.min(...[bg].flat().map((b) => contrastRatio(fg, b)));
 }
 
-/** Steps lightness away from the backgrounds until the colour reaches the target on all of them. */
+/** Steps lightness away from the backgrounds until the color reaches the target on all of them. */
 function readable(
 	L: number,
 	C: number,
@@ -165,37 +171,106 @@ function lerpHue(a: number, b: number, t: number): number {
 	return (a + d * t + 360) % 360;
 }
 
-/** The accent's lightness; the colour wheel is drawn at the middle contrast. */
+/** The accent's lightness; the color wheel is drawn at the middle contrast. */
 export function accentLightness(mode: Mode, contrast: number): number {
 	return mode === "dark" ? 0.66 + 0.06 * contrast : 0.53 - 0.06 * contrast;
 }
 
 export const CHROMA_CEILING = 0.26;
 
+/** How far the backgrounds can move: a dark theme mostly lighter (dim), a light one darker. */
+export const DEPTH_RANGE: Record<Mode, [number, number]> = {
+	dark: [-0.04, 0.1],
+	light: [-0.1, 0.01],
+};
+export const LIFT_RANGE: [number, number] = [-0.1, 0.12];
+
+/**
+ * The accent brightnesses the contrast guard leaves alone, as [lowest, highest] lift: outside
+ * them it moves the accent back to 4.5:1 against the backgrounds, so the setting does nothing.
+ */
+export function readableLift(r: Recipe, colors: Record<string, string>): [number, number] {
+	const rest = accentLightness(r.mode, r.contrast);
+	const bgs = [colors.crust, colors.mantle, colors.base];
+	const ok: number[] = [];
+	for (let lift = LIFT_RANGE[0]; lift <= LIFT_RANGE[1] + 1e-9; lift += 0.005) {
+		const hex = oklchToHex(rest + lift, r.accentChroma, r.accentHue);
+		if (Math.min(...bgs.map((b) => contrastRatio(hex, b))) >= 4.5) {
+			ok.push(lift);
+		}
+	}
+	return ok.length ? [ok[0], ok[ok.length - 1]] : [0, 0];
+}
+
 /** The wheel's rim: the most vivid accent a screen shows for this hue. */
 export function rimChroma(mode: Mode, hue: number): number {
 	return maxChroma(accentLightness(mode, 0.5), hue, CHROMA_CEILING, 12);
 }
 
-export function familyHues(r: Pick<Recipe, "accentHue" | "family">): number[] {
+export function familyHues(r: Pick<Recipe, "accentHue" | "family" | "linkHue">): number[] {
 	const A = r.accentHue;
+	const L = r.linkHue ?? A + 180;
 	const hues = {
 		close: [A - 35, A - 55, A - 75, A + 35],
 		opposite: [A + 180, A + 160, A + 200, A + 140],
 		// With the accent, five hues evenly round the wheel.
 		rainbow: [A + 72, A + 144, A + 216, A + 288],
+		custom: [L, L - 15, L + 20, L - 35],
 	}[r.family];
 	return hues.map((h) => (h + 360) % 360);
 }
 
+/** A picked hue or a rainbow keeps some colour even beside a near-grey accent. */
 export function familyChroma(r: Pick<Recipe, "accentChroma" | "family">): number {
-	return r.family === "rainbow" ? Math.max(0.11, r.accentChroma * 0.85) : r.accentChroma * 0.85;
+	const vivid = r.family === "rainbow" || r.family === "custom";
+	return vivid ? Math.max(0.11, r.accentChroma * 0.85) : r.accentChroma * 0.85;
+}
+
+/**
+ * A starting recipe for a palette made elsewhere: the background's hue, tint and lightness, the
+ * accent's hue and vibrance, and the links' hue, read back through the generator's own scales.
+ */
+export function recipeFromPalette(keys: Record<string, string>, name: string): Recipe {
+	const at = (key: string) => hexToOklch(keys[`--ctp-${key}`] ?? "#808080");
+	const mantle = at("mantle");
+	const crust = at("crust");
+	const accent = at("mauve");
+	const link = at("blue");
+	const mode: Mode = mantle.L < 0.5 ? "dark" : "light";
+	const dark = mode === "dark";
+	const tint = clamp(dark ? (mantle.C - 0.004) / 0.03 : (mantle.C - 0.003) / 0.02, 0, 1);
+	// Contrast from how far apart the page and the cards sit, then the shift that puts them there.
+	const gap = mantle.L - crust.L;
+	const contrast = clamp(dark ? (gap - 0.022) / 0.008 : (gap - 0.022) / 0.01, 0, 1);
+	const depth = dark
+		? crust.L - (0.165 - 0.03 * contrast)
+		: mantle.L + 0.02 + 0.01 * contrast - (0.985 - 0.012 * tint);
+	const lift = accent.L - accentLightness(mode, contrast);
+	return {
+		name,
+		mode,
+		// A near-grey background's hue is noise, so it follows the accent instead.
+		baseHue: mantle.C < 0.004 ? accent.h : mantle.h,
+		tint,
+		accentHue: accent.h,
+		accentChroma: Math.max(0.02, Math.min(accent.C, rimChroma(mode, accent.h))),
+		family: "custom",
+		linkHue: link.h,
+		budget: "vivid",
+		contrast,
+		depth: clamp(depth, ...DEPTH_RANGE[mode]),
+		accentLift: clamp(lift, ...LIFT_RANGE),
+		sidebar: "match",
+		backgroundLink: null,
+		glow: { on: false, lights: [] },
+		grain: { amount: 0, size: "fine" },
+	};
 }
 
 export const FAMILY_KEYS = ["blue", "sapphire", "sky", "teal"] as const;
 
 // Hue, vivid chroma, then lightness in dark and in light themes.
-const BUDGET_COLOURS: Record<string, [number, number, number, number]> = {
+const BUDGET_COLORS: Record<string, [number, number, number, number]> = {
 	red: [25, 0.17, 0.72, 0.55],
 	maroon: [15, 0.14, 0.66, 0.5],
 	peach: [55, 0.15, 0.76, 0.6],
@@ -205,6 +280,8 @@ const BUDGET_COLOURS: Record<string, [number, number, number, number]> = {
 
 export function generate(r: Recipe): Generated {
 	const dark = r.mode === "dark";
+	// Clamped here as well, so a shift set in one mode can't push the other off its scale.
+	const depth = clamp(r.depth ?? 0, ...DEPTH_RANGE[r.mode]);
 	const c = r.contrast;
 	const t = r.tint;
 	const H = r.baseHue;
@@ -219,15 +296,15 @@ export function generate(r: Recipe): Generated {
 	const surfaces = () => [K.crust, K.mantle, K.base];
 	// Muted text: placeholders at 3:1, but overlay1 is also the budgeted figures, so 4.5:1.
 	const guardOverlays = (L: number, C: number, d: 1 | -1) => {
-		K.overlay0 = readable(L, C, H, surfaces(), 3, d);
-		K.overlay1 = readable(L + 0.06 * d, C, H, surfaces(), 4.5, d);
-		K.overlay2 = readable(L + 0.12 * d, C * 0.95, H, surfaces(), 5, d);
+		K.overlay0 = readable(L, C, H, surfaces(), 4.5, d);
+		K.overlay1 = readable(L + 0.06 * d, C, H, surfaces(), 5, d);
+		K.overlay2 = readable(L + 0.12 * d, C * 0.95, H, surfaces(), 5.5, d);
 	};
 	if (dark) {
-		// Even full tint stays where real themes sit: a hint of hue, not a coloured page.
+		// Even full tint stays where real themes sit: a hint of hue, not a colored page.
 		const cs = 0.004 + 0.03 * t;
 		const ct = 0.004 + 0.02 * t;
-		crustL = 0.165 - 0.03 * c;
+		crustL = 0.165 - 0.03 * c + depth;
 		mantleL = crustL + 0.022 + 0.008 * c;
 		const baseL = mantleL + 0.022 + 0.008 * c;
 		const s0 = baseL + 0.045 + 0.02 * c;
@@ -238,13 +315,14 @@ export function generate(r: Recipe): Generated {
 		put("surface1", s0 + 0.045, cs * 0.9);
 		put("surface2", s0 + 0.09, cs * 0.85);
 		guardOverlays(0.5, cs * 0.7, 1);
-		put("subtext0", 0.66 + 0.09 * c, ct * 1.2);
-		put("subtext1", 0.76 + 0.07 * c, ct * 1.1);
+		// Secondary text moves with the backgrounds, keeping its distance from them.
+		put("subtext0", 0.66 + 0.09 * c + depth, ct * 1.2);
+		put("subtext1", 0.76 + 0.07 * c + depth, ct * 1.1);
 		K.text = readable(0.88 + 0.07 * c, ct, H, K.mantle, 7, 1);
 	} else {
 		const cs = 0.003 + 0.02 * t;
 		const ct = 0.006 + 0.03 * t;
-		const baseL = 0.985 - 0.012 * t;
+		const baseL = Math.min(1, 0.985 - 0.012 * t + depth);
 		mantleL = baseL - 0.02 - 0.01 * c;
 		crustL = mantleL - 0.022 - 0.01 * c;
 		const s0 = crustL - 0.05 - 0.02 * c;
@@ -255,15 +333,15 @@ export function generate(r: Recipe): Generated {
 		put("surface1", s0 - 0.045, cs * 1.1);
 		put("surface2", s0 - 0.09, cs * 1.1);
 		guardOverlays(0.7, cs * 1.2, -1);
-		put("subtext0", 0.55 - 0.1 * c, ct);
-		put("subtext1", 0.46 - 0.08 * c, ct);
+		put("subtext0", 0.55 - 0.1 * c + depth, ct);
+		put("subtext1", 0.46 - 0.08 * c + depth, ct);
 		K.text = readable(0.33 - 0.1 * c, ct, H, K.mantle, 7, -1);
 	}
 
 	const A = r.accentHue;
 	const AC = r.accentChroma;
-	const aL = accentLightness(r.mode, c);
-	// 4.5:1 both as text and as a fill under page-coloured text (buttons, pills, tags).
+	const aL = accentLightness(r.mode, c) + (r.accentLift ?? 0);
+	// 4.5:1 both as text and as a fill under page-colored text (buttons, pills, tags).
 	K.mauve = readable(aL, AC, A, surfaces(), 4.5, dir);
 	K.lavender = oklchToHex(aL - (dark ? 0.04 : 0.05), AC * 0.95, A + 12);
 	put("pink", Math.min(0.94, aL + (dark ? 0.04 : 0.06)), AC * 0.8, A + 25);
@@ -276,24 +354,25 @@ export function generate(r: Recipe): Generated {
 		K[key] = readable(aL + [-0.02, 0, 0.04, 0.02][i], fc, hues[i], surfaces(), 4.5, dir);
 	});
 
-	for (const [key, [h, chroma, darkL, lightL]] of Object.entries(BUDGET_COLOURS)) {
+	for (const [key, [h, chroma, darkL, lightL]] of Object.entries(BUDGET_COLORS)) {
 		const muted = r.budget === "muted";
 		const hue = muted ? lerpHue(h, H, 0.22 * t) : h;
-		const C = muted ? chroma * 0.55 : chroma;
+		// Clearly calmer, not just a touch softer: about a third of the saturation.
+		const C = muted ? chroma * 0.35 : chroma;
 		// surface0 too: it's the sidebar's hover when the sidebar matches the page.
 		const bgs = [...surfaces(), K.surface0];
 		K[key] = readable(dark ? darkL + 0.03 * c : lightL - 0.04 * c, C, hue, bgs, 4.5, dir);
 	}
 
-	return { colours: K, sidebar: sidebarColours(r, K, crustL, mantleL) };
+	return { colors: K, sidebar: sidebarColors(r, K, crustL, mantleL) };
 }
 
-function sidebarColours(
+function sidebarColors(
 	r: Recipe,
 	K: Record<string, string>,
 	crustL: number,
 	mantleL: number,
-): SidebarColours {
+): SidebarColors {
 	const s = sidebarBase(r, K, crustL, mantleL);
 	if (r.sidebar === "match") {
 		return { ...s, pos: K.green, warn: K.yellow };
@@ -309,7 +388,7 @@ function sidebarBase(
 	K: Record<string, string>,
 	crustL: number,
 	mantleL: number,
-): Omit<SidebarColours, "pos" | "warn"> {
+): Omit<SidebarColors, "pos" | "warn"> {
 	const dark = r.mode === "dark";
 	const t = r.tint;
 	const H = r.baseHue;
@@ -377,17 +456,17 @@ function sidebarBase(
 	};
 }
 
-/** Palette keys, or "sidebar.<key>" for the sidebar's own colours. */
+/** Palette keys, or "sidebar.<key>" for the sidebar's own colors. */
 type ContrastPair = { label: string; fg: string; bg: string[]; min: number };
 
-// The text/background pairs Actual draws with these colours (see theme-apply's mapping).
+// The text/background pairs Actual draws with these colors (see theme-apply's mapping).
 const CARDS = ["mantle", "base", "crust"];
 const CONTRAST_PAIRS: ContrastPair[] = [
 	{ label: "Text", fg: "text", bg: [...CARDS, "surface0"], min: 4.5 },
 	{ label: "Secondary text", fg: "subtext0", bg: CARDS, min: 4.5 },
 	{ label: "Buttons and menu items", fg: "subtext1", bg: [...CARDS, "surface0"], min: 4.5 },
 	{ label: "Budgeted amounts", fg: "overlay1", bg: CARDS, min: 4.5 },
-	{ label: "Placeholders and muted text", fg: "overlay0", bg: CARDS, min: 3 },
+	{ label: "Muted text", fg: "overlay0", bg: CARDS, min: 4.5 },
 	{ label: "Overspent", fg: "red", bg: CARDS, min: 4.5 },
 	{ label: "Available", fg: "green", bg: CARDS, min: 4.5 },
 	{ label: "Warnings", fg: "yellow", bg: CARDS, min: 4.5 },
@@ -414,20 +493,20 @@ export type ContrastCheck = {
 	ratio: number;
 	min: number;
 	passes: boolean;
-	/** The colours of the weakest combination, for a sample. */
+	/** The colors of the weakest combination, for a sample. */
 	fg: string;
 	bg: string;
 };
 export type ContrastReport = { checks: ContrastCheck[]; failing: ContrastCheck[]; passes: boolean };
 
-/** Every text colour against each background it's drawn on; AA needs 4.5:1, muted text 3:1. */
+/** Every text color against each background it's drawn on; AA for normal-size text is 4.5:1. */
 export function contrastReport(g: Generated): ContrastReport {
-	const colour = (key: string) =>
-		key.startsWith("sidebar.") ? g.sidebar[key.slice(8) as keyof SidebarColours] : g.colours[key];
+	const color = (key: string) =>
+		key.startsWith("sidebar.") ? g.sidebar[key.slice(8) as keyof SidebarColors] : g.colors[key];
 	const checks = CONTRAST_PAIRS.map(({ label, fg, bg, min }) => {
-		const fore = colour(fg);
+		const fore = color(fg);
 		const [ratio, back] = bg
-			.map((b) => [contrastRatio(fore, colour(b)), colour(b)] as const)
+			.map((b) => [contrastRatio(fore, color(b)), color(b)] as const)
 			.reduce((a, b) => (b[0] < a[0] ? b : a));
 		return { label, ratio, min, passes: ratio >= min, fg: fore, bg: back };
 	});
@@ -466,20 +545,22 @@ export function grainImage(amount: number, size: GrainSize): string {
 	return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
-export function lightColour(light: GlowLight, colours: Record<string, string>): string {
-	if (light.colour === "accent") {
-		return colours.mauve;
+export function lightColor(light: GlowLight, colors: Record<string, string>): string {
+	// Themes saved before the rename stored the field as `colour`.
+	const color = light.color ?? (light as { colour?: string }).colour ?? "accent";
+	if (color === "accent") {
+		return colors.mauve;
 	}
-	if (light.colour === "second") {
-		return colours.sapphire;
+	if (color === "second") {
+		return colors.sapphire;
 	}
-	return light.colour;
+	return color;
 }
 
 /** One radial gradient per light, sized against a box of `width` by `height`. */
 export function glowLayers(
 	r: Recipe,
-	colours: Record<string, string>,
+	colors: Record<string, string>,
 	width: number | string,
 	height: number | string,
 ): string[] {
@@ -491,7 +572,7 @@ export function glowLayers(
 	const light = r.mode === "light";
 	/*
 	 * On a light page a mid-tone light darkens it into a grey haze, so it's drawn as a pastel of
-	 * its hue instead, which can only tint; a stronger mix makes up for the paler colour.
+	 * its hue instead, which can only tint; a stronger mix makes up for the paler color.
 	 */
 	const tone = (hex: string) => {
 		if (!light) {
@@ -502,7 +583,7 @@ export function glowLayers(
 	};
 	return r.glow.lights.map((l) => {
 		const alpha = ((l.strength / 100) * (light ? 65 : 30)).toFixed(1);
-		const colour = `color-mix(in srgb, ${tone(lightColour(l, colours))} ${alpha}%, transparent)`;
-		return `radial-gradient(circle ${len(width, l.size)} at ${len(width, l.x)} ${len(height, l.y)}, ${colour}, transparent)`;
+		const color = `color-mix(in srgb, ${tone(lightColor(l, colors))} ${alpha}%, transparent)`;
+		return `radial-gradient(circle ${len(width, l.size)} at ${len(width, l.x)} ${len(height, l.y)}, ${color}, transparent)`;
 	});
 }

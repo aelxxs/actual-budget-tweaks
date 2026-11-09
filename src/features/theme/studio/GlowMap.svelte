@@ -2,7 +2,7 @@
 	import { Plus, X } from "@lucide/svelte";
 	import { onMount } from "svelte";
 	import { arrowStep, dragArea } from "./drag";
-	import { type Generated, glowLayers, lightColour } from "./generator";
+	import { type Generated, glowLayers, lightColor } from "./generator";
 	import { studio } from "./state.svelte";
 
 	const { g }: { g: Generated } = $props();
@@ -51,7 +51,7 @@
 
 	let mapWidth = $state(300);
 	const mapHeight = $derived(mapWidth / layout.aspect);
-	const layers = $derived(glowLayers(r, g.colours, mapWidth, mapHeight).join(", ") || "none");
+	const layers = $derived(glowLayers(r, g.colors, mapWidth, mapHeight).join(", ") || "none");
 
 	// The size handle sits on the ring's lower-right diagonal, or the first diagonal on the map.
 	const DIAGONALS: [number, number][] = [
@@ -66,6 +66,15 @@
 			x >= EDGE && x <= mapWidth - EDGE && y >= EDGE && y <= mapHeight - EDGE;
 		const [sx, sy] = DIAGONALS.find(([sx, sy]) => fits(cx + sx * d, cy + sy * d)) ?? [1, 1];
 		return [inside(cx + sx * d, mapWidth), inside(cy + sy * d, mapHeight)];
+	}
+
+	// The remove button sits beside the light, on whichever side keeps it on the map.
+	const REMOVE_OFFSET = 22;
+	function removeAt(cx: number, cy: number): [number, number] {
+		const x = inside(cx, mapWidth);
+		const y = inside(cy, mapHeight);
+		const side = x + REMOVE_OFFSET <= mapWidth - EDGE ? 1 : -1;
+		return [x + side * REMOVE_OFFSET, y];
 	}
 
 	// What the press grabbed: a light's centre, its size handle, or the map (moves the selected one).
@@ -116,7 +125,7 @@
 			y: 0.5,
 			size: 0.35,
 			strength: 45,
-			colour: lights.length ? "second" : "accent",
+			color: lights.length ? "second" : "accent",
 		});
 		studio.light = lights.length - 1;
 		studio.recipe.glow.on = true;
@@ -128,12 +137,12 @@
 			studio.recipe.glow.on = false;
 		}
 	}
-	function setColour(colour: string) {
+	function setColor(color: string) {
 		if (selected) {
-			selected.colour = colour;
+			selected.color = color;
 		}
 	}
-	const custom = $derived(!!selected && selected.colour.startsWith("#"));
+	const custom = $derived(!!selected && selected.color.startsWith("#"));
 
 	// Line lengths, as fractions of their column, for a budget-like rhythm.
 	const SUMMARY = [0, 1, 2, 3];
@@ -145,8 +154,8 @@
 	class="map"
 	class:off={!r.glow.on}
 	style:aspect-ratio={layout.aspect}
-	style:--m-line={g.colours.overlay0}
-	style:--m-card={g.colours.mantle}
+	style:--m-line={g.colors.overlay0}
+	style:--m-card={g.colors.mantle}
 	style:--m-side-line={g.sidebar.sub}
 	bind:clientWidth={mapWidth}
 	use:dragArea={{ move, start }}
@@ -175,9 +184,9 @@
 		class="region header"
 		style:left="{layout.sidebar * 100}%"
 		style:height="{layout.header * 100}%"
-		style:background={g.colours.crust}
+		style:background={g.colors.crust}
 	>
-		<i class="pill" style:background={g.colours.yellow}></i>
+		<i class="pill" style:background={g.colors.yellow}></i>
 		<span class="icons"
 			>{#each [0, 1, 2] as i (i)}<i></i>{/each}</span
 		>
@@ -187,7 +196,7 @@
 		style:left="{layout.sidebar * 100}%"
 		style:right="{layout.panel * 100}%"
 		style:top="{layout.header * 100}%"
-		style:background={g.colours.crust}
+		style:background={g.colors.crust}
 	>
 		<span class="toolbar" style:height="{layout.toolbar * mapHeight}px">
 			<i class="chip"></i>
@@ -210,14 +219,14 @@
 			class="region panel"
 			style:width="{layout.panel * 100}%"
 			style:top="{layout.header * 100}%"
-			style:background={g.colours.crust}
+			style:background={g.colors.crust}
 		>
 			<span class="toolbar" style:height="{layout.toolbar * mapHeight}px">
 				<i class="title"></i>
 			</span>
 			<span class="content">
 				<span class="tabs">
-					<i style:background={g.colours.mauve}></i><i></i><i></i>
+					<i style:background={g.colors.mauve}></i><i></i><i></i>
 				</span>
 				<i class="block short"></i>
 				<i class="block"></i>
@@ -233,6 +242,7 @@
 			{@const cy = light.y * mapHeight}
 			{@const radius = light.size * mapWidth}
 			{@const knob = knobAt(cx, cy, radius)}
+			{@const remove = removeAt(cx, cy)}
 			{#if i === studio.light}
 				<span
 					class="ring"
@@ -254,8 +264,8 @@
 					class="remove"
 					title="Remove this light"
 					aria-label="Remove light {i + 1}"
-					style:left="{inside(cx, mapWidth) + 22}px"
-					style:top="{inside(cy, mapHeight) + 4}px"
+					style:left="{remove[0]}px"
+					style:top="{remove[1]}px"
 					onclick={() => removeLight(i)}
 				>
 					<X size={10} strokeWidth={3} />
@@ -273,7 +283,7 @@
 				title="Drag to move"
 				style:left="{inside(cx, mapWidth)}px"
 				style:top="{inside(cy, mapHeight)}px"
-				style:--light={lightColour(light, g.colours)}
+				style:--light={lightColor(light, g.colors)}
 				onkeydown={(e) => onKey(e, i)}
 			></span>
 		{/each}
@@ -289,7 +299,7 @@
 				aria-pressed={i === studio.light}
 				onclick={() => (studio.light = i)}
 			>
-				<span class="dot" style:background={lightColour(light, g.colours)}></span>
+				<span class="dot" style:background={lightColor(light, g.colors)}></span>
 				Light {i + 1}
 			</button>
 		{/each}
@@ -305,32 +315,32 @@
 	</div>
 
 	<div class="row" class:dim={!selected}>
-		<span class="row-label">Colour</span>
-		<div class="abt-seg abt-seg--sm options" role="group" aria-label="Light colour">
+		<span class="row-label">Color</span>
+		<div class="abt-seg abt-seg--sm options" role="group" aria-label="Light color">
 			<button
 				type="button"
-				aria-pressed={selected?.colour === "accent"}
-				onclick={() => setColour("accent")}
+				aria-pressed={selected?.color === "accent"}
+				onclick={() => setColor("accent")}
 			>
-				<span class="dot" style:background={g.colours.mauve}></span> Accent
+				<span class="dot" style:background={g.colors.mauve}></span> Accent
 			</button>
 			<button
 				type="button"
-				aria-pressed={selected?.colour === "second"}
-				onclick={() => setColour("second")}
+				aria-pressed={selected?.color === "second"}
+				onclick={() => setColor("second")}
 			>
-				<span class="dot" style:background={g.colours.sapphire}></span> Second
+				<span class="dot" style:background={g.colors.sapphire}></span> Second
 			</button>
-			<!-- The colour input itself, invisible over the option, so the click opens it directly. -->
-			<label class="seg-option" data-pressed={custom} title="Pick any colour">
-				<span class="dot hues" style:background={custom ? selected?.colour : undefined}></span>
+			<!-- The color input itself, invisible over the option, so the click opens it directly. -->
+			<label class="seg-option" data-pressed={custom} title="Pick any color">
+				<span class="dot hues" style:background={custom ? selected?.color : undefined}></span>
 				Custom
 				<input
 					class="picker"
 					type="color"
-					aria-label="Custom light colour"
-					value={custom ? selected?.colour : "#ff8a5c"}
-					oninput={(e) => setColour(e.currentTarget.value)}
+					aria-label="Custom light color"
+					value={custom ? selected?.color : "#ff8a5c"}
+					oninput={(e) => setColor(e.currentTarget.value)}
 				/>
 			</label>
 		</div>
@@ -681,7 +691,7 @@
 		flex: 1;
 		justify-content: center;
 	}
-	/* Shaped like the segmented buttons beside it; a label, so it can hold the colour input. */
+	/* Shaped like the segmented buttons beside it; a label, so it can hold the color input. */
 	.seg-option {
 		position: relative;
 		display: inline-flex;

@@ -1,4 +1,5 @@
 import { getValue, setValue } from "@lib/utilities/store";
+import type { Recipe } from "./studio/generator";
 
 export type UserTheme = {
 	id: string;
@@ -7,6 +8,8 @@ export type UserTheme = {
 	type: "palette" | "css";
 	keys?: Record<string, string>;
 	css?: string;
+	/** Made in Theme Studio: reopens there, and brings its sidebar, glow and grain. */
+	recipe?: Recipe;
 };
 
 type UserThemeMap = Record<string, UserTheme>;

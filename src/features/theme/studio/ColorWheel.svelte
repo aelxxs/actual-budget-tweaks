@@ -2,25 +2,25 @@
 	import { arrowStep, dragArea } from "./drag";
 	import {
 		accentLightness,
-		CHROMA_CEILING,
-		contrastRatio,
+		DEPTH_RANGE,
 		type Generated,
-		hexToOklch,
 		type Mode,
 		oklchToHex,
 		oklchToRgb,
 		rimChroma,
 	} from "./generator";
 	import { followAccent } from "./recipes";
+	import Rail from "./Rail.svelte";
 	import { studio } from "./state.svelte";
 
 	const { g }: { g: Generated } = $props();
 
 	/*
-	 * One wheel for both colours: the ring picks the accent's hue, the disc inside it the
+	 * One wheel for both colors: the ring picks the accent's hue, the disc inside it the
 	 * background's hue and tint. How strong the accent is lives on the Vibrance slider.
 	 */
-	const SIZE = 168;
+	// The page beside the panel is the preview, so the wheel takes the width.
+	const SIZE = 208;
 	const RING = 14;
 	const GAP = 5;
 	const DISC = SIZE / 2 - RING - GAP;
@@ -33,7 +33,7 @@
 	 */
 	const tintAt = (reach: number) => Math.min(1, Math.max(0, reach)) ** 2;
 	const reachOf = (tint: number) => Math.sqrt(Math.min(1, Math.max(0, tint)));
-	// A faint wash of the accent: matching it at any stronger tint colours the whole page.
+	// A faint wash of the accent: matching it at any stronger tint colors the whole page.
 	const DOT_TINT = 0.2;
 
 	let canvas: HTMLCanvasElement | undefined = $state();
@@ -168,19 +168,6 @@
 		}
 	}
 
-	let hexDraft = $state<string | null>(null);
-	function commitHex() {
-		const value = (hexDraft ?? "").trim().replace(/^#?/, "#");
-		hexDraft = null;
-		if (!/^#[0-9a-f]{6}$/i.test(value)) {
-			return;
-		}
-		const o = hexToOklch(value);
-		studio.recipe.accentHue = o.h;
-		studio.recipe.accentChroma = Math.min(CHROMA_CEILING, Math.max(0.02, o.C));
-		followAccent(studio.recipe);
-	}
-
 	const VIBRANCE_WORDS: [number, string][] = [
 		[0.2, "muted"],
 		[0.4, "soft"],
@@ -224,13 +211,13 @@
 	const vibranceTrack = $derived(
 		`linear-gradient(to right, ${oklchToHex(accentLightness(r.mode, r.contrast), 0, r.accentHue)}, ${oklchToHex(accentLightness(r.mode, r.contrast), rimChroma(r.mode, r.accentHue), r.accentHue)})`,
 	);
-	const buttonText = $derived(
-		contrastRatio(g.colours.crust, g.colours.lavender) >= 4.5
-			? g.colours.crust
-			: contrastRatio("#ffffff", g.colours.lavender) > contrastRatio("#111111", g.colours.lavender)
-				? "#ffffff"
-				: "#111111",
-	);
+	const depthRange = $derived(DEPTH_RANGE[r.mode]);
+	// The cards' lightness at each end, in the background's own hue and tint.
+	const depthTrack = $derived.by(() => {
+		const cardL = r.mode === "dark" ? 0.19 - 0.022 * r.contrast : 0.965 - 0.012 * r.tint;
+		const C = 0.004 + 0.03 * r.tint;
+		return `linear-gradient(to right, ${oklchToHex(cardL + depthRange[0], C, r.baseHue)}, ${oklchToHex(cardL + depthRange[1], C, r.baseHue)})`;
+	});
 
 	const accentHandle = $derived(onRing(r.accentHue));
 	const backgroundHandle = $derived(inDisc(r.baseHue, r.tint));
@@ -260,17 +247,17 @@
 			style:background={oklchToHex(...backdrop(r.mode, r.baseHue, r.tint))}
 			role="slider"
 			tabindex="0"
-			aria-label="Background colour"
+			aria-label="Background color"
 			aria-valuenow={Math.round(r.tint * 100)}
 			aria-valuetext="Background {backgroundWords}"
-			title="Background: drag around for hue, outward for more colour"
+			title="Background: drag around for hue, outward for more color"
 			onkeydown={onDiscKey}
 		></div>
 		<div
 			class="handle accent"
 			style:left="{accentHandle[0]}px"
 			style:top="{accentHandle[1]}px"
-			style:background={g.colours.mauve}
+			style:background={g.colors.mauve}
 			role="slider"
 			tabindex="0"
 			aria-label="Accent hue"
@@ -279,76 +266,33 @@
 			onkeydown={onRingKey}
 		></div>
 	</div>
-
-	<div class="side">
-		<div class="preview" aria-hidden="true">
-			<span
-				class="surface side-surface"
-				style:background={g.sidebar.bg}
-				style:color={g.sidebar.sub}
-			>
-				<span class="lines">
-					<i style:background={g.sidebar.sel}></i>
-					<i style:background={g.sidebar.sub}></i>
-					<i style:background={g.sidebar.sub}></i>
-				</span>
-				Sidebar
-			</span>
-			<span
-				class="surface page"
-				style:background={g.colours.crust}
-				style:color={g.colours.subtext0}
-			>
-				<span class="button" style:background={g.colours.lavender} style:color={buttonText}
-					>Button</span
-				>
-				Page
-			</span>
-			<span class="surface" style:background={g.colours.mantle} style:color={g.colours.subtext0}
-				>Cards</span
-			>
-		</div>
-		<div class="captions">
-			<span>
-				Accent <b>{vibranceWord}</b>
-				<input
-					class="hex"
-					spellcheck="false"
-					aria-label="Accent hex"
-					value={hexDraft ?? g.colours.mauve}
-					oninput={(e) => (hexDraft = e.currentTarget.value)}
-					onchange={commitHex}
-					onkeydown={(e) => e.key === "Enter" && commitHex()}
-				/>
-			</span>
-			<span>Background <b>{backgroundWords}</b></span>
-		</div>
-	</div>
 </div>
 
-<label class="row">
-	<span class="row-label">Vibrance</span>
-	<span class="vibrance" style:--track={vibranceTrack}>
-		<input
-			type="range"
-			min="0"
-			max="100"
-			value={Math.round(vibrance * 100)}
-			aria-valuetext={vibranceWord}
-			oninput={(e) =>
-				(studio.recipe.accentChroma = Math.max(
-					0.02,
-					(Number(e.currentTarget.value) / 100) * rimChroma(r.mode, r.accentHue),
-				))}
-		/>
-	</span>
-</label>
+<Rail
+	label="Vibrance"
+	track={vibranceTrack}
+	min={0}
+	max={1}
+	value={vibrance}
+	valuetext={vibranceWord}
+	onchange={(v) =>
+		(studio.recipe.accentChroma = Math.max(0.02, v * rimChroma(r.mode, r.accentHue)))}
+/>
+<Rail
+	label="Shade"
+	ariaLabel="Background shade"
+	track={depthTrack}
+	min={depthRange[0]}
+	max={depthRange[1]}
+	value={r.depth ?? 0}
+	onchange={(v) => (studio.recipe.depth = v)}
+/>
 
 <style>
 	.top {
 		display: flex;
-		align-items: center;
-		gap: var(--abt-space-5);
+		justify-content: center;
+		padding: var(--abt-space-2) 0;
 	}
 	.wheel {
 		position: relative;
@@ -408,148 +352,5 @@
 	.ref:hover {
 		background: white;
 		transform: translate(-50%, -50%) scale(1.25);
-	}
-
-	.side {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		gap: var(--abt-space-3);
-		min-width: 0;
-	}
-	/* The real surfaces, big enough to tell apart: they're close to each other by design. */
-	.preview {
-		display: grid;
-		grid-template-columns: 2fr 3fr;
-		grid-template-rows: 1fr 1fr;
-		height: 96px;
-		overflow: hidden;
-		border: 1px solid var(--abt-line);
-		border-radius: var(--abt-radius);
-	}
-	.surface {
-		position: relative;
-		display: flex;
-		align-items: flex-end;
-		padding: var(--abt-space-2) var(--abt-space-3);
-		font-size: var(--abt-text-sm);
-	}
-	.side-surface {
-		grid-row: 1 / -1;
-		flex-direction: column;
-		align-items: flex-start;
-		justify-content: space-between;
-		padding-top: var(--abt-space-3);
-	}
-	.lines {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		width: 100%;
-	}
-	.lines i {
-		display: block;
-		width: 60%;
-		height: 3px;
-		border-radius: var(--abt-radius-pill);
-		opacity: 0.5;
-	}
-	.lines i:first-child {
-		width: 85%;
-		opacity: 1;
-	}
-	.button {
-		position: absolute;
-		top: var(--abt-space-2);
-		right: var(--abt-space-2);
-		padding: 1px var(--abt-space-3);
-		border-radius: var(--abt-radius-sm);
-		font-size: var(--abt-text-xs);
-		font-weight: 600;
-	}
-	.captions {
-		display: flex;
-		flex-direction: column;
-		gap: var(--abt-space-1);
-		font-size: var(--abt-text-sm);
-		color: var(--abt-muted);
-	}
-	.captions b {
-		color: var(--abt-ink);
-		font-weight: 600;
-	}
-	/* Reads as part of the caption until clicked. */
-	.hex {
-		width: 64px;
-		margin-left: var(--abt-space-2);
-		padding: 0 var(--abt-space-1);
-		border: 1px solid transparent;
-		border-radius: var(--abt-radius-sm);
-		background: none;
-		color: var(--abt-soft);
-		font:
-			var(--abt-text-sm) ui-monospace,
-			"SF Mono",
-			Menlo,
-			monospace;
-	}
-	.hex:hover,
-	.hex:focus {
-		border-color: var(--abt-line);
-		color: var(--abt-ink);
-		outline: none;
-	}
-
-	.row {
-		display: grid;
-		grid-template-columns: 72px minmax(0, 1fr);
-		align-items: center;
-		gap: var(--abt-space-3);
-	}
-	.row-label {
-		font-size: var(--abt-text-sm);
-		color: var(--abt-muted);
-	}
-	/* Grey to the accent at full strength, under a range input with only its thumb drawn. */
-	.vibrance {
-		display: block;
-		height: 18px;
-		border: 1px solid var(--abt-line);
-		border-radius: var(--abt-radius-sm);
-		background: var(--track);
-	}
-	.vibrance input {
-		width: 100%;
-		height: 100%;
-		margin: 0;
-		background: none;
-		cursor: pointer;
-		-webkit-appearance: none;
-		appearance: none;
-	}
-	.vibrance input::-webkit-slider-runnable-track {
-		height: 100%;
-		background: none;
-	}
-	.vibrance input::-moz-range-track {
-		background: none;
-	}
-	.vibrance input::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		width: 6px;
-		height: 22px;
-		margin-top: -3px;
-		border: 2px solid white;
-		border-radius: var(--abt-radius-sm);
-		background: transparent;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
-	}
-	.vibrance input::-moz-range-thumb {
-		width: 4px;
-		height: 20px;
-		border: 2px solid white;
-		border-radius: var(--abt-radius-sm);
-		background: transparent;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
 	}
 </style>

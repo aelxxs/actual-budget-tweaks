@@ -8,7 +8,6 @@
 	import { DEFAULT_THEME } from "./defaults";
 	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
 	import {
-		applyPalette,
 		applyThemeByKey,
 		applyUserCSSTheme,
 		applyUserPaletteTheme,
@@ -355,13 +354,18 @@
 		if (activeThemeKey === id) {
 			activeThemeKey = ctx.defaultValue;
 			await setValue(ctx.key, ctx.defaultValue);
-			applyPalette(ctx.defaultValue);
+			await applyThemeByKey(ctx.defaultValue, ctx.defaultValue);
 		}
 	}
 
 	function editUserTheme(id: string, e: Event) {
 		e.stopPropagation();
-		openCreator(id);
+		const theme = userThemeState.themes[id];
+		if (theme?.recipe || theme?.type === "palette") {
+			openThemeStudio(id);
+		} else {
+			openCreator(id);
+		}
 	}
 
 	async function selectUserTheme(id: string) {
@@ -472,7 +476,7 @@
 		<button
 			type="button"
 			class="abt-btn controls__new"
-			onclick={openThemeStudio}
+			onclick={() => openThemeStudio()}
 			title="Create a theme"
 		>
 			<Icon name="plus" size={14} strokeWidth={2} />
@@ -515,14 +519,21 @@
 										<span class="badge badge--creator">Custom</span>
 									</div>
 									<div class="card__meta">
-										<span class="card__source">{uTheme.type === "palette" ? "Palette" : "CSS"}</span
+										<span class="card__source"
+											>{uTheme.recipe
+												? "Theme Studio"
+												: uTheme.type === "palette"
+													? "Palette"
+													: "CSS"}</span
 										>
 										<div class="card__actions">
 											<div
 												class="card__edit-btn"
 												role="button"
 												tabindex="0"
-												title="Edit palette for {uTheme.name}"
+												title={uTheme.type === "palette"
+													? `Open ${uTheme.name} in Theme Studio`
+													: `Edit ${uTheme.name}`}
 												onclick={(e) => editUserTheme(uTheme.id, e)}
 												onkeydown={(e) =>
 													(e.key === "Enter" || e.key === " ") && editUserTheme(uTheme.id, e)}

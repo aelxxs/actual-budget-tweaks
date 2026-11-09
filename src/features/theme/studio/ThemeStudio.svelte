@@ -2,17 +2,20 @@
 	import Badge from "@lib/components/panel/Badge.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import Switch from "@lib/components/Switch.svelte";
-	import { Dices, Lock, LockOpen, Moon, Shuffle, Sun } from "@lucide/svelte";
+	import { Moon, Shuffle, Sun } from "@lucide/svelte";
 	import { onMount } from "svelte";
+	import AccentHex from "./AccentHex.svelte";
 	import { previewRecipe } from "./apply";
-	import ColourWheel from "./ColourWheel.svelte";
+	import ColorWheel from "./ColorWheel.svelte";
 	import {
 		contrastReport,
 		contrastToPass,
 		generate,
-		grainImage,
-		lightColour,
 		oklchToHex,
+		accentLightness,
+		LIFT_RANGE,
+		readableLift,
+		familyHues,
 		type BudgetTone,
 		type Family,
 		type SidebarStyle,
@@ -20,15 +23,16 @@
 	import GlowMap from "./GlowMap.svelte";
 	import GrainControl from "./GrainControl.svelte";
 	import MiniTheme from "./MiniTheme.svelte";
-	import { type PreviewState, setPreviewState } from "./preview-states";
-	import { copyRecipe, PRESETS, rerollTrait, shuffleRecipe, type Trait, TRAITS } from "./recipes";
+	import Rail from "./Rail.svelte";
+	import { copyRecipe, PRESETS, shuffleRecipe } from "./recipes";
 	import { remember, studio } from "./state.svelte";
 
 	const r = $derived(studio.recipe);
 	const g = $derived(generate(studio.recipe));
 	const contrast = $derived(contrastReport(g));
-	const weakest = $derived(
-		contrast.checks.reduce((a, b) => (b.ratio / b.min < a.ratio / a.min ? b : a)),
+	const restL = $derived(accentLightness(r.mode, r.contrast));
+	const liftTrack = $derived(
+		`linear-gradient(to right, ${oklchToHex(restL + LIFT_RANGE[0], r.accentChroma, r.accentHue)}, ${oklchToHex(restL + LIFT_RANGE[1], r.accentChroma, r.accentHue)})`,
 	);
 	const presets = PRESETS.map((p) => ({ recipe: p, g: generate(p) }));
 	const recent = $derived(studio.recent.map((recipe) => ({ recipe, g: generate(recipe) })));
@@ -36,22 +40,11 @@
 	$effect(() => {
 		previewRecipe(studio.recipe, g);
 	});
-	$effect(() => {
-		setPreviewState(studio.preview);
-	});
 
 	function shuffle() {
-		const next = shuffleRecipe(studio.recipe, studio.locks);
+		const next = shuffleRecipe(studio.recipe);
 		studio.recipe = next;
 		studio.light = 0;
-		remember(next);
-	}
-	function reroll(trait: Trait) {
-		const next = rerollTrait(studio.recipe, trait);
-		studio.recipe = next;
-		if (trait === "glow") {
-			studio.light = 0;
-		}
 		remember(next);
 	}
 	function load(recipe: typeof studio.recipe) {
@@ -80,11 +73,6 @@
 		return () => document.removeEventListener("keydown", onKey);
 	});
 
-	const PREVIEWS: [PreviewState, string][] = [
-		["healthy", "Healthy"],
-		["overspent", "Overspent"],
-		["privacy", "Privacy"],
-	];
 	const SIDEBARS: [SidebarStyle, string][] = $derived([
 		["match", "Match"],
 		["deeper", "Deeper"],
@@ -95,14 +83,38 @@
 		["close", "Similar", "Hues near the accent"],
 		["opposite", "Opposite", "Hues across the wheel from the accent"],
 		["rainbow", "Rainbow", "Hues spread evenly round the wheel"],
+		["custom", "Custom", "Pick the links' hue yourself"],
 	];
-	// The accent, then the four colours this setting chooses.
-	const STRIP: [string, string][] = [
-		["mauve", "Accent"],
+	// Custom starts from the hue the links have now, so choosing it changes nothing yet.
+	function pickFamily(value: Family) {
+		if (value === "custom" && studio.recipe.family !== "custom") {
+			studio.recipe.linkHue = Math.round(familyHues(studio.recipe)[0]);
+		}
+		studio.recipe.family = value;
+	}
+	const hueTrack = $derived(
+		`linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) =>
+			oklchToHex(accentLightness(r.mode, 0.5), 0.12, i * 30),
+		).join(", ")})`,
+	);
+	// What this setting picks.
+	const FAMILY_STRIP: [string, string][] = [
 		["blue", "Links"],
-		["sapphire", "Second colour"],
-		["sky", "Third colour"],
-		["teal", "Fourth colour"],
+		["sapphire", "Second color (glow)"],
+		["sky", "Light links"],
+		["teal", "Notices"],
+	];
+	// Actual's chart colors, in the order charts use them (theme-apply's chartQual1-9).
+	const CHART_STRIP: [string, string][] = [
+		["teal", "Notices"],
+		["yellow", "Warning"],
+		["peach", "Caution"],
+		["red", "Overspent"],
+		["blue", "Links"],
+		["pink", "Accent light"],
+		["green", "Funded"],
+		["mauve", "Accent"],
+		["rosewater", "Accent pale"],
 	];
 	const BUDGET_TONES: [BudgetTone, string][] = [
 		["vivid", "Vivid"],
@@ -112,74 +124,68 @@
 		BUDGET_TONES.map(([tone, label]) => ({
 			tone,
 			label,
-			c: generate({ ...studio.recipe, budget: tone }).colours,
+			c: generate({ ...studio.recipe, budget: tone }).colors,
 		})),
 	);
 
-	function swatch(trait: Trait): string {
-		switch (trait) {
-			case "mode":
-				return g.colours.mantle;
-			case "background":
-				return oklchToHex(r.mode === "dark" ? 0.4 : 0.85, 0.01 + r.tint * 0.08, r.baseHue);
-			case "accent":
-				return g.colours.mauve;
-			case "palette":
-				return `linear-gradient(90deg, ${g.colours.blue} 33%, ${g.colours.green} 33% 66%, ${g.colours.red} 66%)`;
-			case "glow":
-				return r.glow.on && r.glow.lights[0]
-					? `radial-gradient(circle, ${lightColour(r.glow.lights[0], g.colours)}, ${g.colours.crust})`
-					: g.colours.crust;
-			case "grain":
-				return r.grain.amount
-					? `${grainImage(Math.max(40, r.grain.amount), r.grain.size)}, ${g.colours.surface1}`
-					: g.colours.crust;
-		}
-	}
-
-	const PALETTE_ROLES: [string, string][] = [
-		["text", "Text"],
-		["subtext1", "Secondary text"],
-		["subtext0", "Subtle text"],
-		["overlay2", "Overlay strong"],
-		["overlay1", "Overlay medium"],
-		["overlay0", "Overlay subtle"],
-		["surface2", "Surface raised"],
-		["surface1", "Surface"],
-		["surface0", "Borders"],
-		["base", "Hover"],
-		["mantle", "Cards"],
-		["crust", "Page"],
-		["mauve", "Accent"],
-		["lavender", "Primary button"],
-		["pink", "Accent light"],
-		["flamingo", "Accent lighter"],
-		["rosewater", "Accent pale"],
-		["blue", "Links"],
-		["sapphire", "Second colour"],
-		["sky", "Third colour"],
-		["teal", "Fourth colour"],
-		["green", "Funded"],
-		["red", "Overspent"],
-		["maroon", "Overspent, deep"],
-		["peach", "Caution"],
-		["yellow", "Warning"],
+	const PALETTE_GROUPS: [string, [string, string][]][] = [
+		[
+			"Text",
+			[
+				["text", "Text"],
+				["subtext1", "Secondary text"],
+				["subtext0", "Subtle text"],
+				["overlay2", "Muted, strong"],
+				["overlay1", "Budgeted amounts"],
+				["overlay0", "Muted text"],
+			],
+		],
+		[
+			"Surfaces",
+			[
+				["crust", "Page"],
+				["mantle", "Cards"],
+				["base", "Hover"],
+				["surface0", "Inputs and borders"],
+				["surface1", "Raised"],
+				["surface2", "Raised, strong"],
+			],
+		],
+		[
+			"Accent",
+			[
+				["mauve", "Accent"],
+				["lavender", "Primary button"],
+				["pink", "Accent light"],
+				["flamingo", "Accent lighter"],
+				["rosewater", "Accent pale"],
+			],
+		],
+		[
+			"Links and charts",
+			[
+				["blue", "Links"],
+				["sapphire", "Second color (glow)"],
+				["sky", "Light links"],
+				["teal", "Notices"],
+			],
+		],
+		[
+			"Budget status",
+			[
+				["green", "Funded"],
+				["red", "Overspent"],
+				["maroon", "Overspent, deep"],
+				["peach", "Caution"],
+				["yellow", "Warning"],
+			],
+		],
 	];
+	const PALETTE_COUNT = PALETTE_GROUPS.reduce((n, [, roles]) => n + roles.length, 0);
 </script>
 
 <div class="studio">
 	<div class="start">
-		<div class="abt-seg abt-seg--sm stretch" role="group" aria-label="Preview as">
-			<span class="abt-seg__label">Preview as</span>
-			{#each PREVIEWS as [value, label] (value)}
-				<button
-					type="button"
-					aria-pressed={studio.preview === value}
-					onclick={() => (studio.preview = value)}>{label}</button
-				>
-			{/each}
-		</div>
-
 		<input class="abt-input name" bind:value={studio.recipe.name} aria-label="Theme name" />
 
 		<div class="presets">
@@ -197,66 +203,26 @@
 		</div>
 	</div>
 
-	<div class="shuffle-block">
-		<div class="shuffle-row">
+	<div class="shuffle-row">
+		<button type="button" class="abt-btn shuffle" title="Shuffle (Space)" onclick={shuffle}>
+			<Shuffle size={14} strokeWidth={2} /> Shuffle
+		</button>
+		{#each recent as item, i (i)}
 			<button
 				type="button"
-				class="abt-btn shuffle"
-				title="Shuffle the unlocked traits (Space)"
-				onclick={shuffle}
-			>
-				<Shuffle size={14} strokeWidth={2} /> Shuffle
-			</button>
-			{#each recent as item, i (i)}
-				<button
-					type="button"
-					class="recent-dot"
-					style:--dot-page={item.g.colours.crust}
-					style:--dot-accent={item.g.colours.mauve}
-					title="Back to {item.recipe.name}"
-					aria-label="Back to {item.recipe.name}"
-					onclick={() => load(item.recipe)}
-				></button>
-			{/each}
-		</div>
-		<div class="traits" role="group" aria-label="Locked when shuffling">
-			{#each TRAITS as t (t.trait)}
-				<span class="chip" class:locked={studio.locks[t.trait]}>
-					<button
-						type="button"
-						class="reroll"
-						title="Shuffle only {t.label.toLowerCase()}"
-						aria-label="Shuffle only {t.label.toLowerCase()}"
-						onclick={() => reroll(t.trait)}
-					>
-						<span class="trait-swatch" style:background={swatch(t.trait)}></span>
-						<span class="dice"><Dices size={13} strokeWidth={2} /></span>
-					</button>
-					<button
-						type="button"
-						class="trait"
-						aria-pressed={studio.locks[t.trait]}
-						title="{t.title}: {studio.locks[t.trait]
-							? 'kept when shuffling'
-							: 'click to keep when shuffling'}"
-						onclick={() => (studio.locks[t.trait] = !studio.locks[t.trait])}
-					>
-						{t.label}
-						<span class="trait-lock">
-							{#if studio.locks[t.trait]}
-								<Lock size={11} strokeWidth={2.4} />
-							{:else}
-								<LockOpen size={11} strokeWidth={2} />
-							{/if}
-						</span>
-					</button>
-				</span>
-			{/each}
-		</div>
+				class="recent-dot"
+				style:--dot-page={item.g.colors.crust}
+				style:--dot-accent={item.g.colors.mauve}
+				title="Back to {item.recipe.name}"
+				aria-label="Back to {item.recipe.name}"
+				onclick={() => load(item.recipe)}
+			></button>
+		{/each}
 	</div>
 
 	<div class="sections">
-		<Section card={false} muted title="Colour" collapsible={false}>
+		<Section card={false} muted title="Color" collapsible={false} privateTrailing={false}>
+			{#snippet trailing()}<AccentHex hex={g.colors.mauve} />{/snippet}
 			<div class="stack">
 				<div class="abt-seg stretch" role="group" aria-label="Mode">
 					<button
@@ -274,7 +240,7 @@
 						<Moon size={14} strokeWidth={2} /> Dark
 					</button>
 				</div>
-				<ColourWheel {g} />
+				<ColorWheel {g} />
 			</div>
 		</Section>
 
@@ -292,7 +258,7 @@
 									y: 0,
 									size: 0.55,
 									strength: 50,
-									colour: "accent",
+									color: "accent",
 								});
 							}
 						}}
@@ -309,65 +275,15 @@
 				<GrainControl {g} />
 			</div>
 		</Section>
-
 		<div class="details">
-			<Section card={false} muted title="Budget colours" open={false} privateTrailing={false}>
-				{#snippet trailing()}{r.budget === "vivid" ? "Vivid" : "Muted"}{/snippet}
-				<div class="stack">
-					<div class="budget-tones">
-						{#each budgetSamples as s (s.tone)}
-							<button
-								type="button"
-								class="tone"
-								aria-pressed={r.budget === s.tone}
-								onclick={() => (studio.recipe.budget = s.tone)}
-							>
-								<span class="pills" style:background={s.c.mantle}>
-									<span style:color={s.c.green}>117.84</span>
-									<span
-										style:color={s.c.red}
-										style:background="color-mix(in srgb, {s.c.red} 15%, transparent)">-38.40</span
-									>
-									<span style:color={s.c.yellow}>2.00</span>
-								</span>
-								{s.label}
-							</button>
-						{/each}
-					</div>
-				</div>
-			</Section>
-
 			<Section
 				card={false}
 				muted
-				title="Link and chart colours"
+				caps={false}
+				title="Contrast"
 				open={false}
 				privateTrailing={false}
 			>
-				{#snippet trailing()}{FAMILIES.find(([v]) => v === r.family)?.[1]}{/snippet}
-				<div class="stack">
-					<div class="abt-seg abt-seg--sm stretch" role="group" aria-label="Link and chart colours">
-						{#each FAMILIES as [value, label, title] (value)}
-							<button
-								type="button"
-								aria-pressed={r.family === value}
-								{title}
-								onclick={() => (studio.recipe.family = value)}>{label}</button
-							>
-						{/each}
-					</div>
-					<div class="strip">
-						{#each STRIP as [key, label] (key)}
-							<span style:background={g.colours[key]} title="{label} {g.colours[key]}"></span>
-						{/each}
-					</div>
-					<span class="note"
-						>Links, focused inputs, menu highlights, notices and report charts.</span
-					>
-				</div>
-			</Section>
-
-			<Section card={false} muted title="Contrast" open={false} privateTrailing={false}>
 				{#snippet trailing()}
 					<Badge tone={contrast.passes ? "positive" : "negative"}>
 						{contrast.passes ? "Passes AA" : `${contrast.failing.length} below AA`}
@@ -375,7 +291,7 @@
 				{/snippet}
 				<div class="stack">
 					<div class="contrast">
-						<span class="aa soft" style:color={g.colours.subtext0} title="Soft">Aa</span>
+						<span class="aa soft" style:color={g.colors.subtext0} title="Soft">Aa</span>
 						<input
 							type="range"
 							min="0"
@@ -386,12 +302,8 @@
 						/>
 						<span class="aa crisp" title="Crisp">Aa</span>
 					</div>
-					{#if contrast.passes}
-						<p class="ratios">
-							All {contrast.checks.length} text colours pass. Lowest:
-							<b>{weakest.label} {weakest.ratio.toFixed(1)}:1</b>
-						</p>
-					{:else}
+					<!-- Only what needs attention: nothing to read while everything passes. -->
+					{#if !contrast.passes}
 						<ul class="checks">
 							{#each contrast.failing as check (check.label)}
 								<li>
@@ -411,29 +323,124 @@
 				</div>
 			</Section>
 
-			<Section card={false} muted title="Sidebar" open={false} privateTrailing={false}>
-				{#snippet trailing()}{SIDEBARS.find(([v]) => v === r.sidebar)?.[1]}{/snippet}
+			<Section card={false} muted caps={false} title="Advanced" open={false}>
 				<div class="stack">
-					<div class="abt-seg abt-seg--sm stretch" role="group" aria-label="Sidebar">
-						{#each SIDEBARS as [value, label] (value)}
-							<button
-								type="button"
-								aria-pressed={r.sidebar === value}
-								onclick={() => (studio.recipe.sidebar = value)}>{label}</button
-							>
-						{/each}
+					<div class="sub">
+						<span class="sub-label">Sidebar</span>
+						<div class="abt-seg abt-seg--sm stretch" role="group" aria-label="Sidebar">
+							{#each SIDEBARS as [value, label] (value)}
+								<button
+									type="button"
+									aria-pressed={r.sidebar === value}
+									onclick={() => (studio.recipe.sidebar = value)}>{label}</button
+								>
+							{/each}
+						</div>
 					</div>
-				</div>
-			</Section>
 
-			<Section card={false} muted title="Advanced" open={false} privateTrailing={false}>
-				{#snippet trailing()}{PALETTE_ROLES.length} colours{/snippet}
-				<div class="stack">
-					<div class="palette">
-						{#each PALETTE_ROLES as [key, label] (key)}
-							<span class="colour" title={g.colours[key]}>
-								<i style:background={g.colours[key]}></i>{label}
-							</span>
+					<div class="sub">
+						<span class="sub-label">Budget colors</span>
+						<div class="budget-tones">
+							{#each budgetSamples as s (s.tone)}
+								<button
+									type="button"
+									class="tone"
+									aria-pressed={r.budget === s.tone}
+									onclick={() => (studio.recipe.budget = s.tone)}
+								>
+									<span class="pills" style:background={s.c.mantle}>
+										<span style:color={s.c.green}>117.84</span>
+										<span
+											style:color={s.c.red}
+											style:background="color-mix(in srgb, {s.c.red} 15%, transparent)">-38.40</span
+										>
+										<span style:color={s.c.yellow}>2.00</span>
+									</span>
+									{s.label}
+								</button>
+							{/each}
+						</div>
+					</div>
+
+					<div class="sub">
+						<span class="sub-label">Link and chart colors</span>
+						<div
+							class="abt-seg abt-seg--sm stretch"
+							role="group"
+							aria-label="Link and chart colors"
+						>
+							{#each FAMILIES as [value, label, title] (value)}
+								<button
+									type="button"
+									aria-pressed={r.family === value}
+									{title}
+									onclick={() => pickFamily(value)}>{label}</button
+								>
+							{/each}
+						</div>
+						{#if r.family === "custom"}
+							<input
+								class="hue"
+								type="range"
+								min="0"
+								max="359"
+								value={Math.round(r.linkHue ?? 0)}
+								style:--track={hueTrack}
+								aria-label="Link hue"
+								oninput={(e) => (studio.recipe.linkHue = Number(e.currentTarget.value))}
+							/>
+						{/if}
+						<div class="strip-row">
+							<span class="strip-label">This setting</span>
+							<div class="strip">
+								{#each FAMILY_STRIP as [key, label] (key)}
+									<span style:background={g.colors[key]} title="{label} {g.colors[key]}"></span>
+								{/each}
+							</div>
+						</div>
+						<div class="strip-row">
+							<span class="strip-label">Charts</span>
+							<div class="strip">
+								{#each CHART_STRIP as [key, label], i (i)}
+									<span style:background={g.colors[key]} title="{i + 1}. {label} {g.colors[key]}"
+									></span>
+								{/each}
+							</div>
+						</div>
+						<span class="note"
+							>Links, menu headers and notices use the first row. Charts take their colors in the
+							order of the second, which mixes in the budget and accent colors.</span
+						>
+					</div>
+
+					<div class="sub">
+						<span class="sub-label">Accent</span>
+						<!-- Hatched where the accent would be too hard to read on these backgrounds. -->
+						<Rail
+							label="Brightness"
+							track={liftTrack}
+							min={LIFT_RANGE[0]}
+							max={LIFT_RANGE[1]}
+							value={r.accentLift ?? 0}
+							allowed={readableLift(r, g.colors)}
+							blockedReason="Too hard to read: below 4.5:1 against the page, cards or hover rows"
+							onchange={(v) => (studio.recipe.accentLift = v)}
+						/>
+					</div>
+
+					<div class="sub">
+						<span class="sub-label">All {PALETTE_COUNT} colors</span>
+						{#each PALETTE_GROUPS as [group, roles] (group)}
+							<div class="palette-group">
+								<span class="strip-label">{group}</span>
+								<div class="palette">
+									{#each roles as [key, label] (key)}
+										<span class="color" title={g.colors[key]}>
+											<i style:background={g.colors[key]}></i>{label}
+										</span>
+									{/each}
+								</div>
+							</div>
 						{/each}
 					</div>
 				</div>
@@ -462,7 +469,7 @@
 		min-width: 0;
 	}
 	.start,
-	.shuffle-block,
+	.shuffle-row,
 	.stack {
 		padding: 0 12px; /* raw: matches panel Section's gutter */
 	}
@@ -479,6 +486,11 @@
 	.details :global(.section + .section) {
 		margin-top: var(--abt-space-2);
 	}
+	/* An open row's controls end in clear space and a rule, so the next row reads as its own. */
+	.details :global(.section[data-open="true"]:not(:last-child)) {
+		padding-bottom: 20px; /* raw: a block's worth of space */
+		border-bottom: 1px solid var(--abt-line);
+	}
 	.switch {
 		display: flex;
 		cursor: pointer;
@@ -494,11 +506,6 @@
 	.name {
 		font-weight: 600;
 	}
-	.shuffle-block {
-		display: flex;
-		flex-direction: column;
-		gap: var(--abt-space-3);
-	}
 	.shuffle-row {
 		display: flex;
 		align-items: center;
@@ -508,7 +515,7 @@
 		flex: 1;
 		justify-content: center;
 	}
-	/* Recent shuffles: the theme's page colour beside its accent. */
+	/* Recent shuffles: the theme's page color beside its accent. */
 	.recent-dot {
 		flex: none;
 		width: 18px;
@@ -522,81 +529,6 @@
 	.recent-dot:hover {
 		outline: 2px solid var(--abt-ink-4);
 		outline-offset: 1px;
-	}
-
-	.traits {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--abt-space-1) var(--abt-space-2);
-	}
-	/* Plain until locked: only a locked trait gets a fill, a border and its lock. */
-	.chip {
-		display: inline-flex;
-		align-items: center;
-		height: 24px;
-		padding: 0 var(--abt-space-1);
-		border: 1px solid transparent;
-		border-radius: var(--abt-radius-pill);
-		color: var(--abt-muted);
-	}
-	.chip:hover,
-	.chip:focus-within {
-		background: var(--abt-ink-2);
-		color: var(--abt-ink);
-	}
-	.chip.locked {
-		border-color: var(--abt-accent-4);
-		background: var(--abt-accent-2);
-		color: var(--abt-accent-text);
-	}
-	.chip button {
-		display: inline-flex;
-		align-items: center;
-		height: 100%;
-		padding: 0;
-		border: 0;
-		background: none;
-		color: inherit;
-		font: inherit;
-		font-size: var(--abt-text-sm);
-		cursor: pointer;
-	}
-	.trait {
-		gap: var(--abt-space-2);
-		padding: 0 var(--abt-space-2) 0 var(--abt-space-1) !important;
-	}
-	/* The swatch turns into a dice on hover, so showing it doesn't widen the chip. */
-	.reroll {
-		justify-content: center;
-		width: 18px;
-		border-radius: var(--abt-radius-pill) !important;
-	}
-	.reroll:hover {
-		color: var(--abt-accent-text);
-	}
-	.dice,
-	.chip:hover .trait-swatch,
-	.chip:focus-within .trait-swatch {
-		display: none;
-	}
-	.chip:hover .dice,
-	.chip:focus-within .dice {
-		display: inline-flex;
-	}
-	.trait-lock {
-		display: none;
-	}
-	.chip:hover .trait-lock,
-	.chip:focus-within .trait-lock,
-	.chip.locked .trait-lock {
-		display: inline-flex;
-	}
-	.trait-swatch {
-		width: 12px;
-		height: 12px;
-		border: 1px solid var(--abt-line);
-		border-radius: var(--abt-radius-pill);
-		background-size: cover;
 	}
 
 	.presets {
@@ -680,19 +612,6 @@
 	.crisp {
 		color: var(--abt-ink);
 	}
-	.ratios {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--abt-space-2) var(--abt-space-4);
-		font-size: var(--abt-text-sm);
-		color: var(--abt-soft);
-		font-variant-numeric: tabular-nums;
-	}
-	.ratios {
-		margin: 0;
-	}
-	.ratios b,
 	.ratio b {
 		color: var(--abt-ink);
 		font-weight: 600;
@@ -726,6 +645,34 @@
 		font-variant-numeric: tabular-nums;
 	}
 
+	/* A hue rail at the links' own lightness. */
+	.hue {
+		width: 100%;
+		height: 14px;
+		margin: 0;
+		border-radius: var(--abt-radius-pill);
+		background: var(--track);
+		cursor: pointer;
+		-webkit-appearance: none;
+		appearance: none;
+	}
+	.hue::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		width: 16px;
+		height: 16px;
+		border: 2px solid white;
+		border-radius: var(--abt-radius-pill);
+		background: transparent;
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+	}
+	.hue::-moz-range-thumb {
+		width: 12px;
+		height: 12px;
+		border: 2px solid white;
+		border-radius: var(--abt-radius-pill);
+		background: transparent;
+		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+	}
 	.strip {
 		display: flex;
 		height: 22px;
@@ -734,6 +681,32 @@
 	}
 	.strip span {
 		flex: 1;
+	}
+	/* A group inside Advanced: its own small heading over its controls. */
+	.sub {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-3);
+	}
+	.sub + .sub {
+		padding-top: var(--abt-space-5);
+		border-top: 1px solid var(--abt-line);
+	}
+	.sub-label {
+		font-size: var(--abt-text-sm);
+		font-weight: 600;
+		color: var(--abt-ink);
+	}
+	.strip-row,
+	.palette-group {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-2);
+	}
+	.strip-label {
+		font-size: var(--abt-text-xs);
+		font-weight: 600;
+		color: var(--abt-soft);
 	}
 	.note {
 		font-size: var(--abt-text-sm);
@@ -744,7 +717,7 @@
 		grid-template-columns: 1fr 1fr;
 		gap: var(--abt-space-2) var(--abt-space-4);
 	}
-	.colour {
+	.color {
 		display: flex;
 		align-items: center;
 		gap: var(--abt-space-3);
@@ -754,7 +727,7 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.colour i {
+	.color i {
 		flex: none;
 		width: 14px;
 		height: 14px;

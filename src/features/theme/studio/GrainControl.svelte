@@ -6,7 +6,7 @@
 
 	const grain = $derived(studio.recipe.grain);
 	// The track is the texture itself, heavier towards the right.
-	const track = $derived(grainImage(70, grain.size));
+	const track = $derived(grainImage(100, grain.size));
 	const SIZES: [GrainSize, string][] = [
 		["fine", "Fine"],
 		["medium", "Medium"],
@@ -15,8 +15,7 @@
 </script>
 
 <div class="amount">
-	<span class="track" style:--grain={track} style:--page={g.colours.crust} aria-hidden="true"
-	></span>
+	<span class="track" style:--grain={track} style:--page={g.colors.crust} aria-hidden="true"></span>
 	<input
 		type="range"
 		min="0"
@@ -53,18 +52,24 @@
 		align-items: center;
 		gap: var(--abt-space-3);
 	}
-	/* Noise faded in from the left over the page colour, under a transparent range input. */
+	/*
+	 * The noise drawn plainly (an overlay blend all but vanishes on a dark page), with the page
+	 * color over it fading out towards the right, under a transparent range input.
+	 */
 	.track {
 		grid-area: 1 / 1;
 		height: 18px;
 		border: 1px solid var(--abt-line);
 		border-radius: var(--abt-radius-sm);
-		background: linear-gradient(to right, var(--page), transparent), var(--grain), var(--page);
+		background:
+			linear-gradient(to right, var(--page) 4%, color-mix(in srgb, var(--page) 35%, transparent)),
+			var(--grain);
 		background-size:
 			100% 100%,
-			220px 220px,
-			auto;
-		background-blend-mode: normal, overlay, normal;
+			220px 220px;
+		/* From the outer edge, or the fade repeats under the border with its noisy end. */
+		background-origin: border-box;
+		background-repeat: no-repeat, repeat;
 	}
 	input {
 		grid-area: 1 / 1;

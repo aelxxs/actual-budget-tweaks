@@ -418,7 +418,7 @@
 									kind: "action" as const,
 									label: "Create theme",
 									icon: Paintbrush,
-									run: openThemeStudio,
+									run: () => openThemeStudio(),
 								},
 							]
 						: []),

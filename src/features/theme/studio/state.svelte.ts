@@ -1,24 +1,16 @@
 import type { Recipe } from "./generator";
-import type { PreviewState } from "./preview-states";
-import { copyRecipe, PRESETS, type Trait } from "./recipes";
+import { copyRecipe, PRESETS } from "./recipes";
 
 const RECENT_LIMIT = 5;
 
 export const studio = $state({
 	recipe: copyRecipe(PRESETS[0]),
-	locks: {
-		mode: false,
-		background: false,
-		accent: false,
-		palette: false,
-		glow: false,
-		grain: false,
-	} as Record<Trait, boolean>,
 	/** The last few shuffles, newest first. */
 	recent: [] as Recipe[],
-	/** The glow light the colour and brightness controls edit. */
+	/** The glow light the color and brightness controls edit. */
 	light: 0,
-	preview: "healthy" as PreviewState,
+	/** The saved theme being edited, which Save overwrites; null for a new one. */
+	editing: null as string | null,
 });
 
 export function remember(r: Recipe): void {

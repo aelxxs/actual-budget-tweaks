@@ -2,6 +2,7 @@ import { getTheme, themes } from "@lib/design";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { watchElement } from "@lib/utilities/dom-watcher";
 import { editorState } from "./editor-state.svelte";
+import { STUDIO_STYLE_ID, studioCSS } from "./studio/effects";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
 import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
@@ -577,6 +578,8 @@ export function applyNativeTheme() {
 }
 
 export async function applyThemeByKey(key: string, fallback: string) {
+	const recipe = isUserTheme(key) ? userThemeState.themes[key]?.recipe : undefined;
+	applyGlobalCSS(recipe ? studioCSS(recipe) : "", STUDIO_STYLE_ID);
 	if (key === NATIVE_THEME_KEY) {
 		applyNativeTheme();
 	} else if (isUserTheme(key)) {
