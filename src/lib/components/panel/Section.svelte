@@ -10,6 +10,8 @@
 		count,
 		badges,
 		trailing,
+		privateTrailing = true,
+		muted = false,
 		onToggle,
 		children,
 	}: {
@@ -23,6 +25,10 @@
 		badges?: Snippet;
 		/** Right-aligned header content before the chevron, e.g. a total. */
 		trailing?: Snippet;
+		/** Blanks the trailing content in privacy mode; off for content that isn't money. */
+		privateTrailing?: boolean;
+		/** A quieter title, for panels made of many sections. */
+		muted?: boolean;
 		onToggle?: (open: boolean) => void;
 		children: Snippet;
 	} = $props();
@@ -42,7 +48,7 @@
 		<span class="count">{count}</span>
 	{/if}
 	{#if trailing}
-		<span class="trailing abt-privacy-number">{@render trailing()}</span>
+		<span class="trailing" class:abt-privacy-number={privateTrailing}>{@render trailing()}</span>
 	{/if}
 	{#if collapsible}
 		<svg
@@ -67,11 +73,18 @@
 
 <section class="section">
 	{#if collapsible}
-		<button type="button" class="head" data-tone={tone} aria-expanded={open} onclick={toggle}>
+		<button
+			type="button"
+			class="head"
+			data-tone={tone}
+			data-muted={muted}
+			aria-expanded={open}
+			onclick={toggle}
+		>
 			{@render headerContent()}
 		</button>
 	{:else}
-		<div class="head" data-tone={tone}>
+		<div class="head" data-tone={tone} data-muted={muted}>
 			{@render headerContent()}
 		</div>
 	{/if}
@@ -108,6 +121,13 @@
 	}
 	button.head:hover {
 		background: var(--abt-accent-1);
+	}
+	.head[data-muted="true"] {
+		color: var(--abt-soft);
+	}
+	button.head[data-muted="true"]:hover {
+		background: none;
+		color: var(--abt-ink);
 	}
 	.head[data-tone="error"] {
 		color: var(--color-errorText, #e57373);
