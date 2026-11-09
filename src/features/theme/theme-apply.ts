@@ -4,6 +4,7 @@ import { watchElement } from "@lib/utilities/dom-watcher";
 import { editorState } from "./editor-state.svelte";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
 import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
+import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 
 export type RemoteTheme = {
 	name: string;
@@ -394,6 +395,8 @@ export function applyOverrides(key: string) {
 		}
 	}
 	syncWindowColor();
+	// Every way of putting a theme on ends here.
+	document.dispatchEvent(new CustomEvent(THEME_APPLIED_EVENT));
 }
 
 /**

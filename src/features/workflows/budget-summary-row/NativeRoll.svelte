@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
+	import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 	import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
 
 	/**
@@ -68,11 +69,14 @@
 		const sizes = new ResizeObserver(read);
 		sizes.observe(source);
 		const stopBulk = onBulkEditEnd(read);
+		// A theme change recolours it without touching it, so nothing above notices.
+		document.addEventListener(THEME_APPLIED_EVENT, read);
 
 		return () => {
 			mutations.disconnect();
 			sizes.disconnect();
 			stopBulk();
+			document.removeEventListener(THEME_APPLIED_EVENT, read);
 			source.removeAttribute(HIDDEN_ATTR);
 			// It was moved into Actual's DOM above, so Svelte can't take it out on its own.
 			// eslint-disable-next-line svelte/no-dom-manipulating
