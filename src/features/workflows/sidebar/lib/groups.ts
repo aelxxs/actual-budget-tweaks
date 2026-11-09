@@ -60,7 +60,7 @@ export function saveGroups(
 	setValue(scopedKey(GROUPS_KEY, budgetId), groups);
 }
 
-/** Follows group edits made elsewhere, such as the sidebar settings dialog. */
+/** Follows group edits made elsewhere, such as the Customize sidebar panel. */
 export function watchGroups(
 	budgetId: string | undefined,
 	callback: (groups: Record<string, AccountGroup>) => void,
@@ -202,7 +202,9 @@ export async function addGroup(
 		saveGroups(budgetId, created.groups);
 		return created.id;
 	}
-	const id = await send<string>("account-group-create", { name: NEW_GROUP_LABEL });
+	const id = await withFreeName(state.groups, NEW_GROUP_LABEL, undefined, (name) =>
+		send<string>("account-group-create", { name }),
+	);
 	await setHome(budgetId, id, section);
 	refreshNative();
 	return id;
@@ -222,7 +224,9 @@ export async function renameGroupTo(
 		saveGroups(budgetId, next);
 		return;
 	}
-	await send("account-group-update", { id, name: next[id].label });
+	await withFreeName(state.groups, next[id].label, id, (name) =>
+		send("account-group-update", { id, name }),
+	);
 	refreshNative();
 }
 
@@ -365,7 +369,49 @@ export function createGroup(
 ): { id: string; groups: Record<string, AccountGroup> } {
 	const id = nextGroupId();
 	const order = Object.values(groups).filter((g) => g.section === section).length;
-	return { id, groups: { ...groups, [id]: { id, label: "New Category", section, order } } };
+	const label = uniqueLabel(groups, NEW_GROUP_LABEL);
+	return { id, groups: { ...groups, [id]: { id, label, section, order } } };
+}
+
+// A name can be taken where the list doesn't show it: a deleted group's, or one from a quick second
+// click that hasn't loaded yet. Actual rejects those, so the next number is tried.
+async function withFreeName<T>(
+	groups: Record<string, AccountGroup>,
+	label: string,
+	exceptId: string | undefined,
+	save: (name: string) => Promise<T>,
+): Promise<T> {
+	const taken = { ...groups };
+	for (let attempt = 0; ; attempt++) {
+		const name = uniqueLabel(taken, label, exceptId);
+		try {
+			return await save(name);
+		} catch (err) {
+			if (attempt >= 20) {
+				throw err;
+			}
+			const id = `taken-${attempt}`;
+			taken[id] = { id, label: name, section: "onbudget", order: 0 };
+		}
+	}
+}
+
+/** Actual keeps group names unique, so a taken one gets a number: "New Category 2". */
+export function uniqueLabel(
+	groups: Record<string, AccountGroup>,
+	label: string,
+	exceptId?: string,
+): string {
+	const taken = new Set(
+		Object.values(groups)
+			.filter((g) => g.id !== exceptId)
+			.map((g) => g.label.trim().toLowerCase()),
+	);
+	let next = label;
+	for (let n = 2; taken.has(next.toLowerCase()); n++) {
+		next = `${label} ${n}`;
+	}
+	return next;
 }
 
 export function renameGroup(
@@ -377,7 +423,7 @@ export function renameGroup(
 	if (!trimmed || !groups[id]) {
 		return groups;
 	}
-	return { ...groups, [id]: { ...groups[id], label: trimmed } };
+	return { ...groups, [id]: { ...groups[id], label: uniqueLabel(groups, trimmed, id) } };
 }
 
 /** Deletes a group; accounts assigned to it fall back to the section's ungrouped bucket. */
