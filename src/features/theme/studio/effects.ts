@@ -25,7 +25,8 @@ function sidebarCSS(r: Recipe, g: Generated): string {
 	const s = g.sidebar;
 	// Only the sidebar's own tokens: --color-sidebarItemAccentSelected is ABT's accent everywhere.
 	return `
-		:root {
+		/* Doubled, to outrank the palette's own :root rule whichever style tag comes later. */
+		:root:root {
 			--color-sidebarBackground: ${s.bg};
 			--color-sidebarBorder: ${s.hover};
 			--color-sidebarBudgetName: ${s.text};
