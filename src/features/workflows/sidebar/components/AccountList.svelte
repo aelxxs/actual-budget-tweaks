@@ -5,6 +5,7 @@
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { getValue, setValue, watchValue } from "@lib/utilities/store";
 	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
+	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
 	import { ChevronDown, List, ListTree, Plus } from "@lucide/svelte";
 	import { overlayScrollbar } from "../actions/overlay-scrollbar";
@@ -44,6 +45,7 @@
 		budgetId,
 		budgetReady = true,
 		split = false,
+		editing = false,
 		onToggleGroupMode,
 		onRenameAccount,
 		onCloseAccount,
@@ -56,6 +58,8 @@
 		/** The open budget's id has been asked for; until then the last load's groups show. */
 		budgetReady?: boolean;
 		split?: boolean;
+		/** Edit mode: a hidden Closed section stays on screen, faded. */
+		editing?: boolean;
 		onToggleGroupMode: () => void;
 		onRenameAccount: (accountId: string, name: string) => void;
 		onCloseAccount: (accountId: string) => void;
@@ -89,6 +93,12 @@
 	$effect(() => {
 		getValue<boolean>(TOTALS_KEY, TOTALS_DEFAULT).then((v) => (showGroupTotals = v));
 		return watchValue<boolean>(TOTALS_KEY, (v) => (showGroupTotals = v ?? TOTALS_DEFAULT));
+	});
+	const { key: CLOSED_KEY, defaultValue: CLOSED_DEFAULT } = sidebarClosedAccounts.context;
+	let showClosed = $state(CLOSED_DEFAULT);
+	$effect(() => {
+		getValue<boolean>(CLOSED_KEY, CLOSED_DEFAULT).then((v) => (showClosed = v));
+		return watchValue<boolean>(CLOSED_KEY, (v) => (showClosed = v ?? CLOSED_DEFAULT));
 	});
 	$effect(() => {
 		loadCollapsedGroups().then((stored) => (collapsedGroups = stored));
@@ -159,7 +169,12 @@
 		[
 			{ label: "On Budget", items: accounts.filter((a) => !a.offbudget && !a.closed) },
 			{ label: "Off Budget", items: accounts.filter((a) => a.offbudget && !a.closed), muted: true },
-			{ label: "Closed", items: accounts.filter((a) => a.closed), muted: true },
+			// Kept in edit mode while hidden, so its eye can bring it back.
+			{
+				label: "Closed",
+				items: showClosed || editing ? accounts.filter((a) => a.closed) : [],
+				muted: true,
+			},
 		].filter((s) => s.items.length > 0),
 	);
 
@@ -226,7 +241,7 @@
 	}
 
 	function onAccountRowEnter(e: MouseEvent, account: SidebarAccount) {
-		if (dragSrcId || menuAccount || menuGroup || editingAccountId || editingGroupId) {
+		if (editing || dragSrcId || menuAccount || menuGroup || editingAccountId || editingGroupId) {
 			return;
 		}
 		const el = e.currentTarget as HTMLElement;
@@ -508,7 +523,11 @@
 		</div>
 		{#each orderedSections as section (section.label)}
 			{@const kind = SECTION_KIND[section.label]}
-			<div class="section">
+			<div
+				class="section"
+				data-abt-part={kind ? undefined : ""}
+				data-off={!kind && !showClosed ? true : undefined}
+			>
 				<div class="group-header section-head" class:active={isSectionActive(kind)}>
 					<button
 						type="button"
@@ -558,7 +577,7 @@
 						</button>
 					{/if}
 				</div>
-				{#if !collapsed[section.label]}
+				{#if !collapsed[section.label] && (kind || showClosed)}
 					{#if !kind || !groupAccounts}
 						<!-- Closed accounts, or flat mode: no sub-category headers. -->
 						<div class="account-list">

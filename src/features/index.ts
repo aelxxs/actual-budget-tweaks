@@ -4,6 +4,7 @@ import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
 import { sidebarDensity } from "./appearance/sidebar-density";
+import { sidebarClosedAccounts } from "./appearance/sidebar-closed-accounts";
 import { sidebarGroupTotals } from "./appearance/sidebar-group-totals";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
@@ -123,7 +124,12 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Accounts",
-				items: [accountIconPicker, sidebarGroupTotals, colorNegativeBalances],
+				items: [
+					accountIconPicker,
+					sidebarGroupTotals,
+					sidebarClosedAccounts,
+					colorNegativeBalances,
+				],
 			},
 		],
 	},
@@ -240,6 +246,7 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[sidebarSearch, experimentalSidebar],
 	[sidebarShortcuts, experimentalSidebar],
 	[sidebarGroupTotals, experimentalSidebar],
+	[sidebarClosedAccounts, experimentalSidebar],
 	[accountIconPicker, experimentalSidebar],
 	[nextMonthCoverageMethod, templatePlan],
 	[hideFundedTemplateBars, categoryTemplateInsights],

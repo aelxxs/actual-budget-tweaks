@@ -13,7 +13,7 @@ export const sidebarShortcuts = defineSetting({
 	},
 });
 
-/** Shown only in the sidebar settings dialog; the bar reads it directly. */
+/** Shown only in the Customize sidebar panel; the bar reads it directly. */
 export const sidebarShortcutsAddTile = defineSetting({
 	type: "checkbox",
 	label: "Show add tile",

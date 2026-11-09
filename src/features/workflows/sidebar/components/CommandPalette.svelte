@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { customizeSidebar } from "../lib/customize.svelte";
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
-	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
 	import { openTool } from "@features/appearance/sidebar-shortcuts/open-tool";
 	import { BUILTIN_TOOLS } from "@features/appearance/sidebar-shortcuts/store";
 	import type { ToolId } from "@features/appearance/sidebar-shortcuts/types";
@@ -129,7 +129,7 @@
 			label: "Sync all accounts",
 			run: () => syncAllAccounts(accounts),
 		},
-		{ icon: SlidersHorizontal, label: "Sidebar settings", run: () => openSidebarSettings() },
+		{ icon: SlidersHorizontal, label: "Customize sidebar", run: () => customizeSidebar() },
 		{
 			icon: Plus,
 			label: "Add new account",

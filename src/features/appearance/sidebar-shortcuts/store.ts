@@ -30,7 +30,7 @@ export function saveShortcuts(budgetId: string, items: Shortcut[]): Promise<void
 	return setValue(keyFor(budgetId), items) as Promise<void>;
 }
 
-/** Follows edits from anywhere (the sidebar bar, the settings dialog, other tabs, a sync). */
+/** Follows edits from anywhere (the sidebar bar, the Customize panel, other tabs, a sync). */
 export function watchShortcuts(
 	budgetId: string,
 	callback: (items: Shortcut[]) => void,

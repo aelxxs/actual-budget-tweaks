@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { customizeSidebar } from "../lib/customize.svelte";
 	import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
-	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
 	import {
 		Check,
 		ChevronsUpDown,
@@ -372,11 +372,11 @@
 				class="budget-exit"
 				onclick={() => {
 					closeMenu();
-					openSidebarSettings();
+					customizeSidebar();
 				}}
 			>
 				<SlidersHorizontal strokeWidth={1.5} />
-				<span>Sidebar settings…</span>
+				<span>Customize sidebar…</span>
 			</button>
 			<button type="button" class="budget-exit" onclick={onCloseFile}>
 				<LogOut strokeWidth={1.5} />
@@ -509,6 +509,9 @@
 	/* Budget icon (default: initials, matches .rail-avatar; customizable via the
 	   same icon picker used for accounts) */
 	.budget-icon-btn {
+		/* The browser's button padding would squeeze an image icon into a strip. */
+		padding: 0;
+		border: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;

@@ -169,14 +169,6 @@
 </script>
 
 <div class="groups" bind:this={listEl}>
-	<p class="intro">
-		Groups nest accounts under On and Off budget in the Live sidebar. Drag an account onto a group
-		there to move it in.
-		{#if groupState.native}
-			They're saved in this budget, so Actual and other tools see them too.
-		{/if}
-	</p>
-
 	{#if groupState.importable}
 		<div class="import" role="note">
 			<Info size={16} strokeWidth={1.75} />
@@ -241,7 +233,7 @@
 						onchange={(e) => rename(group.id, e.currentTarget.value)}
 						onkeydown={(e) => e.key === "Enter" && e.currentTarget.blur()}
 					/>
-					<span class="count">{count} {count === 1 ? "account" : "accounts"}</span>
+					<span class="count" title="{count} {count === 1 ? 'account' : 'accounts'}">{count}</span>
 					<button
 						type="button"
 						class="remove abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
@@ -268,10 +260,9 @@
 	.groups {
 		display: flex;
 		flex-direction: column;
-		gap: var(--abt-space-5);
+		gap: var(--abt-space-4);
 	}
 
-	.intro,
 	.empty {
 		margin: 0;
 		font-size: var(--abt-text-sm);
@@ -280,6 +271,7 @@
 
 	.import {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--abt-space-3);
 		padding: var(--abt-space-3) var(--abt-space-4);
@@ -296,7 +288,7 @@
 	}
 
 	.import-text {
-		flex: 1;
+		flex: 1 1 180px;
 		min-width: 0;
 		font-size: var(--abt-text-sm);
 	}
@@ -308,6 +300,7 @@
 
 	.import-btn {
 		flex-shrink: 0;
+		margin-left: calc(16px + var(--abt-space-3));
 		border-color: var(--abt-accent-4);
 		background: var(--abt-accent-2);
 		color: var(--abt-accent);
@@ -331,7 +324,7 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		gap: var(--abt-space-3);
+		gap: var(--abt-space-2);
 	}
 
 	.row.dragging {
@@ -360,7 +353,7 @@
 
 	.handle {
 		flex-shrink: 0;
-		margin-right: calc(-1 * var(--abt-space-2));
+		margin-right: calc(-1 * var(--abt-space-1));
 		color: var(--color-pageTextSubdued);
 		cursor: grab;
 	}
@@ -371,11 +364,12 @@
 
 	.name {
 		flex: 1;
+		min-width: 0;
 	}
 
 	.count {
 		flex-shrink: 0;
-		min-width: 72px;
+		min-width: 16px;
 		font-size: var(--abt-text-sm);
 		text-align: right;
 		color: var(--color-pageTextSubdued);
@@ -387,6 +381,5 @@
 
 	.add {
 		align-self: flex-start;
-		margin-left: calc(-1 * var(--abt-space-3));
 	}
 </style>

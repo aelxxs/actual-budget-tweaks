@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
+	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import {
 		closeCalendar,
 		isCalendarOpen,
@@ -9,7 +10,7 @@
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
-	import { getValue } from "@lib/utilities/store";
+	import { getValue, watchValue } from "@lib/utilities/store";
 	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import {
 		CalendarDays,
@@ -245,6 +246,13 @@
 		saveCollapsedGroups(collapsedGroups);
 	}
 
+	const { key: CLOSED_KEY, defaultValue: CLOSED_DEFAULT } = sidebarClosedAccounts.context;
+	let showClosed = $state(CLOSED_DEFAULT);
+	$effect(() => {
+		getValue<boolean>(CLOSED_KEY, CLOSED_DEFAULT).then((v) => (showClosed = v));
+		return watchValue<boolean>(CLOSED_KEY, (v) => (showClosed = v ?? CLOSED_DEFAULT));
+	});
+
 	const sections = $derived(
 		[
 			{
@@ -257,7 +265,7 @@
 				kind: "offbudget" as const,
 				items: accounts.filter((a) => a.offbudget && !a.closed),
 			},
-			{ label: "Closed", kind: null, items: accounts.filter((a) => a.closed) },
+			{ label: "Closed", kind: null, items: showClosed ? accounts.filter((a) => a.closed) : [] },
 		]
 			.filter((s) => s.items.length > 0)
 			.map((s) => ({ ...s, items: applyOrder(s.items, order) })),

@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { openSidebarSettings } from "@features/appearance/sidebar-settings-menu/settings";
+	import {
+		customizeSidebar,
+		customizeState,
+	} from "@features/workflows/sidebar/lib/customize.svelte";
 	import { getValue, watchValue } from "@lib/utilities/store";
 	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import { onMount } from "svelte";
@@ -9,7 +12,11 @@
 	import { loadShortcuts, saveShortcuts, watchShortcuts } from "./store";
 	import type { Shortcut, ToolId } from "./types";
 
-	const { noPadding, budgetId }: { noPadding: boolean; budgetId: string | undefined } = $props();
+	const {
+		noPadding,
+		budgetId,
+		editing = false,
+	}: { noPadding: boolean; budgetId: string | undefined; editing?: boolean } = $props();
 
 	const ADD_TILE_KEY = sidebarShortcutsAddTile.context.key;
 
@@ -71,9 +78,11 @@
 <div data-abt-shortcuts-tiles>
 	<Tiles
 		items={shortcuts}
-		mode="bar"
+		mode={editing ? "edit" : "bar"}
 		padding={noPadding ? "0px" : "4px 12px 2px"}
+		ghost={editing ? customizeState.ghost : null}
 		onReorder={save}
+		onRemove={(id) => save(shortcuts.filter((s) => s.id !== id))}
 		onActivate={handleClick}
 		hasTrailing={showAddTile || shortcuts.length === 0}
 	>
@@ -82,8 +91,9 @@
 				<button
 					class="edit-btn"
 					class:is-empty={shortcuts.length === 0}
-					onclick={() => openSidebarSettings({ tab: "shortcuts" })}
-					title="Edit shortcuts"
+					class:is-on={editing && customizeState.pane === "add-shortcut"}
+					onclick={() => customizeSidebar({ pane: "add-shortcut" })}
+					title="Add a shortcut"
 				>
 					<svg
 						width="14"
@@ -126,6 +136,12 @@
 
 	.edit-btn.is-empty {
 		opacity: 0.6;
+	}
+
+	.edit-btn.is-on {
+		opacity: 1;
+		border-color: var(--abt-accent);
+		color: var(--abt-accent);
 	}
 
 	.edit-btn:hover {

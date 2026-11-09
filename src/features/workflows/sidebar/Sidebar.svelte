@@ -6,11 +6,6 @@
 		watchAccountIcons,
 	} from "@features/appearance/account-icon-picker";
 	import { sidebarSearch } from "@features/appearance/sidebar-search";
-	import {
-		openSidebarSettings,
-		setLiveSidebarBudget,
-		type SidebarSettingsTab,
-	} from "@features/appearance/sidebar-settings-menu/settings";
 	import { sidebarShortcuts } from "@features/appearance/sidebar-shortcuts";
 	import { loadCurrentBudgetId, onListChange, onSyncingAccounts } from "@lib/utilities/actual-api";
 	import { loadCurrency } from "@lib/utilities/currency";
@@ -19,7 +14,7 @@
 	import { Page, matchesPage } from "@lib/utilities/pages";
 	import { getValue, removeValue, setValue } from "@lib/utilities/store";
 	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
-	import { FolderTree, LayoutGrid, Search, SlidersHorizontal } from "@lucide/svelte";
+	import { Search, SlidersHorizontal } from "@lucide/svelte";
 	import { onMount, tick, untrack } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
 	import { portal } from "./actions/portal";
@@ -28,10 +23,12 @@
 	import AccountListSkeleton from "./components/AccountListSkeleton.svelte";
 	import BudgetHeader from "./components/BudgetHeader.svelte";
 	import CommandPalette from "./components/CommandPalette.svelte";
+	import CustomizePanel from "./components/CustomizePanel.svelte";
 	import Footer from "./components/Footer.svelte";
 	import PrimaryNav from "./components/PrimaryNav.svelte";
 	import Rail from "./components/Rail.svelte";
 	import { invalidateAccountDetail } from "./lib/account-detail";
+	import { customizeSidebar, customizeState, finishCustomizing } from "./lib/customize.svelte";
 	import { loadCurrentBudgetName } from "./lib/budgets";
 	import {
 		adoptOldCollapsed,
@@ -77,10 +74,6 @@
 	// Set once the open budget's id has been asked for, so its groups and order load for it alone.
 	let budgetReady = $state(false);
 
-	$effect(() => {
-		setLiveSidebarBudget(budgetId);
-		return () => setLiveSidebarBudget(undefined);
-	});
 	let icons = $state<Record<string, AccountIconData>>({});
 
 	// ---- grouped (sub-categories) vs flat accounts list ----
@@ -546,11 +539,41 @@
 		};
 	}
 
-	function openSettingsTab(tab: SidebarSettingsTab) {
-		settingsMenu = null;
-		openSidebarSettings({ tab });
-	}
+	const editing = $derived(customizeState.editing);
+	// Edit mode works on the full sidebar, so a collapsed one opens for it.
+	$effect(() => {
+		if (editing && untrack(() => isCollapsed)) {
+			untrack(expandSidebar);
+		}
+	});
+	$effect(() => () => finishCustomizing());
 </script>
+
+{#snippet searchBar()}
+	<button type="button" class="search" onclick={editing ? undefined : openPalette}>
+		<span class="search-left">
+			<Search class="search-icon" color="var(--abt-soft)" strokeWidth={1.75} />
+			<span class="search-placeholder">Search...</span>
+		</span>
+		<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
+	</button>
+{/snippet}
+
+{#snippet top(withNav: boolean)}
+	{#if searchEnabled || editing}
+		<div data-abt-part data-off={!searchEnabled || undefined}>
+			{@render searchBar()}
+		</div>
+	{/if}
+	{#if withNav}
+		<PrimaryNav />
+	{/if}
+	{#if shortcutsFeatureEnabled || editing}
+		<div data-abt-part data-off={!shortcutsFeatureEnabled || undefined}>
+			<ShortcutsBar noPadding {budgetId} {editing} />
+		</div>
+	{/if}
+{/snippet}
 
 <svelte:window onclick={() => (settingsMenu = null)} />
 
@@ -598,22 +621,11 @@
 				showBudgetIcon={false}
 				onBudgetChange={refreshBudgetContext}
 			/>
-			{#if searchEnabled || shortcutsFeatureEnabled}
+			{#if searchEnabled || shortcutsFeatureEnabled || editing}
 				<div
 					style="padding-inline: 0.65rem; padding-block: 0.65rem; display: flex; gap: 0.5rem; flex-direction: column;"
 				>
-					{#if searchEnabled}
-						<button type="button" class="search" onclick={openPalette}>
-							<span class="search-left">
-								<Search class="search-icon" color="var(--abt-soft)" strokeWidth={1.75} />
-								<span class="search-placeholder">Search...</span>
-							</span>
-							<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
-						</button>
-					{/if}
-					{#if shortcutsFeatureEnabled}
-						<ShortcutsBar noPadding {budgetId} />
-					{/if}
+					{@render top(false)}
 				</div>
 			{/if}
 			{#if loading}
@@ -628,6 +640,7 @@
 					{groupAccounts}
 					{budgetId}
 					{budgetReady}
+					{editing}
 					split
 					onToggleGroupMode={toggleGroupMode}
 					onRenameAccount={handleRenameAccount}
@@ -650,19 +663,7 @@
 	{:else}
 		<BudgetHeader name={budgetName} onBudgetChange={refreshBudgetContext} />
 		<div class="body">
-			{#if searchEnabled}
-				<button type="button" class="search" onclick={openPalette}>
-					<span class="search-left">
-						<Search class="search-icon" color="var(--abt-soft)" strokeWidth={1.75} />
-						<span class="search-placeholder">Search...</span>
-					</span>
-					<span class="search-kbd">{isMac() ? "⌘K" : "Ctrl+K"}</span>
-				</button>
-			{/if}
-			<PrimaryNav />
-			{#if shortcutsFeatureEnabled}
-				<ShortcutsBar noPadding {budgetId} />
-			{/if}
+			{@render top(true)}
 			<div class="divider"></div>
 			{#if loading}
 				<AccountListSkeleton />
@@ -676,6 +677,7 @@
 					{groupAccounts}
 					{budgetId}
 					{budgetReady}
+					{editing}
 					onToggleGroupMode={toggleGroupMode}
 					onRenameAccount={handleRenameAccount}
 					onCloseAccount={closeAccount}
@@ -718,24 +720,33 @@
 
 {#if settingsMenu}
 	<div use:portal class="ctx" style="top: {settingsMenu.y}px; left: {settingsMenu.x}px">
-		<button type="button" class="ctx-item" onclick={() => openSettingsTab("general")}>
+		<button
+			type="button"
+			class="ctx-item"
+			onclick={() => {
+				settingsMenu = null;
+				customizeSidebar();
+			}}
+		>
 			<SlidersHorizontal strokeWidth={1.5} />
-			<span>Sidebar settings…</span>
-		</button>
-		{#if budgetId}
-			<button type="button" class="ctx-item" onclick={() => openSettingsTab("groups")}>
-				<FolderTree strokeWidth={1.5} />
-				<span>Edit groups…</span>
-			</button>
-		{/if}
-		<button type="button" class="ctx-item" onclick={() => openSettingsTab("shortcuts")}>
-			<LayoutGrid strokeWidth={1.5} />
-			<span>Edit shortcuts…</span>
+			<span>Customize sidebar…</span>
 		</button>
 	</div>
 {/if}
 
+{#if editing && sidebarEl}
+	<CustomizePanel sidebar={sidebarEl} {budgetId} />
+{/if}
+
 <style>
+	/* Edit mode: a switched-off part stays on screen, faded, until Done. */
+	.sidebar :global([data-abt-part]) {
+		transition: opacity 0.2s;
+	}
+	.sidebar :global([data-abt-part][data-off]) {
+		opacity: 0.35;
+	}
+
 	.load-status {
 		padding: 12px 14px;
 		font-size: var(--abt-text-md);
