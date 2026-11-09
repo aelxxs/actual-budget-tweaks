@@ -458,11 +458,18 @@
 		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 
+	/* Takes what the month name leaves, and drops out when that's too little to read. */
 	.sr__strip {
 		display: flex;
 		flex: 1;
 		gap: 3px;
-		min-width: 90px;
+		min-width: 0;
+		container-type: inline-size;
+	}
+	@container (max-width: 72px) {
+		.sr__strip .sr__bar {
+			display: none;
+		}
 	}
 	.sr__strip .sr__bar {
 		min-width: 0;
