@@ -224,6 +224,11 @@
 	// Hover-intent delay so the card doesn't flash while sweeping the list.
 	const HOVER_CARD_WIDTH = 292;
 	const HOVER_DELAY = 600;
+	// Once a card has been waited for, the next row's comes quickly, until the pointer has been
+	// away from the cards for a moment (a tooltip's warm-up and cool-down).
+	const WARM_DELAY = 80;
+	const COOL_DOWN = 500;
+	let warmUntil = 0;
 	let hoverAccount = $state<SidebarAccount | null>(null);
 	let hoverTop = $state(0);
 	let hoverLeft = $state(0);
@@ -254,13 +259,14 @@
 	}
 
 	function startHover(el: HTMLElement, account: SidebarAccount) {
+		const warm = !!hoverAccount || performance.now() < warmUntil;
 		if (hoverAccount && hoverAccount.id !== account.id) {
-			hoverAccount = null;
+			hideHoverCard();
 		}
 		if (hoverTimer) {
 			clearTimeout(hoverTimer);
 		}
-		hoverTimer = setTimeout(() => showHoverCard(el, account), HOVER_DELAY);
+		hoverTimer = setTimeout(() => showHoverCard(el, account), warm ? WARM_DELAY : HOVER_DELAY);
 	}
 
 	function onAccountRowLeave(e: MouseEvent) {
@@ -289,6 +295,9 @@
 			hoverTimer = null;
 		}
 		stopAiming();
+		if (hoverAccount) {
+			warmUntil = performance.now() + COOL_DOWN;
+		}
 		hoverAccount = null;
 	}
 
