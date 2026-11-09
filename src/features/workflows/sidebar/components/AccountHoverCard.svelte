@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { fmtMoney } from "@lib/utilities/currency";
+	import { createLogger } from "@lib/utilities/logger";
+	import { ArrowRight } from "@lucide/svelte";
 	import { portal } from "../actions/portal";
 	import type { AccountDetail } from "../lib/account-detail";
 	import { loadAccountDetail } from "../lib/account-detail";
@@ -11,28 +13,54 @@
 		top,
 		left,
 		flip,
+		onEnter,
+		onLeave,
+		onReview,
 	}: {
 		account: SidebarAccount;
+		/** Level with the row; moved up as far as the card needs to stay on screen. */
 		top: number;
 		left: number;
 		flip: boolean;
+		onEnter: () => void;
+		onLeave: () => void;
+		onReview: () => void;
 	} = $props();
 
-	// Lazily loaded and cached by id on first hover (see account-detail.ts).
+	const log = createLogger("sidebar");
+
+	// Loaded on first hover and kept per account (see account-detail.ts).
 	let detail = $state<AccountDetail | null>(null);
+	let height = $state(0);
+	const EDGE = 12;
+	const shownTop = $derived(Math.max(EDGE, Math.min(top, innerHeight - height - EDGE)));
 
 	$effect(() => {
 		let cancelled = false;
 		detail = null;
-		loadAccountDetail(account.id, account.status, account.balance).then((d) => {
-			if (!cancelled) {
-				detail = d;
-			}
-		});
+		loadAccountDetail(account.id, account.status, account.balance).then(
+			(d) => {
+				if (!cancelled) {
+					detail = d;
+				}
+			},
+			(err) => log.warn("Couldn't load the account card:", err),
+		);
 		return () => {
 			cancelled = true;
 		};
 	});
+
+	// Owing less reads better than a signed change on a debt.
+	function trendText(balance: number, delta: number): string {
+		if (delta === 0) {
+			return "No change";
+		}
+		if (balance < 0) {
+			return `Owed ${fmtMoney(Math.abs(delta))} ${delta > 0 ? "less" : "more"}`;
+		}
+		return fmtMoney(delta, { sign: true });
+	}
 
 	function trendPath(pts: number[], w: number, h: number, pad = 3) {
 		const min = Math.min(...pts);
@@ -49,117 +77,132 @@
 
 {#if detail}
 	{@const d = detail}
-	{@const up = d.deltaAbs >= 0}
-	{@const path = trendPath(d.points, 264, 52)}
-	<div use:portal class="acard" class:flip style="top: {top}px; left: {left}px">
-		<div class="acard-head">
-			<span class="acard-status"><StatusIcon status={account.status} /></span>
-			<div class="acard-title">
-				<span class="acard-name">{account.name}</span>
-				<span class="acard-sub">{d.institution}</span>
-			</div>
-		</div>
-
-		<div class="acard-balrow">
-			<span class="acard-ballabel">Balance</span>
-			<span class="acard-bal abt-privacy-number" class:neg={account.balance < 0}
-				>{fmtMoney(account.balance)}</span
-			>
-		</div>
-
-		<div class="acard-chart">
-			<svg viewBox="0 0 264 52" preserveAspectRatio="none" class:up class:down={!up}>
-				<defs>
-					<linearGradient id="acardgrad-{account.id}" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" stop-color="currentColor" stop-opacity="0.28" />
-						<stop offset="100%" stop-color="currentColor" stop-opacity="0" />
-					</linearGradient>
-				</defs>
-				<path d={path.area} fill="url(#acardgrad-{account.id})" stroke="none" />
-				<path
-					d={path.line}
-					fill="none"
-					stroke="currentColor"
-					stroke-width="1.6"
-					stroke-linejoin="round"
-					stroke-linecap="round"
-				/>
-			</svg>
-			<div class="acard-chart-foot">
-				<span class="acard-period">30 days</span>
-				<span class="acard-delta" class:up class:down={!up}>
-					{up ? "▲" : "▼"}
-					{Math.abs(d.deltaPct).toFixed(1)}%
-					<span class="acard-delta-abs abt-privacy-number"
-						>{fmtMoney(d.deltaAbs, { sign: true })}</span
-					>
+	{@const overdue = d.upcoming.filter((u) => u.overdue)}
+	{@const ahead = d.upcoming.filter((u) => !u.overdue).slice(0, 3)}
+	<div
+		use:portal
+		class="acard abt-popover"
+		class:flip
+		style:top="{shownTop}px"
+		style:left="{left}px"
+		bind:offsetHeight={height}
+		onpointerenter={onEnter}
+		onpointerleave={onLeave}
+		role="tooltip"
+	>
+		<div class="head">
+			<span class="status"><StatusIcon status={account.status} /></span>
+			<div class="title">
+				<span class="name">{account.name}</span>
+				<span class="sub">
+					{d.institution}{#if d.syncText}
+						· <span class:warn={account.status === "error"}>{d.syncText}</span>{/if}
 				</span>
 			</div>
 		</div>
 
-		<div class="acard-div"></div>
-		<div class="acard-lines">
-			<div class="acard-line">
-				<span class="k">Cleared</span>
-				<span class="v abt-privacy-number">{fmtMoney(d.clearedBalance)}</span>
+		<div class="balance">
+			<span class="abt-label">Balance</span>
+			<span class="amount big abt-privacy-number" class:neg={account.balance < 0}
+				>{fmtMoney(account.balance)}</span
+			>
+		</div>
+
+		{#if d.hasActivity}
+			{@const path = trendPath(d.points, 264, 44)}
+			<div class="chart">
+				<svg viewBox="0 0 264 44" preserveAspectRatio="none" aria-hidden="true">
+					<defs>
+						<linearGradient id="acardgrad-{account.id}" x1="0" y1="0" x2="0" y2="1">
+							<stop offset="0%" stop-color="currentColor" stop-opacity="0.22" />
+							<stop offset="100%" stop-color="currentColor" stop-opacity="0" />
+						</linearGradient>
+					</defs>
+					<path d={path.area} fill="url(#acardgrad-{account.id})" stroke="none" />
+					<path
+						d={path.line}
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.5"
+						stroke-linejoin="round"
+						stroke-linecap="round"
+					/>
+				</svg>
 			</div>
-			{#if d.unclearedCount}
-				<div class="acard-line">
-					<span class="k">Uncleared <span class="acard-badge">{d.unclearedCount}</span></span>
-					<span class="v abt-privacy-number" class:neg={d.unclearedAmount < 0}
+		{/if}
+		<div class="line quiet">
+			<span>30 days</span>
+			{#if d.hasActivity}
+				<span class="abt-privacy-number">{trendText(account.balance, d.deltaAbs)}</span>
+			{:else}
+				<span>No activity</span>
+			{/if}
+		</div>
+
+		{#if d.unclearedAmount !== 0 || account.uncategorized > 0}
+			<div class="divider"></div>
+			{#if account.uncategorized > 0}
+				<div class="line">
+					<span>{account.uncategorized} uncategorized</span>
+					<button type="button" class="review" onclick={onReview}>
+						Review <ArrowRight size={12} strokeWidth={2} />
+					</button>
+				</div>
+			{/if}
+			{#if d.unclearedAmount !== 0}
+				<div class="line">
+					<span>Uncleared</span>
+					<span class="amount abt-privacy-number"
 						>{fmtMoney(d.unclearedAmount, { sign: true })}</span
 					>
 				</div>
 			{/if}
-		</div>
-
-		{#if d.upcoming.length}
-			<div class="acard-div"></div>
-			<div class="acard-block-label">Upcoming</div>
-			<div class="acard-lines">
-				{#each d.upcoming as u (u.id)}
-					<div class="acard-sched">
-						<span class="acard-date">{u.date}</span>
-						<span class="acard-payee">{u.payee}</span>
-						<span class="acard-amt abt-privacy-number" class:neg={u.amount < 0}
-							>{fmtMoney(u.amount, { sign: true })}</span
-						>
-					</div>
-				{/each}
-			</div>
 		{/if}
 
-		<div class="acard-sync acard-sync-{account.status}">
-			<span class="acard-sync-dot"><StatusIcon status={account.status} /></span>
-			<span>{d.syncText}</span>
-		</div>
+		{#if overdue.length || ahead.length}
+			<div class="divider"></div>
+			{#if overdue.length}
+				<span class="abt-label group warn">Overdue</span>
+				{#each overdue as u (u.id)}
+					<div class="sched">
+						<span class="date">{u.date}</span>
+						<span class="payee">{u.payee}</span>
+						<span class="amount warn abt-privacy-number">{fmtMoney(u.amount, { sign: true })}</span>
+					</div>
+				{/each}
+			{/if}
+			{#if ahead.length}
+				<span class="abt-label group">Upcoming</span>
+				{#each ahead as u (u.id)}
+					<div class="sched">
+						<span class="date">{u.date}</span>
+						<span class="payee">{u.payee}</span>
+						<span class="amount abt-privacy-number">{fmtMoney(u.amount, { sign: true })}</span>
+					</div>
+				{/each}
+			{/if}
+		{/if}
 	</div>
 {/if}
 
 <style>
 	.acard {
 		position: fixed;
-		/* Rendered via a body-level portal (portal.ts) — needs to beat Actual's
-		   own stacking contexts, not just other sidebar elements. */
+		/* In the body-level portal, above Actual's own stacking contexts. */
 		z-index: 9999997;
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-2);
 		width: 292px;
-		padding: 12px 13px 11px;
-		background: var(--sb-canvas);
-		border: 1px solid var(--abt-ink-2);
-		border-radius: var(--abt-radius-lg);
-		box-shadow: 0 12px 34px var(--sb-shadow);
-		color: var(--abt-ink);
-		pointer-events: none;
+		box-sizing: border-box;
+		padding: var(--abt-space-4);
+		font-size: var(--abt-text-base);
 		animation: acard-in 0.13s ease;
 	}
 	@keyframes acard-in {
 		from {
 			opacity: 0;
 			transform: translateX(-4px);
-		}
-		to {
-			opacity: 1;
-			transform: none;
 		}
 	}
 	.acard.flip {
@@ -170,217 +213,134 @@
 			opacity: 0;
 			transform: translateX(4px);
 		}
-		to {
-			opacity: 1;
-			transform: none;
-		}
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.acard {
 			animation: none;
 		}
 	}
-	.acard-head {
+
+	.head {
 		display: flex;
 		align-items: center;
-		gap: 9px;
+		gap: var(--abt-space-3);
 	}
-	.acard-status {
-		flex-shrink: 0;
+	.status {
 		display: flex;
+		flex-shrink: 0;
 	}
-	.acard-status :global(.status) {
+	.status :global(.status) {
 		width: 15px;
 		height: 15px;
 	}
-	.acard-title {
-		min-width: 0;
+	.title {
 		display: flex;
 		flex-direction: column;
-		gap: 3px;
+		gap: 2px;
+		min-width: 0;
 	}
-	.acard-name {
-		font-size: var(--abt-text-lg);
-		font-weight: 650;
-		letter-spacing: 0.1px;
-		color: var(--abt-ink);
-		white-space: nowrap;
+	.name {
 		overflow: hidden;
+		font-size: var(--abt-text-md);
+		font-weight: 600;
+		white-space: nowrap;
 		text-overflow: ellipsis;
 	}
-	.acard-sub {
+	.sub {
 		font-size: var(--abt-text-sm);
-		font-weight: 500;
 		color: var(--abt-soft);
 	}
-	.acard-balrow {
+
+	.balance {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		margin-top: 11px;
+		margin-top: var(--abt-space-2);
 	}
-	.acard-ballabel {
-		font-size: var(--abt-text-sm);
-		font-weight: 600;
-		letter-spacing: 0.4px;
-		text-transform: uppercase;
-		color: var(--abt-soft);
-	}
-	.acard-bal {
-		font-size: 19px;
-		font-weight: 500;
-		letter-spacing: 0.2px;
-		color: var(--abt-ink);
+	.amount {
 		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
 	}
-	.acard-bal.neg {
-		color: var(--sb-danger);
+	.amount.big {
+		font-size: var(--abt-text-lg);
+		font-weight: 600;
 	}
-	.acard-chart {
-		margin-top: 6px;
+	.amount.neg {
+		color: var(--sb-danger, var(--color-errorText));
 	}
-	.acard-chart svg {
+
+	.chart {
+		color: var(--abt-accent);
+	}
+	.chart svg {
 		display: block;
 		width: 100%;
-		height: 52px;
+		height: 44px;
 	}
-	.acard-chart svg.up {
-		color: var(--sb-success);
+	/* The line's shape gives away the amounts the privacy blur hides. */
+	:global(body.abt-privacy-enabled) .chart {
+		display: none;
 	}
-	.acard-chart svg.down {
-		color: var(--sb-danger);
-	}
-	.acard-chart-foot {
+
+	.line {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin-top: 3px;
+		gap: var(--abt-space-3);
 	}
-	.acard-period {
+	.line.quiet {
 		font-size: var(--abt-text-sm);
-		font-weight: 500;
 		color: var(--abt-soft);
 	}
-	.acard-delta {
-		font-size: var(--abt-text-sm);
-		font-weight: 650;
-		font-variant-numeric: tabular-nums;
-	}
-	.acard-delta.up {
-		color: var(--sb-success);
-	}
-	.acard-delta.down {
-		color: var(--sb-danger);
-	}
-	.acard-delta-abs {
-		margin-left: 3px;
-		font-weight: 600;
-		color: var(--abt-soft);
-	}
-	.acard-div {
+
+	.divider {
 		height: 1px;
-		margin: 11px -13px;
-		background: var(--sb-surface-hover);
+		margin: var(--abt-space-1) 0;
+		background: var(--abt-line);
 	}
-	.acard-lines {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-	.acard-line {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	.acard-line .k {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: var(--abt-text-base);
-		color: var(--abt-ink);
-	}
-	.acard-line .v {
-		font-size: var(--abt-text-base);
-		font-weight: 600;
-		color: var(--abt-ink);
-		font-variant-numeric: tabular-nums;
-	}
-	.acard-line .v.neg {
-		color: var(--sb-danger);
-	}
-	.acard-badge {
+
+	.review {
 		display: inline-flex;
 		align-items: center;
-		justify-content: center;
-		min-width: 16px;
-		height: 16px;
-		padding: 0 4px;
-		border-radius: var(--abt-radius-pill);
-		background: var(--abt-ink-3);
-		font-size: var(--abt-text-xs);
-		font-weight: 700;
-		color: var(--abt-ink);
+		gap: var(--abt-space-1);
+		padding: 2px var(--abt-space-2);
+		margin-right: calc(-1 * var(--abt-space-2));
+		border: 0;
+		border-radius: var(--abt-radius-sm);
+		background: none;
+		color: var(--abt-accent);
+		font: inherit;
+		font-weight: 500;
+		cursor: pointer;
 	}
-	.acard-block-label {
-		margin-bottom: 7px;
-		font-size: var(--abt-text-sm);
-		font-weight: 600;
-		letter-spacing: 0.4px;
-		text-transform: uppercase;
-		color: var(--abt-soft);
+	.review:hover {
+		background: var(--abt-accent-1);
 	}
-	.acard-sched {
+
+	.group {
+		margin-top: var(--abt-space-1);
+	}
+	.sched {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--abt-space-3);
 	}
-	.acard-date {
+	.date {
 		flex-shrink: 0;
-		width: 42px;
+		width: 44px;
 		font-size: var(--abt-text-sm);
-		font-weight: 600;
 		color: var(--abt-soft);
 		font-variant-numeric: tabular-nums;
 	}
-	.acard-payee {
+	.payee {
 		flex: 1 1 auto;
 		min-width: 0;
-		font-size: var(--abt-text-base);
-		color: var(--abt-ink);
-		white-space: nowrap;
 		overflow: hidden;
+		white-space: nowrap;
 		text-overflow: ellipsis;
 	}
-	.acard-amt {
-		flex-shrink: 0;
-		font-size: var(--abt-text-base);
-		font-weight: 600;
-		color: var(--sb-success);
-		font-variant-numeric: tabular-nums;
-	}
-	.acard-amt.neg {
-		color: var(--sb-danger);
-	}
-	.acard-sync {
-		display: flex;
-		align-items: center;
-		gap: 7px;
-		margin-top: 11px;
-		font-size: var(--abt-text-sm);
-		font-weight: 500;
-		color: var(--abt-soft);
-	}
-	.acard-sync-dot {
-		display: flex;
-	}
-	.acard-sync-dot :global(.status) {
-		width: 12px;
-		height: 12px;
-	}
-	.acard-sync-error {
-		color: var(--sb-danger);
-	}
-	.acard-sync-syncing {
-		color: var(--sb-attention);
+	/* Only the heading and the amount: a whole row in the warning colour was too loud. */
+	.warn {
+		color: var(--color-warningText);
 	}
 </style>

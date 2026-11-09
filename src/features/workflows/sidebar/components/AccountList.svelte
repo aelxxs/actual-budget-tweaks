@@ -150,11 +150,11 @@
 
 	// See PrimaryNav.svelte for why any navigation elsewhere in this sidebar
 	// has to close the spending-calendar overlay itself, if open.
-	function go(path: string) {
+	function go(path: string, options?: Record<string, unknown>) {
 		if (isCalendarOpen()) {
 			closeCalendar();
 		}
-		navigate(path);
+		navigate(path, options);
 	}
 
 	function isAllAccountsActive(): boolean {
@@ -235,8 +235,8 @@
 		const flip = rect.right + HOVER_CARD_WIDTH + 16 > window.innerWidth;
 		hoverFlip = flip;
 		hoverLeft = flip ? rect.left - HOVER_CARD_WIDTH - 10 : rect.right + 10;
-		const estimatedHeight = 360;
-		hoverTop = Math.max(12, Math.min(rect.top - 6, window.innerHeight - estimatedHeight - 12));
+		// The card moves itself up once it knows its height, so it never runs off the bottom.
+		hoverTop = rect.top - 6;
 		hoverAccount = account;
 	}
 
@@ -245,10 +245,42 @@
 			return;
 		}
 		const el = e.currentTarget as HTMLElement;
+		// Rows crossed on the way to the open card wait; the one the pointer ends on takes over.
+		if (aim) {
+			passing = { el, account };
+			return;
+		}
+		startHover(el, account);
+	}
+
+	function startHover(el: HTMLElement, account: SidebarAccount) {
+		if (hoverAccount && hoverAccount.id !== account.id) {
+			hoverAccount = null;
+		}
 		if (hoverTimer) {
 			clearTimeout(hoverTimer);
 		}
 		hoverTimer = setTimeout(() => showHoverCard(el, account), HOVER_DELAY);
+	}
+
+	function onAccountRowLeave(e: MouseEvent) {
+		if (aim) {
+			if (passing?.el === e.currentTarget) {
+				passing = null;
+			}
+			return;
+		}
+		if (hoverTimer) {
+			clearTimeout(hoverTimer);
+			hoverTimer = null;
+		}
+		if (!hoverAccount) {
+			return;
+		}
+		// A card is open: the pointer may be on its way to it, so it gets a safe triangle.
+		aim = { x: e.clientX, y: e.clientY };
+		addEventListener("pointermove", onAimMove);
+		restartAimTimer();
 	}
 
 	function hideHoverCard() {
@@ -256,8 +288,70 @@
 			clearTimeout(hoverTimer);
 			hoverTimer = null;
 		}
+		stopAiming();
 		hoverAccount = null;
 	}
+
+	// The safe triangle: from where the pointer left its row to the card's near corners. Moving
+	// inside it keeps the card, as crossing other rows on the diagonal would otherwise swap it.
+	const AIM_SLACK = 6;
+	// Stopping short of the card for this long counts as giving up on it.
+	const AIM_GRACE = 300;
+	let aim: { x: number; y: number } | null = null;
+	let passing: { el: HTMLElement; account: SidebarAccount } | null = null;
+	let aimTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function restartAimTimer() {
+		if (aimTimer) {
+			clearTimeout(aimTimer);
+		}
+		aimTimer = setTimeout(giveUpAim, AIM_GRACE);
+	}
+
+	function onAimMove(e: PointerEvent) {
+		const card = document.querySelector(".acard")?.getBoundingClientRect();
+		if (!aim || !card || !inTriangle(aim, card, e.clientX, e.clientY)) {
+			giveUpAim();
+			return;
+		}
+		restartAimTimer();
+	}
+
+	function inTriangle(apex: { x: number; y: number }, card: DOMRect, x: number, y: number) {
+		const nearX = apex.x <= card.left ? card.left : card.right;
+		const top = { x: nearX, y: card.top - AIM_SLACK };
+		const bottom = { x: nearX, y: card.bottom + AIM_SLACK };
+		// Nudged away from the card, so a wobble right at the start isn't outside already.
+		const a = { x: apex.x + (nearX > apex.x ? -AIM_SLACK : AIM_SLACK), y: apex.y };
+		const side = (p: { x: number; y: number }, q: { x: number; y: number }) =>
+			(q.x - p.x) * (y - p.y) - (q.y - p.y) * (x - p.x);
+		const d1 = side(a, top);
+		const d2 = side(top, bottom);
+		const d3 = side(bottom, a);
+		const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
+		const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
+		return !(hasNeg && hasPos);
+	}
+
+	function stopAiming() {
+		if (aimTimer) {
+			clearTimeout(aimTimer);
+			aimTimer = null;
+		}
+		removeEventListener("pointermove", onAimMove);
+		aim = null;
+		passing = null;
+	}
+
+	function giveUpAim() {
+		const next = passing;
+		hideHoverCard();
+		if (next) {
+			startHover(next.el, next.account);
+		}
+	}
+
+	$effect(() => stopAiming);
 
 	function commitAccountRename(accountId: string, name: string) {
 		const trimmed = name.trim();
@@ -598,7 +692,7 @@
 									onCancelRename={() => (editingAccountId = null)}
 									onContextMenu={(e) => openAccountMenu(e, account)}
 									onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
-									onRowMouseLeave={hideHoverCard}
+									onRowMouseLeave={onAccountRowLeave}
 								/>
 							{/each}
 						</div>
@@ -623,7 +717,7 @@
 										onCancelRename={() => (editingAccountId = null)}
 										onContextMenu={(e) => openAccountMenu(e, account)}
 										onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
-										onRowMouseLeave={hideHoverCard}
+										onRowMouseLeave={onAccountRowLeave}
 									/>
 								{/each}
 							</div>
@@ -681,7 +775,7 @@
 													onCancelRename={() => (editingAccountId = null)}
 													onContextMenu={(e) => openAccountMenu(e, account)}
 													onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
-													onRowMouseLeave={hideHoverCard}
+													onRowMouseLeave={onAccountRowLeave}
 												/>
 											{/each}
 										</div>
@@ -754,7 +848,28 @@
 {/if}
 
 {#if hoverAccount}
-	<AccountHoverCard account={hoverAccount} top={hoverTop} left={hoverLeft} flip={hoverFlip} />
+	<AccountHoverCard
+		account={hoverAccount}
+		top={hoverTop}
+		left={hoverLeft}
+		flip={hoverFlip}
+		onEnter={stopAiming}
+		onLeave={hideHoverCard}
+		onReview={() => {
+			// Read before hiding: hiding clears the account the card was showing.
+			const id = hoverAccount?.id;
+			hideHoverCard();
+			// Actual's uncategorized list, narrowed to this account with a filter it shows and can clear.
+			if (id) {
+				go("/categories/uncategorized", {
+					state: {
+						goBack: true,
+						filterConditions: [{ field: "account", op: "is", value: id, type: "id" }],
+					},
+				});
+			}
+		}}
+	/>
 {/if}
 
 <style>

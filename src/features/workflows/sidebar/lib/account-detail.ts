@@ -11,29 +11,28 @@ export interface UpcomingItem {
 	payee: string;
 	/** Signed cents. */
 	amount: number;
+	/** Its date has passed and it hasn't been entered yet. */
+	overdue: boolean;
 }
 
 export interface AccountDetail {
-	/** Real linked-bank display name (`bankName`), or a manual-account label. */
+	/** Linked bank's name, or "Bank-linked" / "Manual entry". */
 	institution: string;
-	/** 30 real daily balance points (signed cents), oldest to newest, ending at the account's actual current balance. */
-	points: number[];
-	deltaAbs: number;
-	deltaPct: number;
-	/** Real `balanceCleared-<id>` sheet value (signed cents). */
-	clearedBalance: number;
-	unclearedCount: number;
-	/** Real `balanceUncleared-<id>` sheet value (signed cents). */
-	unclearedAmount: number;
-	upcoming: UpcomingItem[];
+	/** "Synced 5m ago", "Syncing…", "Connection error"; empty for a manual account. */
 	syncText: string;
+	/** 30 daily balances (signed cents), oldest to newest, ending at the current balance. */
+	points: number[];
+	/** False when nothing moved in the window, e.g. a new account; the chart is left out. */
+	hasActivity: boolean;
+	deltaAbs: number;
+	/** Every uncleared transaction's amount, summed (signed cents). */
+	unclearedAmount: number;
+	/** Overdue ones first, then the next few from today. */
+	upcoming: UpcomingItem[];
 }
 
 function relTime(iso: string | null | undefined): string {
-	if (!iso) {
-		return "";
-	}
-	const then = new Date(iso).getTime();
+	const then = iso ? new Date(iso).getTime() : NaN;
 	if (Number.isNaN(then)) {
 		return "";
 	}
@@ -42,14 +41,10 @@ function relTime(iso: string | null | undefined): string {
 		return "just now";
 	}
 	if (mins < 60) {
-		return `${mins} min ago`;
+		return `${mins}m ago`;
 	}
 	const hours = Math.round(mins / 60);
-	if (hours < 24) {
-		return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-	}
-	const days = Math.round(hours / 24);
-	return `${days} day${days > 1 ? "s" : ""} ago`;
+	return hours < 24 ? `${hours}h ago` : `${Math.round(hours / 24)}d ago`;
 }
 
 const TREND_DAYS = 30;
@@ -102,20 +97,19 @@ async function computeAccountDetail(
 	status: SyncStatus,
 	currentBalance: number,
 ): Promise<AccountDetail> {
-	const [, accounts, recentTxs, clearedBalance, unclearedAmount, schedules] = await Promise.all([
+	const [, accounts, recentTxs, unclearedAmount, schedules] = await Promise.all([
 		loadDatePrefs(),
 		query<Pick<Account, "id" | "bankName" | "last_sync">[]>("accounts", {
 			filter: { id: accountId },
 		}),
-		query<Pick<Transaction, "date" | "amount" | "is_child" | "cleared">[]>("transactions", {
+		query<Pick<Transaction, "date" | "amount" | "is_child">[]>("transactions", {
 			filter: {
 				account: accountId,
 				tombstone: false,
 				date: { $gte: isoDaysAgo(TREND_WINDOW_DAYS) },
 			},
 		}),
-		// Actual's balanceCleared cells stay empty until its own account page asks for them.
-		sumAmounts(accountId, true),
+		// Actual's balanceUncleared cells stay empty until its own account page asks for them.
 		sumAmounts(accountId, false),
 		query<Schedule[]>("schedules"),
 	]);
@@ -142,17 +136,14 @@ async function computeAccountDetail(
 		running -= netByDay.get(isoDaysAgo(i)) ?? 0;
 	}
 	const deltaAbs = points[TREND_DAYS - 1] - points[0];
-	const deltaPct = points[0] !== 0 ? (deltaAbs / Math.abs(points[0])) * 100 : 0;
-
-	// ---- cleared / uncleared ----
-	// Counted over the same trailing window already fetched for the trend.
-	const unclearedCount = recentTxs.filter((t) => !t.cleared && !t.is_child).length;
+	const hasActivity = netByDay.size > 0;
 
 	// ---- upcoming scheduled transactions ----
 	const upcomingRaw = schedules
 		.filter((s) => !s.tombstone && !s.completed && s._account === accountId && s.next_date)
 		.sort((a, b) => (a.next_date! < b.next_date! ? -1 : 1))
-		.slice(0, 3);
+		.slice(0, 4);
+	const today = isoDaysAgo(0);
 
 	const payeeIds = [
 		...new Set(upcomingRaw.map((s) => s._payee).filter((id): id is string => !!id)),
@@ -167,6 +158,7 @@ async function computeAccountDetail(
 		date: formatDayMonth(s.next_date!),
 		payee: (s._payee && payeeName.get(s._payee)) || s.name || "Scheduled",
 		amount: scheduleAmount(s._amount),
+		overdue: s.next_date! < today,
 	}));
 
 	const syncText =
@@ -175,20 +167,16 @@ async function computeAccountDetail(
 			: status === "error"
 				? "Connection error"
 				: status === "manual"
-					? "Manual account · not bank-linked"
-					: account?.last_sync
-						? `Synced ${relTime(account.last_sync)}`
-						: "Synced";
+					? ""
+					: ["Synced", relTime(account?.last_sync)].filter(Boolean).join(" ");
 
 	return {
 		institution,
+		syncText,
 		points,
+		hasActivity,
 		deltaAbs,
-		deltaPct,
-		clearedBalance,
-		unclearedCount,
 		unclearedAmount,
 		upcoming,
-		syncText,
 	};
 }

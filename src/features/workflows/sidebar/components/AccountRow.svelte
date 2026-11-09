@@ -52,7 +52,7 @@
 		onCancelRename?: () => void;
 		onContextMenu?: (e: MouseEvent) => void;
 		onRowMouseEnter?: (e: MouseEvent) => void;
-		onRowMouseLeave?: () => void;
+		onRowMouseLeave?: (e: MouseEvent) => void;
 	} = $props();
 
 	// Inline rename (triggered from AccountList's right-click context menu),
