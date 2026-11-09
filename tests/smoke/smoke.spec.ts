@@ -85,6 +85,16 @@ async function createBudget(page: Page): Promise<void> {
 		).$send;
 		await send("account-create", { name: "Checking", balance: 250000, offBudget: false });
 		await send("account-create", { name: "House", balance: 30000000, offBudget: true });
+		// Newer Actual shows only a message, with no table, while the rules list is empty.
+		const added = await send("rule-add", {
+			stage: null,
+			conditionsOp: "and",
+			conditions: [{ op: "contains", field: "imported_payee", value: "coffee" }],
+			actions: [{ op: "append-notes", value: " (coffee)" }],
+		});
+		if (added && typeof added === "object" && "error" in added) {
+			throw new Error(`rule-add failed: ${JSON.stringify(added)}`);
+		}
 	});
 }
 
