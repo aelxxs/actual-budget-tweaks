@@ -197,6 +197,17 @@
 				"writes": null
 			},
 			{
+				"key": "sidebar-show-closed",
+				"type": "checkbox",
+				"defaultValue": true,
+				"platform": "desktop",
+				"label": "Show Closed Accounts",
+				"description": "List closed accounts in their own section at the bottom.",
+				"icon": "eyeOff",
+				"group": "Accounts",
+				"writes": null
+			},
+			{
 				"key": "actual-balancecolors",
 				"type": "checkbox",
 				"defaultValue": true,
