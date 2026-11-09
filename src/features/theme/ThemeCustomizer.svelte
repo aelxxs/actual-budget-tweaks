@@ -34,6 +34,7 @@
 		type UserTheme,
 	} from "./user-themes.svelte";
 	import { createLogger } from "@lib/utilities/logger";
+	import { openThemeStudio } from "./studio/open";
 
 	const log = createLogger("themes");
 
@@ -471,7 +472,7 @@
 		<button
 			type="button"
 			class="abt-btn controls__new"
-			onclick={() => openCreator()}
+			onclick={openThemeStudio}
 			title="Create a theme"
 		>
 			<Icon name="plus" size={14} strokeWidth={2} />

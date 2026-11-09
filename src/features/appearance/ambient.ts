@@ -15,7 +15,7 @@ const GLOW = `radial-gradient(55% 65% at 0% 0%, ${accent(16)}, transparent), rad
  * Every shell surface paints the same viewport-fixed background, so the effects line up across
  * them as one surface. Nothing goes transparent, so content can't show through while it scrolls.
  */
-const SURFACES = `
+export const SURFACES = `
 	[data-abt-content-grid],
 	[data-abt-header],
 	${PAGE_COLUMN},

@@ -51,6 +51,7 @@
 		Landmark,
 		LayoutGrid,
 		ListChecks,
+		Paintbrush,
 		Palette,
 		Percent,
 		Plus,
@@ -70,6 +71,7 @@
 	import { syncAllAccounts } from "../lib/data";
 	import StatusIcon from "./StatusIcon.svelte";
 	import { DEFAULT_THEME } from "@features/theme/defaults";
+	import { openThemeStudio } from "@features/theme/studio/open";
 
 	// Matches theme.ts's setting key — this palette applies/persists the same
 	// setting the full ThemeCustomizer settings panel reads from, so they stay in sync.
@@ -407,6 +409,16 @@
 									label: "Change theme",
 									icon: Palette,
 									target: "themes" as const,
+								},
+							]
+						: []),
+					...(match("Create theme")
+						? [
+								{
+									kind: "action" as const,
+									label: "Create theme",
+									icon: Paintbrush,
+									run: openThemeStudio,
 								},
 							]
 						: []),
