@@ -1,10 +1,18 @@
 import type { Recipe } from "./generator";
-import { copyRecipe, PRESETS } from "./recipes";
+import { copyRecipe, PRESETS, type Trait } from "./recipes";
 
 const RECENT_LIMIT = 5;
 
 export const studio = $state({
 	recipe: copyRecipe(PRESETS[0]),
+	locks: {
+		mode: false,
+		background: false,
+		accent: false,
+		palette: false,
+		glow: false,
+		grain: false,
+	} as Record<Trait, boolean>,
 	/** The last few shuffles, newest first. */
 	recent: [] as Recipe[],
 	/** The glow light the color and brightness controls edit. */

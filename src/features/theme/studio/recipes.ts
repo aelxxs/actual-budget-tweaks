@@ -1,5 +1,17 @@
 import type { GlowLight, GrainSize, Mode, Recipe } from "./generator";
 
+/** What Shuffle can reroll, each lockable on its own. */
+export type Trait = "mode" | "background" | "accent" | "palette" | "glow" | "grain";
+
+export const TRAITS: { trait: Trait; label: string; title: string }[] = [
+	{ trait: "mode", label: "Mode", title: "Light or dark, and contrast" },
+	{ trait: "background", label: "Background", title: "Background color, shade and sidebar" },
+	{ trait: "accent", label: "Accent", title: "Accent color" },
+	{ trait: "palette", label: "Palette", title: "Link, chart and budget colors" },
+	{ trait: "glow", label: "Glow", title: "Glow lights" },
+	{ trait: "grain", label: "Grain", title: "Grain amount and size" },
+];
+
 const corner = (strength = 55, color = "accent"): GlowLight[] => [
 	{ x: 0, y: 0, size: 0.55, strength, color },
 	{ x: 1, y: 1, size: 0.42, strength: Math.round(strength * 0.375), color },
@@ -284,23 +296,56 @@ const STYLES: Style[] = [
 
 let lastStyle: Style | null = null;
 
-/** A new theme from one of the styles, never the same style twice in a row. */
-export function shuffleRecipe(current: Recipe): Recipe {
-	let style = pick(STYLES);
-	while (style === lastStyle) {
-		style = pick(STYLES);
+// The middle of Shade's range: deep to dim in dark themes, white to soft in light ones.
+const SHUFFLE_DEPTH: Record<Mode, [number, number]> = { dark: [-0.03, 0.07], light: [-0.06, 0.01] };
+
+/** Rerolls the unlocked traits from one style; the locked ones are kept as they are. */
+export function shuffleRecipe(
+	current: Recipe,
+	locks: Partial<Record<Trait, boolean>> = {},
+): Recipe {
+	const fits = STYLES.filter((s) => !locks.mode || s.modes.includes(current.mode));
+	let style = pick(fits);
+	while (fits.length > 1 && style === lastStyle) {
+		style = pick(fits);
 	}
 	lastStyle = style;
 	const d = style.make();
-	return followAccent({
-		...copyRecipe(current),
-		...d,
-		name: style.name,
-		mode: pick(style.modes),
-		backgroundLink: null,
-		depth: d.depth,
-		accentLift: d.accentLift,
-	});
+	const next = copyRecipe(current);
+	next.name = style.name;
+	if (!locks.mode) {
+		next.mode = pick(style.modes);
+		next.contrast = d.contrast;
+	}
+	if (!locks.background) {
+		next.baseHue = d.baseHue;
+		next.tint = d.tint;
+		next.sidebar = d.sidebar;
+		next.backgroundLink = null;
+		next.depth = d.depth ?? rnd(...SHUFFLE_DEPTH[next.mode]);
+	}
+	if (!locks.accent) {
+		next.accentHue = d.accentHue;
+		next.accentChroma = d.accentChroma;
+		next.accentLift = d.accentLift;
+	}
+	if (!locks.palette) {
+		next.family = d.family;
+		next.budget = d.budget;
+	}
+	if (!locks.glow) {
+		next.glow = d.glow;
+	}
+	if (!locks.grain) {
+		next.grain = d.grain;
+	}
+	return followAccent(next);
+}
+
+/** Rerolls one trait and keeps everything else, the theme's name included. */
+export function rerollTrait(current: Recipe, trait: Trait): Recipe {
+	const locks = Object.fromEntries(TRAITS.map((t) => [t.trait, t.trait !== trait]));
+	return { ...shuffleRecipe(current, locks), name: current.name };
 }
 
 /** A linked background takes its hue from the accent. */

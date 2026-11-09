@@ -2,7 +2,7 @@
 	import Badge from "@lib/components/panel/Badge.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import Switch from "@lib/components/Switch.svelte";
-	import { Moon, Shuffle, Sun } from "@lucide/svelte";
+	import { Dices, Lock, LockOpen, Moon, Shuffle, Sun } from "@lucide/svelte";
 	import { onMount } from "svelte";
 	import AccentHex from "./AccentHex.svelte";
 	import { previewRecipe } from "./apply";
@@ -12,6 +12,8 @@
 		contrastToPass,
 		generate,
 		oklchToHex,
+		grainImage,
+		lightColor,
 		accentLightness,
 		LIFT_RANGE,
 		readableLift,
@@ -24,7 +26,7 @@
 	import GrainControl from "./GrainControl.svelte";
 	import MiniTheme from "./MiniTheme.svelte";
 	import Rail from "./Rail.svelte";
-	import { copyRecipe, PRESETS, shuffleRecipe } from "./recipes";
+	import { copyRecipe, PRESETS, rerollTrait, shuffleRecipe, type Trait, TRAITS } from "./recipes";
 	import { remember, studio } from "./state.svelte";
 
 	const r = $derived(studio.recipe);
@@ -42,10 +44,38 @@
 	});
 
 	function shuffle() {
-		const next = shuffleRecipe(studio.recipe);
+		const next = shuffleRecipe(studio.recipe, studio.locks);
 		studio.recipe = next;
 		studio.light = 0;
 		remember(next);
+	}
+	function reroll(trait: Trait) {
+		const next = rerollTrait(studio.recipe, trait);
+		studio.recipe = next;
+		if (trait === "glow") {
+			studio.light = 0;
+		}
+		remember(next);
+	}
+	function swatch(trait: Trait): string {
+		switch (trait) {
+			case "mode":
+				return g.colors.mantle;
+			case "background":
+				return oklchToHex(r.mode === "dark" ? 0.4 : 0.85, 0.01 + r.tint * 0.08, r.baseHue);
+			case "accent":
+				return g.colors.mauve;
+			case "palette":
+				return `linear-gradient(90deg, ${g.colors.blue} 33%, ${g.colors.green} 33% 66%, ${g.colors.red} 66%)`;
+			case "glow":
+				return r.glow.on && r.glow.lights[0]
+					? `radial-gradient(circle, ${lightColor(r.glow.lights[0], g.colors)}, ${g.colors.crust})`
+					: g.colors.crust;
+			case "grain":
+				return r.grain.amount
+					? `${grainImage(Math.max(40, r.grain.amount), r.grain.size)}, ${g.colors.surface1}`
+					: g.colors.crust;
+		}
 	}
 	function load(recipe: typeof studio.recipe) {
 		studio.recipe = copyRecipe(recipe);
@@ -219,6 +249,40 @@
 			></button>
 		{/each}
 	</div>
+	<div class="traits" role="group" aria-label="Locked when shuffling">
+		{#each TRAITS as t (t.trait)}
+			<span class="chip" class:locked={studio.locks[t.trait]}>
+				<button
+					type="button"
+					class="reroll"
+					title="Shuffle only {t.label.toLowerCase()}"
+					aria-label="Shuffle only {t.label.toLowerCase()}"
+					onclick={() => reroll(t.trait)}
+				>
+					<span class="trait-swatch" style:background={swatch(t.trait)}></span>
+					<span class="dice"><Dices size={13} strokeWidth={2} /></span>
+				</button>
+				<button
+					type="button"
+					class="trait"
+					aria-pressed={studio.locks[t.trait]}
+					title="{t.title}: {studio.locks[t.trait]
+						? 'kept when shuffling'
+						: 'click to keep when shuffling'}"
+					onclick={() => (studio.locks[t.trait] = !studio.locks[t.trait])}
+				>
+					{t.label}
+					<span class="trait-lock">
+						{#if studio.locks[t.trait]}
+							<Lock size={11} strokeWidth={2.4} />
+						{:else}
+							<LockOpen size={11} strokeWidth={2} />
+						{/if}
+					</span>
+				</button>
+			</span>
+		{/each}
+	</div>
 
 	<div class="sections">
 		<Section card={false} muted title="Color" collapsible={false} privateTrailing={false}>
@@ -241,6 +305,18 @@
 					</button>
 				</div>
 				<ColorWheel {g} />
+				<div class="field-row">
+					<span class="field-label">Sidebar</span>
+					<div class="abt-seg abt-seg--sm stretch" role="group" aria-label="Sidebar">
+						{#each SIDEBARS as [value, label] (value)}
+							<button
+								type="button"
+								aria-pressed={r.sidebar === value}
+								onclick={() => (studio.recipe.sidebar = value)}>{label}</button
+							>
+						{/each}
+					</div>
+				</div>
 			</div>
 		</Section>
 
@@ -325,19 +401,6 @@
 
 			<Section card={false} muted caps={false} title="Advanced" open={false}>
 				<div class="stack">
-					<div class="sub">
-						<span class="sub-label">Sidebar</span>
-						<div class="abt-seg abt-seg--sm stretch" role="group" aria-label="Sidebar">
-							{#each SIDEBARS as [value, label] (value)}
-								<button
-									type="button"
-									aria-pressed={r.sidebar === value}
-									onclick={() => (studio.recipe.sidebar = value)}>{label}</button
-								>
-							{/each}
-						</div>
-					</div>
-
 					<div class="sub">
 						<span class="sub-label">Budget colors</span>
 						<div class="budget-tones">
@@ -470,6 +533,7 @@
 	}
 	.start,
 	.shuffle-row,
+	.traits,
 	.stack {
 		padding: 0 12px; /* raw: matches panel Section's gutter */
 	}
@@ -490,6 +554,17 @@
 	.details :global(.section[data-open="true"]:not(:last-child)) {
 		padding-bottom: 20px; /* raw: a block's worth of space */
 		border-bottom: 1px solid var(--abt-line);
+	}
+	/* Lined up with the wheel's Vibrance and Shade rows. */
+	.field-row {
+		display: grid;
+		grid-template-columns: 72px minmax(0, 1fr);
+		align-items: center;
+		gap: var(--abt-space-3);
+	}
+	.field-label {
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
 	}
 	.switch {
 		display: flex;
@@ -515,20 +590,116 @@
 		flex: 1;
 		justify-content: center;
 	}
-	/* Recent shuffles: the theme's page color beside its accent. */
+	/* Recent shuffles: each theme's accent inside a ring of its page color. */
 	.recent-dot {
 		flex: none;
 		width: 18px;
 		height: 18px;
 		padding: 0;
-		border: 1px solid var(--abt-line);
+		border: 0;
 		border-radius: var(--abt-radius-pill);
-		background: linear-gradient(90deg, var(--dot-page) 50%, var(--dot-accent) 50%);
+		background: var(--dot-accent);
+		box-shadow:
+			inset 0 0 0 4px var(--dot-page),
+			0 0 0 1px var(--abt-line);
 		cursor: pointer;
 	}
 	.recent-dot:hover {
 		outline: 2px solid var(--abt-ink-4);
 		outline-offset: 1px;
+	}
+
+	.traits {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--abt-space-1) var(--abt-space-2);
+		margin-top: calc(-1 * var(--abt-space-4));
+	}
+	/*
+	 * Plain until locked: only a locked trait gets a fill, a border and its lock. Hovering changes
+	 * colour and opacity only, never size, so the row doesn't shift under the pointer.
+	 */
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		height: 24px;
+		padding: 0 var(--abt-space-1);
+		border: 1px solid transparent;
+		border-radius: var(--abt-radius-pill);
+		color: var(--abt-muted);
+		transition:
+			background 0.1s,
+			color 0.1s;
+	}
+	.chip:hover,
+	.chip:focus-within {
+		background: var(--abt-ink-2);
+		color: var(--abt-ink);
+	}
+	.chip.locked {
+		border-color: var(--abt-accent-4);
+		background: var(--abt-accent-2);
+		color: var(--abt-accent-text);
+	}
+	.chip button {
+		display: inline-flex;
+		align-items: center;
+		height: 100%;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
+		font-size: var(--abt-text-sm);
+		cursor: pointer;
+	}
+	.trait {
+		gap: var(--abt-space-1);
+		padding: 0 var(--abt-space-1) 0 var(--abt-space-1) !important;
+	}
+	/* Swatch and dice share one cell and swap by opacity. */
+	.reroll {
+		display: grid !important;
+		place-items: center;
+		width: 18px;
+		border-radius: var(--abt-radius-pill) !important;
+	}
+	.reroll > * {
+		grid-area: 1 / 1;
+		transition: opacity 0.1s;
+	}
+	.reroll:hover {
+		color: var(--abt-accent-text);
+	}
+	.dice {
+		display: inline-flex;
+		opacity: 0;
+	}
+	.chip:hover .dice,
+	.chip:focus-within .dice {
+		opacity: 1;
+	}
+	.chip:hover .trait-swatch,
+	.chip:focus-within .trait-swatch {
+		opacity: 0;
+	}
+	/* Always in the layout, just invisible until hovered or locked. */
+	.trait-lock {
+		display: inline-flex;
+		opacity: 0;
+		transition: opacity 0.1s;
+	}
+	.chip:hover .trait-lock,
+	.chip:focus-within .trait-lock,
+	.chip.locked .trait-lock {
+		opacity: 1;
+	}
+	.trait-swatch {
+		width: 12px;
+		height: 12px;
+		border: 1px solid var(--abt-line);
+		border-radius: var(--abt-radius-pill);
+		background-size: cover;
 	}
 
 	.presets {
