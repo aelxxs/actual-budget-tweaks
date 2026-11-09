@@ -508,8 +508,8 @@
 				aria-pressed={groupAccounts}
 				use:tooltip={{
 					text: groupAccounts
-						? "Grouped by category — click for a flat list"
-						: "Flat list — click to group by category",
+						? "Grouped — click for a flat list"
+						: "Flat list — click to show groups",
 					placement: "right",
 				}}
 				onclick={onToggleGroupMode}
@@ -567,7 +567,7 @@
 						<button
 							type="button"
 							class="section-add"
-							aria-label="New category in {section.label}"
+							aria-label="New group in {section.label}"
 							onclick={(e) => {
 								e.stopPropagation();
 								addCategory(section.label);
@@ -721,7 +721,7 @@
 		</button>
 		<div class="ctx-div"></div>
 		<button type="button" class="ctx-item danger" onclick={() => ungroup(g)}>
-			<span>Remove category</span>
+			<span>Remove group</span>
 		</button>
 	</div>
 {/if}
@@ -1062,7 +1062,7 @@
 		color: var(--abt-ink);
 	}
 	/* hide the total on hover to make room for the row's hover-revealed button —
-	   "add category" on the category rows, the grouped/flat toggle on All Accounts */
+	   "new group" on the section rows, the grouped/flat toggle on All Accounts */
 	.section-head :global(.group-total) {
 		transition: opacity 0.12s ease;
 	}

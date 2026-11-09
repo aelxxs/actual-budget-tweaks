@@ -25,7 +25,7 @@ const GROUPS_KEY = "experimental-sidebar-groups";
 const ASSIGNMENTS_KEY = "experimental-sidebar-account-groups";
 const COLLAPSED_KEY = "experimental-sidebar-collapsed-groups";
 const HOMES_KEY = "experimental-sidebar-group-sections";
-const NEW_GROUP_LABEL = "New Category";
+const NEW_GROUP_LABEL = "New Group";
 const CHANGED_EVENT = "abt:account-groups-changed";
 
 interface NativeGroup {
@@ -396,7 +396,7 @@ async function withFreeName<T>(
 	}
 }
 
-/** Actual keeps group names unique, so a taken one gets a number: "New Category 2". */
+/** Actual keeps group names unique, so a taken one gets a number: "New Group 2". */
 export function uniqueLabel(
 	groups: Record<string, AccountGroup>,
 	label: string,
