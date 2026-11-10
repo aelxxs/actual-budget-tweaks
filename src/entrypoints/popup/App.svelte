@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isAbtEnabled, setAbtEnabled } from "@lib/utilities/abt-enabled";
 	import { getValue, normalizeBaseUrl, setValue } from "@lib/utilities/store";
 	import { onMount } from "svelte";
 
@@ -6,15 +7,19 @@
 	let savedUserLink = $state("");
 	let activeTabUrl = $state<string | null>(null);
 	let justSaved = $state(false);
+	let enabled = $state(true);
 
 	const savedBaseUrl = $derived(normalizeBaseUrl(savedUserLink));
 	const pendingBaseUrl = $derived(normalizeBaseUrl(userLink));
 	const isDirty = $derived(userLink.trim() !== savedUserLink.trim());
 	const canSave = $derived(isDirty);
 
-	const status = $derived.by<"active" | "inactive" | "unconfigured">(() => {
+	const status = $derived.by<"active" | "inactive" | "unconfigured" | "off">(() => {
 		if (!savedBaseUrl) {
 			return "unconfigured";
+		}
+		if (!enabled) {
+			return "off";
 		}
 		if (activeTabUrl && activeTabUrl.startsWith(savedBaseUrl)) {
 			return "active";
@@ -27,13 +32,16 @@
 			? "Active on this tab"
 			: status === "inactive"
 				? "Not active on this tab"
-				: "Not configured",
+				: status === "off"
+					? "Turned off"
+					: "Not configured",
 	);
 
 	onMount(async () => {
 		const saved = ((await getValue("user-link", "")) as string) ?? "";
 		userLink = saved;
 		savedUserLink = saved;
+		enabled = await isAbtEnabled();
 
 		try {
 			const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -74,6 +82,12 @@
 		}
 	}
 
+	// Open Actual tabs reload themselves when this changes.
+	async function toggle(event: Event) {
+		enabled = (event.target as HTMLInputElement).checked;
+		await setAbtEnabled(enabled);
+	}
+
 	async function openActual() {
 		if (!savedBaseUrl) {
 			return;
@@ -84,7 +98,14 @@
 
 <main>
 	<header>
-		<h1>Actual Budget Tweaks</h1>
+		<div class="title-row">
+			<h1>Actual Budget Tweaks</h1>
+			<label class="switch" title={enabled ? "Turn off ABT" : "Turn on ABT"}>
+				<input type="checkbox" role="switch" checked={enabled} onchange={toggle} />
+				<span class="track" aria-hidden="true"></span>
+				<span class="sr-only">Actual Budget Tweaks on</span>
+			</label>
+		</div>
 		<div class="status" data-status={status} role="status" aria-live="polite">
 			<span class="dot" aria-hidden="true"></span>
 			<span>{statusLabel}</span>
@@ -139,6 +160,66 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+	}
+
+	.title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.switch {
+		position: relative;
+		display: inline-flex;
+		cursor: pointer;
+	}
+
+	.switch input {
+		position: absolute;
+		inset: 0;
+		margin: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	.track {
+		width: 32px;
+		height: 18px;
+		border-radius: 999px;
+		background: var(--border-strong);
+		transition: background 0.15s;
+	}
+
+	.track::after {
+		content: "";
+		display: block;
+		width: 14px;
+		height: 14px;
+		margin: 2px;
+		border-radius: 999px;
+		background: #fff;
+		transition: transform 0.15s;
+	}
+
+	.switch input:checked + .track {
+		background: var(--accent);
+	}
+
+	.switch input:checked + .track::after {
+		transform: translateX(14px);
+	}
+
+	.switch input:focus-visible + .track {
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent);
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
 	}
 
 	h1 {

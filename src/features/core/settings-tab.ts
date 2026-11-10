@@ -1,3 +1,4 @@
+import "./settings-tab.css";
 import { navigate } from "@lib/utilities/actual-api";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { isMobileView } from "@lib/utilities/pages";

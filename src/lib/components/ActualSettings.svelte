@@ -12,6 +12,7 @@
 	import { pushStoredSettings } from "../../features/settings-sync";
 	import Icon from "./Icon.svelte";
 	import SettingRow from "./SettingRow.svelte";
+	import { setAbtEnabled } from "../utilities/abt-enabled";
 	import { watchDom } from "../utilities/dom-watcher";
 	import { isoDate } from "../utilities/months";
 	import { DESKTOP_QUERY } from "../utilities/pages";
@@ -31,6 +32,14 @@
 	let bugDescription = $state("");
 	let importStatus = $state<"" | "success" | "error">("");
 	let showResetDialog = $state(false);
+	let showOffDialog = $state(false);
+	let turningOff = $state(false);
+
+	async function turnOff() {
+		turningOff = true;
+		await setAbtEnabled(false);
+		location.reload();
+	}
 	let resetting = $state(false);
 
 	function openBugReport() {
@@ -423,6 +432,9 @@
 		if (!resetting) {
 			showResetDialog = false;
 		}
+		if (!turningOff) {
+			showOffDialog = false;
+		}
 	}}
 />
 
@@ -458,6 +470,15 @@
 		aria-label="Reset to defaults"
 	>
 		<Icon name="rotateCcw" size={14} strokeWidth={1.5} />
+	</button>
+	<button
+		type="button"
+		class="abt-btn abt-btn--icon abt-btn--sm"
+		onclick={() => (showOffDialog = true)}
+		title="Turn off ABT"
+		aria-label="Turn off ABT"
+	>
+		<Icon name="power" size={14} strokeWidth={1.5} />
 	</button>
 	<button
 		type="button"
@@ -705,6 +726,50 @@
 				<button type="button" class="abt-btn abt-tone-accent" onclick={submitBugReport}>
 					Open on GitHub
 					<ExternalLink size={13} strokeWidth={1.5} />
+				</button>
+			</footer>
+		</div>
+	</div>
+{/if}
+
+{#if showOffDialog}
+	<div
+		class="abt-dialog-backdrop"
+		role="presentation"
+		use:portal
+		onclick={(e) => e.target === e.currentTarget && !turningOff && (showOffDialog = false)}
+	>
+		<div
+			class="abt-dialog abt-popover abt-controls-quiet"
+			role="alertdialog"
+			aria-modal="true"
+			aria-label="Turn off ABT"
+		>
+			<header class="abt-dialog__header">
+				<h3 class="abt-dialog__title">Turn off Actual Budget Tweaks?</h3>
+			</header>
+			<div class="abt-dialog__body dialog-text">
+				<p>
+					Actual reloads without any tweaks, in this browser only. Your settings stay as they are.
+				</p>
+				<p>Turn it back on from this page or from the extension's popup.</p>
+			</div>
+			<footer class="abt-dialog__footer">
+				<button
+					type="button"
+					class="abt-btn"
+					disabled={turningOff}
+					onclick={() => (showOffDialog = false)}
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					class="abt-btn abt-tone-danger"
+					disabled={turningOff}
+					onclick={turnOff}
+				>
+					{turningOff ? "Turning off…" : "Turn off"}
 				</button>
 			</footer>
 		</div>

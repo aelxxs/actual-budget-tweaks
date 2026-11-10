@@ -41,6 +41,21 @@ export default defineContentScript({
 			}
 			mounted = true;
 
+			const { isAbtEnabled, ABT_ENABLED_KEY } = await import("@lib/utilities/abt-enabled");
+			const enabled = await isAbtEnabled();
+			// Turning ABT on or off reloads, as core scripts and themes have no teardown.
+			function onToggle(changes: Record<string, unknown>, areaName: string) {
+				if (areaName === "local" && `local:${ABT_ENABLED_KEY}` in changes) {
+					location.reload();
+				}
+			}
+			browser.storage.onChanged.addListener(onToggle);
+			ctx.onInvalidated(() => browser.storage.onChanged.removeListener(onToggle));
+			if (!enabled) {
+				await mountOff();
+				return;
+			}
+
 			// The bridge's own content script only checks the address at page load, so a page
 			// enabled from the popup afterwards would have none; injecting twice is a no-op.
 			const { injectMainWorldScript } = await import("@lib/utilities/inject-main-world");
@@ -106,6 +121,41 @@ export default defineContentScript({
 				},
 			});
 
+			ui.autoMount();
+		}
+
+		// Off, ABT keeps only its settings tab, which says so and turns it back on.
+		async function mountOff() {
+			const [{ default: AbtOff }, { settingsTab }, { createElement }, { mount, unmount }] =
+				await Promise.all([
+					import("@lib/components/AbtOff.svelte"),
+					import("@features/core/settings-tab"),
+					import("@lib/utilities/dom"),
+					import("svelte"),
+				]);
+			try {
+				const href = browser.runtime.getURL(contentCssPath);
+				document.body.appendChild(createElement("link", { rel: "stylesheet", href }));
+			} catch {
+				return;
+			}
+			ctx.onInvalidated(settingsTab.init());
+			const ui = createIntegratedUi(ctx, {
+				position: "inline",
+				anchor: settingsAnchor,
+				onMount: (container) => {
+					const parent = container.parentElement;
+					if (parent) {
+						parent.replaceChildren();
+						return mount(AbtOff, { target: parent });
+					}
+				},
+				onRemove: (app) => {
+					if (app) {
+						unmount(app);
+					}
+				},
+			});
 			ui.autoMount();
 		}
 
