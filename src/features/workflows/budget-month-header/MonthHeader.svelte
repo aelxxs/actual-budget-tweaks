@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { panelState } from "@features/core/side-panel/panel-state.svelte";
 	import { openInsights } from "@features/workflows/template-plan";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
@@ -154,10 +155,12 @@
 			</div>
 		{/if}
 		{#if templatePlanState.triggerShown}
-			<!-- The header's one action that opens something, so it carries the accent. -->
+			<!-- The accent while the panel is free; plain while another panel holds its place, so it
+			     doesn't read as the one showing. -->
 			<button
 				type="button"
-				class="abt-btn abt-tone-accent"
+				class="abt-btn"
+				class:abt-tone-accent={!panelState.open}
 				title="Open insights"
 				aria-label="Open insights"
 				onclick={() => openInsights()}

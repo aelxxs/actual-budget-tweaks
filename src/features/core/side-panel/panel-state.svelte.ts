@@ -3,4 +3,6 @@ export const panelState = $state({
 	title: "Side Panel",
 	bodyNode: null as Node | null,
 	headerNode: null as Node | null,
+	/** Whether the panel is showing; the body above can outlive a close. */
+	open: false,
 });

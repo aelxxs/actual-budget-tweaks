@@ -194,6 +194,9 @@ export const sidePanel = {
 		};
 
 		const sync = () => {
+			if (panelState.open !== isOpen) {
+				panelState.open = isOpen;
+			}
 			place();
 			markOpen();
 		};
