@@ -7,7 +7,7 @@ import { sidebarDensity } from "./appearance/sidebar-density";
 import { sidebarClosedAccounts } from "./appearance/sidebar-closed-accounts";
 import { sidebarGroupTotals } from "./appearance/sidebar-group-totals";
 import { sidebarSearch } from "./appearance/sidebar-search";
-import { sidebarShortcuts } from "./appearance/sidebar-shortcuts";
+import { sidebarShortcuts, sidebarShortcutsAddTile } from "./appearance/sidebar-shortcuts";
 import { modernTitlebar } from "./appearance/titlebar";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { mobilePageTransitions } from "./mobile/page-transitions";
@@ -270,6 +270,7 @@ export const coreScripts = [
 ];
 
 // Bootstrap-only settings with no settings-page row (no `group`), still activated.
-const hiddenScripts = [themeLoader];
+// The add tile's switch lives in the Customize sidebar panel; listed so it syncs with the budget.
+const hiddenScripts = [themeLoader, sidebarShortcutsAddTile];
 
 export const scripts: Setting<any>[][] = [...scriptSections.map(sectionItems), hiddenScripts];
