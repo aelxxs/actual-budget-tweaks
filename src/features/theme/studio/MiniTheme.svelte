@@ -1,69 +1,27 @@
 <script lang="ts">
+	import ThemeThumb from "../picker/ThemeThumb.svelte";
 	import type { Generated } from "./generator";
 
 	const { g }: { g: Generated } = $props();
 </script>
 
-<span
-	class="mini"
-	style:--m-side={g.sidebar.bg}
-	style:--m-page={g.colors.crust}
-	style:--m-card={g.colors.mantle}
-	style:--m-text={g.colors.text}
-	style:--m-accent={g.sidebar.sel}
-	aria-hidden="true"
->
-	<i class="side"></i>
-	<i class="page"></i>
+<span class="mini">
+	<ThemeThumb
+		thumb={{
+			side: g.sidebar.bg,
+			page: g.colors.crust,
+			card: g.colors.mantle,
+			text: g.colors.text,
+			accent: g.sidebar.sel,
+		}}
+	/>
 </span>
 
 <style>
 	.mini {
-		display: grid;
-		grid-template-columns: 30% 1fr;
-		width: 100%;
-		aspect-ratio: 16 / 10;
+		display: block;
 		overflow: hidden;
 		border: 1px solid var(--abt-line);
 		border-radius: var(--abt-radius-sm);
-	}
-	i {
-		position: relative;
-		display: block;
-	}
-	.side {
-		background: var(--m-side);
-	}
-	/* The selected sidebar item. */
-	.side::after {
-		content: "";
-		position: absolute;
-		top: 24%;
-		left: 18%;
-		width: 55%;
-		height: 3px;
-		border-radius: 2px;
-		background: var(--m-accent);
-	}
-	.page {
-		background: var(--m-page);
-	}
-	.page::before {
-		content: "";
-		position: absolute;
-		inset: 24% 10% 16%;
-		border-radius: 2px;
-		background: var(--m-card);
-	}
-	.page::after {
-		content: "";
-		position: absolute;
-		top: 36%;
-		left: 18%;
-		width: 40%;
-		height: 3px;
-		border-radius: 2px;
-		background: var(--m-text);
-		opacity: 0.6;
 	}
 </style>

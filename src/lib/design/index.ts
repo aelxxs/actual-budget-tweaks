@@ -31,6 +31,23 @@ export const themes: Record<string, Theme> = {
 	velvet,
 };
 
+/** Order in the gallery, after Actual's own: the most distinct first, so the first row shows the range. */
+export const FEATURED_THEMES = [
+	"mocha",
+	"latte",
+	"midnight",
+	"daylight",
+	"velvet",
+	"sandstone",
+	"tomorrowNight",
+	"monospaceMatrix",
+	"cyberpunk",
+	"obsidian",
+	"macchiato",
+	"frappe",
+	"ghibliTwilight",
+];
+
 /** Built-in themes merged into a close one; saved choices move to it. */
 export const RETIRED_THEMES: Record<string, string> = {
 	dusk: "macchiato",

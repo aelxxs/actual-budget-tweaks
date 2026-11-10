@@ -24,6 +24,14 @@ let waitingForBudget = false;
  * studio theme's id, it opens on that theme and Save updates it; with another palette theme's, it
  * starts from an approximation and saves alongside, so the original keeps its exact colors.
  */
+/** Opens the studio on a copy of a palette from elsewhere (a built-in theme), saved as a new theme. */
+export function openPaletteInStudio(keys: Record<string, string>, name: string): void {
+	studio.editing = null;
+	studio.recipe = recipeFromPalette(keys, `${name} (Studio)`);
+	studio.recent = [];
+	openThemeStudio();
+}
+
 export function openThemeStudio(themeId?: string): void {
 	const saved = themeId ? userThemeState.themes[themeId] : undefined;
 	const recipe = saved?.recipe;
