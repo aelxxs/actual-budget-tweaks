@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { balanceColors, followBalanceColors } from "../lib/balance-colors.svelte";
+
+	followBalanceColors();
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import {
 		getEmojiAssetUrl,
@@ -215,8 +218,9 @@
 		{#if account.uncategorized > 0}
 			<span class="account-uncat">{account.uncategorized}</span>
 		{/if}
-		<span class="account-amount abt-privacy-number" class:red={account.balance < 0}
-			>{fmtMoney(account.balance)}</span
+		<span
+			class="account-amount abt-privacy-number"
+			class:red={balanceColors.on && account.balance < 0}>{fmtMoney(account.balance)}</span
 		>
 	</button>
 {/if}

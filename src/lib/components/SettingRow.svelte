@@ -20,7 +20,10 @@
 		icon={setting.icon}
 	/>
 {:else if setting.type === "custom"}
-	{#if setting.component}
+	{#if setting.component && setting.bare}
+		{@const C = setting.component}
+		<C ctx={setting.context} />
+	{:else if setting.component}
 		{@const C = setting.component}
 		<div class="abt-setting abt-setting--stacked" data-testid={setting.context.key}>
 			{#if label ?? setting.label}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { spendingCalendar } from "@features/workflows/spending-calendar";
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
@@ -62,7 +63,9 @@
 	let calendarFeatureEnabled = $state(false);
 
 	$effect(() => {
-		getValue<boolean>("spending-calendar-enabled", false).then((v) => (calendarFeatureEnabled = v));
+		getValue<boolean>(spendingCalendar.context.key, spendingCalendar.context.defaultValue).then(
+			(v) => (calendarFeatureEnabled = v),
+		);
 	});
 
 	function go(page: Page) {

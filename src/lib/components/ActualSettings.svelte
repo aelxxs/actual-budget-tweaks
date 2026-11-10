@@ -12,6 +12,9 @@
 	import { pushStoredSettings } from "../../features/settings-sync";
 	import Icon from "./Icon.svelte";
 	import SettingRow from "./SettingRow.svelte";
+	import Switch from "./Switch.svelte";
+	import WritesMark from "./WritesMark.svelte";
+	import { applySettingChange } from "../../features/runtime";
 	import { setAbtEnabled } from "../utilities/abt-enabled";
 	import { watchDom } from "../utilities/dom-watcher";
 	import { isoDate } from "../utilities/months";
@@ -151,6 +154,10 @@
 
 	function toggleSection(title: string) {
 		collapsed[title] = !collapsed[title];
+	}
+
+	function storedOn(item: PageSetting): boolean {
+		return Boolean(stored[`local:${item.context.key}`] ?? item.context.defaultValue);
 	}
 
 	function isSectionCollapsed(title: string) {
@@ -592,17 +599,44 @@
 				data-section={section.title}
 				bind:this={sectionEls[section.title]}
 			>
-				<button
-					type="button"
-					class="section-toggle"
-					onclick={() => toggleSection(section.title)}
-					aria-expanded={!isCollapsed}
-				>
-					<h3 class="section-title">{section.title}</h3>
-					{#if section.elsewhere}<span class="section-elsewhere">Also in {section.elsewhere}</span>{/if}
-					<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
-				</button>
-				{#if !isCollapsed}
+				{#if section.headerSlot}
+					<div class="section-toggle section-fixed">
+						<h3 class="section-title">{section.title}</h3>
+						<span class="section-slot" data-section-slot></span>
+					</div>
+				{:else if section.switch}
+					{@const master = section.switch}
+					<div class="section-toggle section-fixed">
+						<h3 class="section-title">
+							{section.title}{#if "writes" in master && master.writes}<WritesMark
+									writes={master.writes}
+								/>{/if}
+						</h3>
+						<!-- A label, so a click anywhere on the switch reaches its checkbox. -->
+						<label class="section-switch" aria-label={master.label}>
+							<Switch
+								checked={storedOn(master)}
+								onCheckedChange={(on) => applySettingChange(master, on)}
+							/>
+						</label>
+					</div>
+					{#if !storedOn(master) && master.description}
+						<p class="section-off">{master.description}</p>
+					{/if}
+				{:else}
+					<button
+						type="button"
+						class="section-toggle"
+						onclick={() => toggleSection(section.title)}
+						aria-expanded={!isCollapsed}
+					>
+						<h3 class="section-title">{section.title}</h3>
+						{#if section.elsewhere}<span class="section-elsewhere">Also in {section.elsewhere}</span
+							>{/if}
+						<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
+					</button>
+				{/if}
+				{#if section.headerSlot || (section.switch ? storedOn(section.switch) : !isCollapsed)}
 					<div class="settings-list">
 						{#each section.groups as group (group.label ?? "__ungrouped__")}
 							<div class="settings-subgroup">
@@ -610,7 +644,7 @@
 									<h4 class="abt-label">{group.label}</h4>
 								{/if}
 								<div>
-									{#each group.items as item (item.context.key)}
+									{#each group.items.filter((i) => i !== section.switch) as item (item.context.key)}
 										{@const unmet = isUnmet(item)}
 										{#if unmet}
 											<div class="setting-unmet">
@@ -1006,8 +1040,35 @@
 		transition: background-color 0.1s;
 	}
 
-	.section-toggle:hover {
+	/* Only headers that collapse their section react to hover. */
+	.section-toggle:not(.section-fixed):hover {
 		background: var(--abt-fill-hover);
+	}
+
+	.section-fixed {
+		cursor: default;
+	}
+
+	.section-slot {
+		display: contents;
+	}
+
+	.section-switch {
+		display: inline-flex;
+		cursor: pointer;
+	}
+
+	.section-fixed .section-title {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
+	}
+
+	.section-off {
+		margin: calc(-1 * var(--abt-space-3)) 0 0;
+		padding: 0 var(--abt-space-5) var(--abt-space-4);
+		font-size: var(--abt-text-sm);
+		color: var(--color-pageTextSubdued);
 	}
 
 	.section-title {

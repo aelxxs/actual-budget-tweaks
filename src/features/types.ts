@@ -75,6 +75,8 @@ export interface CustomSetting<C extends SettingContext> {
 	/** Where it's listed in the settings page; see BaseSetting.platform. */
 	platform?: Platform;
 	component?: Component<{ ctx: C }>;
+	/** The component draws the whole row, label included. */
+	bare?: boolean;
 	init: (ctx: C) => Promise<void> | void;
 }
 export interface CoreSetting {

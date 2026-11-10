@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { balanceColors, followBalanceColors } from "../lib/balance-colors.svelte";
+
+	followBalanceColors();
 	import { customizeSidebar } from "../lib/customize.svelte";
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
@@ -686,7 +689,7 @@
 								<span class="cp-item-label">{@render hl(item.account.name)}</span>
 								<span
 									class="cp-item-amount abt-privacy-number"
-									class:red={item.account.balance < 0}
+									class:red={balanceColors.on && item.account.balance < 0}
 								>
 									{fmtMoney(item.account.balance)}
 								</span>

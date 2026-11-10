@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { balanceColors, followBalanceColors } from "../lib/balance-colors.svelte";
+
+	followBalanceColors();
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { createLogger } from "@lib/utilities/logger";
 	import { ArrowRight } from "@lucide/svelte";
@@ -103,8 +106,9 @@
 
 		<div class="balance">
 			<span class="abt-label">Balance</span>
-			<span class="amount big abt-privacy-number" class:neg={account.balance < 0}
-				>{fmtMoney(account.balance)}</span
+			<span
+				class="amount big abt-privacy-number"
+				class:neg={balanceColors.on && account.balance < 0}>{fmtMoney(account.balance)}</span
 			>
 		</div>
 

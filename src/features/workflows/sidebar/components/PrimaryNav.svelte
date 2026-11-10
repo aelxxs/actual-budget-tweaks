@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { spendingCalendar } from "@features/workflows/spending-calendar";
 	import {
 		closeCalendar,
 		isCalendarOpen,
@@ -19,7 +20,9 @@
 	let calendarFeatureEnabled = $state(false);
 
 	$effect(() => {
-		getValue<boolean>("spending-calendar-enabled", false).then((v) => (calendarFeatureEnabled = v));
+		getValue<boolean>(spendingCalendar.context.key, spendingCalendar.context.defaultValue).then(
+			(v) => (calendarFeatureEnabled = v),
+		);
 	});
 
 	// The spending calendar isn't a real Actual route — it's a DOM overlay this

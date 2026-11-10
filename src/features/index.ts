@@ -1,4 +1,5 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
+import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
@@ -82,6 +83,10 @@ export interface SettingsSection {
 	title: string;
 	/** Edited elsewhere, named here; the page lists the section only in search and Changed. */
 	elsewhere?: string;
+	/** A fixed header with an empty slot (`[data-section-slot]`) its setting fills; it doesn't collapse. */
+	headerSlot?: boolean;
+	/** One of its items, drawn as a switch in the header in place of collapsing; the rest show while it's on. */
+	switch?: PageSetting;
 	groups: { label: string | null; items: PageSetting[] }[];
 }
 
@@ -99,6 +104,7 @@ export const styleSettings: PageSetting[] = [
 export const scriptSections: SettingsSection[] = [
 	{
 		title: "Theme",
+		headerSlot: true,
 		groups: [{ label: null, items: [themeSelector] }],
 	},
 	{
@@ -112,20 +118,20 @@ export const scriptSections: SettingsSection[] = [
 	},
 	{
 		title: "Sidebar",
+		switch: experimentalSidebar,
+		groups: [{ label: null, items: [experimentalSidebar, customizeSidebarEntry] }],
+	},
+	{
+		title: "Customize sidebar",
+		elsewhere: "the sidebar's Customize panel",
 		groups: [
 			{
-				label: "Live sidebar",
+				label: null,
 				items: [
-					experimentalSidebar,
 					experimentalSidebarLayout,
 					sidebarDensity,
 					sidebarSearch,
 					sidebarShortcuts,
-				],
-			},
-			{
-				label: "Accounts",
-				items: [
 					accountIconPicker,
 					sidebarGroupTotals,
 					sidebarClosedAccounts,
@@ -242,6 +248,7 @@ export const scriptSections: SettingsSection[] = [
 
 // Settings that only do something while another (a checkbox) is on; the page dims them otherwise.
 export const settingRequires = new Map<PageSetting, PageSetting>([
+	[customizeSidebarEntry, experimentalSidebar],
 	[experimentalSidebarLayout, experimentalSidebar],
 	[sidebarDensity, experimentalSidebar],
 	[sidebarSearch, experimentalSidebar],

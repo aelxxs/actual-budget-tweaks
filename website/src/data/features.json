@@ -111,9 +111,26 @@
 				"label": "Live sidebar",
 				"description": "ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
 				"icon": null,
-				"group": "Live sidebar",
+				"group": null,
 				"writes": "Renames an account, runs its bank sync, or edits account groups when you do so from the sidebar."
 			},
+			{
+				"key": "customize-sidebar-entry",
+				"type": "custom",
+				"defaultValue": null,
+				"platform": "desktop",
+				"label": "Customize sidebar",
+				"description": "Layout, density, search, shortcuts and account details, changed beside the sidebar.",
+				"icon": null,
+				"group": null,
+				"writes": null
+			}
+		]
+	},
+	{
+		"title": "Customize sidebar",
+		"description": null,
+		"items": [
 			{
 				"key": "experimental-sidebar-layout-mode",
 				"type": "custom",
@@ -122,7 +139,7 @@
 				"label": "Live sidebar layout",
 				"description": "Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
 				"icon": null,
-				"group": "Live sidebar",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -133,7 +150,7 @@
 				"label": "Sidebar Density",
 				"description": "Adjust the spacing of accounts, nav links, and search in the live sidebar.",
 				"icon": null,
-				"group": "Live sidebar",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -144,7 +161,7 @@
 				"label": "Sidebar Search Bar",
 				"description": "Quickly filter accounts, categories, and pages.",
 				"icon": "search",
-				"group": "Live sidebar",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -155,7 +172,7 @@
 				"label": "Sidebar Shortcuts",
 				"description": "Pin quick links and tools to the sidebar.",
 				"icon": "star",
-				"group": "Live sidebar",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -166,7 +183,7 @@
 				"label": "Account Icon Picker",
 				"description": "Set a custom favicon or emoji icon per account.",
 				"icon": "image",
-				"group": "Accounts",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -177,7 +194,7 @@
 				"label": "Account Group Totals",
 				"description": "Show each account group's combined balance beside its name.",
 				"icon": "calculator",
-				"group": "Accounts",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -188,7 +205,7 @@
 				"label": "Show Closed Accounts",
 				"description": "List closed accounts in their own section at the bottom.",
 				"icon": "eyeOff",
-				"group": "Accounts",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -199,7 +216,7 @@
 				"label": "Color Negative Account Balances",
 				"description": "Highlight negative account balances in red.",
 				"icon": "palette",
-				"group": "Accounts",
+				"group": null,
 				"writes": null
 			}
 		]

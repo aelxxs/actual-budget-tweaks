@@ -177,6 +177,12 @@
 			galleryOpen = true;
 		}
 	}
+	/** Moves the mode switch into the settings section's header; it stays where it is anywhere else. */
+	function inHeader(node: HTMLElement) {
+		const slot = node.closest(".settings-section")?.querySelector("[data-section-slot]");
+		slot?.append(node);
+	}
+
 	/** The first few, keeping the chosen one in view. */
 	function visible<T>(id: string, list: T[], keyOf: (t: T) => string, limit = PREVIEW): T[] {
 		if (q || expanded[id] || list.length <= limit) {
@@ -528,7 +534,7 @@
 
 <div class="picker">
 	{#snippet modeSwitch()}
-		<div class="abt-seg abt-seg--sm mode-switch" role="group" aria-label="Theme mode">
+		<div class="abt-seg abt-seg--sm" role="group" aria-label="Theme mode" {@attach inHeader}>
 			<button type="button" aria-pressed={!autoSwitch} onclick={() => setMatchSystem(false)}>
 				One theme
 			</button>
@@ -538,7 +544,9 @@
 		</div>
 	{/snippet}
 
-	{#snippet currentRow(mode: "light" | "dark" | null, key: string, first: boolean)}
+	{@render modeSwitch()}
+
+	{#snippet currentRow(mode: "light" | "dark" | null, key: string)}
 		<div class="now">
 			<span class="now-thumb"><ThemeThumb thumb={thumbFor(key)} /></span>
 			<span class="now-text">
@@ -551,24 +559,23 @@
 					{/if}
 				</span>
 				<span class="now-name">{getThemeName(key)}</span>
-				<span class="now-actions">
-					<button type="button" class="abt-btn abt-btn--sm" onclick={() => customize(key)}>
-						<Paintbrush size={14} /> Customize
-					</button>
-					<button type="button" class="abt-btn abt-btn--sm" onclick={() => openGallery(mode)}>
-						<LayoutGrid size={14} /> Change theme
-					</button>
-				</span>
 			</span>
-			{#if first}{@render modeSwitch()}{/if}
+			<span class="now-actions">
+				<button type="button" class="abt-btn abt-btn--sm" onclick={() => customize(key)}>
+					<Paintbrush size={14} /> Customize
+				</button>
+				<button type="button" class="abt-btn abt-btn--sm" onclick={() => openGallery(mode)}>
+					<LayoutGrid size={14} /> Change theme
+				</button>
+			</span>
 		</div>
 	{/snippet}
 
 	{#if autoSwitch}
-		{@render currentRow("light", autoLightKey, true)}
-		{@render currentRow("dark", autoDarkKey, false)}
+		{@render currentRow("light", autoLightKey)}
+		{@render currentRow("dark", autoDarkKey)}
 	{:else}
-		{@render currentRow(null, activeThemeKey, true)}
+		{@render currentRow(null, activeThemeKey)}
 	{/if}
 
 	<div class="style-row">
@@ -747,14 +754,24 @@
 	}
 
 	/* ── Current ── */
+	/* The name and buttons sit beside the thumbnail; the buttons wrap under each other if they must. */
 	.now {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-start;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-areas:
+			"thumb text"
+			"thumb actions";
+		align-content: start;
 		gap: var(--abt-space-3) var(--abt-space-5);
 	}
-	.mode-switch {
-		margin-left: auto;
+	.now-thumb {
+		grid-area: thumb;
+	}
+	.now-text {
+		grid-area: text;
+	}
+	.now-actions {
+		grid-area: actions;
 	}
 	.style-row {
 		display: flex;
@@ -763,6 +780,9 @@
 		gap: var(--abt-space-3) var(--abt-space-5);
 		padding-top: var(--abt-space-5);
 		border-top: 1px solid var(--abt-line);
+	}
+	.style-row .now-text {
+		flex: 1 1 200px;
 	}
 	.style-row .abt-btn {
 		gap: var(--abt-space-2);
@@ -775,13 +795,12 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--abt-space-3);
-		margin-top: var(--abt-space-3);
 	}
 	.now-actions .abt-btn {
 		gap: var(--abt-space-2);
+		white-space: nowrap;
 	}
 	.now-thumb {
-		flex: none;
 		width: 104px;
 		overflow: hidden;
 		border: 1px solid var(--abt-line);
@@ -789,7 +808,6 @@
 	}
 	.now-text {
 		display: flex;
-		flex: 1 1 200px;
 		flex-direction: column;
 		gap: var(--abt-space-1);
 		min-width: 0;
