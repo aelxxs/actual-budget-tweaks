@@ -1,15 +1,12 @@
 import { cyberpunk } from "./palettes/cyberpunk";
 import { daylight } from "./palettes/daylight";
-import { dusk } from "./palettes/dusk";
 import { frappe } from "./palettes/frappe";
 import { ghibliTwilight } from "./palettes/ghibli-twilight";
 import { latte } from "./palettes/latte";
 import { macchiato } from "./palettes/macchiato";
-import { material } from "./palettes/material";
 import { midnight } from "./palettes/midnight";
 import { mocha } from "./palettes/mocha";
 import { monospaceMatrix } from "./palettes/monospace-matrix";
-import { nocturne } from "./palettes/nocturne";
 import { obsidian } from "./palettes/obsidian";
 import { sandstone } from "./palettes/sandstone";
 import { tomorrowNight } from "./palettes/tomorrow-night";
@@ -21,24 +18,28 @@ export const defaultTheme = mocha;
 export const themes: Record<string, Theme> = {
 	cyberpunk,
 	daylight,
-	dusk,
 	frappe,
 	ghibliTwilight,
 	latte,
 	macchiato,
-	material,
 	midnight,
 	mocha,
 	monospaceMatrix,
-	nocturne,
 	obsidian,
 	sandstone,
 	tomorrowNight,
 	velvet,
 };
 
+/** Built-in themes merged into a close one; saved choices move to it. */
+export const RETIRED_THEMES: Record<string, string> = {
+	dusk: "macchiato",
+	material: "obsidian",
+	nocturne: "midnight",
+};
+
 export const getTheme = (key: string): Theme => {
-	return themes[key as keyof typeof themes] ?? defaultTheme;
+	return themes[RETIRED_THEMES[key] ?? key] ?? defaultTheme;
 };
 
 export const themeSelectOptions: { value: string; label: string }[] = Object.entries(themes).map(

@@ -1,9 +1,20 @@
 import { defineSetting } from "@features/types";
-import { getValue } from "@lib/utilities/store";
+import { RETIRED_THEMES } from "@lib/design";
+import { getValue, setValue } from "@lib/utilities/store";
 import { DEFAULT_THEME } from "./defaults";
 import { applyThemeByKey, watchWindowColor } from "./theme-apply";
 import ThemeCustomizer from "./ThemeCustomizer.svelte";
 import { loadUserThemes } from "./user-themes.svelte";
+
+/** Moves saved choices of a merged built-in theme onto the theme it merged into. */
+async function migrateRetiredThemes() {
+	for (const key of ["catppuccin-palette", "theme-auto-dark", "theme-auto-light"]) {
+		const saved = await getValue<string | null>(key, null);
+		if (saved && RETIRED_THEMES[saved]) {
+			await setValue(key, RETIRED_THEMES[saved]);
+		}
+	}
+}
 
 export const themeSelector = defineSetting({
 	type: "custom",
@@ -17,6 +28,7 @@ export const themeSelector = defineSetting({
 	init: async (ctx) => {
 		// Always on, like this setting, so it never stops.
 		watchWindowColor();
+		await migrateRetiredThemes();
 		await loadUserThemes();
 
 		const autoSwitch = await getValue<boolean>("theme-auto-switch", false);
