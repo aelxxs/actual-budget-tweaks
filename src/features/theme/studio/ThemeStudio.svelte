@@ -25,6 +25,7 @@
 	import GlowMap from "./GlowMap.svelte";
 	import GrainControl from "./GrainControl.svelte";
 	import MiniTheme from "./MiniTheme.svelte";
+	import StylePanel from "../style/StylePanel.svelte";
 	import Rail from "./Rail.svelte";
 	import { copyRecipe, PRESETS, rerollTrait, shuffleRecipe, type Trait, TRAITS } from "./recipes";
 	import { remember, studio } from "./state.svelte";
@@ -398,6 +399,8 @@
 					{/if}
 				</div>
 			</Section>
+
+			<StylePanel inStudio />
 
 			<Section card={false} muted caps={false} title="Advanced" open={false}>
 				<div class="stack">

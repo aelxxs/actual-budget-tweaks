@@ -1,5 +1,4 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
-import { ambientGlow, ambientGrain } from "./appearance/ambient";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
@@ -81,8 +80,20 @@ export type PageSetting = Exclude<Setting<any>, CoreSetting>;
 
 export interface SettingsSection {
 	title: string;
+	/** Edited elsewhere, named here; the page lists the section only in search and Changed. */
+	elsewhere?: string;
 	groups: { label: string | null; items: PageSetting[] }[];
 }
+
+// How Actual looks across every page, edited from Theme → Style and Theme Studio.
+export const styleSettings: PageSetting[] = [
+	borderRadius,
+	backgroundPattern,
+	insetPanels,
+	themedScrollbars,
+	headerBorder,
+	privacyStyle,
+];
 
 // Grouped by where each tweak shows up in Actual, which is how people look for them.
 export const scriptSections: SettingsSection[] = [
@@ -91,23 +102,13 @@ export const scriptSections: SettingsSection[] = [
 		groups: [{ label: null, items: [themeSelector] }],
 	},
 	{
+		title: "Style",
+		elsewhere: "Theme → Style",
+		groups: [{ label: null, items: styleSettings }],
+	},
+	{
 		title: "General",
-		groups: [
-			{
-				label: "Style",
-				items: [
-					borderRadius,
-					backgroundPattern,
-					ambientGlow,
-					ambientGrain,
-					insetPanels,
-					themedScrollbars,
-					headerBorder,
-					privacyStyle,
-				],
-			},
-			{ label: "Components", items: [modernTitlebar, modernToasts] },
-		],
+		groups: [{ label: "Components", items: [modernTitlebar, modernToasts] }],
 	},
 	{
 		title: "Sidebar",

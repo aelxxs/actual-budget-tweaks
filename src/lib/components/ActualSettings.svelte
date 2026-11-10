@@ -135,6 +135,7 @@
 
 	const filteredSections = $derived.by(() =>
 		scriptSections
+			.filter((section) => !section.elsewhere || normalizedQuery || changedOnly)
 			.map((section) => ({
 				...section,
 				groups: section.groups
@@ -598,6 +599,7 @@
 					aria-expanded={!isCollapsed}
 				>
 					<h3 class="section-title">{section.title}</h3>
+					{#if section.elsewhere}<span class="section-elsewhere">Also in {section.elsewhere}</span>{/if}
 					<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
 				</button>
 				{#if !isCollapsed}
@@ -1009,11 +1011,20 @@
 	}
 
 	.section-title {
-		flex: 1;
+		flex: 1 0 auto;
 		min-width: 0;
 		margin: 0;
 		font-size: var(--abt-text-lg);
 		font-weight: 600;
+	}
+
+	.section-elsewhere {
+		overflow: hidden;
+		min-width: 0;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		font-size: var(--abt-text-xs);
+		color: var(--color-pageTextSubdued);
 	}
 
 	.settings-section :global(.chevron) {

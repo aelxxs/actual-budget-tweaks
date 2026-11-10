@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { type Generated, grainImage, type GrainSize } from "./generator";
+	import { type Effects, type Generated, grainImage, type GrainSize } from "./generator";
 	import { studio } from "./state.svelte";
 
-	const { g }: { g: Generated } = $props();
+	/** Edits `target`'s grain; the Studio's recipe when there's none. */
+	const { g, target }: { g: Generated; target?: Effects } = $props();
 
-	const grain = $derived(studio.recipe.grain);
+	const grain = $derived((target ?? studio.recipe).grain);
 	// The track is the texture itself, heavier towards the right.
 	const track = $derived(grainImage(100, grain.size));
 	const SIZES: [GrainSize, string][] = [
@@ -23,7 +24,7 @@
 		value={grain.amount}
 		aria-label="Grain amount"
 		aria-valuetext={grain.amount ? `${grain.amount}%` : "Off"}
-		oninput={(e) => (studio.recipe.grain.amount = Number(e.currentTarget.value))}
+		oninput={(e) => (grain.amount = Number(e.currentTarget.value))}
 	/>
 	<span class="value">{grain.amount ? grain.amount : "Off"}</span>
 </div>
@@ -39,7 +40,7 @@
 			aria-pressed={grain.size === value}
 			disabled={!grain.amount}
 			title={grain.amount ? undefined : "Add some grain first"}
-			onclick={() => (studio.recipe.grain.size = value)}>{label}</button
+			onclick={() => (grain.size = value)}>{label}</button
 		>
 	{/each}
 </div>

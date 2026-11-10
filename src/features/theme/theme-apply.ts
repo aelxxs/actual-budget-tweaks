@@ -2,7 +2,9 @@ import { getTheme, themes } from "@lib/design";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { watchElement } from "@lib/utilities/dom-watcher";
 import { editorState } from "./editor-state.svelte";
-import { STUDIO_STYLE_ID, studioCSS } from "./studio/effects";
+import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte";
+import { STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
+import type { Mode } from "./studio/generator";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
 import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
@@ -588,6 +590,39 @@ export function applyNativeTheme() {
 	applyOverrides(NATIVE_THEME_KEY);
 }
 
+/** Whether the page background in use is light, read from the screen as the theme paints it. */
+export function pageMode(): Mode {
+	const probe = document.createElement("div");
+	probe.style.color = "var(--color-pageBackground)";
+	document.body.append(probe);
+	const color = getComputedStyle(probe).color;
+	probe.remove();
+	// A canvas turns any CSS color (oklch, color-mix) into RGB.
+	const ctx = document.createElement("canvas").getContext("2d");
+	if (!ctx) {
+		return "dark";
+	}
+	ctx.fillStyle = color;
+	ctx.fillRect(0, 0, 1, 1);
+	const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b > 128 ? "light" : "dark";
+}
+
+/** Paints a theme's glow and grain: a Studio theme's from its recipe, any other's as saved for it. */
+export async function applyThemeEffects(key: string = editorState.activeTheme): Promise<void> {
+	const recipe = isUserTheme(key) ? userThemeState.themes[key]?.recipe : undefined;
+	if (recipe) {
+		applyGlobalCSS(studioCSS(recipe), STUDIO_STYLE_ID);
+		return;
+	}
+	await loadThemeEffects();
+	const effects = effectsFor(key);
+	applyGlobalCSS(
+		effects === NO_EFFECTS ? "" : themeEffectsCSS(effects, pageMode()),
+		STUDIO_STYLE_ID,
+	);
+}
+
 export async function applyThemeByKey(key: string, fallback: string) {
 	const recipe = isUserTheme(key) ? userThemeState.themes[key]?.recipe : undefined;
 	applyGlobalCSS(recipe ? studioCSS(recipe) : "", STUDIO_STYLE_ID);
@@ -612,5 +647,8 @@ export async function applyThemeByKey(key: string, fallback: string) {
 		}
 	} else {
 		applyPalette(key);
+	}
+	if (!recipe) {
+		await applyThemeEffects(key);
 	}
 }

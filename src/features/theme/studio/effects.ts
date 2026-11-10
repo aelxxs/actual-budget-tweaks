@@ -1,21 +1,54 @@
-import { SURFACES } from "@features/appearance/ambient";
+import { MAIN, PAGE_COLUMN, REPORTS_PAGE } from "@lib/actual-dom";
 import { desktopOnly } from "@lib/utilities/pages";
-import { type Generated, generate, glowLayers, grainImage, type Recipe } from "./generator";
+import {
+	type Effects,
+	type Generated,
+	generate,
+	glowLayers,
+	grainImage,
+	type Mode,
+	type Recipe,
+} from "./generator";
 
 export const STUDIO_STYLE_ID = "theme-studio";
+
+/*
+ * Every shell surface paints the same viewport-fixed background, so the effects line up across
+ * them as one surface. Nothing goes transparent, so content can't show through while it scrolls.
+ */
+export const SURFACES = `
+	[data-abt-content-grid],
+	[data-abt-header],
+	${PAGE_COLUMN},
+	.abt-side-drawer-header,
+	.abt-side-drawer-body,
+	.abt-side-drawer-body .abt-tabs,
+	[data-abt-tweaks-host],
+	[data-abt-tweaks-host] .settings-page,
+	.settings-toolbar,
+	/* Not the calendar's grid: it slides on a transform, which unfixes a fixed background. */
+	${MAIN}:not([data-abt-calendar] *),
+	${REPORTS_PAGE},
+	${REPORTS_PAGE} > div:not([data-abt-calendar]),
+	${REPORTS_PAGE} > div:not([data-abt-calendar]) > div:first-of-type
+`;
+
+/** The accent and second colors of a theme without a generated palette, as its CSS has them. */
+export const CSS_COLORS = { mauve: "var(--abt-accent)", sapphire: "var(--color-pageTextLink)" };
 
 /** The palette as the theme loader takes it: `--ctp-<name>` to hex. */
 export function paletteKeys(g: Generated): Record<string, string> {
 	return Object.fromEntries(Object.entries(g.colors).map(([k, hex]) => [`--ctp-${k}`, hex]));
 }
 
-/**
- * What a recipe adds beyond its palette: the sidebar's own colors, glow and grain. The preview
- * paints the surfaces even with no glow or grain, so the Ambient settings' layers don't show
- * through it; a saved theme without either leaves them to those settings.
- */
-export function studioCSS(r: Recipe, g: Generated = generate(r), preview = false): string {
-	return sidebarCSS(r, g) + desktopOnly(effectsCSS(r, g, preview));
+/** What a recipe adds beyond its palette: the sidebar's own colors, glow and grain. */
+export function studioCSS(r: Recipe, g: Generated = generate(r)): string {
+	return sidebarCSS(r, g) + desktopOnly(effectsCSS(r, r.mode, g.colors));
+}
+
+/** Glow and grain on a theme that isn't a Studio one. */
+export function themeEffectsCSS(effects: Effects, mode: Mode): string {
+	return desktopOnly(effectsCSS(effects, mode, CSS_COLORS));
 }
 
 function sidebarCSS(r: Recipe, g: Generated): string {
@@ -58,25 +91,19 @@ function sidebarCSS(r: Recipe, g: Generated): string {
 	`;
 }
 
-/** Ambient Glow's painting, with this recipe's lights and grain in place of the fixed ones. */
-function effectsCSS(r: Recipe, g: Generated, preview: boolean): string {
-	const layers = glowLayers(r, g.colors, "100vw", "100vh");
+/** Paints glow and grain across every shell surface, as one fixed background. */
+function effectsCSS(e: Effects, mode: Mode, colors: Record<string, string>): string {
+	const layers = glowLayers({ mode, glow: e.glow }, colors, "100vw", "100vh");
 	const images = [
-		...(r.grain.amount > 0 ? [grainImage(r.grain.amount, r.grain.size)] : []),
+		...(e.grain.amount > 0 ? [grainImage(e.grain.amount, e.grain.size)] : []),
 		...layers,
 	];
 	if (!images.length) {
-		if (!preview) {
-			return "";
-		}
-		return `
-			${SURFACES} { background: var(--color-pageBackground) !important; }
-			.sidebar { background: var(--color-sidebarBackground) !important; }
-		`;
+		return "";
 	}
-	const blend = images.map((_, i) => (i === 0 && r.grain.amount > 0 ? "overlay" : "normal"));
-	const sizes = images.map((_, i) => (i === 0 && r.grain.amount > 0 ? "220px 220px" : "100% 100%"));
-	const repeat = images.map((_, i) => (i === 0 && r.grain.amount > 0 ? "repeat" : "no-repeat"));
+	const blend = images.map((_, i) => (i === 0 && e.grain.amount > 0 ? "overlay" : "normal"));
+	const sizes = images.map((_, i) => (i === 0 && e.grain.amount > 0 ? "220px 220px" : "100% 100%"));
+	const repeat = images.map((_, i) => (i === 0 && e.grain.amount > 0 ? "repeat" : "no-repeat"));
 	const paint = (base: string) => `
 		background: ${images.join(", ")}, ${base} !important;
 		background-size: ${sizes.join(", ")} !important;

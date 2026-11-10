@@ -9,6 +9,12 @@ export type BudgetTone = "vivid" | "muted";
 export type SidebarStyle = "match" | "deeper" | "dark" | "tinted";
 export type GrainSize = "fine" | "medium" | "coarse";
 
+/** Glow and grain, as a Studio recipe holds them and as any other theme can have them. */
+export type Effects = {
+	glow: { on: boolean; lights: GlowLight[] };
+	grain: { amount: number; size: GrainSize };
+};
+
 /** A glow light, placed in fractions of the window. `color` is "accent", "second" or a hex. */
 export type GlowLight = { x: number; y: number; size: number; strength: number; color: string };
 
@@ -33,9 +39,9 @@ export type Recipe = {
 	sidebar: SidebarStyle;
 	/** The background's hue kept on the accent's, or opposite it, as the accent turns. */
 	backgroundLink?: "accent" | "opposite" | null;
-	glow: { on: boolean; lights: GlowLight[] };
+	glow: Effects["glow"];
 	/** Amount 0 is off. */
-	grain: { amount: number; size: GrainSize };
+	grain: Effects["grain"];
 };
 
 export type SidebarColors = {
@@ -559,7 +565,7 @@ export function lightColor(light: GlowLight, colors: Record<string, string>): st
 
 /** One radial gradient per light, sized against a box of `width` by `height`. */
 export function glowLayers(
-	r: Recipe,
+	r: Pick<Recipe, "mode" | "glow">,
 	colors: Record<string, string>,
 	width: number | string,
 	height: number | string,
@@ -574,11 +580,15 @@ export function glowLayers(
 	 * On a light page a mid-tone light darkens it into a grey haze, so it's drawn as a pastel of
 	 * its hue instead, which can only tint; a stronger mix makes up for the paler color.
 	 */
-	const tone = (hex: string) => {
+	const tone = (color: string) => {
 		if (!light) {
-			return hex;
+			return color;
 		}
-		const { C, h } = hexToOklch(hex);
+		// Themes without a generated palette give CSS colors, toned the same way in CSS.
+		if (!color.startsWith("#")) {
+			return `oklch(from ${color} 0.9 min(c, 0.12) h)`;
+		}
+		const { C, h } = hexToOklch(color);
 		return oklchToHex(0.9, Math.min(0.12, C), h);
 	};
 	return r.glow.lights.map((l) => {

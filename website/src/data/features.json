@@ -1,6 +1,6 @@
 [
 	{
-		"title": "General",
+		"title": "Style",
 		"description": null,
 		"items": [
 			{
@@ -11,7 +11,7 @@
 				"label": "Border Radius",
 				"description": "Corner roundness for cards and buttons app-wide.",
 				"icon": null,
-				"group": "Style",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -22,29 +22,7 @@
 				"label": "Background Pattern",
 				"description": "A subtle pattern behind the app background.",
 				"icon": null,
-				"group": "Style",
-				"writes": null
-			},
-			{
-				"key": "ambient-glow",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Ambient Glow",
-				"description": "A soft glow of the theme's accent across the sidebar, header, page and side panel.",
-				"icon": "sparkles",
-				"group": "Style",
-				"writes": null
-			},
-			{
-				"key": "ambient-grain",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Ambient Grain",
-				"description": "A fine grain across the sidebar, header, page and side panel.",
-				"icon": "image",
-				"group": "Style",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -55,7 +33,7 @@
 				"label": "Inset Panels",
 				"description": "Sets the sidebar and page as rounded panels on a frame. Floating page blends the sidebar into the frame.",
 				"icon": "layout",
-				"group": "Style",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -66,7 +44,7 @@
 				"label": "Themed Scrollbars",
 				"description": "Thin scrollbars tinted to match the theme.",
 				"icon": "sliders",
-				"group": "Style",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -77,7 +55,7 @@
 				"label": "Header Border",
 				"description": "Add a border under the top navigation bar.",
 				"icon": "square",
-				"group": "Style",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -88,9 +66,15 @@
 				"label": "Privacy Style",
 				"description": "How amounts look while privacy mode hides them.",
 				"icon": "eyeOff",
-				"group": "Style",
+				"group": null,
 				"writes": null
-			},
+			}
+		]
+	},
+	{
+		"title": "General",
+		"description": null,
+		"items": [
 			{
 				"key": "modern-titlebar",
 				"type": "checkbox",

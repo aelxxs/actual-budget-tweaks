@@ -2,7 +2,7 @@
 	import { FEATURED_THEMES, themes } from "@lib/design";
 	import { getValue, setValue } from "@lib/utilities/store";
 	import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
-	import { type Component, onDestroy, onMount } from "svelte";
+	import { type Component, onDestroy, onMount, untrack } from "svelte";
 	import { sidepanel } from "../core/side-panel";
 	import { DEFAULT_THEME } from "./defaults";
 	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
@@ -41,7 +41,8 @@
 		type Thumb,
 		userThumb,
 	} from "./picker/thumbs";
-	import { ChevronRight, LayoutGrid, Paintbrush, Plus } from "@lucide/svelte";
+	import { ChevronRight, LayoutGrid, Paintbrush, Plus, Shapes } from "@lucide/svelte";
+	import { openStylePanel } from "./style/open";
 
 	const log = createLogger("themes");
 
@@ -152,8 +153,13 @@
 	}
 	function inPanel(node: HTMLElement) {
 		galleryNode = node;
-		showGallery(node);
+		// After this effect: opening the panel updates its state, which mustn't run inside it.
+		queueMicrotask(() => untrack(() => showGallery(node)));
 		return () => {
+			// The card unmounted (a settings search can do it), so its gallery can't stay open empty.
+			if (node.isConnected) {
+				sidepanel.close();
+			}
 			galleryNode = null;
 		};
 	}
@@ -565,6 +571,18 @@
 		{@render currentRow(null, activeThemeKey, true)}
 	{/if}
 
+	<div class="style-row">
+		<span class="now-text">
+			<span class="now-name">Style</span>
+			<span class="now-label"
+				>Corners, background, glow and grain, and other details for every theme</span
+			>
+		</span>
+		<button type="button" class="abt-btn abt-btn--sm" onclick={openStylePanel}>
+			<Shapes size={14} /> Edit style
+		</button>
+	</div>
+
 	{#snippet showAll(id: string, total: number, limit: number)}
 		{#if !q && !expanded[id] && total > limit}
 			<button type="button" class="show-all" onclick={() => (expanded[id] = true)}>
@@ -737,6 +755,17 @@
 	}
 	.mode-switch {
 		margin-left: auto;
+	}
+	.style-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--abt-space-3) var(--abt-space-5);
+		padding-top: var(--abt-space-5);
+		border-top: 1px solid var(--abt-line);
+	}
+	.style-row .abt-btn {
+		gap: var(--abt-space-2);
 	}
 	.now + .now {
 		padding-top: var(--abt-space-5);

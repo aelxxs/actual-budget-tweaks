@@ -16,6 +16,7 @@ const EXTRA_KEYS = [
 	"theme-auto-dark",
 	"theme-auto-light",
 	"user-themes",
+	"theme-effects",
 	"category-colors",
 	"abt-account-icons",
 	"abt-category-icons",

@@ -2,17 +2,18 @@
 	import { Plus, X } from "@lucide/svelte";
 	import { onMount } from "svelte";
 	import { arrowStep, dragArea } from "./drag";
-	import { type Generated, glowLayers, lightColor } from "./generator";
+	import { type Effects, type Generated, glowLayers, lightColor, type Mode } from "./generator";
 	import { studio } from "./state.svelte";
 
-	const { g }: { g: Generated } = $props();
+	/** Edits `target`'s glow; the Studio's recipe when there's none. */
+	const { g, target }: { g: Generated; target?: Effects & { mode: Mode } } = $props();
 
 	const MAX_LIGHTS = 3;
 	// Lights may sit just off the window, so the glow comes in from outside; their handles stay
 	// drawn this far inside the map.
 	const EDGE = 10;
 	const inside = (px: number, size: number) => Math.min(size - EDGE, Math.max(EDGE, px));
-	const r = $derived(studio.recipe);
+	const r = $derived(target ?? studio.recipe);
 	const selected = $derived(r.glow.lights[studio.light]);
 
 	// The map is the window as laid out: the sidebar (and its icon rail) full height, the header
@@ -91,7 +92,7 @@
 		return true;
 	}
 	function move(fx: number, fy: number, e: PointerEvent, box: DOMRect) {
-		const light = grab && studio.recipe.glow.lights[grab.index];
+		const light = grab && r.glow.lights[grab.index];
 		if (!grab || !light) {
 			return;
 		}
@@ -110,7 +111,7 @@
 			return;
 		}
 		const step = arrowStep(e);
-		const light = studio.recipe.glow.lights[index];
+		const light = r.glow.lights[index];
 		if (step && light) {
 			studio.light = index;
 			light.x = Math.min(1.1, Math.max(-0.1, light.x + step[0] * 0.02));
@@ -119,7 +120,7 @@
 	}
 
 	function addLight() {
-		const lights = studio.recipe.glow.lights;
+		const lights = r.glow.lights;
 		lights.push({
 			x: 0.5,
 			y: 0.5,
@@ -128,13 +129,13 @@
 			color: lights.length ? "second" : "accent",
 		});
 		studio.light = lights.length - 1;
-		studio.recipe.glow.on = true;
+		r.glow.on = true;
 	}
 	function removeLight(index: number) {
-		studio.recipe.glow.lights.splice(index, 1);
-		studio.light = Math.max(0, Math.min(studio.light, studio.recipe.glow.lights.length - 1));
-		if (!studio.recipe.glow.lights.length) {
-			studio.recipe.glow.on = false;
+		r.glow.lights.splice(index, 1);
+		studio.light = Math.max(0, Math.min(studio.light, r.glow.lights.length - 1));
+		if (!r.glow.lights.length) {
+			r.glow.on = false;
 		}
 	}
 	function setColor(color: string) {
