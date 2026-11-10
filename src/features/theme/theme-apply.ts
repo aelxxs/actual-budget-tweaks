@@ -435,14 +435,15 @@ export function watchWindowColor(): void {
 }
 
 /** Only with a budget open, since the budget list sets its own colour. */
-function syncWindowColor() {
+export function syncWindowColor() {
 	const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
 	if (!meta || !document.querySelector(BUDGET_LINK)) {
 		return;
 	}
 	// Through a probe so a color-mix() or var() comes back as a colour the tag can hold.
 	const probe = document.createElement("div");
-	probe.style.color = "var(--color-mobileViewTheme)";
+	// Inset panels' Floating page sets --abt-window-color so the title bar meets its frame.
+	probe.style.color = "var(--abt-window-color, var(--color-mobileViewTheme))";
 	document.body.append(probe);
 	const color = getComputedStyle(probe).color;
 	probe.remove();

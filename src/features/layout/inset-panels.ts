@@ -1,5 +1,7 @@
 import { defineSetting } from "@features/types";
 import { desktopOnly } from "@lib/utilities/pages";
+import { setValue } from "@lib/utilities/store";
+import { syncWindowColor } from "@features/theme/theme-apply";
 
 // 5.5px between the panels, 6px around them.
 const GAP = "calc(var(--abt-space-2) + var(--abt-space-1) * 0.75)";
@@ -87,17 +89,53 @@ const CSS = `
 	}
 `;
 
+// The sidebar takes the frame's place: one colour, no border, so only the page stands out.
+const FLOATING = `
+	:root {
+		--abt-window-color: var(--color-sidebarBackground);
+	}
+	[data-abt-shell] {
+		background: var(--color-sidebarBackground) !important;
+	}
+	[data-abt-sidebar-root],
+	[data-abt-sidebar-slot] .sidebar {
+		border-color: transparent;
+	}
+`;
+
+type Mode = "off" | "cards" | "floating";
+
+// A switch before it had a third option.
+const modeOf = (value: unknown): Mode =>
+	value === true ? "cards" : value === "cards" || value === "floating" ? value : "off";
+
 export const insetPanels = defineSetting({
-	type: "checkbox",
+	type: "select",
 	label: "Inset Panels",
 	description:
-		"Sets the sidebar and page as rounded panels on a frame that matches the window's title bar.",
+		"Sets the sidebar and page as rounded panels on a frame. Floating page blends the sidebar into the frame.",
 	group: "General",
 	icon: "layout",
 	platform: "desktop",
 	context: {
 		key: "inset-panels",
-		defaultValue: false,
+		defaultValue: "off",
 	},
-	css: () => desktopOnly(CSS),
+	options: [
+		{ value: "off", label: "Off" },
+		{ value: "cards", label: "Cards" },
+		{ value: "floating", label: "Floating page" },
+	],
+	init: ({ key, value }) => {
+		if (typeof value === "boolean") {
+			void setValue(key, modeOf(value));
+		}
+		// The window's title bar follows the frame; it runs after the CSS is in and after it's gone.
+		syncWindowColor();
+		return () => syncWindowColor();
+	},
+	css: ({ value }) => {
+		const mode = modeOf(value);
+		return mode === "off" ? "" : desktopOnly(mode === "floating" ? CSS + FLOATING : CSS);
+	},
 });
