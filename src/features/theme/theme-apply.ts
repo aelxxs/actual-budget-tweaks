@@ -243,6 +243,15 @@ export const BUILTIN_CSS = `:root {
 	--color-reportsGreen: var(--ctp-green);
 	--color-reportsInnerLabel: var(--ctp-surface2);
 	--color-reportsLabel: var(--ctp-text);
+	--color-settingsCardBackground: var(--color-tableBackground);
+	--color-settingsCardBorder: var(--color-tableBorder);
+	--color-settingsCardText: var(--color-tableText);
+	--color-settingsCardTextSubdued: var(--ctp-subtext0);
+	--color-settingsNavItemAccentSelected: var(--ctp-mauve);
+	--color-settingsNavItemBackgroundHover: color-mix(in srgb, var(--color-settingsNavItemText) 8%, transparent);
+	--color-settingsNavItemBackgroundSelected: color-mix(in srgb, var(--color-settingsNavItemAccentSelected) 18%, transparent);
+	--color-settingsNavItemText: var(--ctp-text);
+	--color-settingsNavItemTextSelected: var(--ctp-mauve);
 	--color-reportsNumberNegative: var(--ctp-red);
 	--color-reportsNumberNeutral: var(--ctp-overlay1);
 	--color-reportsNumberPositive: var(--ctp-green);
@@ -280,6 +289,7 @@ export const BUILTIN_CSS = `:root {
 	--color-tableHeaderText: var(--ctp-subtext0);
 	--color-tableRowBackgroundHighlight: var(--ctp-base);
 	--color-tableRowBackgroundHighlightText: var(--ctp-text);
+	--color-tableRowBackgroundAlternate: var(--color-tableBackground);
 	--color-tableRowBackgroundHover: var(--ctp-base);
 	--color-tableRowHeaderBackground: var(--ctp-base);
 	--color-tableRowHeaderText: var(--ctp-text);
