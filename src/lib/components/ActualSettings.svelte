@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { takeTweaksSearch } from "@lib/utilities/settings-page";
-	import { ExternalLink, X } from "@lucide/svelte";
+	import { Ellipsis, ExternalLink, X } from "@lucide/svelte";
 	import { tick } from "svelte";
 	import {
 		scriptSections,
@@ -36,7 +36,23 @@
 	let importStatus = $state<"" | "success" | "error">("");
 	let showResetDialog = $state(false);
 	let showOffDialog = $state(false);
+	let moreOpen = $state(false);
+	let moreActionsEl: HTMLDivElement;
 	let turningOff = $state(false);
+
+	function closeMoreOnOutsidePointer(event: PointerEvent) {
+		if (!moreActionsEl.contains(event.target as Node)) {
+			moreOpen = false;
+		}
+	}
+
+	$effect(() => {
+		if (!moreOpen) {
+			return;
+		}
+		document.addEventListener("pointerdown", closeMoreOnOutsidePointer, true);
+		return () => document.removeEventListener("pointerdown", closeMoreOnOutsidePointer, true);
+	});
 
 	async function turnOff() {
 		turningOff = true;
@@ -436,6 +452,7 @@
 		if (e.key !== "Escape") {
 			return;
 		}
+		moreOpen = false;
 		showBugModal = false;
 		if (!resetting) {
 			showResetDialog = false;
@@ -470,33 +487,57 @@
 	>
 		<Icon name="download" size={14} strokeWidth={1.5} />
 	</button>
-	<button
-		type="button"
-		class="abt-btn abt-btn--icon abt-btn--sm"
-		onclick={() => (showResetDialog = true)}
-		title="Reset to defaults"
-		aria-label="Reset to defaults"
-	>
-		<Icon name="rotateCcw" size={14} strokeWidth={1.5} />
-	</button>
-	<button
-		type="button"
-		class="abt-btn abt-btn--icon abt-btn--sm"
-		onclick={() => (showOffDialog = true)}
-		title="Turn off ABT"
-		aria-label="Turn off ABT"
-	>
-		<Icon name="power" size={14} strokeWidth={1.5} />
-	</button>
-	<button
-		type="button"
-		class="abt-btn abt-btn--icon abt-btn--sm bug-btn"
-		onclick={openBugReport}
-		title="Report a bug"
-		aria-label="Report a bug"
-	>
-		<Icon name="bug" size={14} />
-	</button>
+	<div class="more-actions" bind:this={moreActionsEl}>
+		<button
+			type="button"
+			class="abt-btn abt-btn--icon abt-btn--sm"
+			aria-haspopup="menu"
+			aria-expanded={moreOpen}
+			aria-label="More settings actions"
+			title="More settings actions"
+			onclick={() => (moreOpen = !moreOpen)}
+		>
+			<Ellipsis size={15} />
+		</button>
+		{#if moreOpen}
+			<div class="abt-popover abt-menu more-menu" role="menu" aria-label="More settings actions">
+				<button
+					type="button"
+					class="abt-menu__item"
+					role="menuitem"
+					onclick={() => {
+						moreOpen = false;
+						showResetDialog = true;
+					}}
+				>
+					<Icon name="rotateCcw" size={14} strokeWidth={1.5} /> Reset to defaults
+				</button>
+				<button
+					type="button"
+					class="abt-menu__item"
+					role="menuitem"
+					onclick={() => {
+						moreOpen = false;
+						showOffDialog = true;
+					}}
+				>
+					<Icon name="power" size={14} strokeWidth={1.5} /> Turn off ABT
+				</button>
+				<div class="abt-menu__sep"></div>
+				<button
+					type="button"
+					class="abt-menu__item"
+					role="menuitem"
+					onclick={() => {
+						moreOpen = false;
+						openBugReport();
+					}}
+				>
+					<Icon name="bug" size={14} /> Report a bug
+				</button>
+			</div>
+		{/if}
+	</div>
 {/snippet}
 
 {#snippet filterControls()}
@@ -529,10 +570,10 @@
 
 <div class="settings-page">
 	{#if sectionSlot}
-		<header class="page-header">
-			{@render pageTitle()}
-		</header>
 		<div class="settings-toolbar" bind:this={toolbarEl} style="top: {stickyTop}px;">
+			<header class="page-header">
+				{@render pageTitle()}
+			</header>
 			<div class="search-row">
 				{@render filterControls()}
 				<div class="header-actions">
@@ -894,8 +935,20 @@
 		margin-left: auto;
 	}
 
-	.bug-btn:hover:not(:disabled) {
-		color: var(--color-errorText);
+	.more-actions {
+		position: relative;
+	}
+
+	.more-menu {
+		position: absolute;
+		top: calc(100% + var(--abt-space-2));
+		right: 0;
+		z-index: 5;
+		min-width: 190px;
+	}
+
+	.more-menu .abt-menu__item {
+		align-items: center;
 	}
 
 	.import-status {
