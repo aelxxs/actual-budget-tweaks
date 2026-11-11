@@ -449,6 +449,18 @@
 		color: var(--color-pageTextSubdued);
 	}
 
+	/* Keep supporting text subdued in both envelope and tracking rows. */
+	.sr__sub {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		height: 16px;
+		line-height: 16px;
+		font-size: var(--abt-text-base);
+		color: var(--color-tableHeaderText);
+		white-space: nowrap;
+	}
+
 	.sr__bar {
 		flex: 1;
 		min-width: 40px;

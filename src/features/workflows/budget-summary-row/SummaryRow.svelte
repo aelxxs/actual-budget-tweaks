@@ -179,18 +179,6 @@
 		color: var(--color-pageText);
 	}
 
-	/* A plain line, not a flex row, so it can end in an ellipsis when the card is tight. */
-	.sr :global(.sr__sub) {
-		display: block;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		height: 16px;
-		line-height: 16px;
-		font-size: var(--abt-text-base);
-		color: var(--color-tableHeaderText);
-		white-space: nowrap;
-	}
-
 	.sr > .sr__card.is-action {
 		min-width: 210px;
 	}
