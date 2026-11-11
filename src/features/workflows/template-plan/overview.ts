@@ -16,13 +16,14 @@ const TREND_MONTHS = 6;
 const SCHEDULE_DAYS = 30;
 const MAX_SCHEDULES = 12;
 
-export const monthCellNames = (cats: Category[]): string[] => [
+export const monthCellNames = (cats: Category[], tracking = false): string[] => [
 	"to-budget",
 	"total-income",
 	"total-budgeted",
 	"available-funds",
 	"last-month-overspent",
 	"buffered-selected",
+	...(tracking ? ["total-budget-income", "total-spent", "real-saved", "total-saved"] : []),
 	...cats.flatMap((c) => [
 		`sum-amount-${c.id}`,
 		`leftover-${c.id}`,
@@ -32,10 +33,11 @@ export const monthCellNames = (cats: Category[]): string[] => [
 	]),
 ];
 
-export const trendCellNames = (cats: Category[]): string[] => [
+export const trendCellNames = (cats: Category[], tracking = false): string[] => [
 	"to-budget",
 	"total-income",
 	"total-budgeted",
+	...(tracking ? ["total-spent"] : []),
 	...cats.map((c) => `sum-amount-${c.id}`),
 ];
 
@@ -144,12 +146,19 @@ export function upcomingSchedules(schedules: Schedule[], today = new Date()): Ov
 }
 
 /** One entry per month in `months`, read from the matching cells. */
-export function buildTrend(months: string[], monthCells: Cells[], cats: Category[]): MonthTrend[] {
+export function buildTrend(
+	months: string[],
+	monthCells: Cells[],
+	cats: Category[],
+	tracking = false,
+): MonthTrend[] {
 	return months.map((monthKey, i) => ({
 		monthKey,
 		budgeted: Math.abs(monthCells[i].get("total-budgeted") ?? 0),
 		toBudget: monthCells[i].get("to-budget") ?? 0,
-		spent: spentIn(cats, monthCells[i]),
+		spent: tracking
+			? Math.abs(monthCells[i].get("total-spent") ?? 0)
+			: spentIn(cats, monthCells[i]),
 		income: monthCells[i].get("total-income") ?? 0,
 	}));
 }

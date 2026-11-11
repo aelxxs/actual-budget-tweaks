@@ -1,6 +1,5 @@
 <script lang="ts">
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
 	import { currentMonth, monthToSheet } from "@lib/utilities/months";
 	import { summaryState } from "./state.svelte";
 	import { cachedTrackingTotals, loadTrackingTotals, type TrackingTotals } from "./totals";
@@ -21,8 +20,6 @@
 	/** How full a pie reads, as Actual's own: full when there's money but nothing budgeted. */
 	const fill = (amount: number, budgeted: number) =>
 		budgeted > 0 ? Math.min(1, Math.max(0, amount / budgeted)) : amount > 0 ? 1 : 0;
-	const ofBudgeted = (amount: number, budgeted: number) =>
-		`${fmtMoney(amount)} of ${fmtMoney(budgeted)} budgeted`;
 
 	// Spending against income: what's left over, or how far spending went past it.
 	const flow = $derived.by(() => {
@@ -76,7 +73,7 @@
 </span>
 {#if totals}
 	<span class="tm__stats">
-		<span class="tm__stat" title={ofBudgeted(totals.income, totals.incomeBudgeted)}
+		<span class="tm__stat" title="Income received compared with income budgeted"
 			><span class="tm__pie is-income" style:--fill={fill(totals.income, totals.incomeBudgeted)}
 			></span><span class="tm__label">Income</span><RollingNumber
 				value={totals.income}
@@ -84,7 +81,7 @@
 				class="tm__figure abt-privacy-number"
 			/></span
 		>
-		<span class="tm__stat" title={ofBudgeted(totals.spent, totals.spentBudgeted)}
+		<span class="tm__stat" title="Spending compared with spending budget"
 			><span
 				class="tm__pie is-spent"
 				class:is-over={totals.spentBudgeted > 0 && totals.spent > totals.spentBudgeted}

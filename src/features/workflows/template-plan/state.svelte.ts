@@ -39,10 +39,15 @@ export interface OverviewSchedule {
 export interface OverviewData {
 	sheet: string;
 	monthKey: string;
+	budgetType: "envelope" | "tracking";
 	availableFunds: number;
 	toBudget: number;
 	totalBudgeted: number;
 	totalSpent: number;
+	incomeBudgeted: number;
+	spentBudgeted: number;
+	saved: number;
+	projected: number;
 	lastMonthOverspent: number;
 	bufferedSelected: number;
 	overspentCategories: OverviewCategoryRow[];
@@ -121,6 +126,7 @@ export const templatePlanState = $state({
 	highlightCard: null as CardId | typeof TEMPLATES_BAR | null,
 	coverageMethod: "goal-templates" as "goal-templates" | "spending-average",
 	activeTab: "overview" as InsightsTab,
+	trackingBudget: false,
 	/** Whether the Insights feature is on, for other features that link into it. */
 	enabled: false,
 	/** Whether the Insights trigger should show, wherever it's drawn. */

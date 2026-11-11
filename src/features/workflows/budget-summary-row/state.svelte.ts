@@ -5,7 +5,7 @@ export const summaryState = $state({
 	versions: {} as Record<string, number>,
 	/** Which cards fill the row's two middle slots. */
 	slots: defaultSlots() as SummarySlots,
-	/** Summary rows on screen; multi-month views and tracking budgets don't show one. */
+	/** Summary rows on screen; multi-month views don't show one. */
 	rowsShown: 0,
 });
 

@@ -70,11 +70,16 @@
 </script>
 
 <Tabs
-	tabs={[
-		{ value: "overview", label: "Overview" },
-		{ value: "breakdown", label: "Breakdown" },
-		{ value: "priority", label: "Priority plan" },
-	]}
+	tabs={templatePlanState.trackingBudget
+		? [
+				{ value: "overview", label: "Overview" },
+				{ value: "breakdown", label: "Breakdown" },
+			]
+		: [
+				{ value: "overview", label: "Overview" },
+				{ value: "breakdown", label: "Breakdown" },
+				{ value: "priority", label: "Priority plan" },
+			]}
 	bind:value={templatePlanState.activeTab}
 	onChange={(tab) => {
 		setValue(TAB_STORAGE_KEY, tab);

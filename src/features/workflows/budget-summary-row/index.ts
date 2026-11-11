@@ -352,7 +352,7 @@ export const budgetSummaryRow = defineSetting({
 	icon: "sparkles",
 	group: "Budget",
 	writes:
-		"Applies budget templates, funds targets or covers overspending from To Budget when you click those actions.",
+		"Runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget.",
 	context: {
 		key: "budget-summary-row",
 		defaultValue: false,
@@ -460,9 +460,8 @@ export const budgetSummaryRow = defineSetting({
 		${SUMMARY_CARD} > :first-child > :last-child button:hover {
 			background: var(--abt-fill-hover) !important;
 		}
-		/* Actual's month menu: Budget Actions covers everything in it. Tracking has no Budget
-		   Actions, so its menu (copy last month, averages, templates) stays. */
-		${ENVELOPE} ${SUMMARY_CARD} > :first-child > :last-child > :last-child:not(:first-child),
+		/* The single-month action card covers Actual's menu; tracking keeps menus on other months. */
+		${SUMMARY_CARD} > :first-child > :last-child > :last-child:not(:first-child),
 		${ENVELOPE} ${MONTH_CARD} > :first-child > :last-child > :last-child:not(:first-child) {
 			display: none !important;
 		}

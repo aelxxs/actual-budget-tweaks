@@ -33,6 +33,7 @@
 		overIds,
 		overspent,
 		toApply,
+		tracking = false,
 		compact = false,
 		loading = false,
 	}: {
@@ -43,6 +44,8 @@
 		overspent: number;
 		/** What Apply would assign, the same figure Insights shows. */
 		toApply: number;
+		/** Tracking budgets can apply templates but don't have To Budget funding actions. */
+		tracking?: boolean;
 		/** The multi-month header's version: one short button and the menu. */
 		compact?: boolean;
 		/** Drawn disabled, at full size, until the month's totals arrive. */
@@ -133,6 +136,28 @@
 	}
 
 	const suggestion = $derived.by((): Suggestion => {
+		if (tracking) {
+			if (toApply > 0) {
+				return {
+					tone: "primary",
+					icon: "target",
+					title: "Apply templates",
+					short: "Apply",
+					amount: toApply,
+					sub: "to categories without a budget",
+					run: () =>
+						perform(() => tracked("apply", () => runTemplate(sheet, "apply-goal-template"))),
+				};
+			}
+			return {
+				tone: "quiet",
+				icon: "sparkles",
+				title: "Budget actions",
+				short: "Actions",
+				sub: "Apply, overwrite, or reset templates",
+				run: null,
+			};
+		}
 		if (toBudget < 0) {
 			return {
 				tone: "danger",
@@ -284,9 +309,7 @@
 			type="button"
 			class="abt-btn abt-btn--sm"
 			disabled={busy || loading}
-			title={loading
-				? undefined
-				: `${suggestion.title}: ${suggestion.amount != null ? `${fmtMoney(suggestion.amount)} ` : ""}${suggestion.sub}`}
+			title={loading ? undefined : `${suggestion.title}: ${suggestion.sub}`}
 			onclick={() => (suggestion.run ? suggestion.run() : (menuOpen = !menuOpen))}
 		>
 			<Icon name={suggestion.icon} size={13} />
@@ -343,40 +366,42 @@
 
 {#if menuOpen}
 	<div class="ac-menu abt-popover abt-menu" role="menu" use:portal bind:this={menu}>
-		<div class="abt-menu__heading">Fill this month</div>
-		<button
-			type="button"
-			role="menuitem"
-			class="abt-menu__item"
-			disabled={fundable <= 0}
-			onclick={() => perform(() => tracked("fund", () => fundTargets(sheet, short)))}
-		>
-			<Icon name="target" size={15} />
-			<span class="abt-stack abt-gap-1">
-				<span class="ac-menu__title abt-repel"
-					>Fund underfunded targets
-					{#if fundable > 0}<em class="abt-privacy-number">{fmtMoney(fundable)}</em>{/if}</span
-				>
-				<span class="ac-menu__desc">Move each target's shortfall from To Budget</span>
-			</span>
-		</button>
-		<button
-			type="button"
-			role="menuitem"
-			class="abt-menu__item"
-			disabled={coverable <= 0}
-			onclick={() => perform(() => tracked("cover", () => coverOverspending(sheet, overIds)))}
-		>
-			<Icon name="shield" size={15} />
-			<span class="abt-stack abt-gap-1">
-				<span class="ac-menu__title abt-repel"
-					>Cover overspending
-					{#if coverable > 0}<em class="abt-privacy-number">{fmtMoney(coverable)}</em>{/if}</span
-				>
-				<span class="ac-menu__desc">Bring every red category back to zero</span>
-			</span>
-		</button>
-		<div class="abt-menu__sep"></div>
+		{#if !tracking}
+			<div class="abt-menu__heading">Fill this month</div>
+			<button
+				type="button"
+				role="menuitem"
+				class="abt-menu__item"
+				disabled={fundable <= 0}
+				onclick={() => perform(() => tracked("fund", () => fundTargets(sheet, short)))}
+			>
+				<Icon name="target" size={15} />
+				<span class="abt-stack abt-gap-1">
+					<span class="ac-menu__title abt-repel"
+						>Fund underfunded targets
+						{#if fundable > 0}<em class="abt-privacy-number">{fmtMoney(fundable)}</em>{/if}</span
+					>
+					<span class="ac-menu__desc">Move each target's shortfall from To Budget</span>
+				</span>
+			</button>
+			<button
+				type="button"
+				role="menuitem"
+				class="abt-menu__item"
+				disabled={coverable <= 0}
+				onclick={() => perform(() => tracked("cover", () => coverOverspending(sheet, overIds)))}
+			>
+				<Icon name="shield" size={15} />
+				<span class="abt-stack abt-gap-1">
+					<span class="ac-menu__title abt-repel"
+						>Cover overspending
+						{#if coverable > 0}<em class="abt-privacy-number">{fmtMoney(coverable)}</em>{/if}</span
+					>
+					<span class="ac-menu__desc">Bring every red category back to zero</span>
+				</span>
+			</button>
+			<div class="abt-menu__sep"></div>
+		{/if}
 		<div class="abt-menu__heading">Set every budget to</div>
 		<button
 			type="button"

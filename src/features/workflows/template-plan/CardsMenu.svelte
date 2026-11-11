@@ -37,6 +37,9 @@
 	const motion = still ? 0 : 200;
 
 	const layout = $derived(templatePlanState.cards);
+	const cardOrder = $derived(
+		layout.order.filter((id) => !templatePlanState.trackingBudget || id !== "next-month"),
+	);
 	const barShown = $derived(!layout.hidden.includes(TEMPLATES_BAR));
 	const isDefault = $derived(
 		layout.hidden.length === 0 && layout.order.every((id, i) => id === defaultLayout().order[i]),
@@ -189,8 +192,14 @@
 	}
 
 	function moved(id: CardId, to: number): CardLayout {
-		const order = layout.order.filter((card) => card !== id);
+		const order = cardOrder.filter((card) => card !== id);
 		order.splice(Math.max(0, Math.min(to, order.length)), 0, id);
+		if (templatePlanState.trackingBudget) {
+			const hiddenIndex = layout.order.indexOf("next-month");
+			if (hiddenIndex >= 0) {
+				order.splice(Math.min(hiddenIndex, order.length), 0, "next-month");
+			}
+		}
 		return { ...layout, order };
 	}
 
@@ -228,7 +237,7 @@
 		const rects = [...listEl.querySelectorAll("[data-row]")].map((row) =>
 			row.getBoundingClientRect(),
 		);
-		const startIndex = layout.order.indexOf(id);
+		const startIndex = cardOrder.indexOf(id);
 		grab = {
 			pointer: e.clientY,
 			startIndex,
@@ -251,7 +260,7 @@
 		const middle = top + grab.height / 2;
 		const { startIndex, mids } = grab;
 		const to = mids.filter((mid, i) => i !== startIndex && mid < middle).length;
-		if (to !== templatePlanState.cards.order.indexOf(dragging)) {
+		if (to !== cardOrder.indexOf(dragging)) {
 			templatePlanState.cards = moved(dragging, to);
 		}
 		dragOffset = top - grab.tops[to];
@@ -277,8 +286,8 @@
 			return;
 		}
 		e.preventDefault();
-		const to = layout.order.indexOf(id) + (e.key === "ArrowUp" ? -1 : 1);
-		if (to < 0 || to >= layout.order.length) {
+		const to = cardOrder.indexOf(id) + (e.key === "ArrowUp" ? -1 : 1);
+		if (to < 0 || to >= cardOrder.length) {
 			return;
 		}
 		keyMoving = id;
@@ -344,7 +353,7 @@
 		<div class="divider"></div>
 
 		<div class="list" role="list" bind:this={listEl}>
-			{#each layout.order as id (id)}
+			{#each cardOrder as id (id)}
 				{@const shown = !layout.hidden.includes(id)}
 				{@const CardIcon = ICONS[id]}
 				<div

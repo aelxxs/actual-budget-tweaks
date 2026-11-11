@@ -24,23 +24,28 @@
 	} from "./slot-data";
 	import { type SlotCardId, slotLabel } from "./slots";
 	import { slotStore, summaryState } from "./state.svelte";
-	import type { MonthTotals } from "./totals";
+	import type { MonthTotals, TrackingTotals } from "./totals";
 
 	const {
 		slot,
 		sheet,
 		totals,
+		tracking = false,
 	}: {
 		/** Which of the two slots, 0 or 1. */
 		slot: 0 | 1;
 		sheet: string;
-		totals: MonthTotals;
+		totals: MonthTotals | TrackingTotals;
+		tracking?: boolean;
 	} = $props();
 
 	const id = $derived(summaryState.slots.cards[slot]);
 	const other = $derived(summaryState.slots.cards[1 - slot]);
 	const pinnedId = $derived(summaryState.slots.pinned);
 	const version = $derived(summaryState.versions[sheet] ?? 0);
+	const spentBudgeted = $derived(
+		"spentBudgeted" in totals ? totals.spentBudgeted : totals.budgeted,
+	);
 
 	let card = $state<HTMLElement | null>(null);
 	let icons = $state<CategoryIcons>({});
@@ -114,7 +119,7 @@
 	});
 
 	// Months ahead is Insights' Next Month walk, run for the shown month even with the panel closed.
-	const runwayOn = $derived(id === "runway" && templatePlanState.enabled);
+	const runwayOn = $derived(id === "runway" && templatePlanState.enabled && !tracking);
 	$effect(() => {
 		if (!runwayOn) {
 			return;
@@ -196,8 +201,8 @@
 					class="sr__value abt-num abt-privacy-number"
 				/>
 				<span class="sr__sub">
-					{#if totals.budgeted > 0}
-						of <RollingNumber value={totals.budgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
+					{#if spentBudgeted > 0}
+						of <RollingNumber value={spentBudgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
 					{:else}
 						Nothing budgeted yet
 					{/if}
@@ -236,7 +241,10 @@
 					<span class="sr__sub">No category has a target</span>
 				{/if}
 			{:else if id === "runway"}
-				{#if !templatePlanState.enabled}
+				{#if tracking}
+					<span class="sr__value abt-num sr__none">Off</span>
+					<span class="sr__sub">Unavailable in tracking budgets</span>
+				{:else if !templatePlanState.enabled}
 					<span class="sr__value abt-num sr__none">Off</span>
 					<span class="sr__sub">Turn on Insights to see this</span>
 				{:else if aheadLoading}
@@ -369,6 +377,7 @@
 		{slot}
 		{sheet}
 		{totals}
+		{tracking}
 		runwayPreview={ahead && !aheadLoading
 			? ahead.lastCovered >= 0
 				? monthName(ahead.months[ahead.lastCovered].key, true)
@@ -378,7 +387,7 @@
 		start={menuStart}
 		{other}
 		pinned={pinnedId}
-		runwayAvailable={templatePlanState.enabled}
+		runwayAvailable={templatePlanState.enabled && !tracking}
 		onPick={pick}
 		onClose={() => (menuOpen = false)}
 	/>

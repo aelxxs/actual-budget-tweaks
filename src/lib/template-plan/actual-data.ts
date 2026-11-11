@@ -6,7 +6,7 @@ import type { Category } from "./priority-plan";
 import { templateEntriesFromGoalDef } from "./templates";
 import type { TemplateEntry } from "./templates";
 import { createLogger } from "@lib/utilities/logger";
-import { BUDGET_LINK, ENVELOPE_AMOUNT } from "@lib/actual-dom";
+import { BUDGET_LINK, BUDGET_TABLE, SHOWN_MONTH } from "@lib/actual-dom";
 
 const log = createLogger("template-plan");
 
@@ -34,7 +34,7 @@ export function isBackendReady(): boolean {
 	if (!document.querySelector(BUDGET_LINK)) {
 		return false;
 	}
-	return !!document.querySelector(ENVELOPE_AMOUNT);
+	return !!document.querySelector(BUDGET_TABLE);
 }
 
 export function waitForBackendReady(): Promise<void> {
@@ -129,15 +129,11 @@ export async function awaitSnapshotMonth(start: SnapshotDescriptor): Promise<Sna
 
 export function getVisibleSheets(): string[] {
 	try {
-		const cells = document.querySelectorAll(ENVELOPE_AMOUNT);
-		const sheets = new Set<string>();
-		for (const c of Array.from(cells)) {
-			const m = c.getAttribute("data-testid")?.match(/^(budget\d{6})/);
-			if (m) {
-				sheets.add(m[1]);
-			}
-		}
-		return Array.from(sheets);
+		const sheets = Array.from(document.querySelectorAll<HTMLElement>(SHOWN_MONTH))
+			.map((cell) => cell.dataset.month)
+			.filter((month): month is string => !!month)
+			.map((month) => `budget${month.replace("-", "")}`);
+		return [...new Set(sheets)];
 	} catch {
 		return [];
 	}

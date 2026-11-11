@@ -159,6 +159,8 @@ export interface TrackingTotals extends CategoryStats {
 	incomeBudgeted: number;
 	spent: number;
 	spentBudgeted: number;
+	/** What the current month's templates would assign, whether or not income has arrived. */
+	toApply: number;
 	/** Income less spending so far. */
 	saved: number;
 	/** Budgeted income less budgeted spending. */
@@ -188,6 +190,7 @@ export async function loadTrackingTotals(sheet: string): Promise<TrackingTotals>
 		incomeBudgeted,
 		spent: Math.abs(spent),
 		spentBudgeted: Math.abs(spentBudgeted),
+		toApply: await applyAmount(sheet),
 		saved,
 		projected,
 		...(await categoryStats(sheet)),

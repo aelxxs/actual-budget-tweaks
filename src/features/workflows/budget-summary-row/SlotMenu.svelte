@@ -30,13 +30,14 @@
 		loadIncome,
 	} from "./slot-data";
 	import { SLOT_CARDS, type SlotCardId, slotLabel } from "./slots";
-	import type { MonthTotals } from "./totals";
+	import type { MonthTotals, TrackingTotals } from "./totals";
 
 	const {
 		anchor,
 		slot,
 		sheet,
 		totals,
+		tracking = false,
 		runwayPreview,
 		current,
 		start = "cards",
@@ -49,7 +50,8 @@
 		anchor: HTMLElement;
 		slot: 0 | 1;
 		sheet: string;
-		totals: MonthTotals;
+		totals: MonthTotals | TrackingTotals;
+		tracking?: boolean;
 		/** Months ahead's answer, when Insights has worked it out for this month. */
 		runwayPreview: string | null;
 		current: SlotCardId;
@@ -214,7 +216,7 @@
 				</div>
 				{#each SLOT_CARDS as card (card.id)}
 					{@const Icon = ICONS[card.id]}
-					{@const off = card.id === "runway" && !runwayAvailable}
+					{@const off = card.id === "runway" && (tracking || !runwayAvailable)}
 					<button
 						type="button"
 						role="menuitemradio"
@@ -229,7 +231,7 @@
 						<span class="sm__label">
 							{card.label}
 							{#if off}
-								<span class="sm__hint">Needs Insights</span>
+								<span class="sm__hint">{tracking ? "Envelope only" : "Needs Insights"}</span>
 							{:else if card.id === other}
 								<span class="sm__hint">In card {2 - slot} · swaps places</span>
 							{:else if HINTS[card.id]}

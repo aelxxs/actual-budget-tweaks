@@ -152,71 +152,89 @@
 					>
 				{/if}
 			{/snippet}
-			{@const spentShare = Math.min(data.totalSpent, data.totalBudgeted)}
-			{@const parts = [
-				{
-					key: "overspent",
-					label: "Overspent last month",
-					value: Math.abs(data.lastMonthOverspent),
-				},
-				{ key: "spent", label: "Spent", value: spentShare },
-				{ key: "left", label: "Assigned, not spent yet", value: data.totalBudgeted - spentShare },
-				{ key: "held", label: "Held for next month", value: data.bufferedSelected },
-				{ key: "free", label: "Not assigned yet", value: Math.max(0, data.toBudget) },
-			].filter((p) => p.value > 0)}
-			{@const whole = parts.reduce((sum, p) => sum + p.value, 0)}
-			{@const leadUnassigned = data.toBudget !== 0}
-			{#if leadUnassigned}
-				{@render toBudgetRow()}
+			{#if data.budgetType === "tracking"}
+				{#if !inRow.includes("income")}
+					<Row name="Income received" value={fmtMoney(data.income.received)} />
+					<Row name="Income budgeted" value={fmtMoney(data.incomeBudgeted)} tone="muted" />
+				{/if}
+				<Row name="Spent" value={fmtMoney(data.totalSpent)} />
+				<Row name="Spending budget" value={fmtMoney(data.spentBudgeted)} tone="muted" />
+				<div class="abt-tab-overview-total">
+					<Row
+						name="Saved so far"
+						value={fmtMoney(data.saved)}
+						tone={data.saved < 0 ? "negative" : "positive"}
+						strong
+					/>
+					<Row name="Projected savings" value={fmtMoney(data.projected)} tone="muted" />
+				</div>
 			{:else}
-				<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
-			{/if}
-			{@const onPace = Math.round(data.totalBudgeted * elapsed)}
-			{@const showPace = isCurrentMonth && data.totalBudgeted > 0 && whole > 0}
-			{#if whole > 0}
-				<div class="abt-tab-overview-split-wrap">
-					<div class="abt-tab-overview-split" aria-hidden="true">
-						{#each parts as p (p.key)}
-							<span data-part={p.key} style:flex-grow={p.value / whole}></span>
-						{/each}
+				{@const spentShare = Math.min(data.totalSpent, data.totalBudgeted)}
+				{@const parts = [
+					{
+						key: "overspent",
+						label: "Overspent last month",
+						value: Math.abs(data.lastMonthOverspent),
+					},
+					{ key: "spent", label: "Spent", value: spentShare },
+					{ key: "left", label: "Assigned, not spent yet", value: data.totalBudgeted - spentShare },
+					{ key: "held", label: "Held for next month", value: data.bufferedSelected },
+					{ key: "free", label: "Not assigned yet", value: Math.max(0, data.toBudget) },
+				].filter((p) => p.value > 0)}
+				{@const whole = parts.reduce((sum, p) => sum + p.value, 0)}
+				{@const leadUnassigned = data.toBudget !== 0}
+				{#if leadUnassigned}
+					{@render toBudgetRow()}
+				{:else}
+					<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
+				{/if}
+				{@const onPace = Math.round(data.totalBudgeted * elapsed)}
+				{@const showPace = isCurrentMonth && data.totalBudgeted > 0 && whole > 0}
+				{#if whole > 0}
+					<div class="abt-tab-overview-split-wrap">
+						<div class="abt-tab-overview-split" aria-hidden="true">
+							{#each parts as p (p.key)}
+								<span data-part={p.key} style:flex-grow={p.value / whole}></span>
+							{/each}
+						</div>
+						{#if showPace}
+							<span
+								class="abt-tab-overview-pace-tick"
+								aria-hidden="true"
+								style:left="{((Math.abs(data.lastMonthOverspent) + onPace) / whole) * 100}%"
+							></span>
+						{/if}
 					</div>
-					{#if showPace}
-						<span
-							class="abt-tab-overview-pace-tick"
-							aria-hidden="true"
-							style:left="{((Math.abs(data.lastMonthOverspent) + onPace) / whole) * 100}%"
-						></span>
+				{/if}
+				{#if showPace}
+					<p class="abt-tab-overview-pace-note" data-ahead={data.totalSpent > onPace}>
+						{#if data.totalSpent > onPace}
+							Ahead of pace by <span class="abt-privacy-number"
+								>{fmtMoney(data.totalSpent - onPace)}</span
+							>
+						{:else}
+							On pace, <span class="abt-privacy-number">{fmtMoney(onPace - data.totalSpent)}</span> under
+						{/if}
+						<span class="abt-tab-overview-pace-day">· day {dayOfMonth} of {daysInMonth}</span>
+					</p>
+				{/if}
+				{#each parts as p (p.key)}
+					{#if p.key !== "free"}
+						<Row name={p.label} value={fmtMoney(p.value)} tone="muted">
+							{#snippet leading()}
+								<span class="abt-tab-overview-swatch" data-part={p.key}></span>
+							{/snippet}
+						</Row>
+					{/if}
+				{/each}
+				<div class="abt-tab-overview-total">
+					{#if leadUnassigned}
+						<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
+					{:else}
+						{@render toBudgetRow()}
 					{/if}
 				</div>
 			{/if}
-			{#if showPace}
-				<p class="abt-tab-overview-pace-note" data-ahead={data.totalSpent > onPace}>
-					{#if data.totalSpent > onPace}
-						Ahead of pace by <span class="abt-privacy-number"
-							>{fmtMoney(data.totalSpent - onPace)}</span
-						>
-					{:else}
-						On pace, <span class="abt-privacy-number">{fmtMoney(onPace - data.totalSpent)}</span> under
-					{/if}
-					<span class="abt-tab-overview-pace-day">· day {dayOfMonth} of {daysInMonth}</span>
-				</p>
-			{/if}
-			{#each parts as p (p.key)}
-				{#if p.key !== "free"}
-					<Row name={p.label} value={fmtMoney(p.value)} tone="muted">
-						{#snippet leading()}
-							<span class="abt-tab-overview-swatch" data-part={p.key}></span>
-						{/snippet}
-					</Row>
-				{/if}
-			{/each}
-			<div class="abt-tab-overview-total">
-				{#if leadUnassigned}
-					<Row name="Available funds" value={fmtMoney(data.availableFunds)} strong />
-				{:else}
-					{@render toBudgetRow()}
-				{/if}
-			</div>
 		</Section>
 	{/snippet}
 
@@ -409,7 +427,11 @@
 		(id !== "goals" || data.underfundedGoals.length > 0) &&
 		(id !== "trend" || data.trend.length > 0)}
 	<!-- While the card menu is open, cards with nothing to show stand in, so moving them shows. -->
-	{@const present = templatePlanState.customizingCards ? shownCards : shownCards.filter(hasContent)}
+	{@const availableCards =
+		data.budgetType === "tracking" ? shownCards.filter((id) => id !== "next-month") : shownCards}
+	{@const present = templatePlanState.customizingCards
+		? availableCards
+		: availableCards.filter(hasContent)}
 
 	{#snippet standIn(id: CardId)}
 		<Section title={cardLabel(id)} collapsible={false}>

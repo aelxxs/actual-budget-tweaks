@@ -11,6 +11,7 @@ import {
 	watchBudgetTable,
 } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
+import { isTrackingBudget, onBudgetType } from "@lib/utilities/budget-type";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -161,6 +162,9 @@ export function dockInsightsTrigger(): () => void {
 }
 
 export function openInsights(tab?: InsightsTab): void {
+	if (tab === "priority" && templatePlanState.trackingBudget) {
+		tab = "overview";
+	}
 	if (tab && templatePlanState.activeTab !== tab) {
 		templatePlanState.activeTab = tab;
 		setValue(TAB_STORAGE_KEY, tab);
@@ -405,6 +409,9 @@ async function resolveAhead(
 	templates: Map<string, TemplateEntry[]>,
 	stale: () => boolean,
 ): Promise<number[] | null> {
+	if (d.budgetType === "tracking") {
+		return [];
+	}
 	const key = aheadKey(d);
 	if (key === null) {
 		return [];
@@ -435,6 +442,7 @@ async function loadOverview(sheet: string): Promise<{
 	cats: Category[];
 	templates: Map<string, TemplateEntry[]>;
 }> {
+	const tracking = isTrackingBudget();
 	const cats = (await loadCategories()).filter((c) => !c.hidden);
 	const monthKey = sheetToMonth(sheet) ?? "";
 	const months = trendMonths(monthKey);
@@ -450,11 +458,15 @@ async function loadOverview(sheet: string): Promise<{
 		templates,
 		moves,
 	] = await Promise.all([
-		readCells(sheet, monthCellNames(cats)),
+		readCells(sheet, monthCellNames(cats, tracking)),
 		query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
-		Promise.all(months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats)))),
-		readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
-		previewMonthTemplateTotal(nextMonthKey, cats),
+		Promise.all(
+			months.slice(0, -1).map((k) => readCells(monthToSheet(k), trendCellNames(cats, tracking))),
+		),
+		tracking
+			? Promise.resolve(new Map<string, number>())
+			: readCells(monthToSheet(nextMonthKey), ["total-budgeted"]),
+		tracking ? Promise.resolve(null) : previewMonthTemplateTotal(nextMonthKey, cats),
 		// Goal cells can't tell what's left: they fill once templates run, and Actual can set them
 		// without budgeting anything (actualbudget/actual#9304).
 		previewMonthTemplates(monthKey, cats),
@@ -464,17 +476,24 @@ async function loadOverview(sheet: string): Promise<{
 
 	const toBudget = cells.get("to-budget") ?? 0;
 	const totalBudgeted = Math.abs(cells.get("total-budgeted") ?? 0);
-	const trend = buildTrend(months, [...pastCells, cells], cats);
+	const trend = buildTrend(months, [...pastCells, cells], cats, tracking);
+	const categorySummary = summarizeCategories(cats, cells);
 
 	const data: OverviewData = {
 		sheet,
 		monthKey,
+		budgetType: tracking ? "tracking" : "envelope",
 		availableFunds: cells.get("available-funds") ?? toBudget + totalBudgeted,
 		toBudget,
 		totalBudgeted,
 		lastMonthOverspent: cells.get("last-month-overspent") ?? 0,
 		bufferedSelected: cells.get("buffered-selected") ?? 0,
-		...summarizeCategories(cats, cells),
+		incomeBudgeted: cells.get("total-budget-income") ?? 0,
+		spentBudgeted: totalBudgeted,
+		saved: cells.get("real-saved") ?? 0,
+		projected: cells.get("total-saved") ?? 0,
+		...categorySummary,
+		totalSpent: tracking ? Math.abs(cells.get("total-spent") ?? 0) : categorySummary.totalSpent,
 		upcomingSchedules: upcomingSchedules(schedules ?? []),
 		trend,
 		nextMonthKey,
@@ -496,6 +515,9 @@ async function loadOverview(sheet: string): Promise<{
  * Actual's worker; a new refresh stops it between dry runs.
  */
 async function prefetchAround(monthKey: string, seq: number): Promise<void> {
+	if (isTrackingBudget()) {
+		return;
+	}
 	for (const step of [1, -1]) {
 		const sheet = monthToSheet(addMonths(monthKey, step));
 		if (seq !== overviewSeq) {
@@ -549,6 +571,13 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 	try {
 		const { data, cats, templates } = await loadOverview(sheet);
 		if (stale()) {
+			return;
+		}
+		if (data.budgetType === "tracking") {
+			const done = { ...data, aheadTemplateNeeds: [] };
+			templatePlanState.overviewData = done;
+			templatePlanState.overviewLoading = false;
+			keepOverview(done);
 			return;
 		}
 		const key = aheadKey(data);
@@ -922,9 +951,8 @@ function tick(): void {
 
 export const templatePlan = defineSetting({
 	type: "checkbox",
-	envelopeOnly: true,
 	label: "Budget Insights",
-	description: "Month summary, template breakdowns, and priority planning in a side panel.",
+	description: "Month summary, template breakdowns, and planning in a side panel.",
 	icon: "layout",
 	group: "Budget",
 	writes: "Applies the month's budget templates when you click Apply.",
@@ -937,8 +965,13 @@ export const templatePlan = defineSetting({
 		const controller = new AbortController();
 		session = controller.signal;
 		templatePlanState.enabled = true;
+		templatePlanState.trackingBudget = isTrackingBudget();
 		loadCurrency();
 		await loadPersistedState();
+		templatePlanState.trackingBudget = isTrackingBudget();
+		if (templatePlanState.trackingBudget && templatePlanState.activeTab === "priority") {
+			templatePlanState.activeTab = "overview";
+		}
 		// Per budget, and followed through settings sync: a budget with none starts from the default.
 		const cards = followBudgetValue(CARDS_KEY, (v) => (templatePlanState.cards = toLayout(v)));
 		templatePlanState.saveCards = (layout) => void cards.save(layout);
@@ -991,13 +1024,31 @@ export const templatePlan = defineSetting({
 		const unwatch = watchDom(tick);
 		// Renames and moves made while the budget page stays open.
 		const stopCategories = onListChange("categories", invalidateCategoriesCache);
+		const stopBudgetType = onBudgetType((type) => {
+			overviewSeq++;
+			prioritySeq++;
+			templatePlanState.trackingBudget = type === "tracking";
+			templatePlanState.priorityLoading = false;
+			templatePlanState.priorityData = null;
+			if (type === "tracking" && templatePlanState.activeTab === "priority") {
+				templatePlanState.activeTab = "overview";
+				setValue(TAB_STORAGE_KEY, "overview");
+			}
+			forgetAhead();
+			templatePlanState.overviewData = null;
+			if (drawerOpen && templatePlanState.activeTab === "overview") {
+				void refreshOverview();
+			}
+		});
 
 		return () => {
 			controller.abort();
 			session = null;
 			templatePlanState.enabled = false;
+			templatePlanState.trackingBudget = false;
 			unwatch();
 			stopCategories();
+			stopBudgetType();
 			stopClickListener();
 			stopKeyboard();
 			cards.stop();
