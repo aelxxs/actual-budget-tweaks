@@ -26,6 +26,14 @@ interface ManifestSetting {
 
 const PASSWORD = "abt-smoke-test";
 const SETTINGS = (sections as { items: ManifestSetting[] }[]).flatMap((section) => section.items);
+const STYLE_SETTINGS =
+	(sections as { title: string; items: ManifestSetting[] }[]).find(
+		(section) => section.title === "Style",
+	)?.items ?? [];
+const SIDEBAR_CUSTOMIZE_SETTINGS =
+	(sections as { title: string; items: ManifestSetting[] }[]).find(
+		(section) => section.title === "Customize sidebar",
+	)?.items ?? [];
 const ABT_SCRIPT = "/abt/";
 
 const errors: string[] = [];
@@ -189,7 +197,15 @@ test("ABT on every page", async ({ page }) => {
 	await visit(page, "settings", async () => {
 		await openTweaks(page);
 		await expectAnchors(page, PAGE_ANCHORS["/settings"]);
-		for (const setting of SETTINGS.filter((setting) => setting.platform !== "mobile")) {
+		const panelOnlyKeys = new Set([
+			...STYLE_SETTINGS.map((setting) => setting.key),
+			...SIDEBAR_CUSTOMIZE_SETTINGS.map((setting) => setting.key),
+			"customize-sidebar-entry",
+			"experimental-sidebar",
+		]);
+		for (const setting of SETTINGS.filter(
+			(setting) => setting.platform !== "mobile" && !panelOnlyKeys.has(setting.key),
+		)) {
 			const row = page.locator(`.settings-page [data-testid="${setting.key}"]`);
 			await expect.soft(row, `${setting.label} (${setting.key}) has a row`).toBeAttached();
 			if (setting.type === "checkbox") {
@@ -197,6 +213,38 @@ test("ABT on every page", async ({ page }) => {
 					.soft(row.locator('input[type="checkbox"]'), `${setting.key} is on`)
 					.toBeChecked();
 			}
+		}
+		await expect(page.getByRole("checkbox", { name: "Live sidebar" })).toBeChecked();
+
+		// Style settings live in the Style side panel; sidebar settings live in its anchored
+		// Customize panel. Neither surface is a descendant of the settings page.
+		await page.getByRole("button", { name: "Edit style" }).click();
+		for (const setting of STYLE_SETTINGS.filter((setting) => setting.platform !== "mobile")) {
+			const row = page.locator(`[data-testid="${setting.key}"]`);
+			await expect.soft(row, `${setting.label} (${setting.key}) has a row`).toBeAttached();
+			if (setting.type === "checkbox") {
+				await expect
+					.soft(row.locator('input[type="checkbox"]'), `${setting.key} is on`)
+					.toBeChecked();
+			}
+		}
+		await page.getByRole("button", { name: "Close side drawer" }).click();
+
+		await page.locator("[data-abt-customize-trigger]").click();
+		const customizePanel = page.getByRole("dialog", { name: "Customize sidebar" });
+		await expect(customizePanel).toBeVisible();
+		const sidebarCheckboxLabels: Record<string, string> = {
+			"sidebar-search-enabled": "Search bar",
+			"sidebar-shortcuts-enabled": "Shortcuts bar",
+			"sidebar-show-closed": "Closed accounts",
+			"sidebar-group-totals": "Group totals",
+			"account-icon-picker": "Account icons",
+			"actual-balancecolors": "Red negative balances",
+		};
+		for (const [key, label] of Object.entries(sidebarCheckboxLabels)) {
+			const row = customizePanel.locator("label.row").filter({ hasText: label });
+			await expect.soft(row, `${label} (${key}) has a row`).toBeAttached();
+			await expect.soft(row.locator('input[type="checkbox"]'), `${key} is on`).toBeChecked();
 		}
 	});
 
