@@ -64,7 +64,7 @@ export const mobileBudgetBanners = defineSetting({
 			background: var(--color-tableBackground) !important;
 			box-shadow: none !important;
 			font-size: var(--abt-text-lg);
-			--abt-banner-tone: var(--color-noticeText);
+			--abt-banner-tone: var(--color-noticeTextLight);
 		}
 
 		[${BANNER_ATTR}="critical"] {

@@ -196,7 +196,7 @@ export const BUILTIN_CSS = `:root {
 	--color-noticeBackgroundDark: var(--ctp-teal);
 	--color-noticeBackgroundLight: color-mix(in srgb, var(--ctp-green) 16%, var(--ctp-base));
 	--color-noticeBorder: var(--ctp-green);
-	--color-noticeText: var(--ctp-green);
+	--color-noticeText: var(--ctp-base);
 	--color-noticeTextDark: var(--ctp-base);
 	--color-noticeTextLight: var(--ctp-green);
 	--color-noticeTextMenu: var(--ctp-teal);
