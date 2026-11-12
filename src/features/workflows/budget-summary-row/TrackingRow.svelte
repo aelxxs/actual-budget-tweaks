@@ -244,5 +244,4 @@
 	.tr__card.is-skeleton > span + span {
 		width: 80%;
 	}
-
 </style>

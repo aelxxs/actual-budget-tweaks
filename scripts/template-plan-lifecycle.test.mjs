@@ -63,6 +63,7 @@ async function setup({ deferRestore = false } = {}) {
 		Page: { Budget: "budget" },
 		matchesPage: () => true,
 		isBudgetPage: () => true,
+		onBudgetType: () => () => {},
 		createPriorityPlanner: () => ({}),
 		INSIGHTS_TABS: ["overview", "breakdown", "priority"],
 		onListChange: () => () => {},
