@@ -27,7 +27,6 @@ import { borderRadius } from "./layout/border-radius";
 import { budgetTableRowHeight } from "./layout/budget-table-row-height";
 import { budgetRowHover } from "./layout/budget-row-hover";
 import { budgetGroupSpacing } from "./layout/budget-group-spacing";
-import { hideMonthOnScroll } from "./layout/hide-month-on-scroll";
 import { reportWidgetBackgroundColor } from "./layout/report-widget-background-color";
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
@@ -150,7 +149,6 @@ export const scriptSections: SettingsSection[] = [
 					budgetTableRowHeight,
 					budgetRowHover,
 					budgetGroupSpacing,
-					hideMonthOnScroll,
 					budgetPageBorders,
 					budgetMonthHeader,
 					budgetSummaryRow,
