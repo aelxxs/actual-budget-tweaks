@@ -1,6 +1,84 @@
 # Changelog
 
 
+## v0.1.106
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.105...v0.1.106)
+
+### 🚀 Enhancements
+
+- Show Next Month as a runway strip, and tidy the Income, Reassigned and Coming Up cards ([6cfe05b](https://github.com/aelxxs/actual-budget-tweaks/commit/6cfe05b))
+- Choose the summary row's two middle cards, from six including Months ahead and a pinned category ([d895ffa](https://github.com/aelxxs/actual-budget-tweaks/commit/d895ffa))
+- Pair the summary row's cards with Insights, keep card layouts per budget, and work out neighbouring months ahead ([436780d](https://github.com/aelxxs/actual-budget-tweaks/commit/436780d))
+- Customize the live sidebar in place, from a panel beside it ([c022b77](https://github.com/aelxxs/actual-budget-tweaks/commit/c022b77))
+- Close the Customize sidebar panel on a click outside the sidebar ([6416612](https://github.com/aelxxs/actual-budget-tweaks/commit/6416612))
+- Rework the account hover card in ABT's style, with overdue items and a Review link ([2747500](https://github.com/aelxxs/actual-budget-tweaks/commit/2747500))
+- Show the next account's hover card quickly once one has been waited for ([ddacd55](https://github.com/aelxxs/actual-budget-tweaks/commit/ddacd55))
+- Catch a flipped statement balance in the reconcile panel, and date the last reconcile ([cd82e03](https://github.com/aelxxs/actual-budget-tweaks/commit/cd82e03))
+- Let panel sections mute their title and keep trailing content visible in privacy mode ([f628373](https://github.com/aelxxs/actual-budget-tweaks/commit/f628373))
+- Add Theme Studio, a side panel for building a theme against the live budget page ([77e8113](https://github.com/aelxxs/actual-budget-tweaks/commit/77e8113))
+- Let panel sections drop the capitalized title for settings rows, and mark open sections ([1d12512](https://github.com/aelxxs/actual-budget-tweaks/commit/1d12512))
+- Save and edit Theme Studio themes, open older palette themes in it, and simplify the panel ([a33d9dc](https://github.com/aelxxs/actual-budget-tweaks/commit/a33d9dc))
+- Bring back Theme Studio's lock and reroll chips without the hover shift, shuffle the shade, and move Sidebar beside Color ([f959841](https://github.com/aelxxs/actual-budget-tweaks/commit/f959841))
+- Redesign the theme picker: the settings page shows the current theme, and Change theme opens a gallery of theme thumbnails in the side panel ([e0fee4c](https://github.com/aelxxs/actual-budget-tweaks/commit/e0fee4c))
+- Turn ABT off from its settings page or the popup, leaving Actual as it is with only the Tweaks tab to turn it back on ([3d15e59](https://github.com/aelxxs/actual-budget-tweaks/commit/3d15e59))
+- Add a Floating page option to Inset Panels, which blends the sidebar into the frame so only the page stands out ([3ec0cdd](https://github.com/aelxxs/actual-budget-tweaks/commit/3ec0cdd))
+- Put the Sidebar and Theme switches in their section headers, open the sidebar's settings from a Customize button, and color negative balances in the live sidebar too ([3b00957](https://github.com/aelxxs/actual-budget-tweaks/commit/3b00957))
+- Support insights in tracking budgets ([60e2f45](https://github.com/aelxxs/actual-budget-tweaks/commit/60e2f45))
+- Side panels stack, with app panels following you across pages ([7b74877](https://github.com/aelxxs/actual-budget-tweaks/commit/7b74877))
+- Keep synced transactions to review until you mark them reviewed ([0ccb062](https://github.com/aelxxs/actual-budget-tweaks/commit/0ccb062))
+- Open Theme Studio on the page you're on instead of the budget ([8c50ce0](https://github.com/aelxxs/actual-budget-tweaks/commit/8c50ce0))
+- Theme menu in the titlebar, with the current theme, the gallery on any page, Style and Theme Studio ([d761f35](https://github.com/aelxxs/actual-budget-tweaks/commit/d761f35))
+- Richer tooltips: instant while moving between controls, an arrow and fade-in, hint lines and shortcut keys, keyboard focus, hidden while dragging, and the sidebar on the same tooltip ([20eabfb](https://github.com/aelxxs/actual-budget-tweaks/commit/20eabfb))
+- Shortcut keys and hint lines on undo, redo, search, sync and other ABT tooltips ([696ba25](https://github.com/aelxxs/actual-budget-tweaks/commit/696ba25))
+- Keep every month count that has fit, greyed out while it doesn't, and mark the count you picked while it waits for room ([0ab1cde](https://github.com/aelxxs/actual-budget-tweaks/commit/0ab1cde))
+- Review a sync per account: a line in the account card that opens the recap on that account, and account chips in the recap ([a16840c](https://github.com/aelxxs/actual-budget-tweaks/commit/a16840c))
+
+### 🩹 Fixes
+
+- Export stored settings on the sidecar, not just defaults ([264800e](https://github.com/aelxxs/actual-budget-tweaks/commit/264800e))
+- Number new and renamed account groups when the name is taken ([c64ce68](https://github.com/aelxxs/actual-budget-tweaks/commit/c64ce68))
+- Call account groups groups, not categories, in the sidebar ([5c84dbc](https://github.com/aelxxs/actual-budget-tweaks/commit/5c84dbc))
+- Stop the month header's count buttons flashing when arriving on the budget page ([5afb914](https://github.com/aelxxs/actual-budget-tweaks/commit/5afb914))
+- Keep the runway strip inside its card when the summary row is narrow ([a3bbcad](https://github.com/aelxxs/actual-budget-tweaks/commit/a3bbcad))
+- Recolor the To Budget figure as soon as the theme changes ([15dfd25](https://github.com/aelxxs/actual-budget-tweaks/commit/15dfd25))
+- Keep a saved studio theme's sidebar colors after a reload ([3824f7c](https://github.com/aelxxs/actual-budget-tweaks/commit/3824f7c))
+- Give the smoke test's budget a rule, since newer Actual drops the rules table when the list is empty ([fb318db](https://github.com/aelxxs/actual-budget-tweaks/commit/fb318db))
+- Sync the sidebar's add tile setting with the budget, so turning it off sticks across devices ([c167447](https://github.com/aelxxs/actual-budget-tweaks/commit/c167447))
+- Set the settings card, settings nav and alternate row colors that ABT themes left to Actual ([baa51c0](https://github.com/aelxxs/actual-budget-tweaks/commit/baa51c0))
+- Only highlight the Insights button while the side panel is closed, so it doesn't look open behind another panel ([3de2042](https://github.com/aelxxs/actual-budget-tweaks/commit/3de2042))
+- Merge Dusk, Nocturne and Material into their closest built-in themes, give Cyberpunk a pink accent, and raise every built-in theme's text and accent colors to 4.5:1 ([35e2f18](https://github.com/aelxxs/actual-budget-tweaks/commit/35e2f18))
+- Follow settings panels in smoke test ([4c7bf1a](https://github.com/aelxxs/actual-budget-tweaks/commit/4c7bf1a))
+- Improve notice badge contrast ([3ba3fc3](https://github.com/aelxxs/actual-budget-tweaks/commit/3ba3fc3))
+- Mute summary card supporting text ([409f509](https://github.com/aelxxs/actual-budget-tweaks/commit/409f509))
+- Format the tracking row, mock onBudgetType in the template plan test, and regenerate the features manifest ([49162f7](https://github.com/aelxxs/actual-budget-tweaks/commit/49162f7))
+- Keep success toasts green now that notice text is the badge colour ([dcc99ae](https://github.com/aelxxs/actual-budget-tweaks/commit/dcc99ae))
+- Pin the reports header to its real scroller ([9abd18f](https://github.com/aelxxs/actual-budget-tweaks/commit/9abd18f))
+- Keep the reports header flush under the titlebar with the side panel's page-column exclusion ([9953bf2](https://github.com/aelxxs/actual-budget-tweaks/commit/9953bf2))
+- Colour the RSU tile's growth with the sidebar's gain and loss colours, like the stock tile ([c2a8d0c](https://github.com/aelxxs/actual-budget-tweaks/commit/c2a8d0c))
+
+### 💅 Refactors
+
+- Move the style settings to Theme → Style, with glow and grain for every theme in place of Ambient Glow and Ambient Grain ([4744bfc](https://github.com/aelxxs/actual-budget-tweaks/commit/4744bfc))
+- Remove Hide Month Selection On Scroll ([cb6d705](https://github.com/aelxxs/actual-budget-tweaks/commit/cb6d705))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.105 ([e40425b](https://github.com/aelxxs/actual-budget-tweaks/commit/e40425b))
+- Regenerate the features manifest for the closed accounts setting ([7c7d382](https://github.com/aelxxs/actual-budget-tweaks/commit/7c7d382))
+
+### 🎨 Styles
+
+- Simplify and pin settings toolbar ([9b32e2a](https://github.com/aelxxs/actual-budget-tweaks/commit/9b32e2a))
+- Lay out the budget actions menu like ABT's other menus, and keep right-aligned popovers inside the window ([d09d64d](https://github.com/aelxxs/actual-budget-tweaks/commit/d09d64d))
+- Shorten the budget header step by step and fill wrapped card rows ([42cdfa2](https://github.com/aelxxs/actual-budget-tweaks/commit/42cdfa2))
+- Calm ABT's motion: a still error ring, faster rolling numbers, bars and card glows, and a reduced-motion flow bar ([63a32e8](https://github.com/aelxxs/actual-budget-tweaks/commit/63a32e8))
+- Match Actual's text tooltips, like the titlebar's, to ABT's ([30ddb5f](https://github.com/aelxxs/actual-budget-tweaks/commit/30ddb5f))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.105
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.104...v0.1.105)
