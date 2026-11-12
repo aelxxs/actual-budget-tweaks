@@ -129,11 +129,12 @@
 		flex-shrink: 0;
 	}
 
+	/* The sidebar's own gain and loss colours, as on the stock tile beside it. */
 	.rsu__growth.is-pos {
-		color: var(--color-noticeTextLight);
+		color: var(--color-sidebarTextPositive, var(--color-noticeTextLight));
 	}
 	.rsu__growth.is-neg {
-		color: var(--color-errorText);
+		color: var(--color-sidebarTextFailed, var(--color-errorText));
 	}
 
 	.rsu__tag {
