@@ -9,8 +9,7 @@
 	const { accounts = [], onCollapse }: { accounts?: SidebarAccount[]; onCollapse?: () => void } =
 		$props();
 
-	const undoShortcut = $derived(isMac() ? "⌘Z" : "Ctrl+Z");
-	const redoShortcut = $derived(isMac() ? "⌘⇧Z" : "Ctrl+Shift+Z");
+	const mod = isMac() ? "⌘" : "Ctrl";
 
 	const linked = $derived(accounts.filter((a) => a.status !== "manual" && !a.closed));
 	let running = $state(false);
@@ -55,13 +54,8 @@
 		return hours < 24 ? `${hours}h ago` : `${Math.round(hours / 24)}d ago`;
 	}
 
-	const syncTip = $derived(
-		syncing
-			? "Syncing bank accounts…"
-			: lastSync
-				? `Sync bank accounts · last synced ${ago(lastSync)}`
-				: "Sync bank accounts",
-	);
+	const syncTip = $derived(syncing ? "Syncing bank accounts…" : "Sync bank accounts");
+	const syncHint = $derived(!syncing && lastSync ? `Last synced ${ago(lastSync)}` : undefined);
 
 	async function sync() {
 		if (syncing) {
@@ -88,16 +82,18 @@
 	<div class="undo-group" role="group" aria-label="History">
 		<button
 			type="button"
-			aria-label="Undo {undoShortcut}"
-			use:tooltip={{ text: `Undo ${undoShortcut}`, placement: "top" }}
+			aria-label="Undo"
+			aria-keyshortcuts="{isMac() ? 'Meta' : 'Control'}+Z"
+			use:tooltip={{ text: "Undo", keys: `${mod} Z`, placement: "top" }}
 			onclick={undo}
 		>
 			<Undo2 strokeWidth={1.8} />
 		</button>
 		<button
 			type="button"
-			aria-label="Redo {redoShortcut}"
-			use:tooltip={{ text: `Redo ${redoShortcut}`, placement: "top" }}
+			aria-label="Redo"
+			aria-keyshortcuts="{isMac() ? 'Meta' : 'Control'}+Shift+Z"
+			use:tooltip={{ text: "Redo", keys: `${mod} ⇧ Z`, placement: "top" }}
 			onclick={redo}
 		>
 			<Redo2 strokeWidth={1.8} />
@@ -111,7 +107,7 @@
 				class:is-syncing={syncing}
 				disabled={syncing}
 				aria-label={syncTip}
-				use:tooltip={{ text: syncTip, placement: "top" }}
+				use:tooltip={{ text: syncTip, hint: syncHint, placement: "top" }}
 				onclick={sync}
 			>
 				<RefreshCw strokeWidth={1.8} />

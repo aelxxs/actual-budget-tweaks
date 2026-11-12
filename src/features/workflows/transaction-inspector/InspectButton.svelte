@@ -9,7 +9,8 @@
 	type="button"
 	class="ib abt-btn abt-btn--sm abt-btn--ghost"
 	class:is-active={inspector.open}
-	title="Inspect the transaction you select: payee history, rules and schedule"
+	title="Inspect a transaction"
+	data-abt-tip-hint="Payee history, rules and schedule for the one you select"
 	{onclick}
 >
 	<Icon name="eye" size={15} />

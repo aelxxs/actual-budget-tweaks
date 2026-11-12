@@ -46,6 +46,7 @@
 		trackSidebarMenu,
 	} from "../lib/menu.svelte";
 	import { route, trackRoute } from "../lib/route.svelte";
+	import { isMac } from "../lib/search";
 
 	$effect(() => trackRoute());
 	$effect(() => trackSidebarMenu());
@@ -367,7 +368,7 @@
 	class="rail-icon"
 	onclick={onSearch}
 	aria-label="Search"
-	use:tooltip={"Search (⌘K)"}
+	use:tooltip={{ text: "Search", keys: isMac() ? "⌘ K" : "Ctrl K" }}
 >
 	<Search strokeWidth={1.5} />
 </button>

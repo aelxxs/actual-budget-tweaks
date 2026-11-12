@@ -24,7 +24,7 @@
 	}
 </script>
 
-<label class="hex" title="Type a hex code to set the accent exactly">
+<label class="hex" title="Accent hex" data-abt-tip-hint="Type a hex code to set the accent exactly">
 	<span class="swatch" style:background={hex}></span>
 	<input
 		spellcheck="false"

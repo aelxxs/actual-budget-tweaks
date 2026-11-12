@@ -116,6 +116,14 @@
 		broken: "No access",
 		unknown: "Offline",
 	};
+	const STATE_HINT: Record<FileState, string> = {
+		local: "Only on this device",
+		remote: "On the server; opening it downloads a copy",
+		synced: "Up to date with the server",
+		detached: "No longer syncing with the server's copy",
+		broken: "You don't have access to this file",
+		unknown: "Can't reach the server",
+	};
 
 	// Actual's own sidebar status line, word for word, with its icon colours.
 	const SYNC_CAPTION: Record<SyncStatus | "local", { label: string; tone?: string }> = {
@@ -360,7 +368,11 @@
 					<span
 						class="budget-state"
 						aria-label={STATE_LABEL[file.state]}
-						use:tooltip={{ text: STATE_LABEL[file.state], placement: "left" }}
+						use:tooltip={{
+							text: STATE_LABEL[file.state],
+							hint: STATE_HINT[file.state],
+							placement: "left",
+						}}
 					>
 						<Icon strokeWidth={1.5} />
 					</span>

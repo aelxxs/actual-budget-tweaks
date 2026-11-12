@@ -139,7 +139,11 @@
 				onCheckedChange={(checked) => onChange({ hideOffBudget: !checked })}
 			/>
 		</label>
-		<label class="cf__toggle" title="Each day's closing balance across the accounts shown">
+		<label
+			class="cf__toggle"
+			title="Closing balance each day"
+			data-abt-tip-hint="Across the accounts shown"
+		>
 			<span>Daily balance</span>
 			<Switch
 				checked={filters.showBalance}

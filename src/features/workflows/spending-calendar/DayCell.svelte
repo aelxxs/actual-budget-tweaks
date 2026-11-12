@@ -127,7 +127,8 @@
 			class="cal-cell__balance abt-privacy-number"
 			class:is-neg={day.balance < 0}
 			class:is-flat={day.balanceFlat}
-			title="Balance at the end of the day{day.isFuture ? ', with scheduled bills' : ''}"
+			title="End-of-day balance"
+			data-abt-tip-hint={day.isFuture ? "Includes scheduled bills" : undefined}
 		>
 			{fmtMoney(day.balance)}
 		</div>

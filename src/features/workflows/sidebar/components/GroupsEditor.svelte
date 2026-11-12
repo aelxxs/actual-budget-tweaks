@@ -210,7 +210,8 @@
 						class="handle abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 						draggable="true"
 						data-handle={group.id}
-						title="Drag to reorder, or use the arrow keys"
+						title="Reorder"
+						data-abt-tip-hint="Drag, or use the arrow keys"
 						aria-label="Move {group.label}"
 						disabled={list.length < 2}
 						ondragstart={(e) => onDragStart(e, section.kind, group.id)}
@@ -237,7 +238,8 @@
 					<button
 						type="button"
 						class="remove abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
-						title="Delete group; its accounts move back to {section.label}"
+						title="Delete group"
+						data-abt-tip-hint="Its accounts move back to {section.label}"
 						aria-label="Delete {group.label}"
 						onclick={() => remove(group.id)}
 					>

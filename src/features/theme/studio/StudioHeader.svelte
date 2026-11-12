@@ -22,7 +22,8 @@
 			type="button"
 			class="abt-btn abt-btn--sm abt-btn--ghost"
 			disabled={saving}
-			title="Keep the original and save this as another theme"
+			title="Save as a new theme"
+			data-abt-tip-hint="The original stays as it is"
 			onclick={() => save(true)}>Save as new</button
 		>
 	{/if}

@@ -234,7 +234,8 @@
 				class="ref"
 				style:left="{at[0]}px"
 				style:top="{at[1]}px"
-				title="{ref.title}: a faint wash of its hue, turning with it"
+				title={ref.title}
+				data-abt-tip-hint="A faint wash of its hue, turning with it"
 				aria-label="Background: {ref.title.toLowerCase()}"
 				onpointerdown={(e) => e.stopPropagation()}
 				onclick={() => setBackground(ref.hue, DOT_TINT, ref.link)}
@@ -250,7 +251,8 @@
 			aria-label="Background color"
 			aria-valuenow={Math.round(r.tint * 100)}
 			aria-valuetext="Background {backgroundWords}"
-			title="Background: drag around for hue, outward for more color"
+			title="Background"
+			data-abt-tip-hint="Drag around for hue, outward for more color"
 			onkeydown={onDiscKey}
 		></div>
 		<div

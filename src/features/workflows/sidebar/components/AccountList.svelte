@@ -610,9 +610,8 @@
 				class:on={groupAccounts}
 				aria-pressed={groupAccounts}
 				use:tooltip={{
-					text: groupAccounts
-						? "Grouped — click for a flat list"
-						: "Flat list — click to show groups",
+					text: groupAccounts ? "Grouped" : "Flat list",
+					hint: groupAccounts ? "Click for a flat list" : "Click to show groups",
 					placement: "right",
 				}}
 				onclick={onToggleGroupMode}
