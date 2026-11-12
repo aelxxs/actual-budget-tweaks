@@ -1,3 +1,4 @@
+import { ACTUAL_TOOLTIP } from "@lib/actual-dom";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 
 /*
@@ -131,9 +132,34 @@ const CSS = `
 		border-bottom: 0;
 		border-left: 0;
 	}
+	/* Actual's own text tooltips (the titlebar's buttons), matched to ABT's. Ones with content of
+	   their own, like balance breakdowns, keep Actual's layout. Its inline styles need !important. */
+	${ACTUAL_TOOLTIP}:not(:has(*)) {
+		padding: var(--abt-space-2) var(--abt-space-3) !important;
+		border: 1px solid var(--color-tableBorder) !important;
+		border-radius: var(--abt-radius-sm) !important;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28) !important;
+		font-size: var(--abt-text-sm);
+		font-weight: 500;
+		line-height: 1.35;
+		animation: abt-tooltip-in 100ms ease-out;
+	}
+	${ACTUAL_TOOLTIP}[data-placement="top"] {
+		--abt-tip-from-y: 3px;
+	}
+	${ACTUAL_TOOLTIP}:is([data-placement="left"], [data-placement="right"]) {
+		--abt-tip-from-y: 0;
+	}
+	${ACTUAL_TOOLTIP}[data-placement="left"] {
+		--abt-tip-from-x: 3px;
+	}
+	${ACTUAL_TOOLTIP}[data-placement="right"] {
+		--abt-tip-from-x: -3px;
+	}
 	@media (prefers-reduced-motion: reduce) {
-		.${TOOLTIP_CLASS}[data-open] {
-			animation: none;
+		.${TOOLTIP_CLASS}[data-open],
+		${ACTUAL_TOOLTIP} {
+			animation: none !important;
 		}
 	}
 `;

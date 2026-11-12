@@ -57,6 +57,8 @@ export const SETTINGS_NAV_LINK = `${NAVIGATION} > a[href="/settings/general"]`;
 export const HELP_BUTTON = byTestId("help-menu-button");
 export const NOTIFICATIONS_BUTTON = byTestId("notifications-button");
 export const NOTIFICATIONS_COUNT = byTestId("notifications-unseen-count");
+/** Actual's hover tooltips (react-aria's Tooltip), e.g. on the titlebar's icon buttons. Only on hover. */
+export const ACTUAL_TOOLTIP = '.react-aria-Tooltip[role="tooltip"]';
 export const SIDEBAR_NAV = byTestId("sidebar-primary-buttons");
 export const ALL_ACCOUNTS_BALANCE = byTestId("sidebar-all-accounts-balance");
 
