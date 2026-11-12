@@ -7,5 +7,10 @@ let mounted: Mounted | null = null;
 
 export function openStylePanel(): void {
 	mounted ??= mountToPanelBody(StylePanel, {});
-	sidepanel.open({ title: "Style", bodyNode: mounted.node, key: "theme-style", width: 360 });
+	sidepanel.open({
+		title: "Style",
+		bodyNode: mounted.node,
+		key: "theme-style",
+		scope: "app",
+	});
 }

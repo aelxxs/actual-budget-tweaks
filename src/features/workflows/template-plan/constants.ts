@@ -16,4 +16,3 @@ export const TRIGGER_LABELS = new Map<string, TriggerAction>([
 export const BREAKDOWN_STORAGE_KEY = "template-plan-breakdown";
 export const TAB_STORAGE_KEY = "template-plan-active-tab";
 export const PRIO_COLLAPSE_STORAGE_KEY = "template-plan-prio-collapse";
-export const SIDE_PANEL_WIDTH = 350;

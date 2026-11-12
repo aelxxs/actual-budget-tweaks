@@ -19,7 +19,6 @@ import { FOCUS_KEY, SELECT_CELL, TRANSACTION_TABLE } from "@lib/actual-dom";
  */
 const OURS = "data-abt-inspect";
 const PANEL_KEY = "transaction-inspector";
-const PANEL_WIDTH = 340;
 const ROW = `${TRANSACTION_TABLE} ${FOCUS_KEY}`;
 const CHECKED = `${SELECT_CELL} svg`;
 
@@ -72,7 +71,7 @@ async function openPanel() {
 	if (!panel) {
 		panel = mountToPanelBody(Inspector, {});
 	}
-	sidepanel.open({ title: "Inspector", bodyNode: panel.node, key: PANEL_KEY, width: PANEL_WIDTH });
+	sidepanel.open({ title: "Inspector", bodyNode: panel.node, key: PANEL_KEY });
 	inspector.open = true;
 	sidebarRestore ??= collapseLiveSidebar();
 }
@@ -82,7 +81,7 @@ function destroyPanel() {
 		return;
 	}
 	if (panel.node.isConnected) {
-		sidepanel.close();
+		sidepanel.close(PANEL_KEY);
 	}
 	panel.destroy();
 	panel = null;
@@ -124,7 +123,7 @@ function sync() {
 
 	removeButton();
 	const mounted = mountToNodeWithReturn(InspectButton, {
-		onclick: () => (inspector.open ? sidepanel.close() : void openPanel()),
+		onclick: () => (inspector.open ? sidepanel.close(PANEL_KEY) : void openPanel()),
 	});
 	mounted.node.setAttribute(OURS, "");
 	// With the actions, before Actual's empty flex spacer.

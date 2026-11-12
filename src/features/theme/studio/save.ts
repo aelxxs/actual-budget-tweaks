@@ -27,5 +27,5 @@ export async function saveStudioTheme(asNew = false): Promise<void> {
 	} else {
 		await setValue("catppuccin-palette", id);
 	}
-	sidepanel.close();
+	sidepanel.close("theme-studio");
 }

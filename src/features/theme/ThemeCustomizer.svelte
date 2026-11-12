@@ -149,7 +149,11 @@
 		return slot === "dark" ? "Dark theme" : "Light theme";
 	}
 	function showGallery(node: HTMLElement) {
-		sidepanel.open({ title: galleryTitle(), bodyNode: node, key: "theme-gallery", width: 360 });
+		sidepanel.open({
+			title: galleryTitle(),
+			bodyNode: node,
+			key: "theme-gallery",
+		});
 	}
 	function inPanel(node: HTMLElement) {
 		galleryNode = node;
@@ -158,7 +162,7 @@
 		return () => {
 			// The card unmounted (a settings search can do it), so its gallery can't stay open empty.
 			if (node.isConnected) {
-				sidepanel.close();
+				sidepanel.close("theme-gallery");
 			}
 			galleryNode = null;
 		};
@@ -229,6 +233,7 @@
 			title: "Color Editor",
 			bodyNode: editor.node,
 			headerNode: editorHeader!.node,
+			key: "color-editor",
 		});
 	};
 
@@ -459,6 +464,7 @@
 			title: "Create Theme",
 			bodyNode: creator.node,
 			headerNode: creatorHeader.node,
+			key: "theme-creator",
 		});
 	}
 
@@ -477,12 +483,12 @@
 		} else {
 			await setValue(ctx.key, theme.id);
 		}
-		sidepanel.close();
+		sidepanel.close("theme-creator");
 	}
 
 	async function handleCreatorDelete(id: string) {
 		await deleteUserTheme(id);
-		sidepanel.close();
+		sidepanel.close("theme-creator");
 		if (activeThemeKey === id) {
 			activeThemeKey = ctx.defaultValue;
 			await setValue(ctx.key, ctx.defaultValue);

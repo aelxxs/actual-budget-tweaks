@@ -38,7 +38,7 @@ body {
 	}
 
 	/* A variable so the month header can cancel it whenever it lands (budget-month-header). */
-	[data-abt-content-grid] > div:nth-child(4) {
+	[data-abt-content-grid] > div:nth-child(4):not([data-abt-side-drawer-sidebar]) {
 		--abt-page-pad-top: 1.5rem;
 		padding-top: var(--abt-page-pad-top);
 	}
@@ -90,7 +90,10 @@ body {
 	}
 
 	/* Space under list and settings page titles; the title has no hook, the page body after it does. */
-	[data-abt-content-grid] > div:nth-child(4) > div + [role="main"] {
+	[data-abt-content-grid]
+		> div:nth-child(4):not([data-abt-side-drawer-sidebar])
+		> div
+		+ [role="main"] {
 		margin-top: 0.5rem;
 	}
 

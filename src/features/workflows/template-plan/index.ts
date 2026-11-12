@@ -41,7 +41,6 @@ import type { TemplateEntry } from "@lib/template-plan/templates";
 import {
 	BREAKDOWN_STORAGE_KEY,
 	PRIO_COLLAPSE_STORAGE_KEY,
-	SIDE_PANEL_WIDTH,
 	TAB_STORAGE_KEY,
 	TRIGGER_LABELS,
 } from "./constants";
@@ -74,6 +73,7 @@ import { BUDGET_LINK, BUDGET_TABLE } from "@lib/actual-dom";
 const log = createLogger("template-plan");
 
 const TRIGGER_ID = "abt-template-plan-trigger";
+const PANEL_KEY = "insights";
 // Aborted when the feature turns off, so async work started before then drops its result.
 let session: AbortSignal | null = null;
 
@@ -193,7 +193,12 @@ function openPanel(): void {
 	drawerMounted = false;
 	removeTriggerButton();
 	const bodyNode = ensurePanelMounted();
-	sidepanel.open({ title: panelTitle, bodyNode, persist: true, width: SIDE_PANEL_WIDTH });
+	sidepanel.open({
+		title: panelTitle,
+		bodyNode,
+		key: PANEL_KEY,
+		persist: true,
+	});
 	if (templatePlanState.activeTab === "overview" && !templatePlanState.overviewLoading) {
 		// Kept numbers may be stale: schedules or transactions changed on another page.
 		refreshOverview({ quiet: !!templatePlanState.overviewData });
@@ -225,7 +230,7 @@ function reopenIfPersisted(): void {
 
 function closePanel(): void {
 	drawerOpen = false;
-	sidepanel.close();
+	sidepanel.close(PANEL_KEY);
 	if (isBudgetPage()) {
 		ensureTriggerButton();
 	}
@@ -940,7 +945,7 @@ function tick(): void {
 
 	// The side panel's own close button has no hook, so its closing is noticed here.
 	if (drawerOpen) {
-		if (sidepanel.isOpen()) {
+		if (sidepanel.isOpen(PANEL_KEY)) {
 			drawerMounted = true;
 		} else if (drawerMounted) {
 			drawerOpen = false;
@@ -1022,6 +1027,17 @@ export const templatePlan = defineSetting({
 		const stopClickListener = installClickListener();
 		const stopKeyboard = installKeyboard();
 		const unwatch = watchDom(tick);
+		// Under another panel, Insights is out of sight, so its trigger comes back to raise it.
+		const stopTop = sidepanel.onTopChange((key) => {
+			if (!drawerOpen || !isBudgetPage()) {
+				return;
+			}
+			if (key === PANEL_KEY) {
+				removeTriggerButton();
+			} else {
+				ensureTriggerButton();
+			}
+		});
 		// Renames and moves made while the budget page stays open.
 		const stopCategories = onListChange("categories", invalidateCategoriesCache);
 		const stopBudgetType = onBudgetType((type) => {
@@ -1047,6 +1063,7 @@ export const templatePlan = defineSetting({
 			templatePlanState.enabled = false;
 			templatePlanState.trackingBudget = false;
 			unwatch();
+			stopTop();
 			stopCategories();
 			stopBudgetType();
 			stopClickListener();
@@ -1058,10 +1075,8 @@ export const templatePlan = defineSetting({
 			stopWatchingCells();
 			clearTimeout(monthRefresh);
 			removeTriggerButton();
-			if (drawerOpen) {
-				sidepanel.close();
-				sidepanel.dismiss();
-			}
+			// Forgets the persisted panel too, even when it's hidden on another page.
+			sidepanel.close(PANEL_KEY);
 			teardownPanel();
 			templatePlanState.onTabChange = null;
 			templatePlanState.applyTemplates = null;

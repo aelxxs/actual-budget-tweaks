@@ -86,6 +86,10 @@ async function setup({ deferRestore = false } = {}) {
 			close: () => (panelOpen = false),
 			dismiss: () => (panelOpen = false),
 			isOpen: () => panelOpen,
+			onTopChange: (fn) => {
+				watchers.add(fn);
+				return () => watchers.delete(fn);
+			},
 		},
 		mountToPanelBody: () => {
 			mounted++;

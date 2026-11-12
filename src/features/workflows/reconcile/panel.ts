@@ -3,7 +3,7 @@ import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
 import ReconcilePanel from "./ReconcilePanel.svelte";
 import { reconcile } from "./state.svelte";
 
-const PANEL_WIDTH = 340;
+const PANEL_KEY = "reconcile";
 
 let current:
 	| (Mounted & {
@@ -26,7 +26,7 @@ export function openPanel(accountId: string): void {
 		reconcile.accountId === accountId && reconcile.accountName
 			? reconcile.accountName
 			: "Reconcile";
-	sidepanel.open({ title, bodyNode: current.node, width: PANEL_WIDTH });
+	sidepanel.open({ title, bodyNode: current.node, key: PANEL_KEY });
 }
 
 export function isPanelShowing(): boolean {
@@ -45,9 +45,7 @@ export function panelWasClosed(): boolean {
 }
 
 export function closePanel(): void {
-	if (isPanelShowing()) {
-		sidepanel.close();
-	}
+	sidepanel.close(PANEL_KEY);
 	destroyPanel();
 }
 

@@ -12,8 +12,6 @@ import { studio } from "./state.svelte";
 import StudioHeader from "./StudioHeader.svelte";
 import ThemeStudio from "./ThemeStudio.svelte";
 
-const PANEL_WIDTH = 360;
-
 let mounted: (Mounted & { shown: boolean }) | null = null;
 let header: Mounted | null = null;
 let stop: (() => void) | null = null;
@@ -75,7 +73,8 @@ function sync(): void {
 			title: "Theme Studio",
 			bodyNode: mounted.node,
 			headerNode: header.node,
-			width: PANEL_WIDTH,
+			key: "theme-studio",
+			scope: "app",
 		});
 		return;
 	}

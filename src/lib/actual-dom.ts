@@ -134,7 +134,9 @@ export const AUTO_SIZER = "[data-auto-sizer]";
 /** The app's main grid: nav sidebar, titlebar, page column; only once a page has rendered. */
 export const CONTENT_GRID = `div:has(> div:nth-child(4)):has(${BUDGET_TABLE}, ${MAIN}, ${ACCOUNT_NAME})`;
 /** The page's column, under the grid native-hooks marks. */
-export const PAGE_COLUMN = "[data-abt-content-grid] > div:nth-child(4)";
+// Not ABT's side panel, which can be the 4th child for a moment while a page is swapped.
+export const PAGE_COLUMN =
+	"[data-abt-content-grid] > div:nth-child(4):not([data-abt-side-drawer-sidebar])";
 /** Actual's privacy filter: the real value, then a redacted copy over it, shown until hover. */
 export const PRIVACY_WRAPPER = 'div:has(> div:first-child + div[aria-hidden="true"]:last-child)';
 export const PRIVACY_COPY = `${PRIVACY_WRAPPER} > div[aria-hidden="true"]`;

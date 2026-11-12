@@ -317,11 +317,12 @@
 			title: formatDayMonth(date, "long"),
 			bodyNode: detailContainer,
 			headerNode: headerContainer,
+			key: "calendar-day",
 		});
 	}
 
 	function closeDayPanel() {
-		sidepanel.close();
+		sidepanel.close("calendar-day");
 		cleanupPanel();
 		selectedIso = null;
 	}
@@ -345,7 +346,7 @@
 		// A schedule edited in Actual's editor shows once the editor closes.
 		let editorOpen = false;
 		const unwatch = watchDom(() => {
-			if (selectedIso && !sidepanel.isOpen()) {
+			if (selectedIso && !sidepanel.isOpen("calendar-day")) {
 				selectedIso = null;
 			}
 			const open = !!document.querySelector(SCHEDULE_EDITOR);

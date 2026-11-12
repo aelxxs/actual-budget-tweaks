@@ -1,7 +1,7 @@
 import { applyGlobalCSS, createElement } from "@lib/utilities/dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { clamp } from "@lib/utilities/math";
-import { getValue, hasValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue } from "@lib/utilities/store";
 import { mount, unmount } from "svelte";
 import { CONTENT_GRID } from "@lib/actual-dom";
 import {
@@ -9,6 +9,7 @@ import {
 	PANEL_DISMISS_EVENT,
 	PANEL_OPEN_EVENT,
 	PANEL_SET_TITLE_EVENT,
+	PANEL_TOP_EVENT,
 	SIDEBAR_ATTR,
 	type OpenOptions,
 } from "./api";
@@ -56,19 +57,13 @@ function getBodyElement() {
 	return grid;
 }
 
-// A drawer React removed is detached, not destroyed: a live instance would keep pulling
-// panelState's nodes into it, leaving the visible drawer blank.
+// The drawer's one Svelte instance, unmounted only when the drawer closes.
 let content: ReturnType<typeof mount> | null = null;
 function destroyContent() {
 	if (content) {
 		unmount(content);
 	}
 	content = null;
-}
-
-function removeSideDrawerLayout() {
-	destroyContent();
-	document.querySelector(`[${SIDEBAR_ATTR}]`)?.remove();
 }
 
 const STORAGE_KEY = "side-panel";
@@ -80,10 +75,13 @@ const here = () => location.pathname + location.hash;
 
 /** Mirrors PERSIST_KEY so a page coming back can reopen its panel before it paints. */
 let persistedRoute: string | null | undefined;
+/** Which panel the persisted route belongs to, so closing it by key forgets it even when hidden. */
+let persistedKey: string | null = null;
 
-function setPersistedRoute(route: string | null): void {
+function setPersistedRoute(route: string | null, key: string | null = null): void {
 	persistedRoute = route;
-	setValue(PERSIST_KEY, route ? { route } : null);
+	persistedKey = route ? key : null;
+	setValue(PERSIST_KEY, route ? { route, key } : null);
 }
 
 const CSS = `
@@ -143,88 +141,130 @@ const CSS = `
 	}
 `;
 
+// Page scope compares paths only: an overlay (the calendar) adds a hash but is the same page.
+const pagePath = () => location.pathname;
+
+type Entry = {
+	key?: string;
+	title: string;
+	bodyNode: Node | null;
+	headerNode: Node | null;
+	persisted: boolean;
+	scope: "page" | "app";
+	/** The page it opened on; a page panel closes once that page is left. */
+	path: string;
+};
+
 export const sidePanel = {
 	type: "core" as const,
 	init: async () => {
 		applyGlobalCSS(CSS, STORAGE_KEY);
 
 		const storedWidth = await getValue(WIDTH_KEY, DEFAULT_SIDEBAR_WIDTH);
-		const storedPersist = await getValue<{ route: string } | null>(PERSIST_KEY, null);
+		const storedPersist = await getValue<{ route: string; key?: string | null } | null>(
+			PERSIST_KEY,
+			null,
+		);
 		persistedRoute = storedPersist?.route ?? null;
-		let widthStored = await hasValue(WIDTH_KEY);
+		persistedKey = storedPersist?.key ?? null;
 
-		let isOpen = storedPersist?.route === here();
-		// Whether the open panel is the persisted one: closing another (say the calendar's day
-		// details) mustn't forget that Insights was left open on the budget page.
-		let showingPersisted = isOpen;
-		const forgetPersisted = () => {
-			if (showingPersisted) {
+		/** Open panels, bottom first; the last one shows. */
+		let stack: Entry[] = [];
+		// Holds the drawer open, empty, on a page whose persisted panel is on its way, so the page
+		// doesn't lay out full width and then reflow when the panel's feature fills it.
+		let reserved = persistedRoute === here();
+		let lastPath = pagePath();
+
+		let sidebarWidth = clamp(Math.round(storedWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
+
+		const isOpen = () => stack.length > 0 || reserved;
+
+		const forget = (entry: Entry | undefined) => {
+			if (entry?.persisted) {
 				setPersistedRoute(null);
 			}
-			showingPersisted = false;
 		};
-		// Panels opened with `stack` keep the ones underneath, restored as each closes.
-		type Entry = {
-			key?: string;
-			title: string;
-			bodyNode: Node | null;
-			headerNode: Node | null;
-			persisted: boolean;
-		};
-		let under: Entry[] = [];
-		let currentKey: string | undefined;
-		const restoreUnder = (): boolean => {
-			const prev = under.pop();
-			if (!prev) {
-				return false;
+
+		/** Points panelState at the top entry; the drawer itself follows in sync(). */
+		let topKey: string | null = null;
+		const show = () => {
+			const top = stack.at(-1);
+			const key = top?.key ?? null;
+			if (key !== topKey) {
+				topKey = key;
+				document.dispatchEvent(new CustomEvent(PANEL_TOP_EVENT, { detail: key }));
 			}
-			panelState.title = prev.title;
-			panelState.bodyNode = prev.bodyNode;
-			panelState.headerNode = prev.headerNode;
-			showingPersisted = prev.persisted;
-			currentKey = prev.key;
-			return true;
+			panelState.title = top?.title ?? panelState.title;
+			panelState.bodyNode = top?.bodyNode ?? null;
+			panelState.headerNode = top?.headerNode ?? null;
+			panelState.bodies = stack
+				.filter((e) => e.bodyNode)
+				.map((e) => ({ key: e.key, node: e.bodyNode as Node }));
 		};
-		let requestedWidth = DEFAULT_SIDEBAR_WIDTH;
-		let sidebarWidth = clamp(Math.round(storedWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
 
 		const markOpen = () => {
 			const grid = document.querySelector(`[${GRID_ATTR}]`);
 			grid?.toggleAttribute(OPEN_ATTR, !!grid.querySelector(`:scope > [${SIDEBAR_ATTR}]`));
 		};
 
+		/** A new page: its own page panels and every app panel stay; the rest close. */
+		const onPageChange = () => {
+			const path = pagePath();
+			if (path === lastPath) {
+				return;
+			}
+			lastPath = path;
+			const kept = stack.filter((e) => e.scope === "app" || e.path === path);
+			if (kept.length !== stack.length) {
+				stack = kept;
+				show();
+			}
+			reserved = persistedRoute === here() && !stack.some((e) => e.persisted);
+		};
+
 		const sync = () => {
-			if (panelState.open !== isOpen) {
-				panelState.open = isOpen;
+			onPageChange();
+			if (panelState.open !== isOpen()) {
+				panelState.open = isOpen();
 			}
 			place();
 			markOpen();
 		};
 
+		// Kept across React rebuilding the page's grid: moved onto the new grid in the same frame
+		// rather than rebuilt, so navigating doesn't blank or remount what's open.
+		let sidebar: HTMLElement | null = null;
+
+		const removeDrawer = () => {
+			destroyContent();
+			sidebar?.remove();
+			sidebar = null;
+		};
+
 		const place = () => {
+			// Marks the page grid even with nothing open: base.css lays every page out from it.
 			getBodyElement();
-			if (!isOpen) {
-				removeSideDrawerLayout();
+			if (!isOpen()) {
+				removeDrawer();
 				return;
 			}
-
+			// Between pages the grid can be missing for a moment; the drawer waits detached.
 			const body = getBodyElement();
 			if (!body) {
-				removeSideDrawerLayout();
 				return;
 			}
 
-			const existing = document.querySelector<HTMLElement>(`[${SIDEBAR_ATTR}]`);
-			if (existing) {
+			if (sidebar) {
 				// React appends a remounted page after it; base.css finds the page as the 4th child.
-				if (existing.parentElement === body && body.lastElementChild !== existing) {
-					existing.style.animation = "none";
-					body.appendChild(existing);
+				if (sidebar.parentElement !== body || body.lastElementChild !== sidebar) {
+					sidebar.style.animation = "none";
+					body.appendChild(sidebar);
+					body.style.gridTemplateColumns = `1fr ${sidebarWidth}px`;
 				}
 				return;
 			}
 
-			const sidebar = createElement("div", { className: "abt-side-drawer-sidebar" });
+			sidebar = createElement("div", { className: "abt-side-drawer-sidebar" });
 			sidebar.setAttribute(SIDEBAR_ATTR, "true");
 			destroyContent();
 			const container = createElement("div", {
@@ -240,24 +280,21 @@ export const sidePanel = {
 			content = mount(SidePanelContent, {
 				target: container,
 				props: {
-					stacked: () => under.length > 0,
+					stacked: () => stack.length > 1,
 					onClose: () => {
-						if (restoreUnder()) {
-							document.querySelector(`[${SIDEBAR_ATTR}]`)?.classList.remove(SIDEBAR_CLOSING_CLASS);
-							return;
-						}
-						isOpen = false;
-						forgetPersisted();
+						forget(stack.pop());
+						reserved = false;
+						sidebar?.classList.remove(SIDEBAR_CLOSING_CLASS);
+						show();
 						sync();
 					},
 					initialWidth: sidebarWidth,
-					defaultWidth: () => requestedWidth,
+					defaultWidth: () => DEFAULT_SIDEBAR_WIDTH,
 					onResize: (width: number) => {
 						body.style.gridTemplateColumns = `1fr ${width}px`;
 					},
 					onResizeEnd: (width: number) => {
 						sidebarWidth = width;
-						widthStored = true;
 						setValue(WIDTH_KEY, width);
 					},
 				},
@@ -269,86 +306,70 @@ export const sidePanel = {
 
 		document.addEventListener(PANEL_OPEN_EVENT, (event) => {
 			const detail: OpenOptions = (event as CustomEvent).detail ?? {};
-			// Already mounted — panelState below flows into the live component, no teardown/remount needed.
-			const alreadyOpen = isOpen && !!document.querySelector(`[${SIDEBAR_ATTR}]`);
+			const entry: Entry = {
+				key: detail.key,
+				title: getSafeTitle(detail.title, panelState.title),
+				bodyNode: isDomNodeLike(detail.bodyNode) ? detail.bodyNode : null,
+				headerNode: isDomNodeLike(detail.headerNode) ? detail.headerNode : null,
+				persisted: !!detail.persist,
+				scope: detail.scope ?? "page",
+				path: pagePath(),
+			};
+			// Without `stack`, it replaces the page's panels; app panels stay open either way.
 			if (!detail.stack) {
-				under = [];
-			} else if (alreadyOpen && panelState.bodyNode && (!detail.key || detail.key !== currentKey)) {
-				under.push({
-					key: currentKey,
-					title: panelState.title,
-					bodyNode: panelState.bodyNode,
-					headerNode: panelState.headerNode,
-					persisted: showingPersisted,
-				});
+				stack = stack.filter((e) => e.scope === "app");
 			}
-			currentKey = detail.key;
+			// The same panel opened again replaces itself rather than stacking a second copy.
+			stack = stack.filter((e) => !entry.key || e.key !== entry.key);
+			// A persisted panel coming back with its page goes under whatever app panel is open.
+			if (reserved && entry.persisted) {
+				stack.unshift(entry);
+			} else {
+				stack.push(entry);
+			}
+			reserved = false;
 
-			panelState.title = getSafeTitle(detail.title, panelState.title);
-			panelState.bodyNode = isDomNodeLike(detail.bodyNode) ? detail.bodyNode : null;
-			panelState.headerNode = isDomNodeLike(detail.headerNode) ? detail.headerNode : null;
-			isOpen = true;
-
-			showingPersisted = !!detail.persist;
 			if (detail.persist) {
-				setPersistedRoute(here());
+				setPersistedRoute(here(), detail.key ?? null);
 			}
-			if (typeof detail.width === "number") {
-				requestedWidth = clamp(Math.round(detail.width), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-			}
-			if (typeof detail.width === "number" && !widthStored) {
-				sidebarWidth = clamp(Math.round(detail.width), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-			}
-
-			if (!alreadyOpen) {
-				removeSideDrawerLayout();
-				sync();
-			}
+			show();
+			sync();
 		});
 
-		document.addEventListener(PANEL_CLOSE_EVENT, () => {
-			if (restoreUnder()) {
+		document.addEventListener(PANEL_CLOSE_EVENT, (event) => {
+			const key = (event as CustomEvent<{ key?: string } | null>).detail?.key;
+			const index = key ? stack.findIndex((e) => e.key === key) : stack.length - 1;
+			if (key && key === persistedKey) {
+				setPersistedRoute(null);
+				reserved = false;
+			}
+			if (index < 0) {
+				sync();
 				return;
 			}
-			isOpen = false;
-			forgetPersisted();
+			forget(stack.splice(index, 1)[0]);
+			reserved = false;
+			show();
 			sync();
 		});
 
 		document.addEventListener(PANEL_DISMISS_EVENT, () => {
-			under = [];
-			isOpen = false;
-			showingPersisted = false;
-			panelState.bodyNode = null;
-			panelState.headerNode = null;
+			stack = stack.filter((e) => e.scope === "app");
+			reserved = false;
+			show();
 			sync();
-		});
-
-		document.addEventListener("abt:navigate", async () => {
-			const persisted = await getValue<{ route: string } | null>(PERSIST_KEY, null);
-			if (persisted?.route === here()) {
-				if (!isOpen) {
-					isOpen = true;
-					sync();
-				}
-			} else {
-				// Put back the bottom panel, so coming back to its page shows it rather than a stacked one.
-				under = under.slice(0, 1);
-				restoreUnder();
-				if (isOpen) {
-					isOpen = false;
-					sync();
-				}
-			}
 		});
 
 		document.addEventListener(PANEL_SET_TITLE_EVENT, (event) => {
 			const { title } = (event as CustomEvent).detail ?? {};
-			// Only base panels (Insights, reconcile) set titles; one stacked on top keeps its own.
-			if (under.length) {
-				under[0].title = getSafeTitle(title, under[0].title);
-			} else {
-				panelState.title = getSafeTitle(title, panelState.title);
+			// Only base page panels (Insights, reconcile) set titles; one stacked on top keeps its own.
+			const base = stack.find((e) => e.scope === "page") ?? stack[0];
+			if (!base) {
+				return;
+			}
+			base.title = getSafeTitle(title, base.title);
+			if (base === stack.at(-1)) {
+				panelState.title = base.title;
 			}
 		});
 

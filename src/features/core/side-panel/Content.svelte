@@ -72,16 +72,37 @@
 		}
 	});
 
+	// Each stacked panel keeps its own wrapper, hidden while another is on top, so switching
+	// doesn't detach it (losing its scroll) and no panel's content shares a container with another's.
+	const pages = new Map<Node, HTMLElement>();
 	$effect(() => {
-		const node = panelState.bodyNode;
+		const bodies = panelState.bodies;
+		const current = panelState.bodyNode;
 		if (!bodyEl) {
 			return;
 		}
-		// eslint-disable-next-line svelte/no-dom-manipulating
-		bodyEl.replaceChildren();
-		if (node) {
-			// eslint-disable-next-line svelte/no-dom-manipulating
-			bodyEl.appendChild(node);
+		const nodes = new Set(bodies.map((b) => b.node));
+		for (const [node, page] of pages) {
+			if (!nodes.has(node)) {
+				page.remove();
+				pages.delete(node);
+			}
+		}
+		for (const { key, node } of bodies) {
+			let page = pages.get(node);
+			if (!page) {
+				page = document.createElement("div");
+				page.className = "abt-side-drawer-page";
+
+				page.appendChild(node);
+				// eslint-disable-next-line svelte/no-dom-manipulating
+				bodyEl.appendChild(page);
+				pages.set(node, page);
+			}
+			if (key) {
+				page.dataset.panel = key;
+			}
+			page.hidden = node !== current;
 		}
 	});
 
@@ -259,6 +280,21 @@
 		display: contents;
 	}
 
+	/* One per stacked panel; its own stacking context, so one panel's layers can't sit over another's. */
+	.abt-side-drawer-body :global(.abt-side-drawer-page) {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-height: 0;
+		/* Each panel scrolls on its own, so one underneath keeps its place. */
+		overflow-y: auto;
+		isolation: isolate;
+	}
+
+	.abt-side-drawer-body :global(.abt-side-drawer-page[hidden]) {
+		display: none;
+	}
+
 	.abt-side-drawer-title {
 		margin: 0;
 		font-size: var(--abt-text-lg);
@@ -268,7 +304,9 @@
 	}
 
 	.abt-side-drawer-body {
+		display: flex;
 		flex: 1 1 auto;
+		flex-direction: column;
 		min-height: 0;
 		overflow-y: auto;
 		background-color: var(--color-pageBackground);
