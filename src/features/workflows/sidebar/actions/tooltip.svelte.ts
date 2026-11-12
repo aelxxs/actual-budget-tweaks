@@ -1,89 +1,44 @@
-/**
- * Shared `$state` here (rather than component-local) since every row/nav-link
- * across the sidebar uses `use:tooltip`, but only one tooltip bubble is ever
- * rendered, at the Sidebar root.
- */
+import { TIP_HINT_ATTR, TIP_KEYS_ATTR, TIP_SIDE_ATTR } from "@features/core/tooltip";
 
 export type TipPlacement = "right" | "left" | "top" | "bottom";
-type TipOpts = { text: string; placement?: TipPlacement };
-type Tip = { text: string; x: number; y: number; placement: TipPlacement } | null;
+type TipOpts = {
+	text: string;
+	placement?: TipPlacement;
+	/** A muted second line. */
+	hint?: string;
+	/** Shortcut keys, space-separated, shown as chips. */
+	keys?: string;
+};
 
-export const tipState: { value: Tip } = $state({ value: null });
+// ABT's tooltip (core/tooltip.ts) reads these, as it does every `title` on the page.
+const ORIG_TITLE_ATTR = "data-abt-title";
 
-let tipTimer: ReturnType<typeof setTimeout> | null = null;
-const TIP_DELAY = 320;
-
-function placeTip(el: HTMLElement, o: Required<TipOpts>) {
-	const r = el.getBoundingClientRect();
-	const gap = 9;
-	let x: number;
-	let y: number;
-	if (o.placement === "right") {
-		x = r.right + gap;
-		y = r.top + r.height / 2;
-	} else if (o.placement === "left") {
-		x = r.left - gap;
-		y = r.top + r.height / 2;
-	} else if (o.placement === "top") {
-		x = r.left + r.width / 2;
-		y = r.top - gap;
+function apply(node: HTMLElement, param: string | TipOpts) {
+	const o = typeof param === "string" ? { text: param } : param;
+	// While its tooltip shows, the title waits in data-abt-title; a changed text goes there too.
+	const titleAttr = node.hasAttribute(ORIG_TITLE_ATTR) ? ORIG_TITLE_ATTR : "title";
+	if (o.text) {
+		node.setAttribute(titleAttr, o.text);
 	} else {
-		x = r.left + r.width / 2;
-		y = r.bottom + gap;
+		node.removeAttribute(titleAttr);
 	}
-	tipState.value = { text: o.text, x, y, placement: o.placement };
-}
-
-function hideTip() {
-	if (tipTimer) {
-		clearTimeout(tipTimer);
-		tipTimer = null;
-	}
-	// A focused button removed by a re-render fires focusout mid-render, where Svelte forbids writes.
-	if (tipState.value) {
-		queueMicrotask(() => (tipState.value = null));
-	}
-}
-
-function normalize(param: string | TipOpts): Required<TipOpts> {
-	const partial = typeof param === "string" ? { text: param } : param;
-	return { text: partial.text ?? "", placement: partial.placement ?? "right" };
+	const set = (attr: string, value: string | undefined) =>
+		value ? node.setAttribute(attr, value) : node.removeAttribute(attr);
+	set(TIP_SIDE_ATTR, o.placement ?? "right");
+	set(TIP_HINT_ATTR, o.hint);
+	set(TIP_KEYS_ATTR, o.keys);
 }
 
 export function tooltip(node: HTMLElement, param: string | TipOpts) {
-	let o: Required<TipOpts> = normalize(param);
-	const enter = () => {
-		if (tipTimer) {
-			clearTimeout(tipTimer);
-		}
-		if (!o.text) {
-			return;
-		}
-		tipTimer = setTimeout(() => placeTip(node, o), TIP_DELAY);
-	};
-	const leave = () => hideTip();
-	// A click focuses the button too; only keyboard focus should bring the tip back.
-	const focus = () => {
-		if (node.matches(":focus-visible") || node.querySelector(":focus-visible")) {
-			enter();
-		}
-	};
-	node.addEventListener("pointerenter", enter);
-	node.addEventListener("pointerleave", leave);
-	node.addEventListener("pointerdown", leave);
-	node.addEventListener("focusin", focus);
-	node.addEventListener("focusout", leave);
+	apply(node, param);
 	return {
 		update(next: string | TipOpts) {
-			o = normalize(next);
+			apply(node, next);
 		},
 		destroy() {
-			node.removeEventListener("pointerenter", enter);
-			node.removeEventListener("pointerleave", leave);
-			node.removeEventListener("pointerdown", leave);
-			node.removeEventListener("focusin", focus);
-			node.removeEventListener("focusout", leave);
-			leave();
+			for (const attr of ["title", ORIG_TITLE_ATTR, TIP_SIDE_ATTR, TIP_HINT_ATTR, TIP_KEYS_ATTR]) {
+				node.removeAttribute(attr);
+			}
 		},
 	};
 }

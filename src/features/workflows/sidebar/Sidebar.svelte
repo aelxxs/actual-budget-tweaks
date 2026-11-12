@@ -18,7 +18,6 @@
 	import { onMount, tick, untrack } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
 	import { portal } from "./actions/portal";
-	import { tipState } from "./actions/tooltip.svelte";
 	import AccountList from "./components/AccountList.svelte";
 	import AccountListSkeleton from "./components/AccountListSkeleton.svelte";
 	import BudgetHeader from "./components/BudgetHeader.svelte";
@@ -705,17 +704,6 @@
 	{/if}
 
 	<CommandPalette bind:this={paletteRef} {accounts} icons={shownIcons} />
-
-	{#if tipState.value}
-		<div
-			use:portal
-			class="tooltip tip-{tipState.value.placement}"
-			style="left: {tipState.value.x}px; top: {tipState.value.y}px"
-			role="tooltip"
-		>
-			{tipState.value.text}
-		</div>
-	{/if}
 </div>
 
 {#if settingsMenu}
@@ -809,81 +797,5 @@
 		width: 100%;
 		background: var(--abt-ink-3);
 		flex-shrink: 0;
-	}
-
-	.tooltip {
-		position: fixed;
-		z-index: 9999999;
-		max-width: 240px;
-		padding: 5px 9px;
-		background: var(--sb-surface);
-		border: 1px solid var(--abt-ink-2);
-		border-radius: var(--abt-radius);
-		color: var(--abt-ink);
-		font-size: var(--abt-text-base);
-		font-weight: 600;
-		line-height: 1.35;
-		white-space: nowrap;
-		box-shadow: 0 6px 20px var(--sb-shadow);
-		pointer-events: none;
-		animation: tip-in 0.11s ease;
-	}
-	.tip-right {
-		transform: translateY(-50%);
-	}
-	.tip-left {
-		transform: translate(-100%, -50%);
-	}
-	.tip-top {
-		transform: translate(-50%, -100%);
-	}
-	.tip-bottom {
-		transform: translateX(-50%);
-	}
-	/* little arrow that points back to the anchor */
-	.tooltip::after {
-		content: "";
-		position: absolute;
-		width: 7px;
-		height: 7px;
-		background: var(--sb-surface);
-		border: 1px solid var(--abt-ink-2);
-		transform: rotate(45deg);
-	}
-	.tip-right::after {
-		left: -4.5px;
-		top: 50%;
-		margin-top: -3.5px;
-		border-right: none;
-		border-top: none;
-	}
-	.tip-left::after {
-		right: -4.5px;
-		top: 50%;
-		margin-top: -3.5px;
-		border-left: none;
-		border-bottom: none;
-	}
-	.tip-top::after {
-		bottom: -4.5px;
-		left: 50%;
-		margin-left: -3.5px;
-		border-left: none;
-		border-top: none;
-	}
-	.tip-bottom::after {
-		top: -4.5px;
-		left: 50%;
-		margin-left: -3.5px;
-		border-right: none;
-		border-bottom: none;
-	}
-	@keyframes tip-in {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
 	}
 </style>
