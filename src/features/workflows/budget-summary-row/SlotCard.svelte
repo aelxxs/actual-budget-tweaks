@@ -476,7 +476,7 @@
 		border-radius: inherit;
 		background: var(--color-noticeTextLight);
 		/* Same easing and length as the rolling numbers, so the card moves as one. */
-		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+		transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 
 	/* Takes what the month name leaves, and drops out when that's too little to read. */

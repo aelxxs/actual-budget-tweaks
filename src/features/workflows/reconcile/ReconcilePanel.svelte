@@ -498,7 +498,7 @@
 	.rp__ring-fill {
 		stroke: var(--rp-tone);
 		transition:
-			stroke-dashoffset 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+			stroke-dashoffset 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
 			stroke 0.2s;
 	}
 

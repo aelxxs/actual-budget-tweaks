@@ -39,7 +39,7 @@
 	--abt-accent: var(--color-sidebarItemAccentSelected);
 	/* How strongly accent cards (To Budget, current month, suggestions) wash in their colour. */
 	--abt-wash: 14%;
-	--abt-glow-duration: 450ms;
+	--abt-glow-duration: 200ms;
 
 	/* Side panel surfaces. Cards match the budget's current-month column, the same kind of surface
 	   on the same page background. */

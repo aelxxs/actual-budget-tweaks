@@ -22,7 +22,7 @@
 	{:else if status === "error"}
 		<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
 			<circle cx="24" cy="24" r="6.5" fill="currentColor" stroke="none" />
-			<circle class="ring-pulse" cx="24" cy="24" r="13" stroke-width="3" />
+			<circle cx="24" cy="24" r="13" stroke-width="3" />
 		</svg>
 	{:else}
 		<svg
@@ -68,22 +68,8 @@
 		transform-origin: 24px 24px;
 		animation: abt-orbit 0.95s linear infinite;
 	}
-	.ring-pulse {
-		transform-origin: center;
-		animation: abt-ring-pulse 1.7s ease-in-out infinite;
-	}
-	@keyframes abt-ring-pulse {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.35;
-		}
-	}
 	@media (prefers-reduced-motion: reduce) {
-		.orbit,
-		.ring-pulse {
+		.orbit {
 			animation: none;
 		}
 	}

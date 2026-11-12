@@ -118,7 +118,7 @@
 		   the line height, and a length-based offset would then animate as if the digit changed. */
 		transform: translateY(calc(var(--d) * -10%));
 		/* The ones digit moves first, the rest follow a beat apart, like a board settling. */
-		transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 30ms);
+		transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 15ms);
 	}
 
 	.rn__column > span {

@@ -102,7 +102,7 @@ export const CSS = `
 	.abt-tab-overview-split span {
 		min-width: 3px;
 		flex-basis: 0;
-		transition: flex-grow 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+		transition: flex-grow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 
 	.abt-tab-overview-swatch {
@@ -211,7 +211,7 @@ export const CSS = `
 		height: 100%;
 		border-radius: 2px;
 		min-width: 2px;
-		transition: width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+		transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 	.abt-tab-overview-mini-bar[data-status="ok"]      { background: var(--abt-accent); }
 	.abt-tab-overview-mini-bar[data-status="warn"]    { background: var(--color-warningText, #e0c590); }

@@ -124,6 +124,12 @@
 		transition: width 0.3s ease;
 	}
 
+	@media (prefers-reduced-motion: reduce) {
+		.flow__seg {
+			transition: none;
+		}
+	}
+
 	.flow__seg--budgeted {
 		background: var(--abt-accent);
 	}
