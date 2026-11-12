@@ -6,6 +6,7 @@
 	import { BUDGET_SUMMARY } from "@lib/actual-dom";
 	import { loadCategories } from "@lib/template-plan/actual-data";
 	import Icon from "@lib/components/Icon.svelte";
+	import type { IconName } from "@lib/utilities/icons";
 	import { notify } from "@lib/utilities/actual-api";
 	import { bulkEdit } from "@lib/utilities/bulk-edit";
 	import { fmtMoney } from "@lib/utilities/currency";
@@ -364,58 +365,61 @@
 	</div>
 {/if}
 
-{#if menuOpen}
-	<div class="ac-menu abt-popover abt-menu" role="menu" use:portal bind:this={menu}>
-		{#if !tracking}
-			<div class="abt-menu__heading">Fill this month</div>
-			<button
-				type="button"
-				role="menuitem"
-				class="abt-menu__item"
-				disabled={fundable <= 0}
-				onclick={() => perform(() => tracked("fund", () => fundTargets(sheet, short)))}
-			>
-				<Icon name="target" size={15} />
-				<span class="abt-stack abt-gap-1">
-					<span class="ac-menu__title abt-repel"
-						>Fund underfunded targets
-						{#if fundable > 0}<em class="abt-privacy-number">{fmtMoney(fundable)}</em>{/if}</span
-					>
-					<span class="ac-menu__desc">Move each target's shortfall from To Budget</span>
-				</span>
-			</button>
-			<button
-				type="button"
-				role="menuitem"
-				class="abt-menu__item"
-				disabled={coverable <= 0}
-				onclick={() => perform(() => tracked("cover", () => coverOverspending(sheet, overIds)))}
-			>
-				<Icon name="shield" size={15} />
-				<span class="abt-stack abt-gap-1">
-					<span class="ac-menu__title abt-repel"
-						>Cover overspending
-						{#if coverable > 0}<em class="abt-privacy-number">{fmtMoney(coverable)}</em>{/if}</span
-					>
-					<span class="ac-menu__desc">Bring every red category back to zero</span>
-				</span>
-			</button>
-			<div class="abt-menu__sep"></div>
+{#snippet row(
+	icon: IconName,
+	title: string,
+	hint: string | null,
+	amount: number | null,
+	disabled: boolean,
+	run: () => void,
+)}
+	<button type="button" role="menuitem" class="am__row" {disabled} onclick={run}>
+		<span class="am__tile"><Icon name={icon} size={15} /></span>
+		<span class="am__label">
+			{title}
+			{#if hint}<span class="am__hint">{hint}</span>{/if}
+		</span>
+		{#if amount != null && amount > 0}
+			<span class="am__amount abt-privacy-number">{fmtMoney(amount)}</span>
 		{/if}
-		<div class="abt-menu__heading">Set every budget to</div>
-		<button
-			type="button"
-			role="menuitem"
-			class="abt-menu__item"
-			onclick={() => bulk("copy-previous-month")}
-		>
-			<Icon name="copy" size={15} />
-			<span class="ac-menu__title">Last month's budget</span>
-		</button>
-		<div class="ac-menu__row abt-cluster abt-gap-3">
-			<Icon name="trendingUp" size={15} />
-			<span class="ac-menu__title">Average spent</span>
-			<span class="ac-menu__pills abt-cluster abt-gap-2">
+	</button>
+{/snippet}
+
+{#if menuOpen}
+	<!-- Laid out like Insights' card menu and the month cards' menu, so ABT's menus read as one family. -->
+	<div class="am abt-popover" role="menu" aria-label="Budget actions" use:portal bind:this={menu}>
+		<div class="am__head">
+			<span class="am__title">Budget actions</span>
+			<span class="am__hint">Changes this month's budget</span>
+		</div>
+		{#if !tracking}
+			<div class="am__group">Fill this month</div>
+			{@render row(
+				"target",
+				"Fund underfunded targets",
+				"Move each target's shortfall from To Budget",
+				fundable,
+				fundable <= 0,
+				() => perform(() => tracked("fund", () => fundTargets(sheet, short))),
+			)}
+			{@render row(
+				"shield",
+				"Cover overspending",
+				"Bring every red category back to zero",
+				coverable,
+				coverable <= 0,
+				() => perform(() => tracked("cover", () => coverOverspending(sheet, overIds))),
+			)}
+			<div class="am__divider"></div>
+		{/if}
+		<div class="am__group">Set every budget to</div>
+		{@render row("copy", "Last month's budget", null, null, false, () =>
+			bulk("copy-previous-month"),
+		)}
+		<div class="am__row am__row--static">
+			<span class="am__tile"><Icon name="trendingUp" size={15} /></span>
+			<span class="am__label">Average spent</span>
+			<span class="am__pills">
 				{#each [["set-3month-avg", "3 mo"], ["set-6month-avg", "6 mo"], ["set-12month-avg", "12 mo"]] as [action, label] (action)}
 					<button
 						type="button"
@@ -426,32 +430,19 @@
 				{/each}
 			</span>
 		</div>
-		<button type="button" role="menuitem" class="abt-menu__item" onclick={() => bulk("set-zero")}>
-			<Icon name="rotateCcw" size={15} />
-			<span class="ac-menu__title">Zero</span>
-		</button>
+		{@render row("rotateCcw", "Zero", null, null, false, () => bulk("set-zero"))}
 		{#if templates}
 			<!-- Actual's month-menu template actions; shown when its goal templates are on, as there. -->
-			<div class="abt-menu__sep"></div>
-			<div class="abt-menu__heading">Templates</div>
+			<div class="am__divider"></div>
+			<div class="am__group">Templates</div>
 			{#each TEMPLATE_ITEMS as item (item.action)}
-				<button
-					type="button"
-					role="menuitem"
-					class="abt-menu__item"
-					onclick={() =>
-						perform(() =>
-							item.track
-								? tracked(item.track, () => runTemplate(sheet, item.action))
-								: runTemplate(sheet, item.action),
-						)}
-				>
-					<Icon name={item.icon} size={15} />
-					<span class="abt-stack abt-gap-1">
-						<span class="ac-menu__title">{item.title}</span>
-						<span class="ac-menu__desc">{item.desc}</span>
-					</span>
-				</button>
+				{@render row(item.icon, item.title, item.desc, null, false, () =>
+					perform(() =>
+						item.track
+							? tracked(item.track, () => runTemplate(sheet, item.action))
+							: runTemplate(sheet, item.action),
+					),
+				)}
 			{/each}
 		{/if}
 	</div>
@@ -632,45 +623,91 @@
 		}
 	}
 
-	.ac-menu {
+	.am {
 		position: fixed;
 		z-index: 10000;
-		width: 310px;
+		width: 320px;
+		padding: var(--abt-space-3);
 	}
-
-	.ac-menu :global(svg) {
-		flex: none;
-		margin-top: 1px;
+	.am__head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-1);
+		padding: var(--abt-space-2) var(--abt-space-3) var(--abt-space-3);
+	}
+	.am__title {
+		font-size: var(--abt-text-md);
+		font-weight: 600;
+	}
+	.am__hint {
+		font-size: var(--abt-text-sm);
+		font-weight: 400;
 		color: var(--color-pageTextSubdued);
 	}
-
-	.ac-menu__title {
-		font-size: var(--abt-text-md);
-		font-weight: 550;
-		white-space: nowrap;
-	}
-
-	.ac-menu__title em {
-		font-style: normal;
+	.am__group {
+		padding: var(--abt-space-2) var(--abt-space-3) var(--abt-space-1);
+		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--color-pageTextSubdued);
 	}
-
-	.ac-menu__desc {
+	.am__divider {
+		height: 1px;
+		margin: var(--abt-space-2) var(--abt-space-3);
+		background: var(--abt-line);
+	}
+	.am__row {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
+		width: 100%;
+		padding: var(--abt-space-2) var(--abt-space-3);
+		border: 0;
+		border-radius: var(--abt-radius-sm);
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: background 0.12s;
+	}
+	.am__row:hover:not(:disabled, .am__row--static) {
+		background: var(--abt-fill);
+	}
+	.am__row:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	.am__row--static {
+		cursor: default;
+	}
+	.am__tile {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		border-radius: var(--abt-radius-sm);
+		background: var(--abt-ink-2);
+		color: var(--abt-muted);
+	}
+	.am__label {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+		font-size: var(--abt-text-md);
+	}
+	.am__amount {
+		flex: none;
 		font-size: var(--abt-text-sm);
+		font-variant-numeric: tabular-nums;
 		color: var(--color-pageTextSubdued);
 	}
-
-	.ac-menu__row {
-		flex-wrap: nowrap;
-		padding: var(--abt-space-2) var(--abt-space-3);
-	}
-
-	.ac-menu__row :global(svg) {
-		margin-top: 0;
-	}
-
-	.ac-menu__pills {
-		margin-left: auto;
+	.am__pills {
+		display: flex;
+		flex: none;
+		gap: var(--abt-space-1);
 	}
 </style>

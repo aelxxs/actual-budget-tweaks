@@ -30,11 +30,13 @@ export function positionPopover(
 	}
 	popoverEl.style.top = `${top}px`;
 
-	if (align === "right") {
+	// Right-aligned unless that runs past the window's left edge.
+	if (align === "right" && anchorRect.right - popRect.width >= margin) {
 		popoverEl.style.right = `${window.innerWidth - anchorRect.right}px`;
 		popoverEl.style.left = "";
 		return;
 	}
+	popoverEl.style.right = "";
 
 	let left = anchorRect.left;
 	if (left + popRect.width > window.innerWidth - margin) {
