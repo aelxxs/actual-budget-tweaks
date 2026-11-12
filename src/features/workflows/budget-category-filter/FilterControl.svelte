@@ -58,14 +58,11 @@
 	}
 
 	/* Shorter labels when the month header runs out of room; full ones elsewhere. */
-	@container bmh (max-width: 700px) {
-		.cf__long {
-			display: none;
-		}
-
-		.cf__short {
-			display: inline;
-		}
+	:global(.bmh--squeeze-2) .cf__long {
+		display: none;
+	}
+	:global(.bmh--squeeze-2) .cf__short {
+		display: inline;
 	}
 
 	.cf__count {

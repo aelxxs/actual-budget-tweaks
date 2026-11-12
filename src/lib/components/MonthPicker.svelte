@@ -366,13 +366,11 @@
 		display: none;
 	}
 	/* Short month names when the month header (budget-month-header) runs out of room. */
-	@container bmh (max-width: 700px) {
-		.title__long {
-			display: none;
-		}
-		.title__short {
-			display: inline;
-		}
+	:global(.bmh--squeeze-3) .title__long {
+		display: none;
+	}
+	:global(.bmh--squeeze-3) .title__short {
+		display: inline;
 	}
 	.title.is-compact .title__chevron {
 		width: 16px;

@@ -409,6 +409,15 @@ export const budgetSummaryRow = defineSetting({
 			${SUMMARY_CARD} {
 				flex-wrap: wrap;
 			}
+			/* Wrapped, every card grows to fill its line, so none sits beside an empty gap. */
+			${ENVELOPE} ${SUMMARY_CARD} > :last-child,
+			${SUMMARY_CARD} :is(.sr__card, .tr__card, .ac) {
+				flex-grow: 1 !important;
+			}
+			/* Cards with a bar still take most of the slack, so their lines don't truncate. */
+			${SUMMARY_CARD} .sr__flex {
+				flex-grow: 4 !important;
+			}
 		}
 		/*
 		 * Header: only Actual's notes button stays, tucked into the To Budget card's corner. The

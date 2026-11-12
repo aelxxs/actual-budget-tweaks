@@ -77,6 +77,36 @@
 		}
 	}
 
+	const SQUEEZE_STEPS = 5;
+
+	// Shortens the header a step at a time (see the squeeze rules below) until it fits on one
+	// line, so it only wraps once nothing is left to shorten. Measured, as its content varies.
+	function fitOneLine(node: HTMLElement) {
+		const apply = (level: number) => {
+			for (let i = 1; i <= SQUEEZE_STEPS; i++) {
+				node.classList.toggle(`bmh--squeeze-${i}`, i <= level);
+			}
+		};
+		const oneLine = () => {
+			const first = node.firstElementChild?.getBoundingClientRect();
+			const end = node.querySelector(".bmh__end")?.getBoundingClientRect();
+			return !first || !end || end.top < first.bottom;
+		};
+		const fit = () => {
+			let level = 0;
+			apply(level);
+			while (level < SQUEEZE_STEPS && !oneLine()) {
+				apply(++level);
+			}
+		};
+		const observer = new ResizeObserver(fit);
+		observer.observe(node);
+		for (const child of node.children) {
+			observer.observe(child);
+		}
+		return () => observer.disconnect();
+	}
+
 	function go(key: string) {
 		const next = validStart(key, span, bounds);
 		if (next === base) {
@@ -91,14 +121,19 @@
 	}
 </script>
 
-<div class="bmh abt-repel abt-controls-quiet">
+<div class="bmh abt-repel abt-controls-quiet" {@attach fitOneLine}>
 	<div class="abt-cluster abt-gap-4">
 		{#if parsed}
 			<button
 				type="button"
 				class="bmh__today abt-btn abt-btn--pill"
+				title="Today"
+				aria-label="Today"
 				disabled={start === currentMonth()}
-				onclick={() => go(currentMonth())}>Today</button
+				onclick={() => go(currentMonth())}
+				><span class="bmh__text">Today</span><span class="bmh__icon"
+					><Icon name="calendar" size={16} /></span
+				></button
 			>
 			<!-- Arrows sit together ahead of the title so its changing width never moves them. -->
 			<div class="abt-btn-group">
@@ -166,7 +201,7 @@
 				onclick={() => openInsights()}
 			>
 				<Icon name="layout" size={14} />
-				Insights
+				<span class="bmh__insights">Insights</span>
 			</button>
 		{/if}
 	</div>
@@ -175,8 +210,6 @@
 <style>
 	/* Matches the side panel header beside it, border included. */
 	.bmh {
-		/* Sized by its own width (the side panel narrows it), for the compact rules below. */
-		container: bmh / inline-size;
 		flex-wrap: wrap;
 		row-gap: var(--abt-space-3);
 		box-sizing: border-box;
@@ -196,10 +229,20 @@
 		margin-left: auto;
 	}
 
-	@container bmh (max-width: 700px) {
-		.bmh .abt-seg__label {
-			display: none;
-		}
+	.bmh__icon {
+		display: none;
+	}
+	.bmh:global(.bmh--squeeze-1) .abt-seg__label {
+		display: none;
+	}
+	.bmh:global(.bmh--squeeze-4) .bmh__text {
+		display: none;
+	}
+	.bmh:global(.bmh--squeeze-4) .bmh__icon {
+		display: inline-flex;
+	}
+	.bmh:global(.bmh--squeeze-5) .bmh__insights {
+		display: none;
 	}
 
 	/* Already on this month: plain text, so it doesn't read as a live button. */
