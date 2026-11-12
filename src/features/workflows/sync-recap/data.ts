@@ -33,6 +33,23 @@ interface Row {
 	offbudget: boolean;
 }
 
+/** How many of these transactions each account holds; ones gone from the budget aren't counted. */
+export async function countByAccount(ids: string[]): Promise<Record<string, number>> {
+	if (!ids.length) {
+		return {};
+	}
+	const rows = await query<{ account: string }[]>("transactions", {
+		filter: { id: { $oneof: ids } },
+		select: ["account"],
+		options: { splits: "none" },
+	});
+	const counts: Record<string, number> = {};
+	for (const { account } of rows) {
+		counts[account] = (counts[account] ?? 0) + 1;
+	}
+	return counts;
+}
+
 export async function loadTransactions(ids: string[]): Promise<RecapTransaction[]> {
 	if (!ids.length) {
 		return [];

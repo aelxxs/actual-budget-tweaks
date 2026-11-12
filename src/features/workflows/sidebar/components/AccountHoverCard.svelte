@@ -10,6 +10,7 @@
 	import { loadAccountDetail } from "../lib/account-detail";
 	import type { SidebarAccount } from "../lib/data";
 	import StatusIcon from "./StatusIcon.svelte";
+	import { reviewState } from "@features/workflows/sync-recap/queue-state.svelte";
 
 	const {
 		account,
@@ -19,6 +20,7 @@
 		onEnter,
 		onLeave,
 		onReview,
+		onReviewNew,
 	}: {
 		account: SidebarAccount;
 		/** Level with the row; moved up as far as the card needs to stay on screen. */
@@ -28,7 +30,12 @@
 		onEnter: () => void;
 		onLeave: () => void;
 		onReview: () => void;
+		/** Opens Sync recap on this account's newly imported transactions. */
+		onReviewNew: () => void;
 	} = $props();
+
+	// Imported by a sync and not yet marked reviewed (Sync recap); 0 while that's off.
+	const toReview = $derived(reviewState.byAccount[account.id] ?? 0);
 
 	const log = createLogger("sidebar");
 
@@ -143,8 +150,16 @@
 			{/if}
 		</div>
 
-		{#if d.unclearedAmount !== 0 || account.uncategorized > 0}
+		{#if d.unclearedAmount !== 0 || account.uncategorized > 0 || toReview > 0}
 			<div class="divider"></div>
+			{#if toReview > 0}
+				<div class="line">
+					<span>{toReview} new to review</span>
+					<button type="button" class="review" onclick={onReviewNew}>
+						Review <ArrowRight size={12} strokeWidth={2} />
+					</button>
+				</div>
+			{/if}
 			{#if account.uncategorized > 0}
 				<div class="line">
 					<span>{account.uncategorized} uncategorized</span>

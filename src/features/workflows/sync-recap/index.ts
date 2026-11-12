@@ -29,9 +29,13 @@ function plural(n: number, word: string): string {
 	return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
-function openRecap(): void {
+/** Opens the recap, on one account's transactions when given one. */
+export function openRecap(account?: string): void {
 	recap?.destroy();
-	recap = mountToPanelBody(Recap, { onDone: () => sidepanel.close(PANEL_KEY) });
+	recap = mountToPanelBody(Recap, {
+		account: account ?? null,
+		onDone: () => sidepanel.close(PANEL_KEY),
+	});
 	sidepanel.open({
 		title: "Sync recap",
 		bodyNode: recap.node,
@@ -69,7 +73,7 @@ async function onSync(result: ImportResult): Promise<void> {
 					: ""),
 			sticky: true,
 		},
-		{ title: "Review", action: openRecap },
+		{ title: "Review", action: () => openRecap() },
 	);
 }
 
@@ -89,7 +93,11 @@ function placeButton(): () => void {
 			host.setAttribute(BUTTON_ATTR, "");
 			// The auto margin Actual gives its uncategorized link, so both pills sit on the left.
 			Object.assign(host.style, { display: "flex", alignItems: "center", marginRight: "auto" });
-			button = mountToNodeWithReturn(ReviewButton, { onOpen: openRecap }, host as HTMLDivElement);
+			button = mountToNodeWithReturn(
+				ReviewButton,
+				{ onOpen: () => openRecap() },
+				host as HTMLDivElement,
+			);
 		}
 		// Actual's uncategorized link: the bar's text-only button, there when anything is uncategorized.
 		const after = bar.querySelector<HTMLElement>(":scope > button:not(:has(svg))");

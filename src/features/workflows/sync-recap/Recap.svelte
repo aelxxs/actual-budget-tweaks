@@ -3,7 +3,7 @@
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import {
 		loadCategoryGroups,
 		loadTransactions,
@@ -14,7 +14,10 @@
 	import { pendingIds, pruned, without } from "./queue";
 	import { reviewState, updateQueue } from "./queue-state.svelte";
 
-	const { onDone }: { onDone: () => void } = $props();
+	const { account = null, onDone }: { account?: string | null; onDone: () => void } = $props();
+
+	// The account being reviewed; null for all of them.
+	let only = $state<string | null>(untrack(() => account));
 
 	let groups = $state<RecapGroup[]>([]);
 	let byId = $state<Record<string, RecapTransaction>>({});
@@ -50,14 +53,36 @@
 		});
 	});
 
+	const loadedAll = $derived(
+		reviewState.queue.batches.flatMap((b) => b.pending.map((id) => byId[id]).filter(Boolean)),
+	);
+	// One chip per account with something to review, busiest first.
+	const accounts = $derived.by(() => {
+		const map = new Map<string, { id: string; name: string; count: number }>();
+		for (const t of loadedAll) {
+			const entry = map.get(t.account) ?? { id: t.account, name: t.accountName, count: 0 };
+			entry.count++;
+			map.set(t.account, entry);
+		}
+		return [...map.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+	});
+	// Its last transaction reviewed, the filter goes back to every account.
+	$effect(() => {
+		if (only && loaded && !accounts.some((a) => a.id === only)) {
+			only = null;
+		}
+	});
+
 	const batches = $derived(
-		reviewState.queue.batches.map((b) => ({
-			...b,
-			rows: b.pending
-				.map((id) => byId[id])
-				.filter(Boolean)
-				.sort((a, b) => b.date.localeCompare(a.date)),
-		})),
+		reviewState.queue.batches
+			.map((b) => ({
+				...b,
+				rows: b.pending
+					.map((id) => byId[id])
+					.filter((t) => t && (!only || t.account === only))
+					.sort((a, b) => b.date.localeCompare(a.date)),
+			}))
+			.filter((b) => !only || b.rows.length),
 	);
 	const all = $derived(batches.flatMap((b) => b.rows));
 	const uncategorized = $derived(all.filter((t) => t.needsCategory && !t.category).length);
@@ -112,6 +137,26 @@
 				<span>Transactions from your next sync will show up here to review.</span>
 			</div>
 		{:else}
+			{#if accounts.length > 1}
+				<div class="accounts abt-cluster abt-gap-2" role="group" aria-label="Account">
+					<button
+						type="button"
+						class="abt-btn abt-btn--sm abt-btn--pill"
+						aria-pressed={!only}
+						onclick={() => (only = null)}
+						>All <span class="chip-count">{loadedAll.length}</span></button
+					>
+					{#each accounts as a (a.id)}
+						<button
+							type="button"
+							class="abt-btn abt-btn--sm abt-btn--pill"
+							aria-pressed={only === a.id}
+							onclick={() => (only = a.id)}
+							>{a.name} <span class="chip-count">{a.count}</span></button
+						>
+					{/each}
+				</div>
+			{/if}
 			<Section title="Summary" collapsible={false}>
 				<Row name="To review" value={String(all.length)} />
 				<Row name="Money in" value={fmtMoney(moneyIn)} tone={moneyIn > 0 ? "positive" : "muted"} />
@@ -128,7 +173,7 @@
 			{#each batches as batch (batch.at)}
 				<Section
 					title={when(batch.at)}
-					count={batch.rows.length < batch.total
+					count={!only && batch.rows.length < batch.total
 						? `${batch.rows.length} of ${batch.total}`
 						: batch.rows.length}
 					caps={false}
@@ -140,7 +185,7 @@
 							class="abt-btn abt-btn--sm abt-btn--ghost"
 							onclick={(e) => {
 								e.stopPropagation();
-								void review(batch.pending);
+								void review(only ? batch.rows.map((t) => t.id) : batch.pending);
 							}}>Mark reviewed</button
 						>
 					{/snippet}
@@ -179,7 +224,8 @@
 			<button
 				type="button"
 				class="abt-btn abt-tone-accent grow"
-				onclick={() => void review(pendingIds(reviewState.queue))}>Mark all reviewed</button
+				onclick={() => void review(only ? all.map((t) => t.id) : pendingIds(reviewState.queue))}
+				>{only ? "Mark these reviewed" : "Mark all reviewed"}</button
 			>
 		{/if}
 		<button type="button" class="abt-btn" class:grow={!all.length} onclick={onDone}>Close</button>
@@ -211,6 +257,19 @@
 		padding: var(--abt-space-3) 0;
 		overflow-y: auto;
 		min-height: 0;
+	}
+	.accounts {
+		flex-wrap: wrap;
+		padding: 0 var(--abt-space-3) var(--abt-space-3);
+	}
+	.accounts .abt-btn[aria-pressed="true"] {
+		border-color: var(--abt-accent-4);
+		background: var(--abt-accent-2);
+		color: var(--abt-accent-text);
+	}
+	.chip-count {
+		font-variant-numeric: tabular-nums;
+		opacity: 0.7;
 	}
 	.empty {
 		display: flex;

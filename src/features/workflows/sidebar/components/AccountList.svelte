@@ -3,6 +3,7 @@
 	import { closeCalendar, isCalendarOpen } from "@features/workflows/spending-calendar";
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
+	import { openRecap } from "@features/workflows/sync-recap";
 	import { getValue, setValue, watchValue } from "@lib/utilities/store";
 	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
@@ -863,6 +864,13 @@
 		flip={hoverFlip}
 		onEnter={stopAiming}
 		onLeave={hideHoverCard}
+		onReviewNew={() => {
+			const id = hoverAccount?.id;
+			hideHoverCard();
+			if (id) {
+				openRecap(id);
+			}
+		}}
 		onReview={() => {
 			// Read before hiding: hiding clears the account the card was showing.
 			const id = hoverAccount?.id;
