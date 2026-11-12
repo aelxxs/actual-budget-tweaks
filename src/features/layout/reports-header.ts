@@ -16,22 +16,36 @@ const HEADER = `${PAGE} > div:first-of-type`;
 // Actual's "Reports:" ahead of the dashboard name, its own element.
 const TITLE = `${HEADER} > div:first-of-type`;
 const LABEL = `${TITLE} > div:first-of-type`;
-// The top bar scrolls with the page's container, so the header sticks below it, at this offset.
+// The header sticks within its nearest scrolling ancestor, below whatever scrolls there above it.
 const TOP_VAR = "--abt-reports-header-top";
+
+function scrollerOf(el: HTMLElement): HTMLElement | null {
+	for (let node = el.parentElement; node; node = node.parentElement) {
+		if (/auto|scroll/.test(getComputedStyle(node).overflowY)) {
+			return node;
+		}
+	}
+	return null;
+}
 
 function measureTop() {
 	if (!matchesPage(Page.Reports)) {
 		return;
 	}
 	const reports = document.querySelector<HTMLElement>(REPORTS_PAGE);
-	const grid = reports?.closest<HTMLElement>("[data-abt-content-grid]");
-	if (!reports || !grid) {
+	const header = document.querySelector<HTMLElement>(HEADER);
+	const scroller = header && scrollerOf(header);
+	if (!reports || !scroller) {
 		return;
 	}
 	// Unrounded and re-read as the page settles: Firefox left a sliver of the widgets showing above a rounded or early value.
 	const top =
-		reports.getBoundingClientRect().top - grid.getBoundingClientRect().top + grid.scrollTop;
-	const value = `${top}px`;
+		scroller.contains(reports) && scroller !== reports
+			? reports.getBoundingClientRect().top -
+				scroller.getBoundingClientRect().top +
+				scroller.scrollTop
+			: 0;
+	const value = `${Math.max(0, top)}px`;
 	if (reports.style.getPropertyValue(TOP_VAR) !== value) {
 		reports.style.setProperty(TOP_VAR, value);
 	}
