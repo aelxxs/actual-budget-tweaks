@@ -600,7 +600,7 @@
 				"defaultValue": true,
 				"platform": "desktop",
 				"label": "Sync recap",
-				"description": "After a bank sync or import, review what came in and categorize it in the side panel.",
+				"description": "Keeps what each bank sync or import brings in for you to review, with a count in the titlebar.",
 				"icon": "download",
 				"group": "Accounts",
 				"writes": "Sets a transaction's category when you pick one in the recap."

@@ -1,19 +1,25 @@
 import { sidepanel } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
+import { HELP_BUTTON } from "@lib/actual-dom";
 import {
 	dismissNotification,
-	dispatch,
 	notify,
 	onImported,
-	query,
 	type ImportResult,
 } from "@lib/utilities/actual-api";
 import { loadCurrency } from "@lib/utilities/currency";
-import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
-import { loadCategoryGroups, loadTransactions, setCategory } from "./data";
+import { watchDom } from "@lib/utilities/dom-watcher";
+import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
+import { loadTransactions } from "./data";
+import { withBatch } from "./queue";
+import { followQueue, updateQueue } from "./queue-state.svelte";
 import Recap from "./Recap.svelte";
+import ReviewButton from "./ReviewButton.svelte";
 
 const PANEL_KEY = "sync-recap";
+const BUTTON_ATTR = "data-abt-review";
+// Actual's uncategorized link, whose auto margin the review count takes over.
+const UNCATEGORIZED_ATTR = "data-abt-review-after";
 
 let recap: Mounted | null = null;
 // Sticky, so a newer sync's toast replaces it rather than stacking up.
@@ -23,48 +29,31 @@ function plural(n: number, word: string): string {
 	return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
-async function failedNames(ids: string[]): Promise<string[]> {
-	if (!ids.length) {
-		return [];
-	}
-	const rows = await query<{ name: string }[]>("accounts", {
-		filter: { id: { $oneof: ids } },
-		select: ["name"],
-	});
-	return rows.map((r) => r.name);
-}
-
-async function openRecap(result: ImportResult): Promise<void> {
-	const [transactions, groups, failed] = await Promise.all([
-		loadTransactions(result.added),
-		loadCategoryGroups(),
-		failedNames(result.failed),
-	]);
+function openRecap(): void {
 	recap?.destroy();
-	recap = mountToPanelBody(Recap, {
-		transactions,
-		groups,
-		matched: result.matched.length,
-		failed,
-		onCategorize: async (id: string, category: string) => {
-			await setCategory(id, category);
-			// Actual drops its own "new" styling once a transaction is edited; do the same.
-			await dispatch("updateNewTransactions", { id });
-		},
-		onDone: () => sidepanel.close(),
+	recap = mountToPanelBody(Recap, { onDone: () => sidepanel.close(PANEL_KEY) });
+	sidepanel.open({
+		title: "Sync recap",
+		bodyNode: recap.node,
+		stack: true,
+		key: PANEL_KEY,
+		scope: "app",
 	});
-	sidepanel.open({ title: "Sync recap", bodyNode: recap.node, stack: true, key: PANEL_KEY });
 }
 
-async function announce(result: ImportResult): Promise<void> {
-	if (!result.added.length) {
-		return;
-	}
+async function onSync(result: ImportResult): Promise<void> {
 	await loadCurrency();
 	const transactions = await loadTransactions(result.added);
 	if (!transactions.length) {
 		return;
 	}
+	await updateQueue((q) =>
+		withBatch(
+			q,
+			transactions.map((t) => t.id),
+			Date.now(),
+		),
+	);
 	const accounts = new Set(transactions.map((t) => t.account)).size;
 	const uncategorized = transactions.filter((t) => t.needsCategory && !t.category).length;
 	if (lastToast) {
@@ -80,15 +69,58 @@ async function announce(result: ImportResult): Promise<void> {
 					: ""),
 			sticky: true,
 		},
-		{ title: "Review", action: () => openRecap(result) },
+		{ title: "Review", action: openRecap },
 	);
+}
+
+/** Puts the review count in Actual's titlebar, right after its uncategorized count. */
+function placeButton(): () => void {
+	let host: HTMLElement | null = null;
+	let button: Mounted | null = null;
+	let marked: HTMLElement | null = null;
+
+	const unwatch = watchDom(() => {
+		const bar = document.querySelector(HELP_BUTTON)?.parentElement?.parentElement ?? null;
+		if (!bar) {
+			return;
+		}
+		if (!host) {
+			host = document.createElement("div");
+			host.setAttribute(BUTTON_ATTR, "");
+			// The auto margin Actual gives its uncategorized link, so both pills sit on the left.
+			Object.assign(host.style, { display: "flex", alignItems: "center", marginRight: "auto" });
+			button = mountToNodeWithReturn(ReviewButton, { onOpen: openRecap }, host as HTMLDivElement);
+		}
+		// Actual's uncategorized link: the bar's text-only button, there when anything is uncategorized.
+		const after = bar.querySelector<HTMLElement>(":scope > button:not(:has(svg))");
+		if (after !== marked) {
+			marked?.removeAttribute(UNCATEGORIZED_ATTR);
+			after?.setAttribute(UNCATEGORIZED_ATTR, "");
+			marked = after;
+		}
+		const placed =
+			host.parentElement === bar &&
+			(after ? after.nextElementSibling === host : bar.firstElementChild === host);
+		if (!placed) {
+			bar.insertBefore(host, after ? after.nextSibling : bar.firstChild);
+		}
+	});
+
+	return () => {
+		unwatch();
+		button?.destroy();
+		host?.remove();
+		host = null;
+		marked?.removeAttribute(UNCATEGORIZED_ATTR);
+		marked = null;
+	};
 }
 
 export const syncRecap = defineSetting({
 	type: "checkbox",
 	label: "Sync recap",
 	description:
-		"After a bank sync or import, review what came in and categorize it in the side panel.",
+		"Keeps what each bank sync or import brings in for you to review, with a count in the titlebar.",
 	icon: "download",
 	group: "Accounts",
 	writes: "Sets a transaction's category when you pick one in the recap.",
@@ -97,9 +129,13 @@ export const syncRecap = defineSetting({
 		defaultValue: true,
 	},
 	init: () => {
-		const stop = onImported((result) => void announce(result));
+		const stopQueue = followQueue();
+		const stopImports = onImported((result) => void onSync(result));
+		const stopButton = placeButton();
 		return () => {
-			stop();
+			stopImports();
+			stopButton();
+			stopQueue();
 			recap?.destroy();
 			recap = null;
 		};

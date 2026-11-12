@@ -1,154 +1,188 @@
 <script lang="ts">
-	import Callout from "@lib/components/panel/Callout.svelte";
+	import CategoryPicker from "@lib/components/CategoryPicker.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
-	import type { RecapGroup, RecapTransaction } from "./data";
+	import { onMount } from "svelte";
+	import {
+		loadCategoryGroups,
+		loadTransactions,
+		type RecapGroup,
+		type RecapTransaction,
+		setCategory,
+	} from "./data";
+	import { pendingIds, pruned, without } from "./queue";
+	import { reviewState, updateQueue } from "./queue-state.svelte";
 
-	let {
-		transactions,
-		groups,
-		matched,
-		failed,
-		onCategorize,
-		onDone,
-	}: {
-		transactions: RecapTransaction[];
-		groups: RecapGroup[];
-		matched: number;
-		/** Names of accounts whose bank sync failed. */
-		failed: string[];
-		onCategorize: (id: string, category: string) => Promise<void>;
-		onDone: () => void;
-	} = $props();
+	const { onDone }: { onDone: () => void } = $props();
 
-	// Categories chosen here, laid over the transactions as synced.
-	let picked = $state<Record<string, string | null>>({});
-	const txs = $derived(
-		transactions.map((t) => ({ ...t, category: t.id in picked ? picked[t.id] : t.category })),
-	);
+	let groups = $state<RecapGroup[]>([]);
+	let byId = $state<Record<string, RecapTransaction>>({});
 	let saving = $state<Record<string, boolean>>({});
 	let errors = $state<Record<string, boolean>>({});
+	let loaded = $state(false);
 
-	const categoryNames = $derived(
-		new Map(groups.flatMap((g) => g.categories.map((c) => [c.id, c.name] as const))),
-	);
-	// Rows stay in this list once categorized, so the one being worked on doesn't jump away.
-	const toCategorize = $derived(
-		transactions.filter((t) => t.needsCategory && !t.category).map((t) => t.id),
-	);
-	const remaining = $derived(txs.filter((t) => toCategorize.includes(t.id) && !t.category).length);
-	const moneyIn = $derived(txs.reduce((sum, t) => sum + Math.max(t.amount, 0), 0));
-	const moneyOut = $derived(txs.reduce((sum, t) => sum + Math.min(t.amount, 0), 0));
-	const byAccount = $derived.by(() => {
-		const map = new Map<string, { name: string; rows: typeof txs }>();
-		for (const t of txs) {
-			const entry = map.get(t.account) ?? { name: t.accountName, rows: [] };
-			entry.rows.push(t);
-			map.set(t.account, entry);
-		}
-		return [...map.values()];
+	onMount(() => {
+		void loadCategoryGroups().then((g) => (groups = g));
 	});
+
+	// Loads what the queue lists and this panel hasn't read yet, so a sync landing while it's open
+	// shows up too. Transactions gone from the budget are dropped from the queue.
+	const requested = new Set<string>();
+	$effect(() => {
+		const missing = pendingIds(reviewState.queue).filter((id) => !requested.has(id));
+		if (!missing.length) {
+			loaded = true;
+			return;
+		}
+		missing.forEach((id) => requested.add(id));
+		void loadTransactions(missing).then((rows) => {
+			for (const row of rows) {
+				byId[row.id] = row;
+			}
+			const found = new Set(rows.map((r) => r.id));
+			const gone = missing.filter((id) => !found.has(id));
+			loaded = true;
+			if (gone.length) {
+				const existing = new Set(pendingIds(reviewState.queue).filter((id) => !gone.includes(id)));
+				void updateQueue((q) => pruned(q, existing, Date.now()));
+			}
+		});
+	});
+
+	const batches = $derived(
+		reviewState.queue.batches.map((b) => ({
+			...b,
+			rows: b.pending
+				.map((id) => byId[id])
+				.filter(Boolean)
+				.sort((a, b) => b.date.localeCompare(a.date)),
+		})),
+	);
+	const all = $derived(batches.flatMap((b) => b.rows));
+	const uncategorized = $derived(all.filter((t) => t.needsCategory && !t.category).length);
+	const moneyIn = $derived(all.reduce((sum, t) => sum + Math.max(t.amount, 0), 0));
+	const moneyOut = $derived(all.reduce((sum, t) => sum + Math.min(t.amount, 0), 0));
+
+	function when(at: number): string {
+		const d = new Date(at);
+		const days = Math.round(
+			(new Date().setHours(0, 0, 0, 0) - new Date(at).setHours(0, 0, 0, 0)) / 86_400_000,
+		);
+		const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+		if (days === 0) {
+			return `Today, ${time}`;
+		}
+		if (days === 1) {
+			return `Yesterday, ${time}`;
+		}
+		return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+	}
 
 	function shortDate(iso: string): string {
 		const [y, m, d] = iso.split("-").map(Number);
 		return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 	}
 
-	async function choose(tx: (typeof txs)[number], category: string) {
-		if (!category) {
-			return;
-		}
+	async function choose(tx: RecapTransaction, category: string) {
 		const before = tx.category;
-		picked[tx.id] = category;
+		byId[tx.id] = { ...tx, category };
 		saving[tx.id] = true;
 		errors[tx.id] = false;
 		try {
-			await onCategorize(tx.id, category);
+			await setCategory(tx.id, category);
 		} catch {
-			picked[tx.id] = before;
+			byId[tx.id] = { ...tx, category: before };
 			errors[tx.id] = true;
 		} finally {
 			saving[tx.id] = false;
 		}
 	}
+
+	const review = (ids: string[]) => updateQueue((q) => without(q, ids));
 </script>
 
 <div class="shell">
 	<div class="recap">
-		<Section title="Summary" collapsible={false}>
-			<Row name="New transactions" value={String(txs.length)} />
-			<Row name="Money in" value={fmtMoney(moneyIn)} tone={moneyIn > 0 ? "positive" : "muted"} />
-			<Row name="Money out" value={fmtMoney(moneyOut)} tone={moneyOut < 0 ? "negative" : "muted"} />
-			{#if matched > 0}
-				<Row name="Matched existing" value={String(matched)} tone="muted" />
-			{/if}
-			{#if failed.length}
-				<Callout tone="negative">Bank sync failed for {failed.join(", ")}.</Callout>
-			{/if}
-			{#if toCategorize.length}
-				<Callout tone={remaining ? "warning" : "positive"}>
-					{remaining
-						? `${remaining} of ${toCategorize.length} ${remaining === 1 ? "needs" : "need"} a category.`
-						: "Everything is categorized."}
-				</Callout>
-			{/if}
-		</Section>
-
-		{#if toCategorize.length}
-			<Section title="Needs a category" count={remaining || undefined}>
-				<ul class="list">
-					{#each txs.filter((t) => toCategorize.includes(t.id)) as tx (tx.id)}
-						<li class="item" class:done={!!tx.category}>
-							<div class="line">
-								<span class="payee abt-privacy-number">{tx.payee}</span>
-								<span class="amount abt-privacy-number" class:positive={tx.amount > 0}
-									>{fmtMoney(tx.amount)}</span
-								>
-							</div>
-							<div class="meta">{shortDate(tx.date)} · {tx.accountName}</div>
-							<select
-								class="abt-input picker"
-								class:chosen={!!tx.category}
-								value={tx.category ?? ""}
-								disabled={saving[tx.id]}
-								aria-label={`Category for ${tx.payee}`}
-								onchange={(e) => choose(tx, (e.currentTarget as HTMLSelectElement).value)}
-							>
-								<option value="" disabled>Choose a category…</option>
-								{#each groups as group (group.id)}
-									<optgroup label={group.name}>
-										{#each group.categories as cat (cat.id)}
-											<option value={cat.id}>{cat.name}</option>
-										{/each}
-									</optgroup>
-								{/each}
-							</select>
-							{#if errors[tx.id]}
-								<div class="error">Couldn't save. Try again.</div>
-							{/if}
-						</li>
-					{/each}
-				</ul>
+		{#if !loaded}
+			<p class="empty">Loading…</p>
+		{:else if !all.length}
+			<div class="empty">
+				<strong>All caught up</strong>
+				<span>Transactions from your next sync will show up here to review.</span>
+			</div>
+		{:else}
+			<Section title="Summary" collapsible={false}>
+				<Row name="To review" value={String(all.length)} />
+				<Row name="Money in" value={fmtMoney(moneyIn)} tone={moneyIn > 0 ? "positive" : "muted"} />
+				<Row
+					name="Money out"
+					value={fmtMoney(moneyOut)}
+					tone={moneyOut < 0 ? "negative" : "muted"}
+				/>
+				{#if uncategorized}
+					<Row name="Needs a category" value={String(uncategorized)} tone="warning" />
+				{/if}
 			</Section>
+
+			{#each batches as batch (batch.at)}
+				<Section
+					title={when(batch.at)}
+					count={batch.rows.length < batch.total
+						? `${batch.rows.length} of ${batch.total}`
+						: batch.rows.length}
+					caps={false}
+					privateTrailing={false}
+				>
+					{#snippet trailing()}
+						<button
+							type="button"
+							class="abt-btn abt-btn--sm abt-btn--ghost"
+							onclick={(e) => {
+								e.stopPropagation();
+								void review(batch.pending);
+							}}>Mark reviewed</button
+						>
+					{/snippet}
+					<ul class="list">
+						{#each batch.rows as tx (tx.id)}
+							<li class="item">
+								<div class="line">
+									<span class="payee abt-privacy-number">{tx.payee}</span>
+									<span class="amount abt-privacy-number" class:positive={tx.amount > 0}
+										>{fmtMoney(tx.amount)}</span
+									>
+								</div>
+								<div class="meta">{shortDate(tx.date)} · {tx.accountName}</div>
+								{#if tx.needsCategory}
+									<CategoryPicker
+										{groups}
+										value={tx.category}
+										label="Category for {tx.payee}"
+										attention={!tx.category}
+										disabled={saving[tx.id]}
+										onPick={(id) => choose(tx, id)}
+									/>
+								{/if}
+								{#if errors[tx.id]}
+									<div class="error">Couldn't save. Try again.</div>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				</Section>
+			{/each}
 		{/if}
-
-		{#each byAccount as account (account.name)}
-			<Section title={account.name} count={account.rows.length} open={byAccount.length <= 3}>
-				{#each account.rows as tx (tx.id)}
-					<Row
-						name={tx.payee}
-						sensitive
-						meta={`${shortDate(tx.date)}${tx.category ? ` · ${categoryNames.get(tx.category) ?? ""}` : tx.needsCategory ? " · Uncategorized" : ""}`}
-						value={fmtMoney(tx.amount)}
-						tone={tx.amount > 0 ? "positive" : undefined}
-					/>
-				{/each}
-			</Section>
-		{/each}
 	</div>
 	<div class="footer">
-		<button type="button" class="abt-btn abt-tone-accent done" onclick={onDone}>Done</button>
+		{#if all.length}
+			<button
+				type="button"
+				class="abt-btn abt-tone-accent grow"
+				onclick={() => void review(pendingIds(reviewState.queue))}>Mark all reviewed</button
+			>
+		{/if}
+		<button type="button" class="abt-btn" class:grow={!all.length} onclick={onDone}>Close</button>
 	</div>
 </div>
 
@@ -160,21 +194,37 @@
 		min-height: 0;
 	}
 	.footer {
+		display: flex;
 		flex-shrink: 0;
+		gap: var(--abt-space-2);
 		padding: var(--abt-space-3);
 		border-top: 1px solid var(--abt-ink-2);
 	}
-	.done {
-		width: 100%;
+	.grow {
+		flex: 1;
 	}
+	/* Sections bring their own gutter and spacing, as in Insights. */
 	.recap {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: var(--abt-space-3);
-		padding: var(--abt-space-3);
+		padding: var(--abt-space-3) 0;
 		overflow-y: auto;
 		min-height: 0;
+	}
+	.empty {
+		display: flex;
+		flex-direction: column;
+		gap: var(--abt-space-1);
+		margin: 0;
+		padding: var(--abt-space-6) var(--abt-space-3);
+		text-align: center;
+		font-size: var(--abt-text-sm);
+		color: var(--color-pageTextSubdued);
+	}
+	.empty strong {
+		font-size: var(--abt-text-md);
+		color: var(--color-pageText);
 	}
 	.list {
 		list-style: none;
@@ -216,16 +266,6 @@
 	.meta {
 		font-size: var(--abt-text-sm);
 		color: var(--abt-subtle);
-	}
-	.picker {
-		width: 100%;
-	}
-	.picker.chosen {
-		border-color: var(--abt-accent-3);
-	}
-	.item.done .payee,
-	.item.done .amount {
-		color: var(--abt-soft);
 	}
 	.error {
 		font-size: var(--abt-text-sm);

@@ -65,6 +65,8 @@ const BUDGET_SCOPED: BudgetScoped[] = [
 	// Card layouts: each budget its own, and on a shared budget each person their own.
 	perBudgetKey("insights-cards", true),
 	perBudgetKey("summary-slots", true),
+	// Imports waiting for review: the budget's work, so shared by everyone who opens it.
+	perBudgetKey("sync-recap-queue"),
 	{
 		// One map here for every budget; each budget keeps only its own icon, null once removed.
 		remote: "budget-icon",
