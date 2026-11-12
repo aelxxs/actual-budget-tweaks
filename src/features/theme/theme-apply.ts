@@ -6,7 +6,7 @@ import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte
 import { STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
 import type { Mode } from "./studio/generator";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
-import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
+import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK, TOAST } from "@lib/actual-dom";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 
 export type RemoteTheme = {
@@ -366,6 +366,12 @@ ${ACCOUNTS_LINKS} {
    here that's the page colour. Configured cards are the ones with a menu button. */
 ${BANK_SYNC_PROVIDER}:has(> div:first-child > button) > div:first-child > div:first-child > span {
 	color: var(--color-noticeTextLight) !important;
+}
+
+/* noticeText is the base colour, for text on solid notice badges; a success toast colours itself
+   with it, so it keeps the green there. */
+${TOAST} {
+	--color-noticeText: var(--color-noticeTextLight);
 }`;
 
 export function isCommunityTheme(value: string): boolean {
