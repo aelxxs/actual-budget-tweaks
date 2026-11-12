@@ -87,6 +87,17 @@
 				"writes": null
 			},
 			{
+				"key": "theme-menu",
+				"type": "checkbox",
+				"defaultValue": true,
+				"platform": "desktop",
+				"label": "Theme Menu",
+				"description": "A palette button in the top bar to change theme, edit style or open Theme Studio.",
+				"icon": "palette",
+				"group": "Components",
+				"writes": null
+			},
+			{
 				"key": "modern-toasts",
 				"type": "checkbox",
 				"defaultValue": true,

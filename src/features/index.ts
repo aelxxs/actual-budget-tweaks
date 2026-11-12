@@ -60,6 +60,7 @@ import { tagStyling } from "./readability/tag-styling";
 import { headerBorder } from "./readability/top-nav-border";
 import { insetPanels } from "./layout/inset-panels";
 import { themeSelector } from "./theme/theme";
+import { themeMenu } from "./theme/menu";
 import { themeLoader } from "./theme/theme-loader";
 import type { CoreSetting, Setting } from "./types";
 import { budgetCategoryFilter } from "./workflows/budget-category-filter";
@@ -114,7 +115,7 @@ export const scriptSections: SettingsSection[] = [
 	},
 	{
 		title: "General",
-		groups: [{ label: "Components", items: [modernTitlebar, modernToasts] }],
+		groups: [{ label: "Components", items: [modernTitlebar, themeMenu, modernToasts] }],
 	},
 	{
 		title: "Sidebar",

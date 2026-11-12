@@ -1,6 +1,10 @@
+<script lang="ts" module>
+	export const GALLERY_APP_KEY = "theme-gallery-app";
+</script>
+
 <script lang="ts">
 	import { FEATURED_THEMES, themes } from "@lib/design";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { getValue, setValue, watchValue } from "@lib/utilities/store";
 	import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
 	import { type Component, onDestroy, onMount, untrack } from "svelte";
 	import { sidepanel } from "../core/side-panel";
@@ -46,7 +50,14 @@
 
 	const log = createLogger("themes");
 
-	let { ctx }: { ctx: { key: string; defaultValue: string } } = $props();
+	let {
+		ctx,
+		galleryOnly = false,
+	}: {
+		ctx: { key: string; defaultValue: string };
+		/** Only the gallery, opened at once as a panel that follows you (the titlebar's theme menu). */
+		galleryOnly?: boolean;
+	} = $props();
 
 	let activeThemeKey = $derived(ctx.defaultValue);
 	let applyingTheme = $state<string | null>(null);
@@ -152,7 +163,8 @@
 		sidepanel.open({
 			title: galleryTitle(),
 			bodyNode: node,
-			key: "theme-gallery",
+			key: galleryOnly ? GALLERY_APP_KEY : "theme-gallery",
+			scope: galleryOnly ? "app" : "page",
 		});
 	}
 	function inPanel(node: HTMLElement) {
@@ -162,7 +174,7 @@
 		return () => {
 			// The card unmounted (a settings search can do it), so its gallery can't stay open empty.
 			if (node.isConnected) {
-				sidepanel.close("theme-gallery");
+				sidepanel.close(galleryOnly ? GALLERY_APP_KEY : "theme-gallery");
 			}
 			galleryNode = null;
 		};
@@ -511,6 +523,21 @@
 		}
 	}
 
+	// The titlebar's gallery and this card can both change the theme; each follows the other's changes.
+	$effect(() => {
+		const stops = [
+			watchValue<boolean>("theme-auto-switch", (v) => (autoSwitch = !!v)),
+			watchValue<string>("theme-auto-dark", (v) => v && (autoDarkKey = v)),
+			watchValue<string>("theme-auto-light", (v) => v && (autoLightKey = v)),
+			watchValue<string>(ctx.key, (v) => {
+				if (v && !autoSwitch) {
+					activeThemeKey = v;
+				}
+			}),
+		];
+		return () => stops.forEach((stop) => stop());
+	});
+
 	onMount(async () => {
 		nativeColors = getNativePreviewColors();
 		communityOpen = await getValue<boolean>(COMMUNITY_OPEN_KEY, false);
@@ -527,6 +554,10 @@
 			activeThemeKey = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
 		}
 
+		if (galleryOnly) {
+			openGallery(null);
+		}
+
 		loadingRemote = true;
 		try {
 			remoteThemes = await fetchCommunityThemeCatalog();
@@ -539,62 +570,64 @@
 </script>
 
 <div class="picker">
-	{#snippet modeSwitch()}
-		<div class="abt-seg abt-seg--sm" role="group" aria-label="Theme mode" {@attach inHeader}>
-			<button type="button" aria-pressed={!autoSwitch} onclick={() => setMatchSystem(false)}>
-				One theme
-			</button>
-			<button type="button" aria-pressed={autoSwitch} onclick={() => setMatchSystem(true)}>
-				Match system
-			</button>
-		</div>
-	{/snippet}
+	{#if !galleryOnly}
+		{#snippet modeSwitch()}
+			<div class="abt-seg abt-seg--sm" role="group" aria-label="Theme mode" {@attach inHeader}>
+				<button type="button" aria-pressed={!autoSwitch} onclick={() => setMatchSystem(false)}>
+					One theme
+				</button>
+				<button type="button" aria-pressed={autoSwitch} onclick={() => setMatchSystem(true)}>
+					Match system
+				</button>
+			</div>
+		{/snippet}
 
-	{@render modeSwitch()}
+		{@render modeSwitch()}
 
-	{#snippet currentRow(mode: "light" | "dark" | null, key: string)}
-		<div class="now">
-			<span class="now-thumb"><ThemeThumb thumb={thumbFor(key)} /></span>
-			<span class="now-text">
-				<span class="now-label">
-					{#if mode}
-						{mode === "dark" ? "Dark" : "Light"}
-						{#if (mode === "dark") === systemIsDark}<span class="now-badge">Now</span>{/if}
-					{:else}
-						{modeOf(key) === "dark" ? "Dark theme" : "Light theme"}
-					{/if}
+		{#snippet currentRow(mode: "light" | "dark" | null, key: string)}
+			<div class="now">
+				<span class="now-thumb"><ThemeThumb thumb={thumbFor(key)} /></span>
+				<span class="now-text">
+					<span class="now-label">
+						{#if mode}
+							{mode === "dark" ? "Dark" : "Light"}
+							{#if (mode === "dark") === systemIsDark}<span class="now-badge">Now</span>{/if}
+						{:else}
+							{modeOf(key) === "dark" ? "Dark theme" : "Light theme"}
+						{/if}
+					</span>
+					<span class="now-name">{getThemeName(key)}</span>
 				</span>
-				<span class="now-name">{getThemeName(key)}</span>
+				<span class="now-actions">
+					<button type="button" class="abt-btn abt-btn--sm" onclick={() => customize(key)}>
+						<Paintbrush size={14} /> Customize
+					</button>
+					<button type="button" class="abt-btn abt-btn--sm" onclick={() => openGallery(mode)}>
+						<LayoutGrid size={14} /> Change theme
+					</button>
+				</span>
+			</div>
+		{/snippet}
+
+		{#if autoSwitch}
+			{@render currentRow("light", autoLightKey)}
+			{@render currentRow("dark", autoDarkKey)}
+		{:else}
+			{@render currentRow(null, activeThemeKey)}
+		{/if}
+
+		<div class="style-row">
+			<span class="now-text">
+				<span class="now-name">Style</span>
+				<span class="now-label"
+					>Corners, background, glow and grain, and other details for every theme</span
+				>
 			</span>
-			<span class="now-actions">
-				<button type="button" class="abt-btn abt-btn--sm" onclick={() => customize(key)}>
-					<Paintbrush size={14} /> Customize
-				</button>
-				<button type="button" class="abt-btn abt-btn--sm" onclick={() => openGallery(mode)}>
-					<LayoutGrid size={14} /> Change theme
-				</button>
-			</span>
+			<button type="button" class="abt-btn abt-btn--sm" onclick={openStylePanel}>
+				<Shapes size={14} /> Edit style
+			</button>
 		</div>
-	{/snippet}
-
-	{#if autoSwitch}
-		{@render currentRow("light", autoLightKey)}
-		{@render currentRow("dark", autoDarkKey)}
-	{:else}
-		{@render currentRow(null, activeThemeKey)}
 	{/if}
-
-	<div class="style-row">
-		<span class="now-text">
-			<span class="now-name">Style</span>
-			<span class="now-label"
-				>Corners, background, glow and grain, and other details for every theme</span
-			>
-		</span>
-		<button type="button" class="abt-btn abt-btn--sm" onclick={openStylePanel}>
-			<Shapes size={14} /> Edit style
-		</button>
-	</div>
 
 	{#snippet showAll(id: string, total: number, limit: number)}
 		{#if !q && !expanded[id] && total > limit}
