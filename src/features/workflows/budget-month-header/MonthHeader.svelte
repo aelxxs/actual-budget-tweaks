@@ -4,9 +4,8 @@
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Icon from "@lib/components/Icon.svelte";
-	import { onListChange } from "@lib/utilities/actual-api";
-	import { cubicOut } from "svelte/easing";
-	import { slide } from "svelte/transition";
+	import { onListChange, send } from "@lib/utilities/actual-api";
+	import { getValue, setValue } from "@lib/utilities/store";
 	import {
 		addMonths,
 		currentMonth,
@@ -21,19 +20,9 @@
 	} from "./native";
 	import { budgetNav } from "./state.svelte";
 
-	let pickerOpen = $state(false);
+	const MOST_KEY = "budget-month-count-most";
 
-	// Counts come and go as the window narrows or the side panel opens; sliding them keeps the
-	// header from jumping. Not on the first render, which Svelte doesn't animate.
-	const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-	function reveal(node: Element) {
-		const base = slide(node, {
-			axis: "x",
-			duration: reducedMotion.matches ? 0 : 200,
-			easing: cubicOut,
-		});
-		return { ...base, css: (t: number, u: number) => `${base.css?.(t, u) ?? ""}; opacity: ${t};` };
-	}
+	let pickerOpen = $state(false);
 
 	const start = $derived(budgetNav.months[0] ?? null);
 	// The month last asked for, so clicks made while a big budget is still rendering add up.
@@ -41,7 +30,26 @@
 	const base = $derived(target ?? start);
 	const parsed = $derived(start ? parseMonth(start) : null);
 	const span = $derived(budgetNav.months.length);
-	const counts = $derived(Array.from({ length: budgetNav.displayMax }, (_, i) => i + 1));
+	// Every count that has ever fit stays listed (remembered across visits), disabled while it doesn't
+	// fit, so opening a panel or narrowing the window greys a count out instead of reshaping the header.
+	let most = $state(1);
+	void getValue<number>(MOST_KEY, 1).then((v) => (most = Math.max(most, v)));
+	$effect(() => {
+		if (budgetNav.displayMax > most) {
+			most = budgetNav.displayMax;
+			void setValue(MOST_KEY, most);
+		}
+	});
+	const counts = $derived(
+		Array.from({ length: Math.max(most, budgetNav.displayMax) }, (_, i) => i + 1),
+	);
+	// The count you picked; Actual shows fewer while they don't fit, and the pick is marked waiting.
+	let chosen = $state<number | null>(null);
+	void send<{ maxMonths?: number } | null>("load-global-prefs").then((p) => {
+		chosen ??= p?.maxMonths ?? null;
+	});
+	const waiting = (n: number) => n === chosen && n !== span && n > budgetNav.displayMax;
+
 	let bounds = $state<MonthBounds>({ start: "0000-01", end: addMonths(currentMonth(), 12) });
 	// "YYYY-MM" keys compare correctly as strings.
 	const outOfBounds = (key: string) => key < bounds.start || key > bounds.end;
@@ -66,6 +74,7 @@
 
 	// Showing more months near the budget's end would run past it; start earlier instead.
 	async function setCount(count: number) {
+		chosen = count;
 		const from = start;
 		await setMonthCount(count);
 		if (!from) {
@@ -176,14 +185,26 @@
 		<!-- Other features (the category filter) mount their controls here. -->
 		<div class="bmh__slot" data-abt-month-header-slot></div>
 		{#if counts.length > 1}
-			<div class="abt-seg" role="group" aria-label="Months shown" transition:reveal>
+			<div class="abt-seg" role="group" aria-label="Months shown">
 				<span class="abt-seg__label">Months</span>
 				{#each counts as n (n)}
 					<button
-						transition:reveal
 						type="button"
+						class:bmh__waiting={waiting(n)}
 						aria-pressed={n === span}
-						title={n === 1 ? "Show 1 month" : `Show ${n} months`}
+						disabled={n > budgetNav.displayMax}
+						title={waiting(n)
+							? `You picked ${n} months`
+							: n > budgetNav.displayMax
+								? `${n} months`
+								: n === 1
+									? "Show 1 month"
+									: `Show ${n} months`}
+						data-abt-tip-hint={waiting(n)
+							? "They'll show once there's room"
+							: n > budgetNav.displayMax
+								? "Not enough room right now"
+								: undefined}
 						onclick={() => setCount(n)}>{n}</button
 					>
 				{/each}
@@ -232,6 +253,12 @@
 	.bmh__icon {
 		display: none;
 	}
+	/* Your pick, held back for room: dashed in the accent, unlike a count you never chose. */
+	.abt-seg button.bmh__waiting {
+		outline: 1px dashed var(--abt-accent-4);
+		outline-offset: -2px;
+	}
+
 	.bmh:global(.bmh--squeeze-1) .abt-seg__label {
 		display: none;
 	}
