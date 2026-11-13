@@ -1,6 +1,77 @@
 # Changelog
 
 
+## v0.1.107
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.106...v0.1.107)
+
+### 🚀 Enhancements
+
+- Turn Category Template Insights off by default ([c2c3d04](https://github.com/aelxxs/actual-budget-tweaks/commit/c2c3d04))
+- Hold Actual's goal ring inside underfunded balance pills, and hide the progress ring where Actual's goal ring shows ([09f1078](https://github.com/aelxxs/actual-budget-tweaks/commit/09f1078))
+- Keep the reconcile panel open with a finished state and undo, reload the table in place, drop the confetti and stop collapsing the sidebar ([956a5f5](https://github.com/aelxxs/actual-budget-tweaks/commit/956a5f5))
+- Show Privacy style as a compact segmented control beside its label ([f7677b9](https://github.com/aelxxs/actual-budget-tweaks/commit/f7677b9))
+- List the bigger features in a Features section that starts collapsed when all are on, with guide links on their rows ([7adf902](https://github.com/aelxxs/actual-budget-tweaks/commit/7adf902))
+- List ABT's settings sections under its tab in Settings even while it's closed ([9b3221c](https://github.com/aelxxs/actual-budget-tweaks/commit/9b3221c))
+- Add an experimental Graph view of how accounts, categories and payees connect ([c8fb5dc](https://github.com/aelxxs/actual-budget-tweaks/commit/c8fb5dc))
+- Mark experimental features in settings and website ([046b6d6](https://github.com/aelxxs/actual-budget-tweaks/commit/046b6d6))
+- Firm up borders with a Theme Studio slider and the system's increase-contrast setting ([965e6a9](https://github.com/aelxxs/actual-budget-tweaks/commit/965e6a9))
+- Show transfers between accounts in the graph view ([dae6348](https://github.com/aelxxs/actual-budget-tweaks/commit/dae6348))
+- Flag possible duplicate charges in the graph view ([b4a660c](https://github.com/aelxxs/actual-budget-tweaks/commit/b4a660c))
+- Flag bills that went up in the graph view ([b1948f1](https://github.com/aelxxs/actual-budget-tweaks/commit/b1948f1))
+- Apply rule changes from the transaction inspector and give it clearer hierarchy ([6d539b1](https://github.com/aelxxs/actual-budget-tweaks/commit/6d539b1))
+- Add a back link to stacked side panels ([85f73e6](https://github.com/aelxxs/actual-budget-tweaks/commit/85f73e6))
+- Filter the graph view by flow, account and category ([c39c2e0](https://github.com/aelxxs/actual-budget-tweaks/commit/c39c2e0))
+
+### 🩹 Fixes
+
+- Name the Features section in the website's features manifest ([c68b0e3](https://github.com/aelxxs/actual-budget-tweaks/commit/c68b0e3))
+- Mount ABT's settings panel without watching every attribute change ([2efacb0](https://github.com/aelxxs/actual-budget-tweaks/commit/2efacb0))
+- Tint the selected pill background so text on it reads in Actual's rule editor ([de24fac](https://github.com/aelxxs/actual-budget-tweaks/commit/de24fac))
+- Stop testing removed coverage method setting ([1604b5f](https://github.com/aelxxs/actual-budget-tweaks/commit/1604b5f))
+- Update smoke checks for current settings panels ([c9bd755](https://github.com/aelxxs/actual-budget-tweaks/commit/c9bd755))
+- Isolate budget settings and watch sidebar feature links ([d61e940](https://github.com/aelxxs/actual-budget-tweaks/commit/d61e940))
+- Resend synced pref subscriptions once the bridge is ready ([441b19f](https://github.com/aelxxs/actual-budget-tweaks/commit/441b19f))
+- Follow Actual's number and date formats, and update when they change ([d88f12a](https://github.com/aelxxs/actual-budget-tweaks/commit/d88f12a))
+- Give charts hex colors so Actual's donut chart shades categories correctly ([0ef1912](https://github.com/aelxxs/actual-budget-tweaks/commit/0ef1912))
+- Keep graph labels inside the zoomed view ([a77e0d1](https://github.com/aelxxs/actual-budget-tweaks/commit/a77e0d1))
+- Keep the graph fitted above its legend when the page resizes ([612abd8](https://github.com/aelxxs/actual-budget-tweaks/commit/612abd8))
+
+### 💅 Refactors
+
+- Remove the Dark Report Cards setting ([b54d078](https://github.com/aelxxs/actual-budget-tweaks/commit/b54d078))
+- Merge the header, budget page and report card borders into one Borders switch ([bf55972](https://github.com/aelxxs/actual-budget-tweaks/commit/bf55972))
+- Remove the Taller Group Rows setting, and pick Next Month's target from whether the budget has templates ([d1293aa](https://github.com/aelxxs/actual-budget-tweaks/commit/d1293aa))
+- Merge the budget and reports headers into Modern headers, merge Month Cards and Budget Card Styling into one Off/Light/Full setting, and remove Highlight Hovered Budget Row ([acea0c2](https://github.com/aelxxs/actual-budget-tweaks/commit/acea0c2))
+- Simplify the budget settings: remove Goal Funding and Schedule Icon Details, fold Quiet Funded Bars into Category Template Insights and the totals label styling into Modern headers, and move Show Daily Available to Accounts ([b96aef0](https://github.com/aelxxs/actual-budget-tweaks/commit/b96aef0))
+- Always theme the scrollbars, as a fix for Actual's low-contrast ones rather than a setting ([3835709](https://github.com/aelxxs/actual-budget-tweaks/commit/3835709))
+- Fold the Theme Menu setting into Modern Titlebar ([9a07efe](https://github.com/aelxxs/actual-budget-tweaks/commit/9a07efe))
+- Make Category Filter part of Modern headers, shown only in the month header ([99085d5](https://github.com/aelxxs/actual-budget-tweaks/commit/99085d5))
+- Merge Dim Reconciled, Highlight Uncategorized and Quiet New Transactions into Row status, and move Modern Account Toolbar to Components ([423c30a](https://github.com/aelxxs/actual-budget-tweaks/commit/423c30a))
+- Stop collapsing the sidebar when Transaction Inspector opens, and remove the shared auto-collapse ([c3383b6](https://github.com/aelxxs/actual-budget-tweaks/commit/c3383b6))
+- Merge Color transactions, Color negative balances and the always-on group balance colours into Color amounts, and move it with Privacy style to General > Amounts ([3500b20](https://github.com/aelxxs/actual-budget-tweaks/commit/3500b20))
+- Move Template bars into Readability and flatten Accounts & Transactions into one list ([f305704](https://github.com/aelxxs/actual-budget-tweaks/commit/f305704))
+- Drop the Template bars toggle from the budget table header and leave the resize button hover-only ([dd5b042](https://github.com/aelxxs/actual-budget-tweaks/commit/dd5b042))
+- Move the calendar's page overlay into a shared module so other ABT pages can use it ([038e8ae](https://github.com/aelxxs/actual-budget-tweaks/commit/038e8ae))
+- Remove graph view minimap ([9534ee5](https://github.com/aelxxs/actual-budget-tweaks/commit/9534ee5))
+- Move graph highlights into a menu ([ba5e036](https://github.com/aelxxs/actual-budget-tweaks/commit/ba5e036))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.106 ([b5aea16](https://github.com/aelxxs/actual-budget-tweaks/commit/b5aea16))
+- Rename settings and shorten their descriptions, in sentence case ([812f621](https://github.com/aelxxs/actual-budget-tweaks/commit/812f621))
+- Shorten the Inset panels and Spending calendar descriptions ([fdc2a3c](https://github.com/aelxxs/actual-budget-tweaks/commit/fdc2a3c))
+- Drop the Modern prefix from setting names, and point the guides at the Features section ([692520f](https://github.com/aelxxs/actual-budget-tweaks/commit/692520f))
+
+### 🎨 Styles
+
+- Give every setting its own icon, and match the Customize sidebar row to the others ([b1c7c81](https://github.com/aelxxs/actual-budget-tweaks/commit/b1c7c81))
+- Mute the settings nav icons and redraw Advanced's as a rounded gear ([6b951df](https://github.com/aelxxs/actual-budget-tweaks/commit/6b951df))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.106
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.105...v0.1.106)
