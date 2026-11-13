@@ -11,11 +11,10 @@
 	import { loadCurrency } from "@lib/utilities/currency";
 	import { watchDom } from "@lib/utilities/dom-watcher";
 	import { createLogger } from "@lib/utilities/logger";
-	import { Page, matchesPage } from "@lib/utilities/pages";
 	import { getValue, removeValue, setValue } from "@lib/utilities/store";
 	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import { Search, SlidersHorizontal } from "@lucide/svelte";
-	import { onMount, tick, untrack } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
 	import { portal } from "./actions/portal";
 	import AccountList from "./components/AccountList.svelte";
@@ -50,7 +49,6 @@
 		renameAccount,
 	} from "./lib/data";
 	import { LAYOUT_KEY, toLayout, type SidebarLayout } from "./lib/layout";
-	import { route, trackRoute } from "./lib/route.svelte";
 	import { isMac } from "./lib/search";
 	import "./styles/layout.css";
 	import "./styles/shared.css";
@@ -87,18 +85,6 @@
 	const RAIL_WIDTH = "4rem"; // matches .activity-bar's width in styles/layout.css
 	let collapsed = $state(isSidebarCollapsed());
 
-	// Gates .sidebar.transitions-ready (styles/layout.css) so hydrating a persisted
-	// collapsed/width value on mount doesn't itself animate.
-	let transitionsReady = $state(false);
-
-	// The budget table and the reports grid re-lay out at every width the sidebar passes through,
-	// which stutters. There it slides over the page instead: a negative margin keeps the page's
-	// width until the slide ends, so the page re-lays out once.
-	$effect(() => trackRoute());
-	const heavyPage = $derived(
-		Boolean(route()) && (matchesPage(Page.Budget) || matchesPage(Page.Reports)),
-	);
-
 	$effect(() => watchSidebarCollapsed((v) => (collapsed = v)));
 	$effect(() => watchAccountIcons((v) => (icons = v)));
 
@@ -118,11 +104,7 @@
 		return () => mq.removeEventListener("change", update);
 	});
 
-	// Set by the first expand or collapse; the content's entrance animation waits for it.
-	let toggled = $state(false);
-
 	function expandSidebar() {
-		toggled = true;
 		if (narrow) {
 			openWhileNarrow = true;
 			return;
@@ -130,7 +112,6 @@
 		setSidebarCollapsed(false);
 	}
 	function collapseSidebar() {
-		toggled = true;
 		if (narrow) {
 			openWhileNarrow = false;
 			return;
@@ -185,19 +166,6 @@
 	);
 	let resizing = $state(false);
 
-	// Two names for one animation, alternated so each change restarts it.
-	let settle = $state<{ from: string; flip: boolean } | null>(null);
-	let lastWidth: string | null = null;
-	// Before the DOM updates, so the new width and the margin that offsets it land together.
-	$effect.pre(() => {
-		const width = sidebarTotalWidth;
-		untrack(() => {
-			if (lastWidth !== null && width !== lastWidth && transitionsReady && heavyPage && !resizing) {
-				settle = { from: lastWidth, flip: !settle?.flip };
-			}
-		});
-		lastWidth = width;
-	});
 	let dragStartX = 0;
 	let dragStartWidth = 0;
 
@@ -494,11 +462,6 @@
 		widthStored = stored !== null;
 		sidebarWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, stored ?? defaultWidth(layoutMode)));
 		icons = loadedIcons;
-		// A frame callback runs before that frame's style update, so the restored width and the
-		// transition would land together and animate from the default; reading layout commits it.
-		await tick();
-		void sidebarEl?.offsetWidth;
-		transitionsReady = true;
 
 		try {
 			const [, , loadedAccounts] = await Promise.all([
@@ -574,19 +537,9 @@
 <div
 	class="sidebar"
 	class:resizing
-	class:transitions-ready={transitionsReady}
-	class:settle-a={settle && !settle.flip}
-	class:settle-b={settle?.flip}
-	style:--sb-settle={settle ? `calc(${settle.from} - ${sidebarTotalWidth})` : null}
-	onanimationend={(e) => {
-		if (e.target === e.currentTarget) {
-			settle = null;
-		}
-	}}
 	class:split={layoutMode === "split"}
 	class:collapsed={isCollapsed && layoutMode === "standard"}
 	class:rail-only={isCollapsed && layoutMode === "split"}
-	class:toggled
 	bind:this={sidebarEl}
 	style="width: {sidebarTotalWidth}"
 	oncontextmenu={openSettingsMenu}

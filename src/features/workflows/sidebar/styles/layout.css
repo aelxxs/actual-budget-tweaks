@@ -64,65 +64,6 @@
 	user-select: none;
 }
 
-/* ===== collapse/expand animation =====
-   .transitions-ready (Sidebar.svelte) skips the width transition on the
-   first paint that hydrates a persisted collapsed/width value. */
-@media (prefers-reduced-motion: no-preference) {
-	.sidebar.transitions-ready:not(.resizing) {
-		transition: width 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-	/* Over the page while it slides, with the same timing as the width, so the two always add up
-	   to the old width; the page takes the new one when it ends (see Sidebar.svelte). */
-	.sidebar.settle-a,
-	.sidebar.settle-b {
-		z-index: 2;
-	}
-	.sidebar.settle-a {
-		animation: sidebar-settle-a 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-	.sidebar.settle-b {
-		animation: sidebar-settle-b 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-	/* Only once it's been toggled: on load the content is already in place. */
-	.sidebar.toggled > .budget,
-	.sidebar.toggled > .body,
-	.sidebar.toggled .split-panel,
-	.sidebar.toggled.collapsed > .rail-avatar,
-	.sidebar.toggled.collapsed > .rail-icon,
-	.sidebar.toggled.collapsed > .rail-nav,
-	.sidebar.toggled.collapsed > .rail-divider,
-	.sidebar.toggled.collapsed > .rail-list,
-	.sidebar.toggled.collapsed > .rail-foot {
-		animation: sidebar-content-in 0.12s ease;
-	}
-}
-@keyframes sidebar-settle-a {
-	from {
-		margin-right: 0;
-	}
-	to {
-		margin-right: var(--sb-settle);
-	}
-}
-@keyframes sidebar-settle-b {
-	from {
-		margin-right: 0;
-	}
-	to {
-		margin-right: var(--sb-settle);
-	}
-}
-@keyframes sidebar-content-in {
-	from {
-		opacity: 0;
-		transform: translateY(-2px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
 /* ===== Split layout: icon activity bar + accounts panel =====
    .activity-bar shares the collapsed rail's layout (see Rail.svelte)
    — it just lives beside a panel instead of being the
