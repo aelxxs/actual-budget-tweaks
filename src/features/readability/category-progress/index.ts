@@ -18,9 +18,12 @@ import {
 	type CatCells,
 } from "./cells";
 import ProgressPopover from "./ProgressPopover.svelte";
-import { BALANCE_CELL, CATEGORY_NAME, CELL, ROW } from "@lib/actual-dom";
+import { BALANCE_CELL, CATEGORY_NAME, CELL, GOAL_RING, ROW } from "@lib/actual-dom";
+import { RING_ATTR as PILL_RING_ATTR } from "@features/readability/balance-pills";
 
 const RING_CLASS = "abt-catprog-ring";
+// Actual's goal ring is on the row: this one steps aside, keeping its space so balances line up.
+const GOAL_SHOWN_ATTR = "data-abt-goal-shown";
 const POPOVER_CLASS = "abt-catprog-popover";
 const HOVER_DELAY_MS = 150;
 const CLOSE_DELAY_MS = 150;
@@ -42,6 +45,21 @@ const CSS = `
 
 	.${RING_CLASS}:hover {
 		opacity: 1;
+	}
+
+	.${RING_CLASS}[${GOAL_SHOWN_ATTR}] {
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	/* A pill holding Actual's ring (Balance Status Pills): the space sits outside the pill. */
+	[${PILL_RING_ATTR}] {
+		position: relative;
+		margin-right: 20px !important;
+	}
+	[${PILL_RING_ATTR}] > .${RING_CLASS} {
+		position: absolute;
+		left: 100%;
 	}
 
 	.${RING_CLASS} svg {
@@ -234,6 +252,11 @@ function scanAndDecorate() {
 			ring.addEventListener("mouseenter", onRingEnter);
 			ring.addEventListener("mouseleave", onRingLeave);
 			host.appendChild(ring);
+		}
+
+		const goalShown = !!host.querySelector(`:scope > ${GOAL_RING}`);
+		if (ring.hasAttribute(GOAL_SHOWN_ATTR) !== goalShown) {
+			ring.toggleAttribute(GOAL_SHOWN_ATTR, goalShown);
 		}
 
 		// React reuses these nodes when navigating months, so rebind to the cell shown now.

@@ -9,9 +9,11 @@ import {
 import { type BudgetTableChange, watchBudgetTable } from "@lib/utilities/budget-cells";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
-import { BALANCE_CELL, CELL } from "@lib/actual-dom";
+import { BALANCE_CELL, CELL, GOAL_RING } from "@lib/actual-dom";
 
 const STATUS_ATTR = "data-abt-balance-status";
+// On the balance's button instead of its amount when Actual's goal ring is there, so the pill holds the ring.
+export const RING_ATTR = "data-abt-balance-ring";
 
 type Status = "funded" | "underfunded" | "overspent" | "available";
 // Goal statuses carry an icon; a plain positive balance doesn't.
@@ -75,6 +77,22 @@ const CSS = (Object.keys(TONES) as Status[])
 	[${STATUS_ATTR}="available"]::before {
 		display: none;
 	}
+
+	[${RING_ATTR}] {
+		width: auto !important;
+		margin-left: auto;
+		padding: 1px 8px 1px 6px !important;
+		background: color-mix(in srgb, var(--abt-pill-tone) 18%, transparent) !important;
+	}
+	[${RING_ATTR}]::before {
+		display: none;
+	}
+	[${RING_ATTR}] > svg {
+		margin-right: 0 !important;
+	}
+	[${RING_ATTR}] ${CELL} {
+		color: inherit !important;
+	}
 `);
 
 // Goal states match Actual's own goal colouring. Without a goal, overspent still shows, and a
@@ -121,26 +139,38 @@ function scan(): void {
 				return;
 			}
 			const status = statusFor(data);
-			if (status && span.getAttribute(STATUS_ATTR) !== status) {
-				span.setAttribute(STATUS_ATTR, status);
-			} else if (!status && span.hasAttribute(STATUS_ATTR)) {
-				span.removeAttribute(STATUS_ATTR);
+			const button = span.closest("button");
+			const ring = status === "underfunded" && !!button?.querySelector(`:scope > ${GOAL_RING}`);
+			setStatus(span, ring ? null : status);
+			if (button) {
+				setStatus(button, ring ? status : null);
+				if (button.hasAttribute(RING_ATTR) !== ring) {
+					button.toggleAttribute(RING_ATTR, ring);
+				}
 			}
 		});
 	}
 }
 
-function clearAll(): void {
-	for (const el of document.querySelectorAll(`[${STATUS_ATTR}]`)) {
+function setStatus(el: Element, status: Status | null): void {
+	if (status && el.getAttribute(STATUS_ATTR) !== status) {
+		el.setAttribute(STATUS_ATTR, status);
+	} else if (!status && el.hasAttribute(STATUS_ATTR)) {
 		el.removeAttribute(STATUS_ATTR);
+	}
+}
+
+function clearAll(): void {
+	for (const el of document.querySelectorAll(`[${STATUS_ATTR}], [${RING_ATTR}]`)) {
+		el.removeAttribute(STATUS_ATTR);
+		el.removeAttribute(RING_ATTR);
 	}
 }
 
 export const balancePills = defineSetting({
 	type: "checkbox",
 	label: "Balance Status Pills",
-	description:
-		"Show balances as pills: overspent, or funded and underfunded for categories with templates.",
+	description: "Adds an icon to each balance's status, so it doesn't rely on colour alone.",
 	group: "Budget",
 	icon: "gauge",
 	preview: BalancePillsPreview,
