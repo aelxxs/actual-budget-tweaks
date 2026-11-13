@@ -43,8 +43,7 @@ function markBanners() {
 export const mobileBudgetBanners = defineSetting({
 	type: "checkbox",
 	label: "Budget banners",
-	description:
-		"Restyles the overspent and uncategorized banners as quiet cards with a coloured icon.",
+	description: "Restyles the overspent and uncategorized banners as cards.",
 	group: "Mobile",
 	icon: "alert",
 	platform: "mobile",

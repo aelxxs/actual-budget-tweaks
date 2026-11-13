@@ -34,8 +34,8 @@ function cleanup() {
 
 export const colorTransactions = defineSetting({
 	type: "checkbox",
-	label: "Color Transactions",
-	description: "Color negative and positive transactions.",
+	label: "Color transactions",
+	description: "Colors payments, deposits and upcoming transactions.",
 	group: "Transactions",
 	icon: "palette",
 	preview: ColorTransactionsPreview,

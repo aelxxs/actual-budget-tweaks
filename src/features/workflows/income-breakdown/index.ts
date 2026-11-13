@@ -33,8 +33,8 @@ function placeholderOf(item: HTMLElement): HTMLElement | null {
 
 export const incomeBreakdown = defineSetting({
 	type: "checkbox",
-	label: "Income Breakdown widget",
-	description: "Adds an Income Breakdown chart to the Reports dashboard's Add widget menu.",
+	label: "Income breakdown widget",
+	description: "Adds an income breakdown chart to the reports' widget menu.",
 	group: "Reports",
 	icon: "trendingUp",
 	context: {

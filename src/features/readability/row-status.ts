@@ -6,7 +6,7 @@ import RowStatusPreview from "./previews/RowStatus.svelte";
 
 export const rowStatus = defineSetting({
 	type: "checkbox",
-	label: "Row Status",
+	label: "Row status",
 	description: "Marks new, uncategorized and reconciled transactions.",
 	group: "Transactions",
 	icon: "star",

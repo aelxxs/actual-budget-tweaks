@@ -25,8 +25,7 @@ function markStacks() {
 export const mobileToasts = defineSetting({
 	type: "checkbox",
 	label: "Snackbar toasts",
-	description:
-		"Shows notifications as compact snackbars above the tab bar, with the action as text.",
+	description: "Shows notifications as snackbars above the tab bar.",
 	group: "Mobile",
 	icon: "bell",
 	platform: "mobile",

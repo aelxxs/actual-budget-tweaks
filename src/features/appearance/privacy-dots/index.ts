@@ -125,7 +125,7 @@ const STYLES: Record<string, string> = {
 
 export const privacyStyle = defineSetting({
 	type: "select",
-	label: "Privacy Style",
+	label: "Privacy style",
 	description: "How amounts look while privacy mode hides them.",
 	group: "General",
 	icon: "eyeOff",

@@ -24,7 +24,7 @@
 	--abt-text-lg: 14px;
 	--abt-text-xl: 16px;
 
-	/* Radius: follows the Border Radius setting, capped so "Pill" doesn't turn cards into capsules. */
+	/* Radius: follows the Rounded corners setting, capped so "Pill" doesn't turn cards into capsules. */
 	--abt-radius-sm: clamp(0px, calc(var(--border-radius, 0.5rem) * 0.5), 0.375rem);
 	--abt-radius: clamp(0px, var(--border-radius, 0.5rem), 0.75rem);
 	--abt-radius-lg: clamp(0px, calc(var(--border-radius, 0.5rem) * 1.5), 1rem);

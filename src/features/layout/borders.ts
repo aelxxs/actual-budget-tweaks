@@ -28,7 +28,7 @@ async function migrateRetiredSwitches(key: string) {
 export const borders = defineSetting({
 	type: "checkbox",
 	label: "Borders",
-	description: "Borders under the top bar and around the budget table and report cards.",
+	description: "Adds borders under the top bar and around the budget and report cards.",
 	group: "General",
 	icon: "square",
 	context: {

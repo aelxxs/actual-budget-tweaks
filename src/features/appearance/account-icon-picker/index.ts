@@ -273,8 +273,8 @@ function syncMobileRows(): void {
 
 export const accountIconPicker = defineSetting({
 	type: "checkbox",
-	label: "Account Icon Picker",
-	description: "Set a custom favicon or emoji icon per account.",
+	label: "Account icon picker",
+	description: "Adds an emoji or website icon to each account.",
 	group: "Sidebar",
 	icon: "image",
 	platform: "all",

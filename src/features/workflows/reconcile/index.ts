@@ -127,9 +127,8 @@ function sync() {
 
 export const modernReconcile = defineSetting({
 	type: "checkbox",
-	label: "Modern Reconcile",
-	description:
-		"Reconcile in a side panel: live balances, clear transactions from a list, one-click adjustment and undo.",
+	label: "Modern reconcile",
+	description: "Reconciles in a side panel that tracks the difference as you clear transactions.",
 	group: "General",
 	icon: "shield",
 	writes:

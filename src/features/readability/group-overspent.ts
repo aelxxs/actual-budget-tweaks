@@ -82,8 +82,8 @@ function sync(): void {
 
 export const groupOverspent = defineSetting({
 	type: "checkbox",
-	label: "Flag Overspent Groups",
-	description: "Show how many categories are overspent next to each group's name, even collapsed.",
+	label: "Flag overspent groups",
+	description: "Shows how many categories are overspent beside each group's name.",
 	group: "Budget",
 	icon: "alert",
 	context: {

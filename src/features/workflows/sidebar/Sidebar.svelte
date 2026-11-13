@@ -99,7 +99,6 @@
 		Boolean(route()) && (matchesPage(Page.Budget) || matchesPage(Page.Reports)),
 	);
 
-	// Other features (Modern Reconcile) collapse it for a while and put it back.
 	$effect(() => watchSidebarCollapsed((v) => (collapsed = v)));
 	$effect(() => watchAccountIcons((v) => (icons = v)));
 

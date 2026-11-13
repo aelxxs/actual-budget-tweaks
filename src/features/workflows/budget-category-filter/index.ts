@@ -343,8 +343,8 @@ function sync(): void {
 
 export const budgetCategoryFilter = defineSetting({
 	type: "checkbox",
-	label: "Category Filter",
-	description: "Filter the budget to categories that need attention or are on track.",
+	label: "Category filter",
+	description: "Filters the budget to categories that need attention or are on track.",
 	icon: "filter",
 	group: "General",
 	context: {

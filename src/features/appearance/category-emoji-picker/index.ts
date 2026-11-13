@@ -293,8 +293,8 @@ function cleanup() {
 
 export const categoryEmojiPicker = defineSetting({
 	type: "checkbox",
-	label: "Category Emoji Picker",
-	description: "Set a custom emoji icon for each category.",
+	label: "Category emoji picker",
+	description: "Adds an emoji or image to each category.",
 	group: "Categories",
 	icon: "image",
 	writes: "Adds the emoji you pick to the category's name.",

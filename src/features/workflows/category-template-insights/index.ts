@@ -110,8 +110,8 @@ async function migratedMode(key: string, value: unknown): Promise<Mode> {
 
 export const categoryTemplateInsights = defineSetting({
 	type: "select",
-	label: "Category Template Insights",
-	description: "Progress bars showing how funded each category's template is.",
+	label: "Template bars",
+	description: "Shows how funded each category's template is.",
 	icon: "interest",
 	context: {
 		key: "actual-category-template-insights",

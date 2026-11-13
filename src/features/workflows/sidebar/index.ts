@@ -40,7 +40,7 @@ export const experimentalSidebar = defineSetting({
 	type: "checkbox",
 	label: "Live sidebar",
 	description:
-		"ABT's sidebar, with live balances, account groups, search and shortcuts. Off shows Actual's own.",
+		"Replaces Actual's sidebar with one that has live balances, account groups and shortcuts.",
 	group: "Sidebar",
 	writes:
 		"Renames an account, runs its bank sync, or edits account groups when you do so from the sidebar.",
@@ -86,8 +86,7 @@ export const experimentalSidebar = defineSetting({
 export const experimentalSidebarLayout = defineSetting({
 	type: "custom",
 	label: "Live sidebar layout",
-	description:
-		"Standard sidebar, or an icon bar with a separate accounts panel. Applies when the live sidebar is on.",
+	description: "A standard sidebar, or an icon bar with a separate accounts panel.",
 	group: "Sidebar",
 	context: {
 		key: LAYOUT_KEY,

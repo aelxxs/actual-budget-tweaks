@@ -7,8 +7,8 @@ import { BUDGET_TOTALS, ROW } from "@lib/actual-dom";
 
 export const budgetTableRowHeight = defineSetting({
 	type: "custom",
-	label: "Budget Table Row Height",
-	description: "Adjust how tall each budget table row is.",
+	label: "Budget row height",
+	description: "Sets how tall each budget row is.",
 	group: "Budget",
 	context: {
 		key: "actual-slimmer-budgetrows",

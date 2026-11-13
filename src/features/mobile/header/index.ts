@@ -38,8 +38,7 @@ function markHeaders() {
 export const mobileHeader = defineSetting({
 	type: "checkbox",
 	label: "Header",
-	description:
-		"Gives page headers a native look: the page's colour, a hairline, and a plain title.",
+	description: "Gives page headers a native look.",
 	group: "Mobile",
 	icon: "layout",
 	platform: "mobile",

@@ -217,7 +217,7 @@ const CSS = `
 
 export const modernTitlebar = defineSetting({
 	type: "checkbox",
-	label: "Modern Titlebar",
+	label: "Modern titlebar",
 	description: "Restyles the top bar and adds a theme menu.",
 	group: "General",
 	icon: "layout",

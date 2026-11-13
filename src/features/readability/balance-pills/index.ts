@@ -169,8 +169,8 @@ function clearAll(): void {
 
 export const balancePills = defineSetting({
 	type: "checkbox",
-	label: "Balance Status Pills",
-	description: "Adds an icon to each balance's status, so it doesn't rely on colour alone.",
+	label: "Balance status pills",
+	description: "Adds an icon to each balance's status, so it doesn't rely on color alone.",
 	group: "Budget",
 	icon: "gauge",
 	preview: BalancePillsPreview,

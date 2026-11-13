@@ -15,8 +15,8 @@ const CSS = `
 
 export const alternatingTransactionRows = defineSetting({
 	type: "checkbox",
-	label: "Alternating Transaction Row Colors",
-	description: "Zebra-stripe the transaction table for easier scanning.",
+	label: "Striped rows",
+	description: "Shades every other row in the transaction table.",
 	group: "Transactions",
 	icon: "rows",
 	preview: AlternatingRowsPreview,

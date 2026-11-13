@@ -811,8 +811,8 @@ function amountColumnCss(column: AmountColumn, testIds: string[], rootSuffix = "
 
 export const resizableTransactionColumns = defineSetting({
 	type: "checkbox",
-	label: "Resizable Transaction Columns",
-	description: "Drag column edges to resize the transaction table.",
+	label: "Resizable columns",
+	description: "Drag a column's edge in the transaction table to resize it.",
 	group: "Transactions",
 	icon: "layout",
 	context: {

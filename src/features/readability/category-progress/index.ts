@@ -98,8 +98,8 @@ const CSS = `
 
 export const categoryProgress = defineSetting({
 	type: "checkbox",
-	label: "Category Progress Indicators",
-	description: "A progress ring next to each budget balance — hover for spending details.",
+	label: "Progress rings",
+	description: "Adds a progress ring beside each balance. Hover it for spending details.",
 	group: "Budget",
 	icon: "gauge",
 	preview: CategoryProgressPreview,

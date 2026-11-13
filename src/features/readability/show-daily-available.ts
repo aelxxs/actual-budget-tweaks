@@ -85,8 +85,8 @@ function cleanup() {
 
 export const showDailyAvailable = defineSetting({
 	type: "checkbox",
-	label: "Show Daily Available",
-	description: "Show what an account's balance allows per day for the rest of the month.",
+	label: "Daily available",
+	description: "Shows how much an account can spend per day for the rest of the month.",
 	group: "Accounts",
 	icon: "calculator",
 	context: {

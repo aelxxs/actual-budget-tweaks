@@ -237,8 +237,8 @@ function cleanup(unwatch: () => void, stopWatchingRoute: () => void): void {
 
 export const spendingCalendar = defineSetting({
 	type: "checkbox",
-	label: "Spending Calendar",
-	description: "A calendar view of daily spending, added to the sidebar.",
+	label: "Spending calendar",
+	description: "Adds a calendar of daily spending to the sidebar.",
 	icon: "calendar",
 	context: {
 		key: "spending-calendar-enabled",

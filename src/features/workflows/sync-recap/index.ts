@@ -127,8 +127,7 @@ function placeButton(): () => void {
 export const syncRecap = defineSetting({
 	type: "checkbox",
 	label: "Sync recap",
-	description:
-		"Keeps what each bank sync or import brings in for you to review, with a count in the titlebar.",
+	description: "Lists what each bank sync or import added, for you to review.",
 	icon: "download",
 	group: "Accounts",
 	writes: "Sets a transaction's category when you pick one in the recap.",

@@ -128,7 +128,7 @@ function watchSwipe(): () => void {
 export const mobileModalSheets = defineSetting({
 	type: "checkbox",
 	label: "Modals as sheets",
-	description: "Opens Actual's pop-up windows as sheets from the bottom, closed by swiping down.",
+	description: "Opens pop-ups as sheets from the bottom that you swipe down to close.",
 	group: "Mobile",
 	icon: "layout",
 	platform: "mobile",

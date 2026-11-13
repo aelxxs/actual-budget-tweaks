@@ -125,9 +125,9 @@ function sync() {
 
 export const transactionInspector = defineSetting({
 	type: "checkbox",
-	label: "Transaction Inspector",
+	label: "Transaction inspector",
 	description:
-		"Inspect the transaction you select in a side panel: payee history, the rules that mention it, and its schedule.",
+		"Shows the selected transaction's payee history, rules and schedule in a side panel.",
 	group: "General",
 	icon: "eye",
 	context: {

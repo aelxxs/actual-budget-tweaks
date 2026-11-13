@@ -4,8 +4,8 @@ import BorderRadiusPicker from "./Picker.svelte";
 
 export const borderRadius = defineSetting({
 	type: "custom",
-	label: "Border Radius",
-	description: "Corner roundness for cards and buttons app-wide.",
+	label: "Rounded corners",
+	description: "Sets how round cards and buttons are.",
 	group: "General",
 	context: {
 		key: "border-radius",

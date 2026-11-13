@@ -184,8 +184,8 @@ function cleanup() {
 
 export const categoryColorDots = defineSetting({
 	type: "checkbox",
-	label: "Category Color Dots",
-	description: "Show a colored dot for each transaction's category.",
+	label: "Category color dots",
+	description: "Gives each category a colored dot in the budget and transactions.",
 	group: "Categories",
 	icon: "palette",
 	context: {

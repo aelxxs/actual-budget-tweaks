@@ -160,8 +160,7 @@ const COMPACT_CSS = `
 export const mobileBudgetCards = defineSetting({
 	type: "select",
 	label: "Cards",
-	description:
-		"Budget groups, account lists and report widgets as rounded cards, or flush sections.",
+	description: "Shows budget groups, accounts and reports as rounded cards or flush sections.",
 	group: "Mobile",
 	icon: "square",
 	platform: "mobile",

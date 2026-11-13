@@ -24,7 +24,7 @@ function markLists() {
 export const mobileTransactionList = defineSetting({
 	type: "checkbox",
 	label: "Transaction list",
-	description: "Restyles account transactions as a native list, with quiet date headings.",
+	description: "Shows transactions as a native list with date headings.",
 	group: "Mobile",
 	icon: "rows",
 	platform: "mobile",

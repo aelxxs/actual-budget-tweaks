@@ -5,8 +5,7 @@ import CustomizeButton from "./components/CustomizeButton.svelte";
 export const customizeSidebarEntry = defineSetting({
 	type: "custom",
 	label: "Customize sidebar",
-	description:
-		"Layout, density, search, shortcuts and account details, changed beside the sidebar.",
+	description: "Opens the sidebar's layout, density, search and shortcut settings.",
 	group: "Sidebar",
 	context: {
 		key: "customize-sidebar-entry",

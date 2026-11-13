@@ -111,9 +111,9 @@ const modeOf = (value: unknown): Mode =>
 
 export const insetPanels = defineSetting({
 	type: "select",
-	label: "Inset Panels",
+	label: "Inset panels",
 	description:
-		"Sets the sidebar and page as rounded panels on a frame. Floating page blends the sidebar into the frame.",
+		"Shows the sidebar and page as rounded panels on a frame. Floating page blends the sidebar into the frame.",
 	group: "General",
 	icon: "layout",
 	platform: "desktop",

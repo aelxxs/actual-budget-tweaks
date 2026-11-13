@@ -12,8 +12,8 @@ const ROW_PAD: Record<string, string> = {
 
 export const sidebarDensity = defineSetting({
 	type: "custom",
-	label: "Sidebar Density",
-	description: "Adjust the spacing of accounts, nav links, and search in the live sidebar.",
+	label: "Sidebar density",
+	description: "Sets the spacing in the live sidebar.",
 	group: "Sidebar",
 	context: {
 		key: "actual-sidebar-account-spacing",
