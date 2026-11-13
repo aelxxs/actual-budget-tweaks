@@ -229,13 +229,15 @@ export const BUILTIN_CSS = `:root {
 	/* Pills */
 	--color-pillBackground: var(--ctp-mantle);
 	--color-pillBackgroundLight: var(--ctp-surface0);
-	--color-pillBackgroundSelected: var(--ctp-mauve);
+	/* A tint, not solid mauve: Actual's rule stage buttons and multi-select chips paint this behind
+	   the page's own text without setting pillTextSelected. */
+	--color-pillBackgroundSelected: color-mix(in srgb, var(--ctp-mauve) 35%, transparent);
 	--color-pillBorder: var(--ctp-surface0);
 	--color-pillBorderDark: var(--ctp-surface0);
 	--color-pillBorderSelected: var(--ctp-lavender);
 	--color-pillText: var(--ctp-subtext1);
 	--color-pillTextHighlighted: var(--ctp-text);
-	--color-pillTextSelected: var(--ctp-base);
+	--color-pillTextSelected: var(--ctp-text);
 	--color-pillTextSubdued: var(--ctp-overlay0);
 
 	/* Reports */
