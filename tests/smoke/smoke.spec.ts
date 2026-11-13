@@ -123,9 +123,16 @@ async function enableEverything(page: Page): Promise<void> {
 	const keys = SETTINGS.filter((setting) => setting.type === "checkbox").map(
 		(setting) => setting.key,
 	);
-	await page.evaluate((keys) => {
+	await page.evaluate(async (keys) => {
+		const send = (window as unknown as { $send: (name: string, args?: unknown) => Promise<any> })
+			.$send;
+		const user = await send("subscribe-get-user");
 		for (const key of keys) {
 			localStorage.setItem(`local:${key}`, "true");
+			await send("preferences/save", {
+				id: user?.userId ? `abt:${user.userId}:${key}` : `abt:${key}`,
+				value: "true",
+			});
 		}
 	}, keys);
 	await page.reload();
@@ -249,6 +256,28 @@ test("ABT on every page", async ({ page }) => {
 				.soft(customizePanel.getByRole("checkbox", { name: label, exact: true }), `${key} is on`)
 				.toBeChecked();
 		}
+		for (const layout of ["Standard", "Split"]) {
+			await customizePanel.getByRole("button", { name: layout, exact: true }).click();
+			await customizePanel.getByRole("button", { name: "Done", exact: true }).click();
+			const sidebar = page.locator("[data-abt-live-sidebar]");
+			for (const [key, label] of [
+				["graph-view", "Graph"],
+				["spending-calendar-enabled", "Calendar"],
+			]) {
+				const row = page.locator(`.settings-page [data-testid="${key}"]`);
+				const toggle = row.locator('input[type="checkbox"]');
+				const link = sidebar.getByRole("button", { name: label, exact: true });
+				await expect(link.first()).toBeVisible();
+				await row.locator(".abt-setting__label").click();
+				await expect(toggle).not.toBeChecked();
+				await expect(link).toHaveCount(0);
+				await row.locator(".abt-setting__label").click();
+				await expect(toggle).toBeChecked();
+				await expect(link.first()).toBeVisible();
+			}
+			await page.locator("[data-abt-customize-trigger]").click();
+		}
+		await customizePanel.getByRole("button", { name: "Done", exact: true }).click();
 	});
 
 	await page.setViewportSize({ width: 420, height: 850 });

@@ -59,17 +59,32 @@
 		return Boolean(route()) && location.pathname === `/accounts/${id}`;
 	}
 
-	// See PrimaryNav.svelte for the full explanation of both of these.
 	let calendarFeatureEnabled = $state(false);
 	let graphFeatureEnabled = $state(false);
 
 	$effect(() => {
-		getValue<boolean>(spendingCalendar.context.key, spendingCalendar.context.defaultValue).then(
-			(v) => (calendarFeatureEnabled = v),
-		);
-		getValue<boolean>(graphView.context.key, graphView.context.defaultValue).then(
-			(v) => (graphFeatureEnabled = v),
-		);
+		const links = [
+			[spendingCalendar, (value: boolean) => (calendarFeatureEnabled = value)],
+			[graphView, (value: boolean) => (graphFeatureEnabled = value)],
+		] as const;
+		const stops = links.map(([setting, update]) => {
+			const { key, defaultValue } = setting.context;
+			let stale = false;
+			const stop = watchValue<boolean>(key, (value) => {
+				stale = true;
+				update(value ?? defaultValue);
+			});
+			void getValue<boolean>(key, defaultValue).then((value) => {
+				if (!stale) {
+					update(value);
+				}
+			});
+			return () => {
+				stale = true;
+				stop();
+			};
+		});
+		return () => stops.forEach((stop) => stop());
 	});
 
 	function go(page: Page) {

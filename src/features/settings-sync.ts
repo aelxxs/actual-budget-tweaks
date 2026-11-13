@@ -1,7 +1,7 @@
 import { loadCurrentBudgetId, notify, send } from "@lib/utilities/actual-api";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { createLogger } from "@lib/utilities/logger";
-import { getValue, hasValue, onSetValue, setValue } from "@lib/utilities/store";
+import { getValue, hasValue, onSetValue, removeValue, setValue } from "@lib/utilities/store";
 import { reapplySetting } from "./runtime";
 import type { Setting } from "./types";
 import { BUDGET_LINK } from "@lib/actual-dom";
@@ -160,18 +160,20 @@ export async function pushStoredSettings(): Promise<void> {
 }
 
 /**
- * Settings follow the open budget: its values win, and ones it doesn't have yet are seeded
- * from this browser. On a shared budget each person's look and feel is their own, while the
+ * Settings follow the open budget: missing values use defaults, never another budget's cache.
+ * On a shared budget each person's look and feel is their own, while the
  * budget's data (groups, colours, icons) is everyone's. Browser storage stays the cache that
  * every page paints from.
  */
 export function startSettingsSync(settings: Setting[]): () => void {
 	const live = new Map<string, Setting>();
+	const defaults = new Map<string, unknown>();
 	for (const s of settings) {
 		if (s.type === "core") {
 			continue;
 		}
 		synced.add(s.context.key);
+		defaults.set(s.context.key, s.context.defaultValue);
 		if (s.type !== "custom") {
 			live.set(s.context.key, s);
 		}
@@ -219,32 +221,24 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			// shared; an emptied shared row counts as nothing to start from.
 			const firstVisit = own !== PREFIX + key && prefs[own] === undefined;
 			const remote = firstVisit ? (prefs[PREFIX + key] ?? undefined) : prefs[own];
-			if (remote === undefined) {
-				if (await hasValue(key)) {
-					void push(key, await getValue(key, null));
-				}
-				continue;
-			}
-			// Undoing the first save of a key leaves its row empty; keep what this browser has.
-			if (remote === null) {
-				continue;
-			}
 			// getValue reads a stored null as missing, which would never match the budget's "null".
 			const local = (await hasValue(key)) ? await getValue<unknown>(key, null) : undefined;
-			let value: unknown;
-			try {
-				value = JSON.parse(remote);
-			} catch {
-				continue;
+			let value = defaults.get(key);
+			if (remote != null) {
+				try {
+					value = JSON.parse(remote);
+				} catch {
+					log.error(`invalid preference "${key}"; using its default`);
+				}
 			}
 			// Their own copy from now on, which their later changes update.
-			if (firstVisit) {
+			if (firstVisit && remote != null) {
 				void push(key, value);
 			}
-			if (local !== undefined && sameValue(local, value)) {
+			if (sameValue(local, value)) {
 				continue;
 			}
-			await adopt(key, () => setValue(key, value));
+			await adopt(key, () => (value === undefined ? removeValue(key) : setValue(key, value)));
 			const setting = live.get(key);
 			if (setting) {
 				await reapplySetting(setting, value);

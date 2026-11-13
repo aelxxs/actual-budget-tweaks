@@ -5,26 +5,38 @@
 	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import { navigate } from "@lib/utilities/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { getValue, setValue, watchValue } from "@lib/utilities/store";
 	import { CalendarDays, ChevronDown, Network } from "@lucide/svelte";
 	import { settingsItem, settingsMenu } from "../lib/nav";
 	import { mainItems, settingsItems, trackSidebarMenu } from "../lib/menu.svelte";
 	import { route, trackRoute } from "../lib/route.svelte";
 
-	// Only shown if the user has the Spending Calendar feature enabled — reads
-	// its checkbox setting directly (getValue/setValue is a flat 1:1 mapping
-	// to storage keyed by the setting's own context.key, per features/runtime.ts,
-	// so this is safe to read from an unrelated feature).
 	let calendarFeatureEnabled = $state(false);
 	let graphFeatureEnabled = $state(false);
 
 	$effect(() => {
-		getValue<boolean>(spendingCalendar.context.key, spendingCalendar.context.defaultValue).then(
-			(v) => (calendarFeatureEnabled = v),
-		);
-		getValue<boolean>(graphView.context.key, graphView.context.defaultValue).then(
-			(v) => (graphFeatureEnabled = v),
-		);
+		const links = [
+			[spendingCalendar, (value: boolean) => (calendarFeatureEnabled = value)],
+			[graphView, (value: boolean) => (graphFeatureEnabled = value)],
+		] as const;
+		const stops = links.map(([setting, update]) => {
+			const { key, defaultValue } = setting.context;
+			let stale = false;
+			const stop = watchValue<boolean>(key, (value) => {
+				stale = true;
+				update(value ?? defaultValue);
+			});
+			void getValue<boolean>(key, defaultValue).then((value) => {
+				if (!stale) {
+					update(value);
+				}
+			});
+			return () => {
+				stale = true;
+				stop();
+			};
+		});
+		return () => stops.forEach((stop) => stop());
 	});
 
 	// The spending calendar isn't a real Actual route — it's a DOM overlay this
