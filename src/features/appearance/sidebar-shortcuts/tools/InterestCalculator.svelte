@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fmtNumber } from "@lib/utilities/currency";
 	// Closing is handled by the parent popover's own backdrop/outside-click
 	// logic; this component doesn't need to trigger it itself.
 	const { onClose: _onClose } = $props<{ onClose: () => void }>();
@@ -30,7 +31,7 @@
 	});
 
 	function fmt(n: number): string {
-		return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		return fmtNumber(n, { min: 2, max: 2 });
 	}
 </script>
 

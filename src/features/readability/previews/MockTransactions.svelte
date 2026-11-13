@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { CircleCheck, Lock } from "@lucide/svelte";
+	import { fmtNumber } from "@lib/utilities/currency";
 
 	/** A few rows of Actual's transaction table, for the transaction tweaks' previews. */
 	const {
@@ -16,8 +17,7 @@
 		{ payee: "Electric Co", category: "Bills", amount: -88.1, state: "" },
 	];
 
-	const fmt = (n: number) =>
-		n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+	const fmt = (n: number) => fmtNumber(n, { min: 2, max: 2 });
 </script>
 
 <!-- One grid for every row (rows use display: contents), so the columns line up. -->

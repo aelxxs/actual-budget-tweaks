@@ -1,4 +1,4 @@
-import { query } from "@lib/utilities/actual-api";
+import { onSyncedPref, query } from "@lib/utilities/actual-api";
 import { createLogger } from "@lib/utilities/logger";
 
 const log = createLogger("date-format");
@@ -15,12 +15,33 @@ const DEFAULTS: DatePrefs = { dateFormat: "MM/dd/yyyy", firstDayOfWeek: 0 };
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 let prefs = $state<DatePrefs>({ ...DEFAULTS });
+let watching = false;
+
+/** Follows the prefs as they change in Actual's settings, so dates redraw without a reload. */
+function watchDatePrefs(): void {
+	if (watching) {
+		return;
+	}
+	watching = true;
+	onSyncedPref("dateFormat", (value) => {
+		if (value) {
+			prefs.dateFormat = value;
+		}
+	});
+	onSyncedPref("firstDayOfWeekIdx", (value) => {
+		const day = Number(value);
+		if (value != null && Number.isInteger(day) && day >= 0 && day <= 6) {
+			prefs.firstDayOfWeek = day;
+		}
+	});
+}
 
 /**
  * Re-reads the prefs, which are synced per budget and can change in Settings, so callers
  * refresh when they load their own data. Keeps the last known values if the read fails.
  */
 export async function loadDatePrefs(): Promise<DatePrefs> {
+	watchDatePrefs();
 	try {
 		const rows = await query<{ id: string; value: string }[]>("preferences", {
 			filter: { id: { $oneof: ["dateFormat", "firstDayOfWeekIdx"] } },
@@ -39,6 +60,7 @@ export async function loadDatePrefs(): Promise<DatePrefs> {
 
 /** The current prefs; reactive, so markup re-renders once they load. */
 export function datePrefs(): DatePrefs {
+	watchDatePrefs();
 	return prefs;
 }
 
@@ -53,6 +75,7 @@ function toDate(value: Date | string): Date {
 
 /** A full date in the user's format, e.g. 05/10/2026 for dd/MM/yyyy. */
 export function formatDate(value: Date | string): string {
+	watchDatePrefs();
 	const d = toDate(value);
 	return prefs.dateFormat
 		.replace("yyyy", String(d.getFullYear()))
@@ -62,6 +85,7 @@ export function formatDate(value: Date | string): string {
 
 /** A date with the month named, ordered like the user's format: "5 Oct" or "Oct 5". */
 export function formatDayMonth(value: Date | string, month: "short" | "long" = "short"): string {
+	watchDatePrefs();
 	const d = toDate(value);
 	const name = d.toLocaleString("en-US", { month });
 	return prefs.dateFormat.startsWith("dd") ? `${d.getDate()} ${name}` : `${name} ${d.getDate()}`;

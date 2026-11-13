@@ -3,6 +3,7 @@
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
+	import { formatDayMonth } from "@lib/utilities/date-format.svelte";
 	import { onMount, untrack } from "svelte";
 	import {
 		loadCategoryGroups,
@@ -101,13 +102,10 @@
 		if (days === 1) {
 			return `Yesterday, ${time}`;
 		}
-		return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+		return `${d.toLocaleDateString("en-US", { weekday: "short" })}, ${formatDayMonth(d)}`;
 	}
 
-	function shortDate(iso: string): string {
-		const [y, m, d] = iso.split("-").map(Number);
-		return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-	}
+	const shortDate = (iso: string) => formatDayMonth(iso);
 
 	async function choose(tx: RecapTransaction, category: string) {
 		const before = tx.category;

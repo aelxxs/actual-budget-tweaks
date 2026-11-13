@@ -31,7 +31,7 @@
 	import { themes } from "@lib/design";
 	import { dispatch, navigate, notify, query as queryTable, send } from "@lib/utilities/actual-api";
 	import { calculate } from "@lib/utilities/calc";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { fmtMoney, fmtNumber } from "@lib/utilities/currency";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
 	import { TWEAKS_PATH, searchTweaksFor } from "@lib/utilities/settings-page";
 	import { getValue, setValue } from "@lib/utilities/store";
@@ -718,9 +718,7 @@
 								<ArrowUpRight class="cp-go" strokeWidth={2.2} />
 							{:else if item.kind === "math"}
 								<span class="cp-item-glyph cp-item-icon"><Calculator strokeWidth={1.5} /></span>
-								<span class="cp-item-label cp-math"
-									>= {item.value.toLocaleString(undefined, { maximumFractionDigits: 10 })}</span
-								>
+								<span class="cp-item-label cp-math">= {fmtNumber(item.value, { max: 10 })}</span>
 								<Copy class="cp-go" strokeWidth={2.2} />
 							{:else if item.kind === "setting"}
 								<span class="cp-item-glyph cp-item-icon"><ToggleRight strokeWidth={1.5} /></span>
