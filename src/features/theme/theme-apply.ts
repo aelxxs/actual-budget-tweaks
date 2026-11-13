@@ -6,7 +6,7 @@ import { watchElement } from "@lib/utilities/dom-watcher";
 import { editorState } from "./editor-state.svelte";
 import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte";
 import { STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
-import type { Mode } from "./studio/generator";
+import { hexToOklch, type Mode, oklchToHex } from "./studio/generator";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
 
 export type RemoteTheme = {
@@ -29,6 +29,36 @@ function clearStudioLine(root: HTMLElement, keys: Record<string, string>) {
 	if (!("--ctp-line" in keys)) {
 		root.style.removeProperty("--ctp-line");
 	}
+}
+
+const CHART_KEYS = [
+	"teal",
+	"yellow",
+	"peach",
+	"red",
+	"blue",
+	"pink",
+	"green",
+	"mauve",
+	"rosewater",
+];
+
+/**
+ * Lifts soft pastels for charts only (chroma toward a 0.17 floor), resolved to hex because
+ * Actual's donut chart parses only hex when shading categories and greys out anything else.
+ */
+function chartCSS(keys: Record<string, string>): string {
+	const lines = CHART_KEYS.flatMap((name, i) => {
+		const hex = keys[`--ctp-${name}`];
+		if (!/^#[\da-f]{6}$/i.test(hex ?? "")) {
+			return [];
+		}
+		const { L, C, h } = hexToOklch(hex);
+		return [
+			`--color-chartQual${i + 1}: ${oklchToHex(L, Math.max(C, Math.min(C * 1.5, 0.17)), h)};`,
+		];
+	});
+	return lines.length ? `:root {\n\t${lines.join("\n\t")}\n}\n` : "";
 }
 
 export function setRootProperty(root: HTMLElement, name: string, value: string) {
@@ -356,22 +386,6 @@ export const BUILTIN_CSS = `:root {
 	--border: 1px solid var(--color-tableBorder);
 }
 
-/* Lift soft pastels for charts only (chroma toward a 0.17 floor); already-vivid
-   palettes stay as they are. Gated, since an unsupported value would blank the token. */
-@supports (color: oklch(from red l c h)) {
-	:root {
-		--color-chartQual1: oklch(from var(--ctp-teal) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual2: oklch(from var(--ctp-yellow) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual3: oklch(from var(--ctp-peach) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual4: oklch(from var(--ctp-red) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual5: oklch(from var(--ctp-blue) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual6: oklch(from var(--ctp-pink) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual7: oklch(from var(--ctp-green) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual8: oklch(from var(--ctp-mauve) l max(c, min(c * 1.5, 0.17)) h);
-		--color-chartQual9: oklch(from var(--ctp-rosewater) l max(c, min(c * 1.5, 0.17)) h);
-	}
-}
-
 /* Actual's sidebar colours negative balances with the page's errorText; follow the sidebar's. */
 ${ACCOUNTS_LINKS} {
 	--color-errorText: var(--color-sidebarTextFailed);
@@ -402,7 +416,7 @@ export function applyUserPaletteTheme(id: string, keys: Record<string, string>) 
 	for (const [varName, val] of Object.entries(keys)) {
 		setRootProperty(root, varName, val);
 	}
-	applyGlobalCSS(BUILTIN_CSS, TOKENS_STYLE_ID);
+	applyGlobalCSS(BUILTIN_CSS + chartCSS(keys), TOKENS_STYLE_ID);
 	editorState.activeTheme = id;
 	applyOverrides(id);
 }
@@ -490,7 +504,7 @@ export function applyPalette(name: string) {
 	for (const [varName, val] of Object.entries(palette.keys)) {
 		setRootProperty(root, varName, val);
 	}
-	applyGlobalCSS(BUILTIN_CSS + (palette.css ?? ""), TOKENS_STYLE_ID);
+	applyGlobalCSS(BUILTIN_CSS + chartCSS(palette.keys) + (palette.css ?? ""), TOKENS_STYLE_ID);
 	editorState.activeTheme = name;
 	applyOverrides(name);
 }
