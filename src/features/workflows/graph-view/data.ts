@@ -1,3 +1,4 @@
+import { typicalInterval } from "@features/workflows/transaction-inspector/data";
 import { query } from "@lib/utilities/actual-api";
 
 export type NodeKind = "account" | "payee" | "category";
@@ -61,6 +62,8 @@ export interface GraphData {
 	similar: string[][];
 	/** Same account, payee and amount within a couple of days, each set oldest first. */
 	duplicates: TxRow[][];
+	/** Steady bills that went up, furthest above their usual first. */
+	unusual: Unusual[];
 	/** Money through each payee in the range, for ranking which highlighted ones to draw. */
 	payeeTotals: Map<string, number>;
 	/** The sending side of each transfer, off-budget accounts included, and the account it went to. */
@@ -70,7 +73,15 @@ export interface GraphData {
 /** How many highlighted payees (or similar-payee groups) the graph draws; the panel lists the rest. */
 export const HIGHLIGHT_LIMIT = 25;
 
-export type Highlight = "mixed" | "shared" | "similar" | "duplicates" | null;
+export type Highlight = "mixed" | "shared" | "similar" | "duplicates" | "unusual" | null;
+
+export interface Unusual {
+	row: TxRow;
+	/** The payee's median charge, signed like the row. */
+	usual: number;
+	/** How far off the usual, as a fraction: 0.8 is 80% more. */
+	ratio: number;
+}
 
 // Words that don't tell one place from another: "Yumbit Inc" and "Yumbit" are the same place.
 const FILLER = new Set(["the", "inc", "llc", "ltd", "co", "corp", "company", "store", "shop"]);
@@ -220,6 +231,84 @@ function duplicates(rows: TxRow[]): TxRow[][] {
 	return sets.sort((a, b) => Math.abs(b[0].amount) - Math.abs(a[0].amount));
 }
 
+/** Charges a payee needs, in the range and the year before it, before any can look unusual. */
+const MIN_HISTORY = 4;
+/** A payee whose charges sit this close to their median is a steady bill, like a subscription. */
+const STEADY_SPREAD = 0.1;
+/** Billing rhythms a steady bill keeps, as days between charges: monthly, quarterly, yearly. */
+const BILL_CYCLES: [number, number][] = [
+	[27, 32],
+	[85, 95],
+	[350, 380],
+];
+
+/** How far above a steady bill's usual a charge has to be to count as a price change. */
+const STEADY_SHIFT = 0.25;
+/** Smaller differences than this, in cents, aren't worth a look. */
+const UNUSUAL_FLOOR = 500;
+
+const median = (list: number[]) => {
+	const sorted = [...list].sort((a, b) => a - b);
+	const mid = sorted.length >> 1;
+	return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+
+/**
+ * Steady bills that went up by a quarter or more, like an internet bill that jumped. A bill keeps
+ * both its price and a rhythm (monthly, quarterly, yearly); a restaurant where you order the same
+ * thing keeps only the price. An amount the
+ * payee has charged before is a second normal price (a fee next to the rent), not a change.
+ */
+function unusualCharges(rows: TxRow[], history: TxRow[]): Unusual[] {
+	const amounts = new Map<string, number[]>();
+	const dates = new Map<string, string[]>();
+	const seen = new Map<string, number>();
+	for (const r of history) {
+		if (r.payee && r.amount < 0) {
+			amounts.set(r.payee, [...(amounts.get(r.payee) ?? []), -r.amount]);
+			dates.set(r.payee, [...(dates.get(r.payee) ?? []), r.date]);
+			const key = `${r.payee}|${r.amount}`;
+			seen.set(key, (seen.get(key) ?? 0) + 1);
+		}
+	}
+	const stats = new Map<string, { usual: number; steady: boolean } | null>();
+	const statsOf = (payee: string) => {
+		if (!stats.has(payee)) {
+			const list = amounts.get(payee) ?? [];
+			const usual = list.length >= MIN_HISTORY ? median(list) : 0;
+			const gap = typicalInterval([...(dates.get(payee) ?? [])].sort().reverse());
+			const onCycle = gap != null && BILL_CYCLES.some(([lo, hi]) => gap >= lo && gap <= hi);
+			stats.set(
+				payee,
+				usual > 0
+					? {
+							usual,
+							steady:
+								onCycle && median(list.map((a) => Math.abs(a - usual))) / usual <= STEADY_SPREAD,
+						}
+					: null,
+			);
+		}
+		return stats.get(payee);
+	};
+	const found: Unusual[] = [];
+	for (const r of rows) {
+		const stat = r.payee && r.amount < 0 ? statsOf(r.payee) : null;
+		if (
+			!stat?.steady ||
+			-r.amount - stat.usual < UNUSUAL_FLOOR ||
+			(seen.get(`${r.payee}|${r.amount}`) ?? 0) > 1
+		) {
+			continue;
+		}
+		const ratio = -r.amount / stat.usual - 1;
+		if (ratio >= STEADY_SHIFT) {
+			found.push({ row: r, usual: -stat.usual, ratio });
+		}
+	}
+	return found.sort((a, b) => Math.abs(b.row.amount - b.usual) - Math.abs(a.row.amount - a.usual));
+}
+
 /** Uncategorized transactions share one category node. */
 const NONE = "uncategorized";
 
@@ -264,7 +353,7 @@ const TX_FIELDS = [
  */
 export async function loadGraphData(days: number): Promise<GraphData> {
 	const inRange = days > 0 ? [{ date: { $gte: isoDaysAgo(days) } }] : [];
-	const [all, sent, accounts, payees, categories] = await Promise.all([
+	const [all, sent, accounts, payees, categories, before] = await Promise.all([
 		query<TxRow[]>("transactions", {
 			filter: { $and: [...inRange, { transfer_id: null }] },
 			select: TX_FIELDS,
@@ -283,6 +372,20 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 			select: ["id", "name", "transfer_acct"],
 		}),
 		query<{ id: string; name: string }[]>("categories", { select: ["id", "name"] }),
+		// The year before the range, for each payee's usual charge; all time already has it.
+		days > 0
+			? query<TxRow[]>("transactions", {
+					filter: {
+						$and: [
+							{ date: { $gte: isoDaysAgo(days + 365) } },
+							{ date: { $lt: isoDaysAgo(days) } },
+							{ transfer_id: null },
+						],
+					},
+					select: ["id", "date", "account", "payee", "amount"],
+					options: { splits: "inline" },
+				})
+			: Promise.resolve([] as TxRow[]),
 	]);
 	const names = new Map<string, string>([[NONE, "Uncategorized"]]);
 	for (const list of [accounts, payees, categories]) {
@@ -316,6 +419,10 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 		),
 		similar: similarPayees(rows, names),
 		duplicates: duplicates(rows),
+		unusual: unusualCharges(rows, [
+			...before.filter((r) => r.account && onBudget.has(r.account)),
+			...rows,
+		]),
 		payeeTotals: rows.reduce(
 			(totals, r) =>
 				r.payee ? totals.set(r.payee, (totals.get(r.payee) ?? 0) + Math.abs(r.amount)) : totals,
@@ -331,7 +438,7 @@ export async function loadGraphData(days: number): Promise<GraphData> {
  * joined to its categories.
  */
 export function buildGraph(
-	{ rows, names, mixed, shared, similar, duplicates, payeeTotals, transfers }: GraphData,
+	{ rows, names, mixed, shared, similar, duplicates, unusual, payeeTotals, transfers }: GraphData,
 	expanded: ReadonlySet<string>,
 	highlight: Highlight,
 	/** Highlighted payees (or groups, by their first payee) added from the panel past the limit. */
@@ -364,17 +471,21 @@ export function buildGraph(
 		});
 	}
 	const groupOf = new Map(similar.map((g) => [g[0], g]));
-	// Sets come largest first, so the first few payees are the ones worth drawing.
-	const drawnDuplicates = new Set<string>();
-	if (highlight === "duplicates") {
-		for (const set of duplicates) {
-			if (drawnDuplicates.size >= HIGHLIGHT_LIMIT) {
+	// Flagged charges come largest first, so the first few payees are the ones worth drawing.
+	const drawnCharges = new Set<string>();
+	if (highlight === "duplicates" || highlight === "unusual") {
+		const payees =
+			highlight === "duplicates"
+				? duplicates.map((set) => set[0].payee!)
+				: unusual.map((u) => u.row.payee!);
+		for (const id of payees) {
+			if (drawnCharges.size >= HIGHLIGHT_LIMIT) {
 				break;
 			}
-			drawnDuplicates.add(set[0].payee!);
+			drawnCharges.add(id);
 		}
 		for (const id of picked) {
-			drawnDuplicates.add(id);
+			drawnCharges.add(id);
 		}
 	}
 
@@ -393,7 +504,7 @@ export function buildGraph(
 				members,
 				flagged:
 					(kind === "payee" &&
-						(drawnMixed.has(id) || similarIds.has(id) || drawnDuplicates.has(id))) ||
+						(drawnMixed.has(id) || similarIds.has(id) || drawnCharges.has(id))) ||
 					(highlight === "shared" && kind === "category" && shared.has(id)),
 			});
 		}
@@ -434,14 +545,14 @@ export function buildGraph(
 		const fromAccount = expanded.has(account);
 		const fromCategory = expanded.has(category);
 		const fromPayee = expanded.has(payeeKey);
-		const fromDuplicate = drawnDuplicates.has(payeeId);
-		const fromHighlight = drawnMixed.has(payeeId) || similarIds.has(payeeId) || fromDuplicate;
+		const fromCharge = drawnCharges.has(payeeId);
+		const fromHighlight = drawnMixed.has(payeeId) || similarIds.has(payeeId) || fromCharge;
 		if (!fromAccount && !fromCategory && !fromPayee && !fromHighlight) {
 			continue;
 		}
 		const payee = node("payee", payeeId);
 		nodes.get(payee)!.total += amount;
-		if (fromAccount || fromPayee || fromDuplicate) {
+		if (fromAccount || fromPayee || fromCharge) {
 			link(account, payee, amount);
 		}
 		if (fromCategory || fromPayee || fromHighlight) {

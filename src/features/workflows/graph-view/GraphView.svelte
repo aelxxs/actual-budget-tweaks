@@ -36,8 +36,10 @@
 		type Highlight,
 		type Searchable,
 		type TxRow,
+		type Unusual,
 	} from "./data";
 	import DuplicateList from "./DuplicateList.svelte";
+	import UnusualList from "./UnusualList.svelte";
 	import FlagList from "./FlagList.svelte";
 	import SimilarPayees from "./SimilarPayees.svelte";
 	import { dispatch, send } from "@lib/utilities/actual-api";
@@ -65,6 +67,7 @@
 	let sharedCount = $state(0);
 	let similarCount = $state(0);
 	let duplicateCount = $state(0);
+	let unusualCount = $state(0);
 	type DrawLink = {
 		key: string;
 		s: string;
@@ -172,11 +175,13 @@
 		sharedCount = data.shared.size;
 		similarCount = data.similar.length;
 		duplicateCount = data.duplicates.length;
+		unusualCount = data.unusual.length;
 		if (
 			(highlight === "mixed" && !mixedCount) ||
 			(highlight === "shared" && !sharedCount) ||
 			(highlight === "similar" && !similarCount) ||
-			(highlight === "duplicates" && !duplicateCount)
+			(highlight === "duplicates" && !duplicateCount) ||
+			(highlight === "unusual" && !unusualCount)
 		) {
 			highlight = null;
 		}
@@ -345,6 +350,11 @@
 			count: duplicateCount,
 			hint: "Charges with the same account, payee and amount a couple of days apart",
 		},
+		{
+			kind: "unusual" as const,
+			count: unusualCount,
+			hint: "Steady bills that charged more than usual",
+		},
 	]);
 
 	function collapseAll() {
@@ -412,12 +422,19 @@
 		},
 	};
 	// Header labels for a narrow page, e.g. with the side panel open.
-	const SHORT = { mixed: "Mixed", shared: "Shared", similar: "Similar", duplicates: "Dupes" };
+	const SHORT = {
+		mixed: "Mixed",
+		shared: "Shared",
+		similar: "Similar",
+		duplicates: "Dupes",
+		unusual: "Price",
+	};
 	const TITLES = {
 		mixed: LISTS.mixed.title,
 		shared: LISTS.shared.title,
 		similar: "Similar payees",
 		duplicates: "Duplicates",
+		unusual: "Price changes",
 	};
 
 	function pickHighlight(next: Exclude<Highlight, null>) {
@@ -454,6 +471,19 @@
 				},
 			});
 			sidepanel.open({ title: TITLES.similar, bodyNode: body, key: LIST_KEY });
+			return;
+		}
+		if (kind === "unusual") {
+			detail = mount(UnusualList, {
+				target: body,
+				props: {
+					note: noteFor("unusual", UNUSUAL_NOTE),
+					charges: d.unusual,
+					names: d.names,
+					onPick: pickUnusual,
+				},
+			});
+			sidepanel.open({ title: TITLES.unusual, bodyNode: body, key: LIST_KEY });
 			return;
 		}
 		if (kind === "duplicates") {
@@ -498,15 +528,35 @@
 	const DUPLICATE_NOTE =
 		"Charges with the same account, payee and amount a couple of days apart. At least one has no bank id: entered by hand, or from a file imported twice.";
 
-	/** Draws the set's payee if the graph left it out, and opens its transactions. */
-	function pickDuplicate(set: TxRow[]) {
-		const id = set[0].payee!;
+	const UNUSUAL_NOTE =
+		"Steady bills that charged a quarter or more above their usual, judged over the range and the year before it. An amount a payee has charged before isn't counted.";
+
+	/** Draws a payee if the graph left it out. */
+	function placePayee(id: string): GraphNode | undefined {
 		if (!placed.has(`payee:${id}`)) {
 			picked = new Set([...picked, id]);
 			draw(null);
 		}
-		const n = placed.get(`payee:${id}`);
+		return placed.get(`payee:${id}`);
+	}
+
+	/** Opens the set's payee and its transactions. */
+	function pickDuplicate(set: TxRow[]) {
+		const n = placePayee(set[0].payee!);
 		if (n) {
+			openDetail(n);
+		}
+	}
+
+	/** Opens the charge in the inspector over the list, or its payee's transactions without one. */
+	function pickUnusual(u: Unusual) {
+		const n = placePayee(u.row.payee!);
+		if (canInspect) {
+			if (n) {
+				selected = n.id;
+			}
+			openInspector(u.row.id);
+		} else if (n) {
 			openDetail(n);
 		}
 	}
@@ -523,7 +573,9 @@
 					? similarCount
 					: kind === "duplicates"
 						? duplicateCount
-						: 0;
+						: kind === "unusual"
+							? unusualCount
+							: 0;
 		return size > HIGHLIGHT_LIMIT
 			? `${note} The graph draws the ${HIGHLIGHT_LIMIT} largest; pick one here to add it.`
 			: note;

@@ -237,7 +237,7 @@ async function loadHistory(payee: string): Promise<PayeeHistory> {
 }
 
 /** The median gap in days between distinct dates, newest first; null with fewer than three. */
-function typicalInterval(dates: string[]): number | null {
+export function typicalInterval(dates: string[]): number | null {
 	const days = [...new Set(dates)].map((d) => Date.parse(`${d}T00:00:00Z`) / 86_400_000);
 	if (days.length < 3) {
 		return null;
