@@ -11,7 +11,7 @@ export const modernHeaders = defineSetting({
 	type: "checkbox",
 	label: "Modern headers",
 	description: "Restyles the Budget and Reports page headers.",
-	icon: "layout",
+	icon: "heading",
 	group: "General",
 	context: {
 		// Month Header's key: it was off by default, unlike the reports header it now includes.

@@ -706,7 +706,7 @@ export const monthCards = defineSetting({
 	type: "select",
 	label: "Month cards",
 	description: "The cards above your budget.",
-	icon: "sparkles",
+	icon: "layoutDashboard",
 	group: "Budget",
 	writes:
 		"Full runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget.",

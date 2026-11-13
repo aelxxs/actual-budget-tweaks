@@ -101,7 +101,7 @@ export const categoryProgress = defineSetting({
 	label: "Progress rings",
 	description: "Adds a progress ring beside each balance. Hover it for spending details.",
 	group: "Budget",
-	icon: "gauge",
+	icon: "progressRing",
 	preview: CategoryProgressPreview,
 	context: {
 		key: "category-progress-indicators",

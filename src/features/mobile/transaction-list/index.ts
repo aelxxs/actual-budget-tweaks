@@ -26,7 +26,7 @@ export const mobileTransactionList = defineSetting({
 	label: "Transaction list",
 	description: "Shows transactions as a native list with date headings.",
 	group: "Mobile",
-	icon: "rows",
+	icon: "list",
 	platform: "mobile",
 	context: {
 		key: "mobile-transaction-list",

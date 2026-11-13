@@ -85,7 +85,7 @@ export const groupOverspent = defineSetting({
 	label: "Flag overspent groups",
 	description: "Shows how many categories are overspent beside each group's name.",
 	group: "Budget",
-	icon: "alert",
+	icon: "badgeAlert",
 	context: {
 		key: "group-overspent",
 		defaultValue: false,

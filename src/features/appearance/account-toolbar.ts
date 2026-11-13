@@ -261,7 +261,7 @@ export const modernAccountToolbar = defineSetting({
 	label: "Modern account toolbar",
 	description: "Restyles the account page's buttons and search.",
 	group: "General",
-	icon: "layout",
+	icon: "rectangleEllipsis",
 	context: {
 		key: "modern-account-toolbar",
 		defaultValue: true,

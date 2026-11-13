@@ -111,7 +111,7 @@ export const modernToasts = defineSetting({
 	label: "Modern toasts",
 	description: "Restyles notifications as compact cards.",
 	group: "General",
-	icon: "layout",
+	icon: "messageSquare",
 	context: {
 		key: "modern-toasts",
 		defaultValue: true,

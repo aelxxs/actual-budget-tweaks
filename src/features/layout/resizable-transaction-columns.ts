@@ -814,7 +814,7 @@ export const resizableTransactionColumns = defineSetting({
 	label: "Resizable columns",
 	description: "Drag a column's edge in the transaction table to resize it.",
 	group: "Transactions",
-	icon: "layout",
+	icon: "columns3",
 	context: {
 		key: "resizable-transaction-columns",
 		defaultValue: true,

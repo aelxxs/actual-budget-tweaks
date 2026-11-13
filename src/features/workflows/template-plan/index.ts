@@ -958,7 +958,7 @@ export const templatePlan = defineSetting({
 	type: "checkbox",
 	label: "Budget insights",
 	description: "Shows the month's summary, templates and plan in a side panel.",
-	icon: "layout",
+	icon: "panelRight",
 	group: "Budget",
 	writes: "Applies the month's budget templates when you click Apply.",
 	guide: "/guides/budget-insights",

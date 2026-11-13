@@ -7,6 +7,7 @@ export const customizeSidebarEntry = defineSetting({
 	label: "Customize sidebar",
 	description: "Opens the sidebar's layout, density, search and shortcut settings.",
 	group: "Sidebar",
+	icon: "sliders",
 	context: {
 		key: "customize-sidebar-entry",
 		defaultValue: null,

@@ -6,7 +6,7 @@ export const sidebarGroupTotals = defineSetting({
 	label: "Account group totals",
 	description: "Shows each group's combined balance beside its name.",
 	group: "Sidebar",
-	icon: "calculator",
+	icon: "sigma",
 	context: {
 		key: "sidebar-group-totals",
 		defaultValue: false,

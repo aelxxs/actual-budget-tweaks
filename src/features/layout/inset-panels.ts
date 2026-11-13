@@ -114,7 +114,7 @@ export const insetPanels = defineSetting({
 	label: "Inset panels",
 	description: "Shows the sidebar and page as rounded panels on a frame.",
 	group: "General",
-	icon: "layout",
+	icon: "panelsTopLeft",
 	platform: "desktop",
 	context: {
 		key: "inset-panels",

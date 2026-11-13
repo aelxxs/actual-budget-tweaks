@@ -6,7 +6,7 @@ export const sidebarClosedAccounts = defineSetting({
 	label: "Show closed accounts",
 	description: "Lists closed accounts in their own section at the bottom.",
 	group: "Sidebar",
-	icon: "eyeOff",
+	icon: "archive",
 	context: {
 		key: "sidebar-show-closed",
 		defaultValue: true,

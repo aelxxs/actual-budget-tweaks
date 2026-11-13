@@ -78,7 +78,7 @@ export const colorAmounts = defineSetting({
 	label: "Color amounts",
 	description: "Colors amounts by sign in transactions, balances and budget groups.",
 	group: "General",
-	icon: "palette",
+	icon: "circleDollarSign",
 	preview: ColorAmountsPreview,
 	context: {
 		key: "color-amounts",

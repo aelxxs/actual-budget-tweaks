@@ -130,7 +130,7 @@ export const mobileModalSheets = defineSetting({
 	label: "Modals as sheets",
 	description: "Opens pop-ups as sheets from the bottom that you swipe down to close.",
 	group: "Mobile",
-	icon: "layout",
+	icon: "panelBottom",
 	platform: "mobile",
 	context: {
 		key: "mobile-modal-sheets",

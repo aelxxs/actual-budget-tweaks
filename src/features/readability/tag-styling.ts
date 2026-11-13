@@ -199,7 +199,7 @@ export const tagStyling = defineSetting({
 	label: "Tag styling",
 	description: "Shows #tags as colored pills.",
 	group: "Transactions",
-	icon: "palette",
+	icon: "hash",
 	preview: TagStylingPreview,
 	context: {
 		key: STORAGE_KEY,

@@ -220,7 +220,7 @@ export const modernTitlebar = defineSetting({
 	label: "Modern titlebar",
 	description: "Restyles the top bar and adds a theme menu.",
 	group: "General",
-	icon: "layout",
+	icon: "panelTop",
 	context: {
 		key: "modern-titlebar",
 		defaultValue: true,

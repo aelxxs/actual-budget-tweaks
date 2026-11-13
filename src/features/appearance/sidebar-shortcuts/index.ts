@@ -18,7 +18,7 @@ export const sidebarShortcutsAddTile = defineSetting({
 	type: "checkbox",
 	label: "Show add tile",
 	description: "Keeps a + tile at the end of the bar for adding shortcuts.",
-	icon: "square",
+	icon: "squarePlus",
 	context: {
 		key: "sidebar-shortcuts-add-tile",
 		defaultValue: true,

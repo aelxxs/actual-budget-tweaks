@@ -10,7 +10,7 @@
 				"platform": "desktop",
 				"label": "Budget insights",
 				"description": "Shows the month's summary, templates and plan in a side panel.",
-				"icon": "layout",
+				"icon": "panelRight",
 				"group": null,
 				"writes": "Applies the month's budget templates when you click Apply."
 			},
@@ -104,7 +104,7 @@
 				"platform": "desktop",
 				"label": "Inset panels",
 				"description": "Shows the sidebar and page as rounded panels on a frame.",
-				"icon": "layout",
+				"icon": "panelsTopLeft",
 				"group": null,
 				"writes": null
 			},
@@ -132,7 +132,7 @@
 				"platform": "desktop",
 				"label": "Modern titlebar",
 				"description": "Restyles the top bar and adds a theme menu.",
-				"icon": "layout",
+				"icon": "panelTop",
 				"group": "Components",
 				"writes": null
 			},
@@ -143,7 +143,7 @@
 				"platform": "desktop",
 				"label": "Modern headers",
 				"description": "Restyles the Budget and Reports page headers.",
-				"icon": "layout",
+				"icon": "heading",
 				"group": "Components",
 				"writes": null
 			},
@@ -165,7 +165,7 @@
 				"platform": "desktop",
 				"label": "Modern account toolbar",
 				"description": "Restyles the account page's buttons and search.",
-				"icon": "layout",
+				"icon": "rectangleEllipsis",
 				"group": "Components",
 				"writes": null
 			},
@@ -176,7 +176,7 @@
 				"platform": "desktop",
 				"label": "Modern toasts",
 				"description": "Restyles notifications as compact cards.",
-				"icon": "layout",
+				"icon": "messageSquare",
 				"group": "Components",
 				"writes": null
 			},
@@ -187,7 +187,7 @@
 				"platform": "desktop",
 				"label": "Color amounts",
 				"description": "Colors amounts by sign in transactions, balances and budget groups.",
-				"icon": "palette",
+				"icon": "circleDollarSign",
 				"group": "Amounts",
 				"writes": null
 			},
@@ -226,7 +226,7 @@
 				"platform": "desktop",
 				"label": "Customize sidebar",
 				"description": "Opens the sidebar's layout, density, search and shortcut settings.",
-				"icon": null,
+				"icon": "sliders",
 				"group": null,
 				"writes": null
 			}
@@ -298,7 +298,7 @@
 				"platform": "desktop",
 				"label": "Account group totals",
 				"description": "Shows each group's combined balance beside its name.",
-				"icon": "calculator",
+				"icon": "sigma",
 				"group": null,
 				"writes": null
 			},
@@ -309,7 +309,7 @@
 				"platform": "desktop",
 				"label": "Show closed accounts",
 				"description": "Lists closed accounts in their own section at the bottom.",
-				"icon": "eyeOff",
+				"icon": "archive",
 				"group": null,
 				"writes": null
 			}
@@ -337,7 +337,7 @@
 				"platform": "desktop",
 				"label": "Month cards",
 				"description": "The cards above your budget.",
-				"icon": "sparkles",
+				"icon": "layoutDashboard",
 				"group": "Layout",
 				"writes": "Full runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget."
 			},
@@ -348,7 +348,7 @@
 				"platform": "desktop",
 				"label": "Progress rings",
 				"description": "Adds a progress ring beside each balance. Hover it for spending details.",
-				"icon": "gauge",
+				"icon": "progressRing",
 				"group": "Readability",
 				"writes": null
 			},
@@ -359,7 +359,18 @@
 				"platform": "desktop",
 				"label": "Balance status pills",
 				"description": "Adds an icon to each balance's status, so it doesn't rely on color alone.",
-				"icon": "gauge",
+				"icon": "checkCircle",
+				"group": "Readability",
+				"writes": null
+			},
+			{
+				"key": "actual-category-template-insights",
+				"type": "select",
+				"defaultValue": "off",
+				"platform": "desktop",
+				"label": "Template bars",
+				"description": "Shows how funded each category's template is.",
+				"icon": "interest",
 				"group": "Readability",
 				"writes": null
 			},
@@ -370,7 +381,7 @@
 				"platform": "desktop",
 				"label": "Flag overspent groups",
 				"description": "Shows how many categories are overspent beside each group's name.",
-				"icon": "alert",
+				"icon": "badgeAlert",
 				"group": "Readability",
 				"writes": null
 			},
@@ -392,7 +403,7 @@
 				"platform": "desktop",
 				"label": "Category emoji picker",
 				"description": "Adds an emoji or image to each category.",
-				"icon": "image",
+				"icon": "faceGrinning",
 				"group": "Categories",
 				"writes": "Adds the emoji you pick to the category's name."
 			},
@@ -405,17 +416,6 @@
 				"description": "Hides the template and notes icons until you hover. Notes icons stay where there are notes.",
 				"icon": "note",
 				"group": "Categories",
-				"writes": null
-			},
-			{
-				"key": "actual-category-template-insights",
-				"type": "select",
-				"defaultValue": "off",
-				"platform": "desktop",
-				"label": "Template bars",
-				"description": "Shows how funded each category's template is.",
-				"icon": "interest",
-				"group": "Tools",
 				"writes": null
 			}
 		]
@@ -432,7 +432,7 @@
 				"label": "Striped rows",
 				"description": "Shades every other row in the transaction table.",
 				"icon": "rows",
-				"group": "Transactions",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -442,8 +442,8 @@
 				"platform": "desktop",
 				"label": "Row status",
 				"description": "Marks new, uncategorized and reconciled transactions.",
-				"icon": "star",
-				"group": "Transactions",
+				"icon": "flag",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -453,8 +453,8 @@
 				"platform": "all",
 				"label": "Tag styling",
 				"description": "Shows #tags as colored pills.",
-				"icon": "palette",
-				"group": "Transactions",
+				"icon": "hash",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -464,8 +464,8 @@
 				"platform": "desktop",
 				"label": "Resizable columns",
 				"description": "Drag a column's edge in the transaction table to resize it.",
-				"icon": "layout",
-				"group": "Transactions",
+				"icon": "columns3",
+				"group": null,
 				"writes": null
 			},
 			{
@@ -476,7 +476,7 @@
 				"label": "Daily available",
 				"description": "Shows how much an account can spend per day for the rest of the month.",
 				"icon": "calculator",
-				"group": "Accounts",
+				"group": null,
 				"writes": null
 			}
 		]
@@ -492,7 +492,7 @@
 				"platform": "mobile",
 				"label": "Header",
 				"description": "Gives page headers a native look.",
-				"icon": "layout",
+				"icon": "appWindow",
 				"group": null,
 				"writes": null
 			},
@@ -503,7 +503,7 @@
 				"platform": "mobile",
 				"label": "Tab bar",
 				"description": "Replaces the slide-up menu with a tab bar, and puts the other pages under More.",
-				"icon": "layout",
+				"icon": "smartphone",
 				"group": null,
 				"writes": null
 			},
@@ -514,7 +514,7 @@
 				"platform": "mobile",
 				"label": "Cards",
 				"description": "Shows budget groups, accounts and reports as rounded cards or flush sections.",
-				"icon": "square",
+				"icon": "layers",
 				"group": null,
 				"writes": null
 			},
@@ -525,7 +525,7 @@
 				"platform": "mobile",
 				"label": "Accounts",
 				"description": "Lists accounts in your sidebar groups, with their icons and group totals.",
-				"icon": "rows",
+				"icon": "wallet",
 				"group": null,
 				"writes": null
 			},
@@ -547,7 +547,7 @@
 				"platform": "mobile",
 				"label": "Modals as sheets",
 				"description": "Opens pop-ups as sheets from the bottom that you swipe down to close.",
-				"icon": "layout",
+				"icon": "panelBottom",
 				"group": null,
 				"writes": null
 			},
@@ -558,7 +558,7 @@
 				"platform": "mobile",
 				"label": "Transaction list",
 				"description": "Shows transactions as a native list with date headings.",
-				"icon": "rows",
+				"icon": "list",
 				"group": null,
 				"writes": null
 			},

@@ -162,7 +162,7 @@ export const mobileBudgetCards = defineSetting({
 	label: "Cards",
 	description: "Shows budget groups, accounts and reports as rounded cards or flush sections.",
 	group: "Mobile",
-	icon: "square",
+	icon: "layers",
 	platform: "mobile",
 	context: {
 		key: "mobile-cards",

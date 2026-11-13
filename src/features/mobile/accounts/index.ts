@@ -14,7 +14,7 @@ export const mobileAccounts = defineSetting({
 	label: "Accounts",
 	description: "Lists accounts in your sidebar groups, with their icons and group totals.",
 	group: "Mobile",
-	icon: "rows",
+	icon: "wallet",
 	platform: "mobile",
 	context: {
 		key: "mobile-accounts",

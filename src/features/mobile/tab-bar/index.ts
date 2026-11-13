@@ -8,7 +8,7 @@ export const mobileTabBar = defineSetting({
 	label: "Tab bar",
 	description: "Replaces the slide-up menu with a tab bar, and puts the other pages under More.",
 	group: "Mobile",
-	icon: "layout",
+	icon: "smartphone",
 	platform: "mobile",
 	context: {
 		key: "mobile-tab-bar",

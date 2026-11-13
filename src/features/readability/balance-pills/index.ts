@@ -172,7 +172,7 @@ export const balancePills = defineSetting({
 	label: "Balance status pills",
 	description: "Adds an icon to each balance's status, so it doesn't rely on color alone.",
 	group: "Budget",
-	icon: "gauge",
+	icon: "checkCircle",
 	preview: BalancePillsPreview,
 	context: {
 		key: "balance-status-pills",

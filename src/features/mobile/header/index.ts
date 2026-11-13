@@ -40,7 +40,7 @@ export const mobileHeader = defineSetting({
 	label: "Header",
 	description: "Gives page headers a native look.",
 	group: "Mobile",
-	icon: "layout",
+	icon: "appWindow",
 	platform: "mobile",
 	context: {
 		key: "mobile-header",

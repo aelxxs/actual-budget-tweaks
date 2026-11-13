@@ -9,7 +9,7 @@ export const rowStatus = defineSetting({
 	label: "Row status",
 	description: "Marks new, uncategorized and reconciled transactions.",
 	group: "Transactions",
-	icon: "star",
+	icon: "flag",
 	preview: RowStatusPreview,
 	context: {
 		key: "row-status",
