@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import Badge from "@lib/components/panel/Badge.svelte";
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
@@ -212,7 +213,10 @@
 					class:negative={tx.amount < 0}>{fmtMoney(tx.amount)}</span
 				>
 				<div class="meta">
-					{formatDate(tx.date)} · {tx.accountName}{tx.category ? ` · ${tx.category}` : ""}
+					{formatDate(tx.date)} · {tx.accountName}{#if tx.category}
+						· <span class="meta__cat"
+							><CategoryIcon id={tx.categoryId} size={12} />{tx.category}</span
+						>{/if}
 				</div>
 				{#if tx.notes}<div class="notes abt-privacy-number">{tx.notes}</div>{/if}
 				{#if tx.isParent || tx.isChild || tx.transfer || unusual != null}
@@ -507,5 +511,12 @@
 		margin-top: 0;
 		padding-top: 0;
 		border-top: none;
+	}
+
+	.meta__cat {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--abt-space-2);
+		vertical-align: bottom;
 	}
 </style>

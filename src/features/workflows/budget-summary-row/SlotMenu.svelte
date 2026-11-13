@@ -3,7 +3,7 @@
 	import { loadCategories } from "@lib/actual/templates/actual-data";
 	import type { Category } from "@lib/actual/templates/priority-plan";
 	import { readCells } from "@lib/actual/budget-cells";
-	import { type CategoryIcons, followCategoryIcons } from "@lib/category-icons";
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { fmtMoney } from "@lib/format/currency";
 	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
 	import {
@@ -91,11 +91,9 @@
 	let categoriesHeight = $state(0);
 	// Eased only after the first measure, so the menu opens at its height.
 	let easeHeight = $state(false);
-	let icons = $state<CategoryIcons>({});
 
 	onMount(() => {
 		requestAnimationFrame(() => (easeHeight = true));
-		return followCategoryIcons((next) => (icons = next));
 	});
 
 	function go(next: "cards" | "categories") {
@@ -285,9 +283,7 @@
 								class="sm__row sm__cat"
 								onclick={() => onPick("pinned", cat.id)}
 							>
-								{#if icons[cat.id]}
-									<img class="sm__icon" src={icons[cat.id].value} alt="" />
-								{/if}
+								<CategoryIcon id={cat.id} size={16} />
 								<span class="sm__label">{cat.name}</span>
 								{#if balance !== undefined}
 									<span class="sm__preview abt-privacy-number" class:is-neg={balance < 0}
@@ -426,14 +422,6 @@
 	.sm :global(.sm__chevron) {
 		flex: none;
 		color: var(--abt-subtle);
-	}
-
-	.sm__icon {
-		flex: none;
-		width: 16px;
-		height: 16px;
-		object-fit: contain;
-		border-radius: 3px;
 	}
 
 	.sm__back {

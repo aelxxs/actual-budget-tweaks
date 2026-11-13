@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import type { BudgetMove } from "@lib/actual/budget-moves";
 	import { fmtMoney } from "@lib/format/currency";
 	import { getCategoryName, progressState } from "./data";
@@ -98,6 +99,7 @@
 
 <div class="pop" data-state={state}>
 	<div class="pop__head">
+		<CategoryIcon id={entry.id} />
 		<span class="pop__title">{entry.name}</span>
 		{#if hasGoal}
 			<span class="pop__pct abt-privacy-number">{ratioPct}%</span>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import Badge from "@lib/components/panel/Badge.svelte";
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
@@ -138,7 +139,9 @@
 						value={allocatedVsRequested(row.allocatedCents, row.requestedCents)}
 						tone={statusTone(status)}
 						dim={status === "none" || tier.status === "none"}
-					/>
+					>
+						{#snippet leading()}<CategoryIcon id={row.catId} />{/snippet}
+					</Row>
 				{/each}
 			</Section>
 		{/each}

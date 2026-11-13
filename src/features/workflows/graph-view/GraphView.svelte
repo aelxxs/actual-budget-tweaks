@@ -49,6 +49,7 @@
 	import { dispatch, send } from "@lib/actual/actual-api";
 	import NodeDetail from "./NodeDetail.svelte";
 	import GraphSearch from "./GraphSearch.svelte";
+	import { categoryIconUrl, useCategoryIcons } from "@lib/category-icons.svelte";
 	import FilterPopover from "@features/workflows/filters/FilterPopover.svelte";
 	import FilterToggle from "@features/workflows/filters/FilterToggle.svelte";
 	import { CLEARED, loadFilters, saveFilters } from "./filters";
@@ -163,9 +164,16 @@
 	let detail: ReturnType<typeof mount> | null = null;
 	let placed = new Map<string, GraphNode>();
 
-	const iconOf = (n: GraphNode) =>
-		n.kind === "account" ? icons.get(n.id.slice("account:".length)) : undefined;
-	// Big enough for an icon to read, where the account has one.
+	$effect(() => useCategoryIcons());
+	const iconOf = (n: GraphNode) => {
+		if (n.kind === "account") {
+			return icons.get(n.id.slice("account:".length));
+		}
+		const href =
+			n.kind === "category" ? categoryIconUrl(n.id.slice("category:".length)) : undefined;
+		return href ? { href, emoji: false } : undefined;
+	};
+	// Big enough for an icon to read, where the account or category has one.
 	const radius = (n: GraphNode) =>
 		Math.max(iconOf(n) ? 10 : 0, (n.kind === "payee" ? 3 : 5) + Math.sqrt(n.total / maxTotal) * 18);
 	const end = (e: string | GraphNode) => e as GraphNode;
@@ -1018,6 +1026,22 @@
 				{/if}
 			{:else}
 				<circle class="gv__shape" r={radius(n)} data-kind={n.kind} style:fill={colorOf(n)} />
+				{@const icon = iconOf(n)}
+				{#if icon}
+					{@const r = radius(n)}
+					<clipPath id="gv-clip-{layer}-{n.id}">
+						<circle {r} />
+					</clipPath>
+					<image
+						href={icon.href}
+						x={-r}
+						y={-r}
+						width={r * 2}
+						height={r * 2}
+						clip-path="url(#gv-clip-{layer}-{n.id})"
+						preserveAspectRatio="xMidYMid slice"
+					/>
+				{/if}
 			{/if}
 		{/snippet}
 

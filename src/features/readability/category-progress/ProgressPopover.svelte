@@ -1,7 +1,9 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { fmtMoney } from "@lib/format/currency";
 
 	type Props = {
+		catId: string;
 		name: string;
 		month: string;
 		/** All amounts in cents. `spent` is positive. */
@@ -13,7 +15,7 @@
 		daysLeft: number | null;
 	};
 
-	const { name, month, budgeted, spent, balance, goalShortfall, avgSpent, daysLeft }: Props =
+	const { catId, name, month, budgeted, spent, balance, goalShortfall, avgSpent, daysLeft }: Props =
 		$props();
 
 	const ratio = $derived(budgeted > 0 ? spent / budgeted : spent > 0 ? Infinity : 0);
@@ -61,7 +63,7 @@
 
 <div class="cp">
 	<div class="cp__header">
-		<span class="cp__name">{name}</span>
+		<span class="cp__name"><CategoryIcon id={catId} />{name}</span>
 		<span class="cp__month">{month}</span>
 	</div>
 
@@ -133,6 +135,9 @@
 	}
 
 	.cp__name {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--abt-space-2);
 		font-weight: 600;
 		font-size: var(--abt-text-md);
 	}

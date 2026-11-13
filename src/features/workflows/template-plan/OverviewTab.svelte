@@ -6,7 +6,7 @@
 	import { fmtMoney } from "@lib/format/currency";
 	import { monthOf } from "@lib/format/months";
 	import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
-	import { type CategoryIcons, followCategoryIcons } from "@lib/category-icons";
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { onMount } from "svelte";
 	import { cardsInRow } from "@features/workflows/budget-summary-row/state.svelte";
 	import { templatePlanState } from "./state.svelte";
@@ -70,16 +70,11 @@
 	/** Actual's notes write the day as "November 08"; anything else is shown as written. */
 	const shortDay = (day: string) => day.replace(/^([A-Za-z]{3})[A-Za-z]* 0?(\d{1,2})$/, "$1 $2");
 
-	/** Icons people picked for their categories, shown beside the income rows. */
-	let categoryIcons = $state<CategoryIcons>({});
-
 	onMount(() => {
-		const stopIcons = followCategoryIcons((icons) => (categoryIcons = icons));
 		loadDatePrefs();
 		if (!templatePlanState.overviewData && !templatePlanState.overviewLoading) {
 			templatePlanState.onTabChange?.("overview");
 		}
-		return stopIcons;
 	});
 </script>
 
@@ -312,9 +307,7 @@
 				{#each income.categories as cat (cat.id)}
 					<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted">
 						{#snippet leading()}
-							{#if categoryIcons[cat.id]}
-								<img class="abt-tab-overview-cat-icon" src={categoryIcons[cat.id].value} alt="" />
-							{/if}
+							<CategoryIcon id={cat.id} />
 						{/snippet}
 					</Row>
 				{:else}
@@ -345,13 +338,7 @@
 						{#each income.categories as cat (cat.id)}
 							<Row name={cat.name} value={fmtMoney(cat.amount)} tone="muted">
 								{#snippet leading()}
-									{#if categoryIcons[cat.id]}
-										<img
-											class="abt-tab-overview-cat-icon"
-											src={categoryIcons[cat.id].value}
-											alt=""
-										/>
-									{/if}
+									<CategoryIcon id={cat.id} />
 								{/snippet}
 							</Row>
 						{/each}
@@ -602,15 +589,6 @@
 		margin-top: var(--abt-space-3);
 		padding-top: var(--abt-space-3);
 		border-top: 1px solid var(--abt-ink-2);
-	}
-
-	.abt-tab-overview-cat-icon {
-		width: 14px;
-		height: 14px;
-		margin-right: 6px;
-		flex-shrink: 0;
-		object-fit: contain;
-		border-radius: 2px;
 	}
 
 	/* The Reassigned card's "Show all": a quiet link under the list. */

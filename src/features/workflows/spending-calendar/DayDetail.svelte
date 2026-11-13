@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { categoryIconUrl, useCategoryIcons } from "@lib/category-icons.svelte";
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { ArrowLeftRight } from "@lucide/svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
@@ -57,13 +59,17 @@
 	const actualTxs = $derived(transactions.filter((t) => !t.upcoming && !t.missed));
 	const upcomingTxs = $derived(transactions.filter((t) => t.upcoming));
 	const missedTxs = $derived(transactions.filter((t) => t.missed));
+
+	$effect(() => useCategoryIcons());
 </script>
 
 {#snippet txDetails(tx: DayTransaction, showCategory: boolean)}
 	{#if (showCategory && tx.categoryName) || (tx.accountName && !tx.transfer) || tx.outsideBalance || tx.scheduleId}
 		<div class="dd__tx-meta">
 			{#if showCategory && tx.categoryName}
-				<span style="color: {catColor(tx.categoryId)}">{tx.categoryName}</span>
+				<span class="dd__cat" style="color: {catColor(tx.categoryId)}"
+					><CategoryIcon id={tx.categoryId} size={12} />{tx.categoryName}</span
+				>
 			{/if}
 			{#if tx.accountName && !tx.transfer}
 				<span>{tx.accountName}</span>
@@ -107,7 +113,11 @@
 				{@const pct = totalSpent > 0 ? Math.round((cat.amount / totalSpent) * 100) : 0}
 				<Row name={cat.name} meta={`${pct}%`} value={fmtMoney(-cat.amount)}>
 					{#snippet leading()}
-						<span class="dd__cat-dot" style="background: {catColor(cat.id)}"></span>
+						{#if categoryIconUrl(cat.id)}
+							<CategoryIcon id={cat.id} />
+						{:else}
+							<span class="dd__cat-dot" style="background: {catColor(cat.id)}"></span>
+						{/if}
 					{/snippet}
 				</Row>
 			{/each}
@@ -223,5 +233,11 @@
 		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 		opacity: 0.7;
+	}
+
+	.dd__cat {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--abt-space-2);
 	}
 </style>

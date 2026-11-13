@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { fmtMoney } from "@lib/format/currency";
 	import { onOutsideClick } from "@lib/dom/popover";
 	import { portal } from "@lib/dom/svelte";
@@ -104,7 +105,11 @@
 						<td>{shortDate(tx.date)}</td>
 						<td>{tx.accountName ?? "—"}</td>
 						<td>{tx.payeeName ?? "—"}</td>
-						<td>{categoryName(tx.category)}</td>
+						<td
+							><span class="tx__cat"
+								><CategoryIcon id={tx.category} size={12} />{categoryName(tx.category)}</span
+							></td
+						>
 						<td class="tx__notes">{tx.notes ?? ""}</td>
 						<td class="tx__amount abt-privacy-number" class:is-neg={tx.amount < 0}
 							>{fmtMoney(tx.amount)}</td
@@ -236,5 +241,11 @@
 
 	.tx__status :global(.is-cleared) {
 		color: var(--color-noticeTextLight);
+	}
+
+	.tx__cat {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--abt-space-2);
 	}
 </style>

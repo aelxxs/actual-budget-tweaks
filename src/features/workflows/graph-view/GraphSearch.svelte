@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import Icon from "@lib/components/Icon.svelte";
 	import type { Searchable } from "./data";
 
@@ -92,6 +93,7 @@
 					onpointerenter={() => (active = i)}
 					onclick={() => pick(c)}
 				>
+					{#if c.kind === "category"}<CategoryIcon id={c.id.slice("category:".length)} />{/if}
 					<span class="search__name">{c.name}</span>
 					<span class="search__kind">{KIND_LABEL[c.kind]}</span>
 				</button>

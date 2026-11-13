@@ -4,7 +4,8 @@
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { fmtMoney } from "@lib/format/currency";
 	import { ArrowLeftRight } from "@lucide/svelte";
-	import { type CategoryIcons, followCategoryIcons } from "@lib/category-icons";
+	import { categoryIconUrl, useCategoryIcons } from "@lib/category-icons.svelte";
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { untrack } from "svelte";
 	import { cubicOut } from "svelte/easing";
 	import { fly } from "svelte/transition";
@@ -48,8 +49,7 @@
 	);
 
 	let card = $state<HTMLElement | null>(null);
-	let icons = $state<CategoryIcons>({});
-	$effect(() => followCategoryIcons((next) => (icons = next)));
+	$effect(() => useCategoryIcons());
 	const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
 	let menuOpen = $state(false);
 	let menuStart = $state<"cards" | "categories">("cards");
@@ -189,9 +189,9 @@
 		<!-- A new card rises into place, so the change reads as the card being swapped. -->
 		<div class="sr__body" in:fly={{ y: 8, duration: still ? 0 : 260, easing: cubicOut }}>
 			<span class="sr__label abt-label">
-				{#if id === "pinned" && pinnedId && icons[pinnedId]}
-					<img class="sr__icon" src={icons[pinnedId].value} alt="" />
-				{/if}{label}
+				{#if id === "pinned" && categoryIconUrl(pinnedId)}<span class="sr__icon"
+						><CategoryIcon id={pinnedId} size={12} /></span
+					>{/if}{label}
 			</span>
 
 			{#if id === "spent"}
@@ -411,15 +411,6 @@
 		min-width: 0;
 	}
 
-	.sr__icon {
-		width: 12px;
-		height: 12px;
-		margin-right: 5px;
-		vertical-align: -1px;
-		object-fit: contain;
-		border-radius: 2px;
-	}
-
 	/* On hover, like the row's other controls; kept while its menu is open. */
 	.sr__swap {
 		position: absolute;
@@ -553,5 +544,11 @@
 		.sr__swap {
 			transition: none;
 		}
+	}
+
+	.sr__icon {
+		display: inline-flex;
+		margin-right: 5px;
+		vertical-align: -1px;
 	}
 </style>

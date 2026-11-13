@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 
 	const {
@@ -35,7 +36,9 @@
 	<Section title={label} count={list.length}>
 		{#each list as item (item.id)}
 			<button type="button" class="fl__row" onclick={() => onPick(item.id)}>
-				<span class="fl__name abt-privacy-number">{item.name}</span>
+				<span class="fl__name"
+					><CategoryIcon id={item.id} /><span class="abt-privacy-number">{item.name}</span></span
+				>
 				<span class="fl__others">{item.others.join(", ")}</span>
 			</button>
 		{:else}
@@ -79,6 +82,9 @@
 	}
 
 	.fl__name {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
 	}

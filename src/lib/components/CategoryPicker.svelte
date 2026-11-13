@@ -7,6 +7,7 @@
 </script>
 
 <script lang="ts">
+	import CategoryIcon from "./CategoryIcon.svelte";
 	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
 	import { portal } from "@lib/dom/svelte";
 	import { Check, ChevronDown, Search } from "@lucide/svelte";
@@ -136,6 +137,7 @@
 	bind:this={trigger}
 	onclick={() => (open ? close() : show())}
 >
+	<CategoryIcon id={value} />
 	<span class="current">{value ? (names.get(value) ?? placeholder) : placeholder}</span>
 	<ChevronDown size={14} />
 </button>
@@ -171,6 +173,7 @@
 						onpointermove={() => (active = index)}
 						onclick={() => pick(cat.id)}
 					>
+						<CategoryIcon id={cat.id} />
 						<span class="name">{cat.name}</span>
 						{#if cat.id === value}<Check size={14} class="check" />{/if}
 					</button>

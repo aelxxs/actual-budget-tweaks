@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { hasCategoryIcons, useCategoryIcons } from "@lib/category-icons.svelte";
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { getEmojiAssetUrl } from "@lib/account-icons";
 	import Tabs from "@lib/components/Tabs.svelte";
 	import type { Category, CategoryGroup } from "@lib/types/actual-schema";
@@ -75,7 +77,12 @@
 		positionPopover(menu, button, { align: "right" });
 		return onOutsideClick([menu, button], () => (open = false));
 	});
+	$effect(() => useCategoryIcons());
 </script>
+
+{#snippet categoryIcon(category: { id: string })}
+	<CategoryIcon id={category.id} />
+{/snippet}
 
 {#snippet accountIcon(account: FilterAccount)}
 	{@const icon = layout.icons[account.id]}
@@ -160,6 +167,7 @@
 					hidden={filters.hiddenCategories}
 					onHidden={(hiddenCategories) => onChange({ hiddenCategories })}
 					noun="categories"
+					icon={hasCategoryIcons() ? categoryIcon : undefined}
 				/>
 			{/if}
 		{/key}

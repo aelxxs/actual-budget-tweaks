@@ -337,6 +337,7 @@ async function openPopover(ring: HTMLElement) {
 	closePopover(true);
 
 	popover = mountToNodeWithReturn(ProgressPopover, {
+		catId,
 		name,
 		month: sheetMonthLabel(sheet),
 		budgeted: data.budgeted,

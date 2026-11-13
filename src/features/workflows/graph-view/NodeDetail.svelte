@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import { fmtMoney } from "@lib/format/currency";
@@ -42,6 +43,8 @@
 		/** The newest transaction behind the row, which the inspector opens. */
 		id: string;
 		name: string;
+		/** Set when the row names a category, for its icon. */
+		category?: string;
 		other: string;
 		amount: number;
 		count: number;
@@ -63,7 +66,8 @@
 				same.amount += r.amount;
 				same.count++;
 			} else {
-				day.rows.push({ id: r.id, name, other, amount: r.amount, count: 1 });
+				const category = kind === "payee" ? (r.category ?? undefined) : undefined;
+				day.rows.push({ id: r.id, name, category, other, amount: r.amount, count: 1 });
 			}
 		}
 		return out;
@@ -106,7 +110,7 @@
 			{#each days as day (day.date)}
 				<p class="nd__day">{formatDayMonth(day.date)}</p>
 				{#each day.rows as f (f.id)}
-					{@render entry(f.id, f.name, f.other, f.count, f.amount)}
+					{@render entry(f.id, f.name, f.other, f.count, f.amount, f.category)}
 				{/each}
 			{/each}
 			{#if rows.length > SHOWN}
@@ -116,7 +120,14 @@
 	{/if}
 </div>
 
-{#snippet entry(id: string, name: string, other: string, count: number, amount: number)}
+{#snippet entry(
+	id: string,
+	name: string,
+	other: string,
+	count: number,
+	amount: number,
+	category?: string,
+)}
 	{#snippet row()}
 		<Row
 			{name}
@@ -125,7 +136,9 @@
 			sensitive
 			value={fmtMoney(amount)}
 			tone={amount < 0 ? "negative" : amount > 0 ? "positive" : undefined}
-		/>
+		>
+			{#snippet leading()}<CategoryIcon id={category} />{/snippet}
+		</Row>
 	{/snippet}
 	{#if onInspect}
 		<button
