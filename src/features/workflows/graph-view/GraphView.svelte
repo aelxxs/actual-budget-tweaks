@@ -98,8 +98,6 @@
 	let view = $state({ x: 0, y: 0, k: 1 });
 	// Frames every node while true; panning or zooming by hand turns it off until Fit.
 	let autoFit = $state(true);
-	// Where the nodes lie, for the overview map; kept up as the layout moves.
-	let bounds = $state({ x0: 0, y0: 0, x1: 0, y1: 0 });
 	let maxTotal = $state(1);
 	// Categories take their own colours when the user has set them up with Category color dots.
 	let useColors = $state(false);
@@ -230,17 +228,9 @@
 			} else if (autoFit && !dragging) {
 				fit(spotlight ? graph.nodes.filter((n) => spotlight!.near.has(n.id)) : graph.nodes);
 			}
-			let x0 = Infinity;
-			let y0 = Infinity;
-			let x1 = -Infinity;
-			let y1 = -Infinity;
 			for (const n of graph.nodes) {
 				const x = n.x ?? 0;
 				const y = n.y ?? 0;
-				x0 = Math.min(x0, x);
-				y0 = Math.min(y0, y);
-				x1 = Math.max(x1, x);
-				y1 = Math.max(y1, y);
 				for (const els of [nodeEls, focusNodeEls]) {
 					els.get(n.id)?.setAttribute("transform", `translate(${x} ${y})`);
 				}
@@ -262,9 +252,6 @@
 						line.setAttribute("y2", String(l.b.y ?? 0));
 					}
 				}
-			}
-			if (graph.nodes.length) {
-				bounds = { x0, y0, x1, y1 };
 			}
 		}
 
@@ -367,36 +354,6 @@
 			(height - MARGIN * 2) / Math.max(1, y1 - y0),
 		);
 		view = { k, x: -((x0 + x1) / 2) * k, y: -((y0 + y1) / 2) * k };
-	}
-
-	// The overview map's frame: the graph and the part in view, with room around them.
-	const MINI_PAD = 40;
-	const viewport = $derived({
-		x: (-width / 2 - view.x) / view.k,
-		y: (-height / 2 - view.y) / view.k,
-		w: width / view.k,
-		h: height / view.k,
-	});
-	const miniBox = $derived.by(() => {
-		const x0 = Math.min(bounds.x0, viewport.x) - MINI_PAD;
-		const y0 = Math.min(bounds.y0, viewport.y) - MINI_PAD;
-		const x1 = Math.max(bounds.x1, viewport.x + viewport.w) + MINI_PAD;
-		const y1 = Math.max(bounds.y1, viewport.y + viewport.h) + MINI_PAD;
-		return `${x0} ${y0} ${x1 - x0} ${y1 - y0}`;
-	});
-	let miniDragging = false;
-
-	/** Centres the view on the point of the overview map under the pointer. */
-	function miniJump(e: PointerEvent) {
-		const svg = e.currentTarget as SVGSVGElement;
-		const matrix = svg.getScreenCTM()?.inverse();
-		if (!matrix) {
-			return;
-		}
-		const at = new DOMPoint(e.clientX, e.clientY).matrixTransform(matrix);
-		autoFit = false;
-		following = null;
-		view = { ...view, x: -at.x * view.k, y: -at.y * view.k };
 	}
 
 	function refit() {
@@ -974,47 +931,44 @@
 				transform="translate({width / 2 + view.x} {height / 2 + view.y}) scale({view.k})"
 				style="--gv-label-scale: {Math.max(1, view.k)}"
 			>
-				<!-- Drawn again, small, by the overview map through <use>. -->
-				<g id="gv-scene">
-					<g class="gv__links">
-						{#each links as l (l.key)}
-							<line
-								use:track={[lineEls, l.key]}
-								x1={l.a.x ?? 0}
-								y1={l.a.y ?? 0}
-								x2={l.b.x ?? 0}
-								y2={l.b.y ?? 0}
-								stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
-								class:is-flagged={l.flagged}
-							/>
-						{/each}
+				<g class="gv__links">
+					{#each links as l (l.key)}
+						<line
+							use:track={[lineEls, l.key]}
+							x1={l.a.x ?? 0}
+							y1={l.a.y ?? 0}
+							x2={l.b.x ?? 0}
+							y2={l.b.y ?? 0}
+							stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
+							class:is-flagged={l.flagged}
+						/>
+					{/each}
+				</g>
+				{#each nodes as n (n.id)}
+					<g
+						use:track={[nodeEls, n.id]}
+						class="gv__node"
+						class:is-selected={selected === n.id}
+						class:is-expanded={expanded.has(n.id)}
+						transform="translate({n.x ?? 0} {n.y ?? 0})"
+						role="presentation"
+						onpointerenter={() => (hovered = n)}
+						onpointerleave={() => (hovered = null)}
+						onpointerdown={(e) => down(e, n)}
+					>
+						{@render body(n, "base")}
 					</g>
-					{#each nodes as n (n.id)}
-						<g
-							use:track={[nodeEls, n.id]}
-							class="gv__node"
-							class:is-selected={selected === n.id}
-							class:is-expanded={expanded.has(n.id)}
-							transform="translate({n.x ?? 0} {n.y ?? 0})"
-							role="presentation"
-							onpointerenter={() => (hovered = n)}
-							onpointerleave={() => (hovered = null)}
-							onpointerdown={(e) => down(e, n)}
+				{/each}
+			</g>
+			<!-- Above every node, so a neighbour drawn later can't cover a label. -->
+			<g class="gv__labels">
+				{#each nodes as n (n.id)}
+					{#if n.kind !== "payee" || n.flagged}
+						<text use:track={[labelEls, n.id]} x={n.x ?? 0} y={(n.y ?? 0) + radius(n)} dy="1.15em"
+							>{n.name}</text
 						>
-							{@render body(n, "base")}
-						</g>
-					{/each}
-				</g>
-				<!-- Above every node, so a neighbour drawn later can't cover a label. -->
-				<g class="gv__labels">
-					{#each nodes as n (n.id)}
-						{#if n.kind !== "payee" || n.flagged}
-							<text use:track={[labelEls, n.id]} x={n.x ?? 0} y={(n.y ?? 0) + radius(n)} dy="1.15em"
-								>{n.name}</text
-							>
-						{/if}
-					{/each}
-				</g>
+					{/if}
+				{/each}
 			</g>
 		</svg>
 
@@ -1091,33 +1045,6 @@
 				<Icon name="rotateCcw" size={13} />
 				Collapse all
 			</button>
-		{/if}
-
-		{#if !autoFit && nodes.length}
-			<svg
-				class="gv__mini"
-				viewBox={miniBox}
-				role="img"
-				aria-label="Overview: drag to move the view"
-				onpointerdown={(e) => {
-					miniDragging = true;
-					(e.currentTarget as Element).setPointerCapture(e.pointerId);
-					miniJump(e);
-				}}
-				onpointermove={(e) => miniDragging && miniJump(e)}
-				onpointerup={() => (miniDragging = false)}
-				onpointercancel={() => (miniDragging = false)}
-			>
-				<use href="#gv-scene" />
-				<rect
-					class="gv__mini-view"
-					x={viewport.x}
-					y={viewport.y}
-					width={viewport.w}
-					height={viewport.h}
-					vector-effect="non-scaling-stroke"
-				/>
-			</svg>
 		{/if}
 
 		<div class="gv__zoom" role="group" aria-label="Zoom">
@@ -1378,28 +1305,6 @@
 		position: relative;
 		flex: 1;
 		min-height: 0;
-	}
-
-	/* Above the zoom buttons, in the same corner. */
-	.gv__mini {
-		position: absolute;
-		right: var(--abt-page-gutter);
-		bottom: calc(
-			var(--abt-page-gutter) + 3 * 30px + 2px + var(--abt-space-3)
-		); /* raw: the zoom stack's three buttons and borders */
-		width: 180px;
-		height: 120px;
-		border: 1px solid var(--abt-line);
-		border-radius: var(--abt-radius);
-		background: var(--color-menuBackground);
-		cursor: crosshair;
-		touch-action: none;
-	}
-
-	.gv__mini-view {
-		fill: var(--abt-accent-1);
-		stroke: var(--abt-accent);
-		stroke-width: 1.5;
 	}
 
 	.gv__zoom {
