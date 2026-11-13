@@ -14,6 +14,31 @@ export function takeTweaksSearch(): string {
 	pendingSearch = "";
 	return text;
 }
+
+let pendingSection = "";
+
+/** Scrolls ABT's settings to a section the next time that page opens. */
+export function openTweaksAt(title: string): void {
+	pendingSection = title;
+}
+
+export function takeTweaksSection(): string {
+	const title = pendingSection;
+	pendingSection = "";
+	return title;
+}
+
+export type TweaksSection = { title: string; count: number };
+let listSections: () => TweaksSection[] = () => [];
+
+/** Set by the settings registry, which the nav can't import without a cycle. */
+export function provideTweaksSections(list: () => TweaksSection[]): void {
+	listSections = list;
+}
+
+export function tweaksSections(): TweaksSection[] {
+	return listSections();
+}
 /** Where ABT's settings mount while its tab is open. */
 export const TWEAKS_HOST_ATTR = "data-abt-tweaks-host";
 /** Under ABT's tab in the nav, where its panel lists its sections while open. */

@@ -7,7 +7,9 @@ import {
 	TWEAKS_HOST_ATTR,
 	TWEAKS_PATH,
 	TWEAKS_SECTIONS_ATTR,
+	openTweaksAt,
 	settingsNav,
+	tweaksSections,
 } from "@lib/utilities/settings-page";
 import { SETTINGS, SETTINGS_ADVANCED_LINK, SETTINGS_NAV_LINK } from "@lib/actual-dom";
 
@@ -23,6 +25,8 @@ const PANE_ATTR = "data-abt-tweaks-pane";
 /** Mobile: on Actual's General list while ABT's panel stands in for it, and on the page title. */
 const MOBILE_HIDDEN_ATTR = "data-abt-tweaks-hidden";
 const MOBILE_TITLE_ATTR = "data-abt-tweaks-title";
+/** The tab's sections, listed under it while it's closed; the open page lists its own. */
+const PREVIEW_ATTR = "data-abt-tweaks-preview";
 const CHEVRON = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="m12.95 10.707.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657z" fill="currentColor"/></svg>`;
 
 let link: HTMLAnchorElement | null = null;
@@ -52,6 +56,28 @@ function createLink(): HTMLAnchorElement {
 		setOpen(true);
 	});
 	return a;
+}
+
+function createPreview(): HTMLElement {
+	const list = document.createElement("div");
+	list.setAttribute(PREVIEW_ATTR, "");
+	for (const { title, count } of tweaksSections()) {
+		const button = document.createElement("button");
+		button.type = "button";
+		const label = document.createElement("span");
+		label.textContent = title;
+		const total = document.createElement("span");
+		total.className = "abt-num";
+		total.textContent = String(count);
+		button.append(label, total);
+		button.addEventListener("click", () => {
+			openTweaksAt(title);
+			navigate(TWEAKS_PATH);
+			setOpen(true);
+		});
+		list.append(button);
+	}
+	return list;
 }
 
 function setOpen(next: boolean): void {
@@ -126,8 +152,13 @@ function sync(): void {
 	const pane = nav.nextElementSibling;
 	if (!open || !pane) {
 		close();
+		if (link.nextElementSibling?.hasAttribute(PREVIEW_ATTR) !== true) {
+			document.querySelector(`[${PREVIEW_ATTR}]`)?.remove();
+			link.after(createPreview());
+		}
 		return;
 	}
+	document.querySelector(`[${PREVIEW_ATTR}]`)?.remove();
 	nav.setAttribute(OPEN_ATTR, "");
 	link.setAttribute("aria-current", "page");
 	pane.setAttribute(PANE_ATTR, "");
@@ -180,6 +211,7 @@ export const settingsTab = {
 			close();
 			link?.remove();
 			link = null;
+			document.querySelector(`[${PREVIEW_ATTR}]`)?.remove();
 			document.querySelector(`[${NAV_ATTR}]`)?.removeAttribute(NAV_ATTR);
 		};
 	},

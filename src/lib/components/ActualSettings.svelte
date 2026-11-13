@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { takeTweaksSearch } from "@lib/utilities/settings-page";
 	import { Ellipsis, ExternalLink, X } from "@lucide/svelte";
-	import { tick } from "svelte";
+	import { onMount, tick } from "svelte";
 	import {
 		FEATURES_TITLE,
 		scriptSections,
@@ -20,7 +20,7 @@
 	import { watchDom } from "../utilities/dom-watcher";
 	import { isoDate } from "../utilities/months";
 	import { DESKTOP_QUERY } from "../utilities/pages";
-	import { TWEAKS_SECTIONS_ATTR } from "../utilities/settings-page";
+	import { TWEAKS_SECTIONS_ATTR, takeTweaksSection } from "../utilities/settings-page";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
 	const version = browser.runtime.getManifest().version;
@@ -301,6 +301,14 @@
 	function pinnedBottom(sc: HTMLElement): number {
 		return sc.getBoundingClientRect().top + stickyTop + (toolbarEl?.offsetHeight ?? 0) + 8;
 	}
+
+	// Picked from the nav's list while the tab was closed.
+	onMount(() => {
+		const title = takeTweaksSection();
+		if (title) {
+			void tick().then(() => jumpTo(title));
+		}
+	});
 
 	async function jumpTo(title: string) {
 		collapsed[title] = false;

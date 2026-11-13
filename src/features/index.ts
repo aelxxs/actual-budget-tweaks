@@ -1,3 +1,4 @@
+import { provideTweaksSections } from "@lib/utilities/settings-page";
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { categoryColorDots } from "./appearance/category-color-dots";
@@ -198,6 +199,18 @@ export const scriptSections: SettingsSection[] = [
 		],
 	},
 ];
+
+// The nav lists the desktop sections the settings page shows unfiltered.
+provideTweaksSections(() =>
+	scriptSections
+		.filter((section) => !section.elsewhere)
+		.map((section) => ({
+			title: section.title,
+			count: sectionItems(section).filter((item) => (item.platform ?? "desktop") !== "mobile")
+				.length,
+		}))
+		.filter((section) => section.count > 0),
+);
 
 // Settings that only do something while another (a checkbox) is on; the page dims them otherwise.
 export const settingRequires = new Map<PageSetting, PageSetting>([
