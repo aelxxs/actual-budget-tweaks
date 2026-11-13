@@ -959,16 +959,16 @@
 						{@render body(n, "base")}
 					</g>
 				{/each}
-			</g>
-			<!-- Above every node, so a neighbour drawn later can't cover a label. -->
-			<g class="gv__labels">
-				{#each nodes as n (n.id)}
-					{#if n.kind !== "payee" || n.flagged}
-						<text use:track={[labelEls, n.id]} x={n.x ?? 0} y={(n.y ?? 0) + radius(n)} dy="1.15em"
-							>{n.name}</text
-						>
-					{/if}
-				{/each}
+				<!-- Above every node, so a neighbour drawn later can't cover a label. -->
+				<g class="gv__labels">
+					{#each nodes as n (n.id)}
+						{#if n.kind !== "payee" || n.flagged}
+							<text use:track={[labelEls, n.id]} x={n.x ?? 0} y={(n.y ?? 0) + radius(n)} dy="1.15em"
+								>{n.name}</text
+							>
+						{/if}
+					{/each}
+				</g>
 			</g>
 		</svg>
 
