@@ -155,15 +155,11 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Readability",
-				items: [categoryProgress, balancePills, groupOverspent],
+				items: [categoryProgress, balancePills, categoryTemplateInsights, groupOverspent],
 			},
 			{
 				label: "Categories",
 				items: [categoryColorDots, categoryEmojiPicker, quietCategoryIcons],
-			},
-			{
-				label: "Tools",
-				items: [categoryTemplateInsights],
 			},
 		],
 	},
@@ -171,12 +167,14 @@ export const scriptSections: SettingsSection[] = [
 		title: "Accounts & Transactions",
 		groups: [
 			{
-				label: "Transactions",
-				items: [alternatingTransactionRows, rowStatus, tagStyling, resizableTransactionColumns],
-			},
-			{
-				label: "Accounts",
-				items: [showDailyAvailable],
+				label: null,
+				items: [
+					alternatingTransactionRows,
+					rowStatus,
+					tagStyling,
+					resizableTransactionColumns,
+					showDailyAvailable,
+				],
 			},
 		],
 	},
