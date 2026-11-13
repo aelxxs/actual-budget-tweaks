@@ -166,8 +166,8 @@
 
 	.calc__expr {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
-		margin-bottom: 2px;
+		color: var(--abt-muted);
+		margin-bottom: var(--abt-space-1);
 	}
 
 	.calc__value {
@@ -182,8 +182,8 @@
 	.calc__grid {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
-		gap: 4px;
-		padding: 8px;
+		gap: var(--abt-space-2);
+		padding: var(--abt-space-3);
 	}
 
 	.calc__btn {
@@ -208,7 +208,7 @@
 	}
 
 	.calc__btn--fn {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		font-size: var(--abt-text-md);
 	}
 

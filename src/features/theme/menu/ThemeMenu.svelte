@@ -188,7 +188,7 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		min-width: 0;
 	}
 	.tm__name {
@@ -201,7 +201,7 @@
 	.tm__hint,
 	.tm__sub {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.tm__divider {
 		height: 1px;

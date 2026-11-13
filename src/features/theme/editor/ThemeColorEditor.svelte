@@ -577,7 +577,7 @@
 	.editor__tabs {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		padding: 10px 12px 0;
 		flex-shrink: 0;
 	}
@@ -592,7 +592,7 @@
 		border: var(--border);
 		border-bottom: none;
 		background: transparent;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		cursor: pointer;
 		transition:
 			color 0.15s,
@@ -609,7 +609,7 @@
 	}
 
 	.editor__search {
-		padding: 8px 12px;
+		padding: var(--abt-space-3) var(--abt-space-4);
 		border-bottom: var(--border);
 		flex-shrink: 0;
 	}
@@ -637,13 +637,13 @@
 	.editor__rows {
 		flex: 1;
 		overflow-y: auto;
-		padding: 4px 0 16px;
+		padding: var(--abt-space-2) 0 var(--abt-space-5);
 	}
 
 	.editor__empty {
 		padding: 20px 16px;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		margin: 0;
 	}
 </style>

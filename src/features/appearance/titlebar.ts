@@ -135,11 +135,11 @@ const CSS = `
 		margin-right: var(--abt-space-4);
 		/* Actual's bare-button hover would swap the amber for its default text colour. */
 		color: var(--color-warningText) !important;
-		background: color-mix(in srgb, var(--color-warningText) 12%, transparent) !important;
+		background: var(--abt-warning-1) !important;
 	}
 
 	${UNCATEGORIZED}[data-hovered] {
-		background: color-mix(in srgb, var(--color-warningText) 20%, transparent) !important;
+		background: var(--abt-warning-2) !important;
 	}
 
 	/*

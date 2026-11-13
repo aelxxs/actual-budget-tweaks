@@ -143,7 +143,7 @@
 		padding: 0;
 		border: 0;
 		background: none;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		font: inherit;
 		font-size: var(--abt-text-xs);
 		font-weight: 500;

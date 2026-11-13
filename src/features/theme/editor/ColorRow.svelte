@@ -38,7 +38,7 @@
 	.color-row {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		padding: 5px 12px;
 		transition: background 0.1s;
 	}

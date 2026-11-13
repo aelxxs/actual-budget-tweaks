@@ -52,7 +52,7 @@
 		display: flex;
 		height: 100%;
 		padding: 6px 5px;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.lp-bar {
@@ -60,7 +60,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 5px;
-		padding-right: 4px;
+		padding-right: var(--abt-space-2);
 		border-right: 1px solid color-mix(in srgb, var(--color-tableText) 15%, transparent);
 	}
 
@@ -74,7 +74,7 @@
 	.lp-row {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.lp-dot {
@@ -82,7 +82,7 @@
 		height: 5px;
 		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
-		background: color-mix(in srgb, var(--color-pageTextSubdued) 35%, transparent);
+		background: var(--abt-ink-4);
 	}
 
 	.lp-line {

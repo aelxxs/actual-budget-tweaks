@@ -30,7 +30,6 @@
 	--sb-danger-muted: color-mix(in srgb, var(--sb-danger) 12%, transparent);
 	--sb-attention: var(--color-sidebarItemBackgroundPending);
 	--sb-attention-muted: color-mix(in srgb, var(--sb-attention) 18%, transparent);
-	--sb-shadow: rgba(1, 4, 9, 0.6);
 	--sb-shadow-2: rgba(1, 4, 9, 0.55);
 	position: relative;
 	display: flex;
@@ -100,8 +99,8 @@
 .sidebar.collapsed,
 .sidebar .activity-bar {
 	align-items: center;
-	gap: 4px;
-	padding: 12px 0 4px;
+	gap: var(--abt-space-2);
+	padding: var(--abt-space-4) 0 var(--abt-space-2);
 }
 
 /* Resize handle on the right edge */

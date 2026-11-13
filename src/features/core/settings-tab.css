@@ -25,8 +25,8 @@
 	[data-abt-tweaks-link] {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		padding: 8px;
+		gap: var(--abt-space-3);
+		padding: var(--abt-space-3);
 		border-radius: 4px; /* raw: matches Actual's nav links */
 		font-size: 13px; /* raw: matches Actual's nav links */
 		font-weight: 500;
@@ -121,9 +121,9 @@
 	[data-abt-tweaks-link] {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: var(--abt-space-4);
 		min-height: 40px;
-		padding: 0 16px;
+		padding: 0 var(--abt-space-5);
 		border-top: 1px solid var(--color-settingsCardBorder);
 		font-size: 15px; /* raw: matches Actual's mobile rows */
 		text-decoration: none;

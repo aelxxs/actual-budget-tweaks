@@ -46,7 +46,7 @@
 		align-items: center;
 		justify-content: space-between;
 		width: 100%;
-		gap: 8px;
+		gap: var(--abt-space-3);
 	}
 
 	.creator-header__meta {
@@ -61,7 +61,7 @@
 		font-family: inherit;
 		font-size: var(--abt-text-base);
 		font-weight: 600;
-		padding: 4px 8px;
+		padding: var(--abt-space-2) var(--abt-space-3);
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-formInputBackground);
@@ -106,7 +106,7 @@
 
 	.creator-header__delete {
 		background: var(--color-buttonNormalBackground);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.creator-header__delete:hover {

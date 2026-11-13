@@ -28,7 +28,7 @@
 			<div class="toast__title">Updated to v{version}</div>
 		</div>
 		<button
-			class="toast__close"
+			class="toast__close abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 			type="button"
 			title="Close"
 			aria-label="Close"
@@ -85,7 +85,7 @@
 		color: var(--color-menuItemText);
 		border: 1px solid var(--color-menuBorder);
 		border-radius: var(--abt-radius);
-		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+		box-shadow: var(--abt-shadow);
 		font-family: inherit;
 		overflow: hidden;
 	}
@@ -126,7 +126,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.toast__title {
@@ -136,20 +136,7 @@
 	}
 
 	.toast__close {
-		all: unset;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 5px;
-		border-radius: var(--abt-radius-sm);
-		color: var(--color-pageTextSubdued);
-		cursor: pointer;
 		align-self: flex-start;
-	}
-
-	.toast__close:hover {
-		color: var(--color-pageText);
-		background: color-mix(in srgb, currentColor 12%, transparent);
 	}
 
 	.toast__body {
@@ -179,7 +166,7 @@
 		display: flex;
 		margin-left: 10px;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 	}
 
 	.toast__list li {
@@ -195,13 +182,13 @@
 		width: 4px;
 		height: 4px;
 		border-radius: var(--abt-radius-pill);
-		background: color-mix(in srgb, var(--abt-accent) 70%, var(--color-pageTextSubdued));
+		background: color-mix(in srgb, var(--abt-accent) 70%, var(--abt-muted));
 	}
 
 	.toast__more {
 		margin-top: 10px;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.toast__empty {
@@ -212,7 +199,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		padding: 10px 14px;
 		border-top: 1px solid var(--abt-ink-3);
 		background: var(--abt-ink-1);
@@ -222,9 +209,9 @@
 	.toast__opt-out {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		cursor: pointer;
 	}
 

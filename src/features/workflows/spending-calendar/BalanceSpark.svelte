@@ -64,7 +64,7 @@
 
 	.spark__line {
 		fill: none;
-		stroke: var(--color-pageTextSubdued);
+		stroke: var(--abt-muted);
 		stroke-width: 1.5px;
 		stroke-linejoin: round;
 	}

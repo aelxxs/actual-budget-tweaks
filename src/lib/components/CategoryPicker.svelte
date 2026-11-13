@@ -200,7 +200,7 @@
 		color: var(--abt-subtle);
 	}
 	.trigger.attention {
-		border-color: color-mix(in srgb, var(--color-warningText) 55%, transparent);
+		border-color: var(--abt-warning-4);
 	}
 	.current {
 		flex: 1;
@@ -244,7 +244,7 @@
 		padding: var(--abt-space-3) var(--abt-space-3) var(--abt-space-1);
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.group:first-child {
 		padding-top: var(--abt-space-1);
@@ -286,6 +286,6 @@
 		margin: 0;
 		padding: var(--abt-space-3);
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 </style>

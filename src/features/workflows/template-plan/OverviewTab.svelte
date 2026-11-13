@@ -98,8 +98,7 @@
 	<TabSkeleton tab="overview" />
 {:else if !data}
 	<div class="abt-tab-empty">
-		<button type="button" class="abt-tab-overview-load-btn" onclick={triggerRefresh}
-			>Load overview</button
+		<button type="button" class="abt-btn abt-btn--sm" onclick={triggerRefresh}>Load overview</button
 		>
 	</div>
 {:else}
@@ -286,11 +285,7 @@
 		{#if data.trend.length > 0}
 			<Section title="Over / Under Budget">
 				<div class="abt-tab-overview-legend" aria-hidden="true">
-					<span
-						><i
-							style="background:color-mix(in srgb, var(--color-budgetNumberPositive) 75%, transparent)"
-						></i>Under</span
-					>
+					<span><i data-tone="under"></i>Under</span>
 					<span><i style="background:var(--color-errorText)"></i>Over</span>
 				</div>
 				<TrendChart trend={data.trend} currentMonthKey={data.monthKey} />
@@ -482,3 +477,227 @@
 		</div>
 	{/each}
 {/if}
+
+<style>
+	/* Each card's own box, so cards can move and fold; spaced as the sections were. */
+	:global(.section) + .abt-card-slot,
+	.abt-card-slot:not([data-card="templates"]) + .abt-card-slot {
+		margin-top: 10px;
+	}
+
+	.abt-card-slot:not(:last-child) > :global(.section) {
+		padding-bottom: 0;
+	}
+
+	.abt-card-slot > :global(.section > .card),
+	.abt-card-slot > :global(.abt-tab-overview-toolbar) {
+		transition: border-color 0.2s ease;
+	}
+
+	.abt-card-slot[data-spot] > :global(.section > .card),
+	.abt-card-slot[data-spot] > :global(.abt-tab-overview-toolbar) {
+		border-color: var(--abt-accent-4);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.abt-tab-overview-mini-bar,
+		.abt-tab-overview-split span {
+			transition: none;
+		}
+	}
+
+	/* ── This Month ─────────────────────────────────────────────── */
+	/* Where the month's funds went: one bar, its rows below as the key. */
+	.abt-tab-overview-split-wrap {
+		position: relative;
+		margin: 6px 0 8px;
+	}
+
+	/* Where spending would be today if it were spread evenly through the month. */
+	.abt-tab-overview-pace-tick {
+		position: absolute;
+		top: -3px;
+		bottom: -3px;
+		width: 2px;
+		margin-left: -1px;
+		border-radius: 1px;
+		background: var(--abt-ink);
+	}
+
+	.abt-tab-overview-pace-note {
+		margin: 0 0 6px;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+		font-variant-numeric: tabular-nums;
+	}
+	.abt-tab-overview-pace-note[data-ahead="true"] {
+		color: var(--color-warningText);
+	}
+	.abt-tab-overview-pace-day {
+		color: var(--abt-muted);
+	}
+
+	.abt-tab-overview-split {
+		display: flex;
+		gap: var(--abt-space-1);
+		height: 10px;
+		border-radius: var(--abt-radius-pill);
+		overflow: hidden;
+	}
+	.abt-tab-overview-split span {
+		min-width: 3px;
+		flex-basis: 0;
+		transition: flex-grow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+
+	.abt-tab-overview-swatch {
+		width: 8px;
+		height: 8px;
+		flex-shrink: 0;
+		border-radius: 2px;
+	}
+
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="overspent"] {
+		background: var(--color-errorText);
+	}
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="spent"] {
+		background: var(--abt-accent);
+	}
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="left"] {
+		background: var(--abt-accent-3);
+	}
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="held"] {
+		background: var(--color-budgetNumberPositive);
+	}
+	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="free"] {
+		background: var(--color-warningText);
+	}
+
+	.abt-tab-overview-total {
+		margin-top: var(--abt-space-2);
+		padding-top: var(--abt-space-2);
+		border-top: 1px solid var(--abt-panel-border);
+	}
+
+	/* The Reassigned card's date headings, one per day. */
+	.abt-tab-overview-day {
+		margin: var(--abt-space-3) 0 var(--abt-space-1);
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+	}
+
+	.abt-tab-overview-day:first-child {
+		margin-top: 0;
+	}
+
+	/* Each day, or a day's moves out of one category, set apart by a rule. */
+	.abt-tab-overview-move-group + .abt-tab-overview-move-group {
+		margin-top: var(--abt-space-3);
+		padding-top: var(--abt-space-3);
+		border-top: 1px solid var(--abt-ink-2);
+	}
+
+	/* The income categories under the total, set apart like the moves' days. */
+	.abt-tab-overview-split-rows {
+		margin-top: var(--abt-space-3);
+		padding-top: var(--abt-space-3);
+		border-top: 1px solid var(--abt-ink-2);
+	}
+
+	.abt-tab-overview-cat-icon {
+		width: 14px;
+		height: 14px;
+		margin-right: 6px;
+		flex-shrink: 0;
+		object-fit: contain;
+		border-radius: 2px;
+	}
+
+	/* The Reassigned card's "Show all": a quiet link under the list. */
+	.abt-tab-overview-more {
+		display: block;
+		margin: 6px 0 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-accent);
+		cursor: pointer;
+	}
+
+	.abt-tab-overview-more:hover {
+		text-decoration: underline;
+	}
+
+	.abt-tab-overview-note {
+		margin: 6px 0 0;
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+		line-height: 1.45;
+	}
+
+	.abt-tab-overview-legend {
+		display: flex;
+		gap: var(--abt-space-4);
+		margin-bottom: var(--abt-space-3);
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+	}
+	.abt-tab-overview-legend span {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--abt-space-2);
+	}
+	.abt-tab-overview-legend i {
+		width: 8px;
+		height: 8px;
+		border-radius: 2px;
+	}
+
+	.abt-tab-overview-legend i[data-tone="under"] {
+		background: color-mix(
+			in srgb,
+			var(--color-budgetNumberPositive) 75%,
+			transparent
+		); /* raw: matches the trend chart */
+	}
+
+	/* Mini progress bars */
+	.abt-tab-overview-mini-bar-wrap {
+		height: 4px;
+		border-radius: 2px;
+		background: var(--abt-panel-track);
+		overflow: hidden;
+	}
+	.abt-tab-overview-mini-bar {
+		height: 100%;
+		border-radius: 2px;
+		min-width: 2px;
+		transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+	.abt-tab-overview-mini-bar[data-status="ok"] {
+		background: var(--abt-accent);
+	}
+	.abt-tab-overview-mini-bar[data-status="warn"] {
+		background: var(--color-warningText);
+	}
+	.abt-tab-overview-mini-bar[data-status="over"] {
+		background: var(--color-errorText);
+	}
+	.abt-tab-overview-mini-bar[data-status="goal"] {
+		background: linear-gradient(
+			90deg,
+			var(--abt-accent) 0%,
+			var(--abt-panel-accent-secondary) 100%
+		);
+	}
+
+	.abt-tab-overview-sched-date {
+		font-variant-numeric: tabular-nums;
+		color: var(--abt-muted);
+		flex-shrink: 0;
+		width: 44px;
+		font-size: var(--abt-text-sm);
+	}
+</style>

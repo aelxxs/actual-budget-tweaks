@@ -98,10 +98,10 @@
 	.rsu {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		width: 100%;
 		height: 100%;
-		padding: 0 8px;
+		padding: 0 var(--abt-space-3);
 		font-size: var(--abt-text-sm);
 		overflow: hidden;
 		white-space: nowrap;

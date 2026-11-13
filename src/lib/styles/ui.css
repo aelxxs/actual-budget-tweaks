@@ -30,6 +30,11 @@
 	--abt-radius-lg: clamp(0px, calc(var(--border-radius, 0.5rem) * 1.5), 1rem);
 	--abt-radius-pill: 999px;
 
+	/* Elevation: tooltips and toasts, popovers and menus, the command palette. */
+	--abt-shadow-sm: 0 6px 20px rgb(0 0 0 / 0.28);
+	--abt-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
+	--abt-shadow-lg: 0 24px 64px rgb(0 0 0 / 0.45);
+
 	/* Controls. */
 	--abt-control-h: 30px;
 	--abt-control-h-sm: 26px;
@@ -37,6 +42,19 @@
 	/* The two colours every tint mixes from. Tints mix in ink (not white) to work in any theme. */
 	--abt-ink: var(--color-pageText);
 	--abt-accent: var(--color-sidebarItemAccentSelected);
+	/* Status tints, stepped like the accent's: fills, stronger fills, hovers, borders. */
+	--abt-positive-1: color-mix(in srgb, var(--color-budgetNumberPositive) 10%, transparent);
+	--abt-positive-2: color-mix(in srgb, var(--color-budgetNumberPositive) 16%, transparent);
+	--abt-positive-3: color-mix(in srgb, var(--color-budgetNumberPositive) 26%, transparent);
+	--abt-positive-4: color-mix(in srgb, var(--color-budgetNumberPositive) 40%, transparent);
+	--abt-warning-1: color-mix(in srgb, var(--color-warningText) 10%, transparent);
+	--abt-warning-2: color-mix(in srgb, var(--color-warningText) 16%, transparent);
+	--abt-warning-3: color-mix(in srgb, var(--color-warningText) 26%, transparent);
+	--abt-warning-4: color-mix(in srgb, var(--color-warningText) 40%, transparent);
+	--abt-danger-1: color-mix(in srgb, var(--color-errorText) 10%, transparent);
+	--abt-danger-2: color-mix(in srgb, var(--color-errorText) 16%, transparent);
+	--abt-danger-3: color-mix(in srgb, var(--color-errorText) 26%, transparent);
+	--abt-danger-4: color-mix(in srgb, var(--color-errorText) 40%, transparent);
 	/* How strongly accent cards (To Budget, current month, suggestions) wash in their colour. */
 	--abt-wash: 14%;
 	--abt-glow-duration: 200ms;
@@ -49,8 +67,10 @@
 	--abt-panel-surface: var(--color-budgetCurrentMonth, var(--color-tableBackground));
 }
 
-/* The live sidebar has its own ink and accent (themes can give it a different background). */
-.sidebar {
+/* The live sidebar has its own ink and accent (themes can give it a different background).
+   `abt-on-sidebar` gives a floating surface the sidebar's colours too. */
+.sidebar,
+.abt-on-sidebar {
 	--abt-ink: var(--color-sidebarItemText);
 	--abt-accent: var(--color-sidebarItemAccentSelected);
 }
@@ -58,6 +78,7 @@
 /* Tints. Declared again wherever the ink changes, since a custom property mixes where it's declared. */
 :root,
 .sidebar,
+.abt-on-sidebar,
 .abt-popover {
 	--abt-ink-1: color-mix(in srgb, var(--abt-ink) 4%, transparent);
 	--abt-ink-2: color-mix(in srgb, var(--abt-ink) 8%, transparent);
@@ -187,7 +208,7 @@
 	border: 1px solid var(--color-tableBorder);
 	border-radius: var(--abt-radius);
 	background: var(--abt-popover-bg);
-	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+	box-shadow: var(--abt-shadow);
 	color: var(--abt-ink);
 }
 
@@ -244,9 +265,9 @@
 }
 
 .abt-tone-danger {
-	--abt-btn-bg: color-mix(in srgb, var(--color-errorText) 16%, transparent);
-	--abt-btn-bg-hover: color-mix(in srgb, var(--color-errorText) 26%, transparent);
-	--abt-btn-line: color-mix(in srgb, var(--color-errorText) 35%, transparent);
+	--abt-btn-bg: var(--abt-danger-2);
+	--abt-btn-bg-hover: var(--abt-danger-3);
+	--abt-btn-line: var(--abt-danger-4);
 	--abt-btn-fg: var(--color-errorText);
 }
 
@@ -551,7 +572,7 @@ select.abt-select-arrow {
 	font-weight: 600;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: var(--color-pageTextSubdued);
+	color: var(--abt-muted);
 }
 
 .abt-menu__item {
@@ -625,7 +646,7 @@ select.abt-select-arrow {
 .abt-setting__icon {
 	display: inline-flex;
 	flex-shrink: 0;
-	color: var(--color-pageTextSubdued);
+	color: var(--abt-muted);
 }
 
 .abt-setting__text {
@@ -646,7 +667,7 @@ select.abt-select-arrow {
 
 .abt-setting__desc {
 	font-size: var(--abt-text-sm);
-	color: var(--color-pageTextSubdued);
+	color: var(--abt-muted);
 }
 
 /* A trial feature's mark, louder than the writes mark so it isn't missed. */

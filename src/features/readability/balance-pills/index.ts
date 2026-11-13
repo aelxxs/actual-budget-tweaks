@@ -53,7 +53,7 @@ const CSS = (Object.keys(TONES) as Status[])
 	[${STATUS_ATTR}] {
 		display: inline-flex !important;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		padding: 1px 8px 1px 6px;
 		border-radius: var(--abt-radius-pill);
 		background: color-mix(in srgb, var(--abt-pill-tone) 18%, transparent);
@@ -71,7 +71,7 @@ const CSS = (Object.keys(TONES) as Status[])
 		mask: var(--abt-pill-icon) center / contain no-repeat;
 	}
 	[${STATUS_ATTR}="available"] {
-		padding-inline: 8px;
+		padding-inline: var(--abt-space-3);
 		color: var(--color-tableText) !important;
 	}
 	[${STATUS_ATTR}="available"]::before {

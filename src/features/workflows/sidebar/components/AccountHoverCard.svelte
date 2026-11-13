@@ -255,7 +255,7 @@
 	.title {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		min-width: 0;
 	}
 	.name {
@@ -322,7 +322,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--abt-space-1);
-		padding: 2px var(--abt-space-2);
+		padding: var(--abt-space-1) var(--abt-space-2);
 		margin-right: calc(-1 * var(--abt-space-2));
 		border: 0;
 		border-radius: var(--abt-radius-sm);

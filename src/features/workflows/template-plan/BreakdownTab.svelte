@@ -101,3 +101,9 @@
 		{/each}
 	{/if}
 {/if}
+
+<style>
+	.abt-tab-pad {
+		padding: var(--abt-space-3) var(--abt-space-4);
+	}
+</style>

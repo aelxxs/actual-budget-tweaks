@@ -23,9 +23,7 @@ const CSS = `
 		border: 1px solid color-mix(in srgb, currentColor 22%, transparent) !important;
 		border-radius: var(--abt-radius) !important;
 		background: color-mix(in srgb, currentColor 7%, var(--color-tableBackground)) !important;
-		box-shadow:
-			0 10px 30px rgba(0, 0, 0, 0.28),
-			0 2px 6px rgba(0, 0, 0, 0.12) !important;
+		box-shadow: var(--abt-shadow-sm) !important;
 		font-size: var(--abt-text-md) !important;
 		line-height: 1.45;
 	}

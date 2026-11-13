@@ -3,7 +3,7 @@ import { CATEGORY_CELL, ROW } from "@lib/actual-dom";
 
 export const UNCATEGORIZED_CSS = `
 	${ROW}.abt-uncategorized {
-		background: color-mix(in srgb, var(--color-warningText) 12%, transparent) !important;
+		background: var(--abt-warning-1) !important;
 	}
 
 	${ROW}.abt-uncategorized > div {

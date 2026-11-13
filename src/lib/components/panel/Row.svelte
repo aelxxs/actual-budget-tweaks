@@ -51,7 +51,7 @@
 
 <style>
 	.panel-row {
-		padding: 4px 0;
+		padding: var(--abt-space-2) 0;
 		font-size: var(--abt-text-sm);
 	}
 	.panel-row:first-child {
@@ -64,7 +64,7 @@
 	.line {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--abt-space-3);
 	}
 
 	.name {
@@ -96,13 +96,13 @@
 		white-space: nowrap;
 	}
 	.value[data-tone="positive"] {
-		color: var(--color-budgetNumberPositive, #4caf50);
+		color: var(--color-budgetNumberPositive);
 	}
 	.value[data-tone="negative"] {
-		color: var(--color-errorText, #e57373);
+		color: var(--color-errorText);
 	}
 	.value[data-tone="warning"] {
-		color: var(--color-warningText, #e0c590);
+		color: var(--color-warningText);
 	}
 	.value[data-tone="muted"] {
 		opacity: 0.5;
@@ -122,6 +122,6 @@
 	}
 
 	.extra {
-		margin-top: 4px;
+		margin-top: var(--abt-space-2);
 	}
 </style>

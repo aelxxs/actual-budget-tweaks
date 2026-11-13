@@ -162,7 +162,7 @@
 <style>
 	.dd__split {
 		display: flex;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		height: 8px;
 		margin-bottom: var(--abt-space-2);
 		overflow: hidden;
@@ -193,7 +193,7 @@
 		align-items: baseline;
 		gap: 6px;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	/* One width for the dot and the transfer icon, so every name starts in line. */
@@ -202,7 +202,7 @@
 		place-items: center;
 		width: 12px;
 		flex-shrink: 0;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.dd__edit {
@@ -221,7 +221,7 @@
 
 	.dd__tx-notes {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		opacity: 0.7;
 	}
 </style>

@@ -136,7 +136,7 @@
 		white-space: nowrap;
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	@container (max-width: 260px) {

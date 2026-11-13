@@ -53,7 +53,7 @@
 	.rhp-tr {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		padding: 0 5px;
 		border-bottom: 1px solid color-mix(in srgb, var(--color-tableBorder) 50%, transparent);
 		flex-shrink: 0;
@@ -68,7 +68,7 @@
 		height: 5px;
 		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
-		background: color-mix(in srgb, var(--color-pageTextSubdued) 35%, transparent);
+		background: var(--abt-ink-4);
 	}
 
 	.rhp-bar {

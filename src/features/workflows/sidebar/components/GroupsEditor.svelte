@@ -268,7 +268,7 @@
 	.empty {
 		margin: 0;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.import {
@@ -285,7 +285,7 @@
 	.import > :global(svg) {
 		flex-shrink: 0;
 		align-self: flex-start;
-		margin-top: 2px;
+		margin-top: var(--abt-space-1);
 		color: var(--abt-accent);
 	}
 
@@ -296,8 +296,8 @@
 	}
 
 	.import-text p {
-		margin: 2px 0 0;
-		color: var(--color-pageTextSubdued);
+		margin: var(--abt-space-1) 0 0;
+		color: var(--abt-muted);
 	}
 
 	.import-btn {
@@ -356,7 +356,7 @@
 	.handle {
 		flex-shrink: 0;
 		margin-right: calc(-1 * var(--abt-space-1));
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		cursor: grab;
 	}
 
@@ -374,7 +374,7 @@
 		min-width: 16px;
 		font-size: var(--abt-text-sm);
 		text-align: right;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.remove:hover {

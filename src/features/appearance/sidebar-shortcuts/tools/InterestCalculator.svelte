@@ -87,17 +87,17 @@
 
 <style>
 	.ic {
-		padding: 12px;
+		padding: var(--abt-space-4);
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: var(--abt-space-4);
 		width: 220px;
 	}
 
 	.ic__fields {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: var(--abt-space-3);
 	}
 
 	.ic__field {
@@ -111,7 +111,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.ic__input-wrap {
@@ -130,8 +130,8 @@
 	.ic__prefix,
 	.ic__suffix {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
-		padding: 0 8px;
+		color: var(--abt-muted);
+		padding: 0 var(--abt-space-3);
 		flex-shrink: 0;
 	}
 
@@ -156,14 +156,14 @@
 	}
 
 	.ic__input::placeholder {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		opacity: 0.5;
 	}
 
 	.ic__select {
 		width: 100%;
 		padding-block: 6px;
-		padding-left: 8px;
+		padding-left: var(--abt-space-3);
 		font-size: var(--abt-text-base);
 		font-family: inherit;
 		border: 1px solid var(--color-tableBorder);
@@ -181,7 +181,7 @@
 	.ic__result {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		padding: 10px;
 		border-radius: var(--abt-radius);
 		background: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 8%, transparent);
@@ -195,7 +195,7 @@
 	}
 
 	.ic__row--total {
-		padding-top: 4px;
+		padding-top: var(--abt-space-2);
 		border-top: 1px solid
 			color-mix(in srgb, var(--color-sidebarItemAccentSelected) 15%, transparent);
 		font-size: var(--abt-text-md);
@@ -203,7 +203,7 @@
 	}
 
 	.ic__rlabel {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.ic__rval {

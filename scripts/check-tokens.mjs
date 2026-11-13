@@ -51,7 +51,27 @@ const RULES = [
 		re: /border-radius:\s*(?:50%|999px)/g,
 		hint: "use --abt-radius-pill",
 	},
+	{
+		re: /color-mix\(\s*in srgb,\s*var\(--color-(?:budgetNumberPositive|warningText|errorText)\)\s+[\d.]+%,\s*transparent\s*\)/g,
+		hint: "use a status step (--abt-positive-1..4, --abt-warning-1..4, --abt-danger-1..4)",
+	},
+	{
+		re: /box-shadow:\s*0 \d+px \d+px rgba?\(/g,
+		hint: "use --abt-shadow-sm / --abt-shadow / --abt-shadow-lg",
+	},
+	{
+		// Every px value on the spacing scale: the whole declaration has a token form.
+		re: /^\s*(?:gap|row-gap|column-gap|padding(?:-[a-z]+)?|margin(?:-[a-z]+)?|inset(?:-[a-z]+)?):(?:\s+(?:0|auto|var\([^)]*\)))*\s+(?:2|4|8|12|16|24)px(?:\s+(?:(?:2|4|8|12|16|24)px|0|auto|var\([^)]*\)))*\s*(?:!important\s*)?;/g,
+		hint: "use --abt-space-1..6 (2, 4, 8, 12, 16, 24px)",
+	},
 ];
+
+// ABT's own components use --abt-muted (or --abt-soft/--abt-subtle); pageTextSubdued is for
+// matching Actual's own text, in adapter CSS.
+const SUBDUED = {
+	re: /var\(--color-pageTextSubdued\)/g,
+	hint: "use --abt-muted in ABT's own UI; pageTextSubdued only where matching Actual's text",
+};
 
 function* walk(dir) {
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -71,6 +91,9 @@ for (const base of SCAN) {
 		const rules = SKIP.some((s) => rel.startsWith(s)) ? [HASHED] : [HASHED, ...RULES];
 		if (rel.startsWith("src/") && rel !== REGISTRY) {
 			rules.push(TEST_ID);
+		}
+		if (rel.endsWith(".svelte")) {
+			rules.push(SUBDUED);
 		}
 		readFileSync(file, "utf8")
 			.split("\n")

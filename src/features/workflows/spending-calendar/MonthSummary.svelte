@@ -33,7 +33,7 @@
 		display: flex;
 		gap: 20px;
 		margin: 0;
-		padding-left: 16px;
+		padding-left: var(--abt-space-5);
 		border-left: 1px solid var(--abt-line);
 		transition: opacity 0.15s;
 	}
@@ -50,7 +50,7 @@
 		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	dd {
 		margin: 0;

@@ -93,7 +93,7 @@ const CSS = `
 		display: inline-block;
 		width: 14px;
 		height: 14px;
-		margin-right: 4px;
+		margin-right: var(--abt-space-2);
 		vertical-align: -2px;
 		object-fit: contain;
 		border-radius: 2px;

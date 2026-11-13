@@ -134,3 +134,77 @@
 		{templatePlanState.showAllRows ? "Show only changed" : "Show unchanged categories"}
 	</button>
 {/if}
+
+<style>
+	.abt-tab-actions .abt-btn[aria-pressed="true"] {
+		background: var(--abt-accent-2);
+		color: var(--abt-accent);
+	}
+
+	.abt-tab-body {
+		overflow-y: auto;
+		flex: 1 1 auto;
+		min-height: 0;
+		padding: 6px 0;
+		transition: opacity 0.15s;
+	}
+
+	/* Delayed past a typical refresh (a month change is ~250ms), so only slow ones dim. */
+	.abt-tab-body[data-updating] {
+		opacity: 0.55;
+		transition: opacity 0.2s 0.4s;
+	}
+
+	.abt-tab-body :global(.abt-tab-empty) {
+		padding: 16px 14px;
+		text-align: center;
+		color: var(--abt-muted);
+	}
+
+	.abt-tab-footer {
+		flex-shrink: 0;
+		border-top: 1px solid var(--abt-panel-border);
+		padding: var(--abt-space-3) var(--abt-space-4);
+		background: var(--abt-panel-surface);
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: var(--abt-space-2) var(--abt-space-3);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.abt-tab-footer-label {
+		color: var(--abt-muted);
+	}
+	.abt-tab-footer-value {
+		text-align: right;
+		font-weight: 600;
+	}
+
+	.abt-tab-toggle {
+		appearance: none;
+		width: 100%;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		padding: 6px 12px;
+		border: none;
+		border-top: 1px solid var(--abt-panel-border);
+		background: transparent;
+		font: inherit;
+		font-size: var(--abt-text-sm);
+		color: inherit;
+		opacity: 0.75;
+		cursor: pointer;
+		user-select: none;
+	}
+	.abt-tab-toggle:hover {
+		opacity: 1;
+		background: var(--abt-panel-surface-hover);
+	}
+	.abt-tab-body :global(.abt-tab-overview-empty-row) {
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+</style>

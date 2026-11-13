@@ -17,7 +17,7 @@
 	const BAR_MAX = 22;
 	const TIP_W = 140;
 	const TIP_H = 46;
-	const UNDER = "color-mix(in srgb, var(--color-budgetNumberPositive) 75%, transparent)";
+	const UNDER = "color-mix(in srgb, var(--color-budgetNumberPositive) 75%, transparent)"; // raw: a chart fill, near solid
 	const OVER = "var(--color-errorText)";
 
 	let w = $state(0);

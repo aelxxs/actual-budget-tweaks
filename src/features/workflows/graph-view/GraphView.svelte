@@ -1220,7 +1220,7 @@
 <style>
 	.gv {
 		--gv-account: var(--abt-accent);
-		--gv-middle: var(--color-pageTextSubdued);
+		--gv-middle: var(--abt-muted);
 		--gv-category: var(--color-noticeTextLight);
 		display: flex;
 		flex: 1;

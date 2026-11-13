@@ -53,7 +53,7 @@ export const mobileToasts = defineSetting({
 			border-radius: var(--abt-radius-lg) !important;
 			background: color-mix(in srgb, var(--color-menuBackground) 90%, transparent) !important;
 			backdrop-filter: blur(20px) saturate(1.5);
-			box-shadow: 0 8px 24px rgb(0 0 0 / 0.3) !important; /* raw: a shadow, not a tint */
+			box-shadow: var(--abt-shadow-sm) !important;
 			font-size: var(--abt-text-lg) !important;
 			line-height: 1.4;
 		}

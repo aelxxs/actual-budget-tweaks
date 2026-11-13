@@ -184,7 +184,7 @@
 		flex: 1;
 		align-items: center;
 		min-width: 0;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.ft__search :global(svg) {
@@ -226,7 +226,7 @@
 		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.ft__head.is-sub {
@@ -272,7 +272,7 @@
 		flex-shrink: 0;
 		width: 16px;
 		height: 16px;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.ft__only {
@@ -282,7 +282,7 @@
 		border: 0;
 		border-radius: var(--abt-radius-sm);
 		background: none;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		font: inherit;
 		font-size: var(--abt-text-sm);
 		cursor: pointer;
@@ -302,7 +302,7 @@
 	.ft__empty {
 		padding: var(--abt-space-4) var(--abt-space-3);
 		font-size: var(--abt-text-md);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		text-align: center;
 	}
 </style>

@@ -664,7 +664,7 @@
 	}
 
 	.placeholder {
-		padding: 0 8px;
+		padding: 0 var(--abt-space-3);
 		font-size: var(--abt-text-sm);
 		opacity: 0.5;
 	}

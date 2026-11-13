@@ -277,6 +277,6 @@
 		opacity: 1;
 		border-color: transparent;
 		background: none;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 </style>

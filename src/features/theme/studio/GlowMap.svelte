@@ -411,7 +411,7 @@
 		flex: none;
 		flex-direction: column;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		width: var(--rail);
 		padding-top: 6px;
 		background: color-mix(in srgb, black 12%, transparent);
@@ -425,7 +425,7 @@
 	}
 	.rail i.logo {
 		width: 60%;
-		margin-bottom: 4px;
+		margin-bottom: var(--abt-space-2);
 		opacity: 1;
 	}
 	.rail i.on {
@@ -448,7 +448,7 @@
 	}
 	.list .widget {
 		height: 10px;
-		margin-bottom: 4px;
+		margin-bottom: var(--abt-space-2);
 		border-radius: var(--abt-radius-sm);
 		background: var(--m-card);
 	}
@@ -462,7 +462,7 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0 8px;
+		padding: 0 var(--abt-space-3);
 		border-left: 1px solid var(--abt-line);
 		border-bottom: 1px solid var(--abt-line);
 	}
@@ -474,7 +474,7 @@
 	}
 	.icons {
 		display: flex;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 	.icons i {
 		width: 4px;
@@ -492,7 +492,7 @@
 		align-items: center;
 		gap: 6px;
 		box-sizing: border-box;
-		padding: 0 8px;
+		padding: 0 var(--abt-space-3);
 		border-bottom: 1px solid var(--abt-line);
 	}
 	.toolbar .chip {
@@ -516,7 +516,7 @@
 		flex-direction: column;
 		gap: 6px;
 		min-height: 0;
-		padding: 8px;
+		padding: var(--abt-space-3);
 	}
 	.cards {
 		display: grid;
@@ -557,7 +557,7 @@
 		display: flex;
 		flex: none;
 		gap: 5px;
-		margin-bottom: 2px;
+		margin-bottom: var(--abt-space-1);
 	}
 	.tabs i {
 		width: 22%;

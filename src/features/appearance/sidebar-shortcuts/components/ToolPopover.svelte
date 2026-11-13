@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from "@lib/components/Icon.svelte";
 	import { onMount } from "svelte";
 	import Calculator from "../tools/Calculator.svelte";
 	import CurrencyConverter from "../tools/CurrencyConverter.svelte";
@@ -78,7 +79,7 @@
 
 <!-- Not modal: it's for using alongside the page, so the page stays usable behind it. -->
 <div
-	class="popover"
+	class="popover abt-on-sidebar"
 	data-abt-tool
 	role="dialog"
 	aria-label={title}
@@ -96,7 +97,14 @@
 		onpointercancel={onDrop}
 	>
 		<span class="popover__title">{title}</span>
-		<button class="popover__close" aria-label="Close {title}" onclick={onClose}>✕</button>
+		<button
+			type="button"
+			class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+			aria-label="Close {title}"
+			onclick={onClose}
+		>
+			<Icon name="close" size={13} />
+		</button>
 	</div>
 	{#if toolId === "calculator"}
 		<Calculator {onClose} />
@@ -113,16 +121,15 @@
 		/* Above the page and sidebar (1001), below Actual's dialogs (3000). */
 		z-index: 2000;
 		outline: none;
-		background: var(--color-sidebarBackground, #2a2b3d);
-		color: var(--color-sidebarItemText, #e0e0e0);
-		border: 1px solid color-mix(in srgb, var(--color-sidebarItemText) 10%, transparent);
+		background: var(--color-sidebarBackground);
+		color: var(--abt-ink);
+		border: 1px solid var(--abt-ink-2);
 		border-radius: var(--abt-radius);
-		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+		box-shadow: var(--abt-shadow);
 		overflow: hidden;
 		/* Sidebar-coloured, so the tools' page colours follow the sidebar's (a theme may differ). */
 		--color-pageText: var(--color-sidebarItemText);
-		--color-pageTextSubdued: var(--color-sidebarTextSubdued);
-		--color-tableBorder: color-mix(in srgb, var(--color-sidebarItemText) 12%, transparent);
+		--color-tableBorder: var(--abt-ink-3);
 		--color-cardBackground: color-mix(
 			in srgb,
 			var(--color-sidebarItemText) 6%,
@@ -134,8 +141,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 8px 12px;
-		border-bottom: 1px solid color-mix(in srgb, var(--color-sidebarItemText) 10%, transparent);
+		padding: var(--abt-space-3) var(--abt-space-4);
+		border-bottom: 1px solid var(--abt-ink-2);
 		cursor: grab;
 		user-select: none;
 		touch-action: none;
@@ -148,21 +155,5 @@
 	.popover__title {
 		font-size: var(--abt-text-base);
 		font-weight: 600;
-	}
-
-	.popover__close {
-		background: none;
-		border: none;
-		color: var(--color-sidebarItemText);
-		opacity: 0.5;
-		cursor: pointer;
-		font-size: var(--abt-text-base);
-		padding: 2px 4px;
-		border-radius: var(--abt-radius-sm);
-		line-height: 1;
-	}
-
-	.popover__close:hover {
-		background: color-mix(in srgb, var(--color-sidebarItemText) 15%, transparent);
 	}
 </style>

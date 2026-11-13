@@ -23,7 +23,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1px;
-		padding: 2px 0;
+		padding: var(--abt-space-1) 0;
 		flex: 1 1 auto;
 	}
 	/* row dimensions mirror .account exactly so the real list doesn't jump when

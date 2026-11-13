@@ -589,7 +589,7 @@
 		overflow: hidden;
 		cursor: pointer;
 		flex-shrink: 0;
-		margin-bottom: 4px;
+		margin-bottom: var(--abt-space-2);
 	}
 	.rail-avatar.has-icon {
 		background: var(--abt-ink-3);
@@ -719,8 +719,8 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		grid-auto-rows: 1fr;
-		gap: 2px;
-		padding: 4px;
+		gap: var(--abt-space-1);
+		padding: var(--abt-space-2);
 		border-radius: var(--abt-radius);
 		background: var(--abt-ink-2);
 		transition: filter 0.12s ease;
@@ -759,7 +759,7 @@
 		align-items: center;
 		flex-shrink: 0;
 		width: 40px;
-		padding-bottom: 2px;
+		padding-bottom: var(--abt-space-1);
 		border-radius: var(--abt-radius-lg);
 		background: var(--abt-ink-2);
 	}

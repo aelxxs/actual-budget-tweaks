@@ -491,7 +491,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 8px var(--abt-page-gutter);
+		padding: var(--abt-space-3) var(--abt-page-gutter);
 		flex-shrink: 0;
 		/* Matches ABT's other page and panel headers. */
 		box-sizing: border-box;
@@ -517,7 +517,7 @@
 	.cal-header__sep {
 		width: 1px;
 		height: 18px;
-		margin: 0 2px;
+		margin: 0 var(--abt-space-1);
 		background: var(--abt-line);
 	}
 
@@ -551,7 +551,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		text-align: center;
 		padding: 10px 0;
 		margin-bottom: 1px;

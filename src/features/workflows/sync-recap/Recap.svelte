@@ -277,7 +277,7 @@
 		padding: var(--abt-space-6) var(--abt-space-3);
 		text-align: center;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.empty strong {
 		font-size: var(--abt-text-md);

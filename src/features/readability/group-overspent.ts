@@ -96,7 +96,7 @@ export const groupOverspent = defineSetting({
 			margin-left: var(--abt-space-3);
 			padding: 1px var(--abt-space-2);
 			border-radius: var(--abt-radius-pill);
-			background: color-mix(in srgb, var(--color-errorText) 15%, transparent);
+			background: var(--abt-danger-2);
 			color: var(--color-errorText);
 			font-size: var(--abt-text-xs);
 			font-weight: 600;

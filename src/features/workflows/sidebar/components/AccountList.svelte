@@ -777,7 +777,7 @@
 		/* 8px overflows into the sidebar's right padding so the scrollbar lives
 		   there instead of squeezing row content. */
 		width: calc(100% + 8px);
-		padding-right: 8px;
+		padding-right: var(--abt-space-3);
 		overflow-y: auto;
 		overflow-x: hidden;
 		scrollbar-width: thin;
@@ -815,7 +815,7 @@
 		box-sizing: border-box;
 		height: 32px;
 		padding: 6px;
-		padding-inline: 8px;
+		padding-inline: var(--abt-space-3);
 		border-radius: var(--abt-radius);
 		flex-shrink: 0;
 	}

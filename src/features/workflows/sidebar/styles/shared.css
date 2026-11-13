@@ -8,7 +8,7 @@
 	gap: 5px;
 	width: 100%;
 	box-sizing: border-box;
-	padding: var(--sb-row-pad-y, 5px) 8px;
+	padding: var(--sb-row-pad-y, 5px) var(--abt-space-3);
 	border-radius: var(--abt-radius);
 	text-align: left;
 	cursor: default;
@@ -97,7 +97,7 @@
 	background: var(--sb-surface);
 	border: 1px solid var(--sb-line, var(--abt-ink-2));
 	border-radius: var(--abt-radius);
-	box-shadow: 0 12px 30px var(--sb-shadow);
+	box-shadow: var(--abt-shadow);
 	animation: ctx-in 0.1s ease;
 }
 @keyframes ctx-in {
@@ -153,7 +153,7 @@
 }
 .sidebar .ctx-div {
 	height: 1px;
-	margin: 4px 4px;
+	margin: var(--abt-space-2) var(--abt-space-2);
 	background: var(--sb-line, var(--abt-ink-2));
 }
 /* positioning context for the absolutely placed hover controls */

@@ -427,7 +427,7 @@
 	.side__note {
 		margin: 0;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.catalog {
@@ -499,7 +499,7 @@
 
 	.entry__meta {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	/* A hint of what clicking does: shows on hover, and stays as a check once pinned. */

@@ -35,7 +35,7 @@ const CSS = `
 		flex-shrink: 0;
 		width: 16px;
 		height: 16px;
-		margin-left: 4px;
+		margin-left: var(--abt-space-2);
 		cursor: help;
 		opacity: 0.85;
 		transition: opacity 0.15s;
@@ -87,11 +87,6 @@ const CSS = `
 	.${POPOVER_CLASS} {
 		position: fixed;
 		z-index: 10000;
-		background: var(--color-menuBackground);
-		color: var(--color-menuItemText);
-		border: 1px solid var(--color-menuBorder);
-		border-radius: var(--abt-radius);
-		box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 		font-family: inherit;
 	}
 `;
@@ -352,7 +347,7 @@ async function openPopover(ring: HTMLElement) {
 		daysLeft: daysLeftInMonth(sheet),
 	});
 	const wrap = popover.node;
-	wrap.className = POPOVER_CLASS;
+	wrap.className = `${POPOVER_CLASS} abt-popover`;
 	wrap.style.display = "block";
 	wrap.addEventListener("mouseenter", () => {
 		if (closeTimer) {

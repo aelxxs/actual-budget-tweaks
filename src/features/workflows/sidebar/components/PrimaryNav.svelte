@@ -182,7 +182,7 @@
 	.nav {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 	}
 	.nav-link {
 		display: flex;
@@ -241,7 +241,7 @@
 	.nav-sublist {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		margin: 2px 0 2px 17px;
 		padding-left: 10px;
 		border-left: 1px solid var(--abt-ink-3);
@@ -249,7 +249,7 @@
 	/* A step down from the top-level links, so they read as children of Settings. */
 	.nav-sublink {
 		gap: 10px;
-		padding: var(--sb-row-pad-y, 5px) 8px;
+		padding: var(--sb-row-pad-y, 5px) var(--abt-space-3);
 	}
 	.nav-sublink .nav-icon {
 		width: 15px;

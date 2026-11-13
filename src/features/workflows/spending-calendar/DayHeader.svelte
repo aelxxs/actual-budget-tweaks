@@ -20,7 +20,7 @@
 	.dh {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		flex: 1;
 		min-width: 0;
 	}
@@ -29,7 +29,7 @@
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 12px;
+		gap: var(--abt-space-4);
 	}
 
 	.dh__date {

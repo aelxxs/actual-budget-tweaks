@@ -28,7 +28,7 @@ export const FLOW_BAR_CSS = `
 		text-align: left !important;
 		color: var(--color-pageTextSubdued) !important;
 		font-size: var(--abt-text-sm) !important;
-		padding-left: 16px;
+		padding-left: var(--abt-space-5);
 	}
 
 	.abt-to-budget-value {

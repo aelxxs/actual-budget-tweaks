@@ -834,7 +834,7 @@ export const resizableTransactionColumns = defineSetting({
 			:root[${ROOT_TOGGLE_ATTR}="on"] ${CREDIT_CELL},
 			:root[${ROOT_TOGGLE_ATTR}="on"] ${BALANCE_CELL} {
 				position: relative;
-				padding-right: 8px;
+				padding-right: var(--abt-space-3);
 			}
 			/* Group isn't sortable, so Actual renders bare text without the 5px button padding the other headers get. */
 			:root[${ROOT_TOGGLE_ATTR}="on"] ${TRANSACTION_HEADER} ${GROUP_CELL} span {

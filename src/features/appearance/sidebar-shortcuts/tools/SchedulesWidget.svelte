@@ -190,7 +190,7 @@
 	.sched__empty {
 		font-size: var(--abt-text-xs);
 		opacity: 0.4;
-		padding: 2px 0;
+		padding: var(--abt-space-1) 0;
 	}
 
 	.sched__list {
@@ -202,7 +202,7 @@
 	.sched__row {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		font-size: var(--abt-text-sm);
 		line-height: 1.3;
 	}
@@ -217,7 +217,7 @@
 
 	.sched__date.is-soon {
 		opacity: 1;
-		color: var(--color-warningText, #f59e0b);
+		color: var(--color-warningText);
 	}
 
 	.sched__date.is-near {

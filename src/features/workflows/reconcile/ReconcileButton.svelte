@@ -75,8 +75,8 @@
 	.rb__age {
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
-		margin-left: 2px;
+		gap: var(--abt-space-2);
+		margin-left: var(--abt-space-1);
 		padding: 1px 6px;
 		border-radius: var(--abt-radius-pill);
 		background: var(--abt-fill);
@@ -86,7 +86,7 @@
 	}
 
 	.rb.is-overdue .rb__age {
-		background: color-mix(in srgb, var(--color-warningText) 16%, transparent);
+		background: var(--abt-warning-2);
 		color: var(--color-warningText);
 	}
 

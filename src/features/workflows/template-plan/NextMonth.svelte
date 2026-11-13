@@ -135,7 +135,7 @@
 	.strip {
 		display: grid;
 		grid-template-columns: repeat(6, 1fr);
-		gap: 4px;
+		gap: var(--abt-space-2);
 		margin: 10px 0 8px;
 		--fill: var(--color-warningText);
 	}
@@ -147,7 +147,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		min-width: 0;
 	}
 

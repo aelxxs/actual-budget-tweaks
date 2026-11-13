@@ -134,7 +134,7 @@
 		color: var(--abt-ink);
 	}
 	.head[data-tone="error"] {
-		color: var(--color-errorText, #e57373);
+		color: var(--color-errorText);
 	}
 
 	.title {
@@ -187,11 +187,11 @@
 	}
 
 	.section:last-child {
-		padding-bottom: 12px;
+		padding-bottom: var(--abt-space-4);
 	}
 
 	.card {
-		margin: 2px 12px 0;
+		margin: var(--abt-space-1) var(--abt-space-4) 0;
 		padding: 10px;
 		border-radius: var(--abt-radius);
 		border: 1px solid var(--abt-panel-border);

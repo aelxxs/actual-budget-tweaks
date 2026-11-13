@@ -87,7 +87,7 @@
 	}
 
 	.mt__row.uncat > span {
-		background: color-mix(in srgb, var(--color-warningText) 12%, transparent);
+		background: var(--abt-warning-1);
 		border-top-color: transparent;
 	}
 
@@ -96,7 +96,7 @@
 	}
 
 	.mt__cat {
-		color: var(--color-pageTextSubdued);
+		color: var(--color-pageTextSubdued); /* raw: mirrors Actual\'s table */
 	}
 
 	.mt__cat.empty {

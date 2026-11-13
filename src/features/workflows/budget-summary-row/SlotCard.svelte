@@ -446,7 +446,7 @@
 	.sr__count {
 		font-size: var(--abt-text-base);
 		font-weight: 600;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	/* Keep supporting text subdued in both envelope and tracking rows. */
@@ -503,14 +503,14 @@
 	.sr__value small {
 		font-size: var(--abt-text-base);
 		font-weight: 500;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.sr__value.is-over {
 		color: var(--color-errorText);
 	}
 
 	.sr__none {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.sr__change {
@@ -540,7 +540,7 @@
 	}
 	.sr__value.sr__ghost {
 		height: 14px;
-		margin: 4px 0;
+		margin: var(--abt-space-2) 0;
 	}
 	.sr__sub.sr__ghost {
 		width: 85%;

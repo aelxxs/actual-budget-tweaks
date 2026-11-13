@@ -693,7 +693,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		width: 100%;
 		box-sizing: border-box;
 		padding: calc(var(--sb-row-pad-y, 5px) + 1px) 13px;
@@ -713,7 +713,7 @@
 	.search-left {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		flex: 1 1 auto;
 		min-width: 0;
 	}

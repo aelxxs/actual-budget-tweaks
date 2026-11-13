@@ -22,19 +22,19 @@
 		white-space: nowrap;
 	}
 	.badge[data-tone="positive"] {
-		background: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 15%, transparent);
-		color: var(--color-budgetNumberPositive, #4caf50);
+		background: var(--abt-positive-2);
+		color: var(--color-budgetNumberPositive);
 	}
 	.badge[data-tone="neutral"] {
 		background: var(--abt-ink-2);
 		color: var(--abt-muted);
 	}
 	.badge[data-tone="warning"] {
-		background: color-mix(in srgb, var(--color-warningText, #e0c590) 15%, transparent);
-		color: var(--color-warningText, #e0c590);
+		background: var(--abt-warning-2);
+		color: var(--color-warningText);
 	}
 	.badge[data-tone="negative"] {
-		background: color-mix(in srgb, var(--color-errorText, #e57373) 15%, transparent);
-		color: var(--color-errorText, #e57373);
+		background: var(--abt-danger-2);
+		color: var(--color-errorText);
 	}
 </style>

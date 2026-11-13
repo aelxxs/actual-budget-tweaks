@@ -348,7 +348,7 @@
 	.sm__hint {
 		overflow: hidden;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
@@ -399,7 +399,7 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		min-width: 0;
 		font-size: var(--abt-text-md);
 	}
@@ -410,7 +410,7 @@
 		overflow: hidden;
 		font-size: var(--abt-text-sm);
 		font-variant-numeric: tabular-nums;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
@@ -459,7 +459,7 @@
 		display: flex;
 		align-items: center;
 		padding: 0 var(--abt-space-1) var(--abt-space-2);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.sm__search :global(svg) {
 		position: absolute;
@@ -478,7 +478,7 @@
 		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.sm__row.sm__cat {
@@ -500,7 +500,7 @@
 	.sm__empty {
 		padding: var(--abt-space-3) var(--abt-space-2);
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

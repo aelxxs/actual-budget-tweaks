@@ -493,7 +493,7 @@
 		scrollbar-color: var(--abt-ink-5) transparent;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.eg-label {
@@ -541,7 +541,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 6px;
-		padding: 12px;
+		padding: var(--abt-space-4);
 		border-radius: var(--abt-radius);
 		border: 1px solid var(--abt-ink-2);
 		background: var(--abt-ink-1);
@@ -591,7 +591,7 @@
 		transition:
 			border-color 0.15s,
 			background 0.15s;
-		padding: 12px;
+		padding: var(--abt-space-4);
 	}
 
 	.dropzone:hover,
@@ -604,7 +604,7 @@
 	}
 	.dropzone__label {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		text-align: center;
 	}
 	.dropzone__img {
@@ -615,7 +615,7 @@
 	}
 	.dropzone__hint {
 		font-size: var(--abt-text-xs);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	/* ── Footer ── */
@@ -635,9 +635,9 @@
 
 	.hint {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		margin: 0;
-		padding: 4px 0;
+		padding: var(--abt-space-2) 0;
 	}
 	.hint--empty {
 		padding: var(--abt-space-4);

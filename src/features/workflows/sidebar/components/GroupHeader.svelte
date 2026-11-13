@@ -117,7 +117,7 @@
 		margin-inline: 3px;
 	}
 	:global(.split) .group-header.sub {
-		padding-left: 8px;
+		padding-left: var(--abt-space-3);
 	}
 	:global(.sidebar) .group-header.sub:hover {
 		background: transparent;

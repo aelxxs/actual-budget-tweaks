@@ -41,3 +41,30 @@
 		</button>
 	</div>
 </div>
+
+<style>
+	/* ── Overview tab ──────────────────────────────────────────────── */
+	/* A slim card of its own above the sections, like the cards below it. */
+	.abt-tab-overview-toolbar {
+		margin: 6px 12px 10px;
+		padding: 6px 6px 6px 12px;
+		border: 1px solid var(--abt-panel-border);
+		border-radius: var(--abt-radius);
+		background: var(--abt-panel-surface);
+	}
+
+	.abt-tab-overview-toolbar-status {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	.abt-tab-overview-toolbar-status[data-tone="warn"] {
+		color: var(--color-warningText);
+	}
+	.abt-tab-overview-toolbar-status[data-tone="ok"] {
+		color: var(--color-noticeTextLight);
+	}
+</style>

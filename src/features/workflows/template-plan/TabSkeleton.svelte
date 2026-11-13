@@ -67,6 +67,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 12px;
+		gap: var(--abt-space-4);
 	}
 </style>

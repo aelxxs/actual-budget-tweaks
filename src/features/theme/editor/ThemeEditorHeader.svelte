@@ -74,9 +74,9 @@
 	}
 
 	.editor__sub {
-		margin: 2px 0 0;
+		margin: var(--abt-space-1) 0 0;
 		font-size: var(--abt-text-xs);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		letter-spacing: 0.04em;
 	}
 
@@ -110,7 +110,7 @@
 		border-radius: var(--abt-radius-sm);
 		border: var(--border);
 		background: var(--color-buttonNormalBackground);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		cursor: pointer;
 		transition:
 			border-color 0.15s,

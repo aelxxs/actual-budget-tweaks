@@ -129,7 +129,7 @@
 		align-items: baseline;
 		justify-content: space-between;
 		gap: 10px;
-		margin-bottom: 8px;
+		margin-bottom: var(--abt-space-3);
 	}
 
 	.cp__name {
@@ -139,7 +139,7 @@
 
 	.cp__month {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		flex-shrink: 0;
 	}
 
@@ -170,9 +170,9 @@
 	}
 
 	.cp__status {
-		margin-top: 4px;
+		margin-top: var(--abt-space-2);
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.cp__status[data-state="overspent"] {
@@ -184,23 +184,23 @@
 	}
 
 	.cp__rows {
-		margin-top: 8px;
-		padding-top: 8px;
+		margin-top: var(--abt-space-3);
+		padding-top: var(--abt-space-3);
 		border-top: 1px solid var(--abt-ink-2);
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.cp__row {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 12px;
+		gap: var(--abt-space-4);
 	}
 
 	.cp__label {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.cp__value {
@@ -223,8 +223,8 @@
 	}
 
 	.cp__goal-hint {
-		margin-top: 8px;
-		padding-top: 8px;
+		margin-top: var(--abt-space-3);
+		padding-top: var(--abt-space-3);
 		border-top: 1px solid var(--abt-ink-2);
 		font-size: var(--abt-text-sm);
 		color: var(--color-warningText);

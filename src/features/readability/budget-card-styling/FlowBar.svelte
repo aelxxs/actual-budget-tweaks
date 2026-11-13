@@ -91,17 +91,17 @@
 		padding: 10px 16px;
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		background-color: var(--color-budgetHeaderCurrentMonth);
 		box-sizing: border-box;
 	}
 
 	.flow__available {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		display: flex;
 		align-items: baseline;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.flow__available-val {
@@ -153,7 +153,7 @@
 		align-items: center;
 		gap: 5px;
 		font-size: var(--abt-text-xs);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.flow__dot {

@@ -90,7 +90,7 @@
 					<span
 						class="cal-tx__dot"
 						style="background: {tx.upcoming
-							? 'var(--color-pageTextSubdued)'
+							? 'var(--abt-muted)'
 							: tx.missed
 								? 'var(--color-errorText)'
 								: getCategoryColor(tx.categoryId)}"
@@ -143,7 +143,7 @@
 		padding: 6px;
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		overflow: hidden;
 		transition: background 0.1s;
 		--heat: var(--heat-raw, 0);
@@ -211,13 +211,13 @@
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		margin-bottom: 2px;
+		margin-bottom: var(--abt-space-1);
 	}
 
 	.cal-cell__datewrap {
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.cal-cell__date {
@@ -276,7 +276,7 @@
 	.cal-tx {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		font-size: var(--abt-text-sm);
 		line-height: 1.5;
 		min-width: 0;
@@ -301,7 +301,7 @@
 		padding: 0 6px;
 		border-radius: var(--abt-radius-pill);
 		background: var(--abt-ink-2);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		font-size: var(--abt-text-2xs);
 		font-weight: 600;
 		line-height: 1.6;
@@ -318,11 +318,11 @@
 	.cal-tx.is-missed .cal-tx__payee {
 		color: var(--color-errorText);
 		text-decoration: line-through;
-		text-decoration-color: color-mix(in srgb, var(--color-errorText) 45%, transparent);
+		text-decoration-color: var(--abt-danger-4);
 	}
 
 	.cal-tx.is-upcoming .cal-tx__dot {
-		border: 1px dashed var(--color-pageTextSubdued);
+		border: 1px dashed var(--abt-muted);
 		background: transparent !important;
 		width: 7px;
 		height: 7px;
@@ -332,12 +332,12 @@
 		display: flex;
 		gap: 1px;
 		margin-top: auto;
-		padding-top: 4px;
+		padding-top: var(--abt-space-2);
 	}
 
 	.cal-cell__balance {
 		margin-top: auto;
-		padding-top: 4px;
+		padding-top: var(--abt-space-2);
 		font-size: var(--abt-text-sm);
 		font-variant-numeric: tabular-nums;
 		color: var(--abt-muted);

@@ -79,7 +79,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		font-weight: 600;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		padding: 5px 8px;
 		background: var(--color-cardBackground);
 		border-top: 1px solid var(--color-tableBorder);

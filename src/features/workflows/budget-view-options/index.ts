@@ -12,7 +12,7 @@ const CSS = `
 	.${GROUP_CLASS} {
 		display: inline-flex;
 		align-items: center;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		margin-right: 6px;
 	}
 	.${GROUP_CLASS} > button {
@@ -39,7 +39,7 @@ const CSS = `
 		order: 1;
 	}
 	${HEAD} > button:first-of-type {
-		margin: 0 2px 0 0 !important;
+		margin: 0 var(--abt-space-1) 0 0 !important;
 		padding: 5px !important;
 		border-radius: var(--abt-radius-sm);
 		transition: opacity 0.12s ease, background 0.12s ease;

@@ -211,7 +211,7 @@
 		align-items: center;
 		gap: 6px;
 		margin: 0 0 0 -8px;
-		padding: 2px 8px;
+		padding: var(--abt-space-1) var(--abt-space-3);
 		border: none;
 		border-radius: var(--abt-radius);
 		background: none;
@@ -256,7 +256,7 @@
 	.picker__months {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 2px;
+		gap: var(--abt-space-1);
 	}
 	.picker__month {
 		position: relative;
@@ -286,7 +286,7 @@
 		font-weight: 600;
 	}
 	.picker__month.is-muted {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.picker__month:disabled {
 		opacity: 0.3;
@@ -347,11 +347,11 @@
 		padding: var(--abt-space-3);
 	}
 	.picker.is-compact .picker__head {
-		margin-bottom: 4px;
+		margin-bottom: var(--abt-space-2);
 	}
 	.picker.is-compact .picker__months {
 		grid-template-columns: repeat(4, 1fr);
-		gap: 2px;
+		gap: var(--abt-space-1);
 	}
 	.picker.is-compact .picker__month {
 		padding: 8px 0 10px;

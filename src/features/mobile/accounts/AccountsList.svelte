@@ -273,7 +273,7 @@
 	.acct-heading :global(.acct-chevron) {
 		flex-shrink: 0;
 		margin-right: auto;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		transition: transform 0.15s ease;
 	}
 

@@ -231,7 +231,7 @@
 		height: 16px;
 		line-height: 16px;
 		font-size: var(--abt-text-base);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		white-space: nowrap;
 	}
 

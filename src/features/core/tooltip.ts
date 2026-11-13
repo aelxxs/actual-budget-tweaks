@@ -26,7 +26,7 @@ const CSS = `
 		z-index: 10000000;
 		display: none;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		box-sizing: border-box;
 		max-width: 240px;
 		padding: var(--abt-space-2) var(--abt-space-3);
@@ -38,7 +38,7 @@ const CSS = `
 	/* Lighter than a menu: smaller corners and shadow on the shared popover surface. */
 	.${TOOLTIP_CLASS}.abt-popover {
 		border-radius: var(--abt-radius-sm);
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+		box-shadow: var(--abt-shadow-sm);
 	}
 	.${TOOLTIP_CLASS}[data-open] {
 		display: flex;
@@ -81,11 +81,11 @@ const CSS = `
 	.abt-tooltip__keys {
 		display: flex;
 		flex: none;
-		gap: 2px;
+		gap: var(--abt-space-1);
 	}
 	.abt-tooltip__keys kbd {
 		min-width: 16px;
-		padding: 0 4px;
+		padding: 0 var(--abt-space-2);
 		border-radius: var(--abt-radius-sm);
 		background: var(--abt-ink-2);
 		color: var(--abt-muted);
@@ -138,7 +138,7 @@ const CSS = `
 		padding: var(--abt-space-2) var(--abt-space-3) !important;
 		border: 1px solid var(--color-tableBorder) !important;
 		border-radius: var(--abt-radius-sm) !important;
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28) !important;
+		box-shadow: var(--abt-shadow-sm) !important;
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		line-height: 1.35;

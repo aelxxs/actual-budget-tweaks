@@ -1,6 +1,6 @@
 # Actual Budget Tweaks
 
-A browser extension (WXT + Svelte 5) that layers optional tweaks onto Actual Budget's web app. Setup and adding a feature: [CONTRIBUTING.md](CONTRIBUTING.md). Styling rules and plan: [docs/styling-migration.md](docs/styling-migration.md).
+A browser extension (WXT + Svelte 5) that layers optional tweaks onto Actual Budget's web app. Setup and adding a feature: [CONTRIBUTING.md](CONTRIBUTING.md). Styling rules: [docs/styling.md](docs/styling.md).
 
 ## Pillars
 
@@ -17,8 +17,8 @@ What ABT is, and what every change should hold to.
 
 - **Anchors:** Actual's test ids live in `src/lib/actual-dom.ts` (`pnpm check:tokens` enforces it); list a new one under its page in `PAGE_ANCHORS` so the smoke test checks it. Inside containers ABT also appends to, use `div:last-of-type` / `div:first-of-type`, not `:last-child` / `:first-child`. Put new markers in `src/features/core/native-hooks.ts`.
 - **Page gating:** check `matchesPage()` at the top of a permanent `watchDom()` callback, not a start/stop pair driven by `watchRoute`, which misses some in-app navigations.
-- **Tokens:** use `--abt-text-*`, `--abt-radius*` and the ink and accent steps instead of raw values. `pnpm check:tokens` enforces this and bans hashed classes; a deliberate exception carries a `raw:` comment on the same line. The popup doesn't load `ui.css`, so it keeps raw values.
-- **Shared UI:** when changing a feature's own UI, move what you touch onto the primitives in `ui.css` and the components in `src/lib/components` (phases 2 and 3 of the styling doc happen this way, not as a sweep).
+- **Tokens:** use the spacing, text, radius, ink, accent, status and shadow tokens ([docs/styling.md](docs/styling.md)) instead of raw values, and `--abt-muted` for secondary text in ABT's own UI. `pnpm check:tokens` enforces this and bans hashed classes; a deliberate exception carries a `raw:` comment on the same line. The popup doesn't load `ui.css`, so it keeps raw values.
+- **Shared UI:** when changing a feature's own UI, move what you touch onto the primitives in `ui.css` and the components in `src/lib/components`.
 - **Comments:** only where the code can't explain itself (a constraint, a workaround), in one or two lines.
 - **Commits:** conventional, using `feat:`, `fix:`, `style:`, `refactor:` or `chore:`. changelogen builds the changelog and version from them. Pushing to `main` doesn't release: run the "Build, Release & Publish Extensions" workflow by hand, which ships only after CI and the smoke test pass.
 - **Verify:** `pnpm format && pnpm check && pnpm lint && pnpm check:tokens`, then look at the change in a running Actual instance on a test budget, not real financial data. `pnpm test:smoke` (needs a fresh Actual behind the sidecar; see `.github/workflows/smoke.yml`) catches anchors and markers that stopped matching, and runs nightly against Actual's latest and edge.

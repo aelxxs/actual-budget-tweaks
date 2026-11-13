@@ -785,7 +785,7 @@
 		border-radius: var(--abt-radius-lg);
 		box-shadow:
 			0 0 0 1px var(--sb-shadow-2),
-			0 24px 64px var(--sb-shadow);
+			var(--abt-shadow-lg);
 		overflow: hidden;
 	}
 	.cp-search {

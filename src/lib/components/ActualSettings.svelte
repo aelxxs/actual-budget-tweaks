@@ -821,7 +821,7 @@
 		flex-shrink: 0;
 		white-space: nowrap;
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	/* Listed under ABT's tab in Actual's settings nav, indented to the tab's label. */
@@ -872,7 +872,7 @@
 		gap: var(--abt-space-2);
 		overflow-x: auto;
 		/* Room for a chip's focus ring, which the sideways scroll would otherwise clip. */
-		padding: 2px;
+		padding: var(--abt-space-1);
 		margin: -2px;
 		scrollbar-width: none;
 	}
@@ -951,7 +951,7 @@
 		margin: calc(-1 * var(--abt-space-3)) 0 0;
 		padding: 0 var(--abt-space-5) var(--abt-space-4);
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.section-title {
@@ -966,7 +966,7 @@
 		padding: 1px var(--abt-space-3);
 		border-radius: var(--abt-radius-pill);
 		background: var(--abt-fill);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		font-size: var(--abt-text-xs);
 		white-space: nowrap;
 	}
@@ -982,14 +982,14 @@
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		font-size: var(--abt-text-xs);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.settings-section :global(.chevron) {
 		width: 16px;
 		height: 16px;
 		flex-shrink: 0;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		transition: transform 0.15s ease;
 	}
 
@@ -1021,13 +1021,13 @@
 	.setting-unmet__note {
 		margin: calc(-1 * var(--abt-space-2)) 0 var(--abt-space-2);
 		font-size: var(--abt-text-xs);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.empty {
 		margin: 0;
 		font-size: var(--abt-text-md);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.dialog-text {

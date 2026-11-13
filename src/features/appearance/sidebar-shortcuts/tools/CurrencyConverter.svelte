@@ -164,7 +164,7 @@
 		padding: 14px;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.conv__row {
@@ -210,7 +210,7 @@
 	}
 
 	.conv__input::placeholder {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.conv__input--result {
@@ -233,7 +233,7 @@
 	.conv__swap {
 		display: flex;
 		justify-content: center;
-		padding: 2px 0;
+		padding: var(--abt-space-1) 0;
 	}
 
 	.conv__swap-btn {
@@ -242,7 +242,7 @@
 		border: 1px solid var(--color-tableBorder);
 		border-radius: var(--abt-radius-pill);
 		background: var(--color-cardBackground);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -261,14 +261,14 @@
 		font-size: var(--abt-text-sm);
 		color: var(--color-errorText);
 		text-align: center;
-		padding: 4px 0;
+		padding: var(--abt-space-2) 0;
 	}
 
 	.conv__meta {
 		display: flex;
 		justify-content: space-between;
 		font-size: var(--abt-text-xs);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		padding-top: 6px;
 	}
 

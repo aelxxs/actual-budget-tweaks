@@ -442,7 +442,7 @@
 
 	.hint {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.list {
@@ -540,7 +540,7 @@
 	}
 
 	.tile[data-off] + .toggle .name {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.divider {

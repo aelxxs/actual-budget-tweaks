@@ -18,7 +18,7 @@
 		line-height: 1.4;
 	}
 	.callout:not(:first-child) {
-		margin-top: 8px;
+		margin-top: var(--abt-space-3);
 	}
 	.callout[data-tone="neutral"] {
 		background: var(--abt-panel-surface);
@@ -26,18 +26,18 @@
 		opacity: 0.75;
 	}
 	.callout[data-tone="positive"] {
-		background: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 10%, transparent);
-		border-color: color-mix(in srgb, var(--color-budgetNumberPositive, #4caf50) 18%, transparent);
-		color: var(--color-budgetNumberPositive, #4caf50);
+		background: var(--abt-positive-1);
+		border-color: var(--abt-positive-2);
+		color: var(--color-budgetNumberPositive);
 	}
 	.callout[data-tone="warning"] {
-		background: color-mix(in srgb, var(--color-warningText, #e0c590) 10%, transparent);
-		border-color: color-mix(in srgb, var(--color-warningText, #e0c590) 20%, transparent);
-		color: var(--color-warningText, #e0c590);
+		background: var(--abt-warning-1);
+		border-color: var(--abt-warning-2);
+		color: var(--color-warningText);
 	}
 	.callout[data-tone="negative"] {
-		background: color-mix(in srgb, var(--color-errorText, #e57373) 10%, transparent);
-		border-color: color-mix(in srgb, var(--color-errorText, #e57373) 20%, transparent);
-		color: var(--color-errorText, #e57373);
+		background: var(--abt-danger-1);
+		border-color: var(--abt-danger-2);
+		color: var(--color-errorText);
 	}
 </style>

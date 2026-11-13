@@ -25,7 +25,7 @@ const CSS = `
 		cursor: pointer;
 		flex-shrink: 0;
 		transition: transform 0.08s;
-		margin-right: 4px;
+		margin-right: var(--abt-space-2);
 	}
 
 	.abt-cat-dot:hover {
@@ -45,11 +45,6 @@ const CSS = `
 	.abt-color-popover {
 		position: fixed;
 		z-index: 10000;
-		background: var(--color-menuBackground);
-		color: var(--color-menuItemText);
-		border: 1px solid var(--color-menuBorder);
-		border-radius: var(--abt-radius);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 	}
 `;
 
@@ -79,7 +74,7 @@ function openColorPicker(anchor: HTMLElement, catId: string) {
 	});
 
 	const wrap = popover.node;
-	wrap.className = "abt-color-popover";
+	wrap.className = "abt-color-popover abt-popover";
 	wrap.style.display = "block";
 	document.body.appendChild(wrap);
 

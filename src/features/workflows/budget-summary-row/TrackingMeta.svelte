@@ -108,7 +108,7 @@
 		white-space: nowrap;
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	@container (max-width: 260px) {
@@ -200,7 +200,7 @@
 		letter-spacing: 0;
 		text-transform: none;
 		font-variant-numeric: tabular-nums;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	/* Too narrow for both the savings and the figures; the bar still shows the month's shape. */

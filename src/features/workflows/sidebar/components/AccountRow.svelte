@@ -255,7 +255,7 @@
 	}
 	:global(.split) .account {
 		border-radius: 0;
-		padding-left: 8px;
+		padding-left: var(--abt-space-3);
 		padding-right: calc(8px + var(--sb-panel-room));
 	}
 	.account-name {

@@ -36,14 +36,14 @@
 
 <style>
 	.cp {
-		padding: 8px;
+		padding: var(--abt-space-3);
 		width: 180px;
 	}
 
 	.cp__grid {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		gap: 4px;
+		gap: var(--abt-space-2);
 	}
 
 	.cp__swatch {
@@ -70,9 +70,9 @@
 	.cp__custom {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		margin-top: 8px;
-		padding-top: 8px;
+		gap: var(--abt-space-3);
+		margin-top: var(--abt-space-3);
+		padding-top: var(--abt-space-3);
 		border-top: 1px solid var(--abt-ink-2);
 	}
 
@@ -102,6 +102,6 @@
 
 	.cp__label {
 		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 </style>

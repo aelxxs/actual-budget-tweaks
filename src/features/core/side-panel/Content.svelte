@@ -200,7 +200,7 @@
 	.abt-side-drawer-resize-handle::before {
 		content: "";
 		position: absolute;
-		inset: 0 auto 0 4px;
+		inset: 0 auto 0 var(--abt-space-2);
 		width: 3px;
 		background: var(--abt-accent);
 		opacity: 0;
@@ -267,10 +267,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 8px;
+		gap: var(--abt-space-3);
 		box-sizing: border-box;
 		min-height: var(--abt-panel-header-height);
-		padding: 0 12px;
+		padding: 0 var(--abt-space-4);
 		border-bottom: 1px solid var(--abt-panel-border);
 		background: var(--color-pageBackground);
 	}
@@ -287,7 +287,7 @@
 	.abt-side-drawer-back {
 		display: inline-flex;
 		align-items: center;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		max-width: 100%;
 		margin-left: -4px;
 		padding: 0 6px 0 0;

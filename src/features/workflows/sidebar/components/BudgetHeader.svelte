@@ -451,14 +451,14 @@
 	.budget-select-text {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		flex: 1 1 auto;
 		min-width: 0;
 	}
 	.budget-select-status {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: var(--abt-space-2);
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--abt-soft);
@@ -622,7 +622,7 @@
 		z-index: 20;
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		box-sizing: border-box;
 		padding: 5px;
 		background: var(--sb-bg);
@@ -630,7 +630,7 @@
 		border-radius: 0px;
 		border-inline: 0px;
 
-		box-shadow: 0 8px 24px var(--sb-shadow-2);
+		box-shadow: var(--abt-shadow);
 	}
 	.budget-item {
 		display: flex;

@@ -104,7 +104,7 @@
 		font-size: var(--abt-text-2xs);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 		font-weight: 600;
 		white-space: nowrap;
 	}

@@ -456,7 +456,7 @@
 	}
 
 	.rp__big-input[aria-invalid="true"] {
-		border-color: color-mix(in srgb, var(--color-errorText) 60%, transparent);
+		border-color: var(--abt-danger-4);
 	}
 
 	.rp__chip {
@@ -488,7 +488,7 @@
 	/* The sign hint: a likely slip, so it's noticed before Start. */
 	.rp__chip--warn {
 		border-style: solid;
-		border-color: color-mix(in srgb, var(--color-warningText) 45%, transparent);
+		border-color: var(--abt-warning-4);
 	}
 
 	.rp__chip--warn :global(svg) {
@@ -582,7 +582,7 @@
 	.rp__hero-info {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		min-width: 0;
 	}
 
@@ -606,7 +606,7 @@
 	.rp__rows {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 	}
 
 	.rp__line {
@@ -651,7 +651,7 @@
 		align-items: center;
 		gap: var(--abt-space-2);
 		margin-right: calc(-1 * var(--abt-space-2));
-		padding: 2px var(--abt-space-2);
+		padding: var(--abt-space-1) var(--abt-space-2);
 		border: 1px solid transparent;
 		border-radius: var(--abt-radius-sm);
 		background: none;

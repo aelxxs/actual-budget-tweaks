@@ -639,13 +639,13 @@
 	.am__hint {
 		font-size: var(--abt-text-sm);
 		font-weight: 400;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.am__group {
 		padding: var(--abt-space-2) var(--abt-space-3) var(--abt-space-1);
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.am__divider {
 		height: 1px;
@@ -692,7 +692,7 @@
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--abt-space-1);
 		min-width: 0;
 		font-size: var(--abt-text-md);
 	}
@@ -700,7 +700,7 @@
 		flex: none;
 		font-size: var(--abt-text-sm);
 		font-variant-numeric: tabular-nums;
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 	.am__pills {
 		display: flex;

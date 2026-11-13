@@ -516,7 +516,7 @@
 	}
 
 	.tile[data-off] + .name {
-		color: var(--color-pageTextSubdued);
+		color: var(--abt-muted);
 	}
 
 	.divider {
