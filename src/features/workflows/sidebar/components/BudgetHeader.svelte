@@ -631,14 +631,6 @@
 		border-inline: 0px;
 
 		box-shadow: 0 8px 24px var(--sb-shadow-2);
-		transform-origin: top;
-		animation: bmenu-in 0.14s cubic-bezier(0.2, 0.9, 0.3, 1);
-	}
-	@keyframes bmenu-in {
-		from {
-			opacity: 0;
-			transform: translateY(-6px) scale(0.98);
-		}
 	}
 	.budget-item {
 		display: flex;

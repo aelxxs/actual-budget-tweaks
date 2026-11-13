@@ -425,37 +425,12 @@
 		stroke: var(--abt-accent);
 		stroke-width: 1.5;
 		stroke-linecap: round;
-		stroke-dasharray: 1;
-		animation: abt-edge-draw 0.32s cubic-bezier(0.2, 0.7, 0.3, 1) 0.1s both;
 	}
 
 	.edge circle {
 		fill: var(--color-pageBackground);
 		stroke: var(--abt-accent);
 		stroke-width: 1.5;
-		animation: abt-edge-port 0.2s ease-out 0.1s both;
-	}
-
-	@keyframes abt-edge-draw {
-		from {
-			stroke-dashoffset: 1;
-		}
-		to {
-			stroke-dashoffset: 0;
-		}
-	}
-
-	@keyframes abt-edge-port {
-		from {
-			opacity: 0;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.edge path,
-		.edge circle {
-			animation: none;
-		}
 	}
 
 	.head {

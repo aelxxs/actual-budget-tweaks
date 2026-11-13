@@ -170,8 +170,6 @@
 	let listEl = $state<HTMLElement | null>(null);
 	let inputEl = $state<HTMLInputElement | null>(null);
 	let page = $state<"root" | SubPage>("root");
-	// Only a page *transition* animates — not the dialog's initial open.
-	let animatePageChange = $state(false);
 
 	// Refreshed each time the palette opens (see openPalette) rather than
 	// tracked live — privacy.ts's own state isn't a Svelte store, and the
@@ -477,13 +475,11 @@
 	}
 	function closePalette(): void {
 		open = false;
-		animatePageChange = false;
 	}
 	function goToPage(target: SubPage): void {
 		page = target;
 		query = "";
 		index = 0;
-		animatePageChange = true;
 		// A clicked row is removed with the old page, which drops focus to the body.
 		inputEl?.focus();
 		if (target === "themes") {
@@ -494,7 +490,6 @@
 		page = "root";
 		query = "";
 		index = 0;
-		animatePageChange = true;
 		inputEl?.focus();
 	}
 	// Insights needs the budget table, so it opens itself once the page has arrived.
@@ -667,7 +662,7 @@
 			<span class="cp-kbd">esc</span>
 		</div>
 		{#key page}
-			<div class="cp-body" class:cp-page-enter={animatePageChange} bind:this={listEl}>
+			<div class="cp-body" bind:this={listEl}>
 				{#each groups as group, gi (group.label)}
 					{@const base = groupBase(gi)}
 					<div class="cp-group-label">{group.label}</div>
@@ -774,7 +769,6 @@
 		background: var(--sb-shadow-2);
 		backdrop-filter: blur(2px);
 		-webkit-backdrop-filter: blur(2px);
-		animation: cp-fade 0.14s ease;
 	}
 	.cp {
 		position: fixed;
@@ -793,18 +787,6 @@
 			0 0 0 1px var(--sb-shadow-2),
 			0 24px 64px var(--sb-shadow);
 		overflow: hidden;
-		animation: cp-pop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1);
-	}
-	@keyframes cp-fade {
-		from {
-			opacity: 0;
-		}
-	}
-	@keyframes cp-pop {
-		from {
-			opacity: 0;
-			transform: translateX(-50%) translateY(-10px) scale(0.98);
-		}
 	}
 	.cp-search {
 		display: flex;
@@ -880,18 +862,6 @@
 	.cp-body::-webkit-scrollbar-thumb:hover {
 		background: var(--abt-ink-5);
 		background-clip: padding-box;
-	}
-	/* Only a root↔sub-page *transition* animates — the {#key page} block gives
-	   the body a fresh DOM node each time so this replays on every transition,
-	   not just the dialog's initial open. */
-	@keyframes cp-page-enter {
-		from {
-			opacity: 0;
-			transform: translateX(8px);
-		}
-	}
-	.cp-body.cp-page-enter {
-		animation: cp-page-enter 0.14s ease;
 	}
 	.cp-group-label {
 		padding: 9px 10px 4px;

@@ -326,17 +326,6 @@ export const CSS = `
 		}
 	}
 
-	@keyframes abt-template-trigger-enter {
-		from {
-			opacity: 0;
-			transform: translateX(12px);
-		}
-		to {
-			opacity: 1;
-			transform: translateX(0);
-		}
-	}
-
 	.abt-template-drawer-trigger {
 		display: inline-flex;
 		align-items: center;
@@ -357,7 +346,6 @@ export const CSS = `
 		font-weight: 500;
 		cursor: pointer;
 		z-index: 50;
-		animation: abt-template-trigger-enter 110ms cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 
 	.abt-template-drawer-trigger:hover {
