@@ -46,17 +46,6 @@
 				"icon": "square",
 				"group": null,
 				"writes": null
-			},
-			{
-				"key": "privacy-style",
-				"type": "select",
-				"defaultValue": "script",
-				"platform": "desktop",
-				"label": "Privacy style",
-				"description": "How amounts look while privacy mode hides them.",
-				"icon": "eyeOff",
-				"group": null,
-				"writes": null
 			}
 		]
 	},
@@ -117,6 +106,28 @@
 				"description": "Restyles notifications as compact cards.",
 				"icon": "layout",
 				"group": "Components",
+				"writes": null
+			},
+			{
+				"key": "color-amounts",
+				"type": "select",
+				"defaultValue": "all",
+				"platform": "desktop",
+				"label": "Color amounts",
+				"description": "Colors amounts by sign in transactions, balances and budget groups.",
+				"icon": "palette",
+				"group": "Amounts",
+				"writes": null
+			},
+			{
+				"key": "privacy-style",
+				"type": "select",
+				"defaultValue": "script",
+				"platform": "desktop",
+				"label": "Privacy style",
+				"description": "How amounts look while privacy mode hides them.",
+				"icon": "eyeOff",
+				"group": "Amounts",
 				"writes": null
 			}
 		]
@@ -227,17 +238,6 @@
 				"label": "Show closed accounts",
 				"description": "Lists closed accounts in their own section at the bottom.",
 				"icon": "eyeOff",
-				"group": null,
-				"writes": null
-			},
-			{
-				"key": "actual-balancecolors",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Color negative balances",
-				"description": "Shows negative account balances in red.",
-				"icon": "palette",
 				"group": null,
 				"writes": null
 			}
@@ -371,17 +371,6 @@
 				"label": "Striped rows",
 				"description": "Shades every other row in the transaction table.",
 				"icon": "rows",
-				"group": "Transactions",
-				"writes": null
-			},
-			{
-				"key": "actual-amountcolors",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Color transactions",
-				"description": "Colors payments, deposits and upcoming transactions.",
-				"icon": "palette",
 				"group": "Transactions",
 				"writes": null
 			},

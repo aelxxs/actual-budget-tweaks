@@ -15,7 +15,6 @@
 		watchShortcuts,
 	} from "@features/appearance/sidebar-shortcuts/store";
 	import type { Shortcut } from "@features/appearance/sidebar-shortcuts/types";
-	import { colorNegativeBalances } from "@features/readability/color-negative-balances";
 	import { applySettingChange } from "@features/runtime";
 	import type { CheckboxSetting } from "@features/types";
 	import Switch from "@lib/components/Switch.svelte";
@@ -25,7 +24,6 @@
 		Archive,
 		Calculator,
 		ChevronLeft,
-		CircleMinus,
 		FolderTree,
 		Image,
 		LayoutGrid,
@@ -52,7 +50,6 @@
 	const ACCOUNTS: Toggle[] = [
 		{ setting: sidebarGroupTotals, name: "Group totals", icon: Calculator },
 		{ setting: accountIconPicker, name: "Account icons", icon: Image },
-		{ setting: colorNegativeBalances, name: "Red negative balances", icon: CircleMinus },
 	];
 	const LAYOUTS: { value: SidebarLayout; label: string }[] = [
 		{ value: "standard", label: "Standard" },

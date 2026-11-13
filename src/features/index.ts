@@ -37,8 +37,7 @@ import { mobileTransactionList } from "./mobile/transaction-list";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { balancePills } from "./readability/balance-pills";
 import { categoryProgress } from "./readability/category-progress";
-import { colorNegativeBalances } from "./readability/color-negative-balances";
-import { colorTransactions } from "./readability/color-transactions";
+import { colorAmounts } from "./readability/color-amounts";
 import { groupOverspent } from "./readability/group-overspent";
 import { rowStatus } from "./readability/row-status";
 import { quietCategoryIcons } from "./readability/quiet-category-icons";
@@ -75,13 +74,7 @@ export interface SettingsSection {
 }
 
 // How Actual looks across every page, edited from Theme → Style and Theme Studio.
-export const styleSettings: PageSetting[] = [
-	borderRadius,
-	backgroundPattern,
-	insetPanels,
-	borders,
-	privacyStyle,
-];
+export const styleSettings: PageSetting[] = [borderRadius, backgroundPattern, insetPanels, borders];
 
 // Grouped by where each tweak shows up in Actual, which is how people look for them.
 export const scriptSections: SettingsSection[] = [
@@ -108,6 +101,7 @@ export const scriptSections: SettingsSection[] = [
 					modernToasts,
 				],
 			},
+			{ label: "Amounts", items: [colorAmounts, privacyStyle] },
 		],
 	},
 	{
@@ -129,7 +123,6 @@ export const scriptSections: SettingsSection[] = [
 					accountIconPicker,
 					sidebarGroupTotals,
 					sidebarClosedAccounts,
-					colorNegativeBalances,
 				],
 			},
 		],
@@ -160,13 +153,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: "Transactions",
-				items: [
-					alternatingTransactionRows,
-					colorTransactions,
-					rowStatus,
-					tagStyling,
-					resizableTransactionColumns,
-				],
+				items: [alternatingTransactionRows, rowStatus, tagStyling, resizableTransactionColumns],
 			},
 			{
 				label: "Accounts",

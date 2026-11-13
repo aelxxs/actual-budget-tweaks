@@ -77,6 +77,8 @@ export const CATEGORY_ROW = `${ROW}:has(${CATEGORY_NAME})`;
 export const BUDGETED_CELL = byTestId("budget");
 /** A balance cell: a category's in the budget table, or a transaction table's running one. */
 export const BALANCE_CELL = byTestId("balance");
+/** A balance cell whose raw amount (data-cellname) is negative. */
+export const NEGATIVE_BALANCE_CELL = `${BALANCE_CELL}[data-cellname^="-"]`;
 /** Actual's goal ring beside an underfunded balance, inside the balance's button (Actual 26.12+). */
 export const GOAL_RING = 'svg[role="img"]';
 /** Each shown month's column in the hidden native month picker. */

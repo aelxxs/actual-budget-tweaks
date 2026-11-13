@@ -260,17 +260,6 @@ body {
 		overflow: hidden;
 	}
 
-	/* Deliberately always on: only group-row balances show it, since Actual colours the rest inline.
-	   Their data-cellname holds the raw amount, so ^="-" is a negative group total. */
-	[data-testid="balance"] {
-		color: var(--color-noticeTextLight);
-	}
-
-	[data-testid="balance"][data-cellname^="-"] {
-		color: var(--color-errorText);
-		font-weight: bold;
-	}
-
 	/* svg icon in button */
 	[data-testid="category-month-spent"] * {
 		flex-shrink: 0;
