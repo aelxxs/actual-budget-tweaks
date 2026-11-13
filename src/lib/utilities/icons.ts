@@ -155,11 +155,6 @@ const ICONS = {
 		strokeWidth: 1.75,
 		body: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
 	},
-	targetOff: {
-		viewBox: "0 0 24 24",
-		strokeWidth: 1.75,
-		body: '<path d="M18.36 18.36A9 9 0 0 1 5.64 5.64M8.1 3.87A9 9 0 0 1 20.13 15.9"/><path d="M15.54 15.54A5 5 0 0 1 8.46 8.46M11.3 7.05A5 5 0 0 1 16.95 12.7"/><line x1="2" y1="2" x2="22" y2="22"/>',
-	},
 	alert: {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.75,
