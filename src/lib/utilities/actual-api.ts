@@ -360,11 +360,18 @@ export function onSyncedPref(key: string, callback: (value: string | null) => vo
 			callback(d.value == null ? null : String(d.value));
 		}
 	};
+	const request = () =>
+		document.dispatchEvent(
+			new CustomEvent("abt:api:synced-pref-request", { detail: JSON.stringify({ key }) }),
+		);
 	document.addEventListener("abt:api:synced-pref", listener);
-	document.dispatchEvent(
-		new CustomEvent("abt:api:synced-pref-request", { detail: JSON.stringify({ key }) }),
-	);
-	return () => document.removeEventListener("abt:api:synced-pref", listener);
+	// Where the extension injects the bridge, it can load after this asks; it says so, and is asked again.
+	document.addEventListener("abt:api:ready", request);
+	request();
+	return () => {
+		document.removeEventListener("abt:api:synced-pref", listener);
+		document.removeEventListener("abt:api:ready", request);
+	};
 }
 
 /** Calls back with the accounts bank-syncing right now, each time that set changes. */

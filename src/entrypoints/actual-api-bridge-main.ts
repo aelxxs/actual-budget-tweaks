@@ -480,4 +480,7 @@ export default defineUnlistedScript(async () => {
 			window.__navigate(path, options);
 		}
 	});
+
+	// Listening now: subscriptions sent before this loaded were lost, so content scripts send them again.
+	document.dispatchEvent(new CustomEvent("abt:api:ready"));
 });
