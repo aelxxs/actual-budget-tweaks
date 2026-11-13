@@ -259,17 +259,6 @@
 				"writes": null
 			},
 			{
-				"key": "budget-group-spacing",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Taller Group Rows",
-				"description": "Makes category group rows taller so each group stands apart from its categories.",
-				"icon": "rows",
-				"group": "Layout",
-				"writes": null
-			},
-			{
 				"key": "budget-month-header",
 				"type": "checkbox",
 				"defaultValue": false,
@@ -422,17 +411,6 @@
 				"icon": "layout",
 				"group": "Tools",
 				"writes": "Applies the month's budget templates when you click Apply."
-			},
-			{
-				"key": "next-month-coverage-method",
-				"type": "select",
-				"defaultValue": "goal-templates",
-				"platform": "desktop",
-				"label": "Next Month Target",
-				"description": "What \"Ready for next month\" in Insights → Overview measures against.",
-				"icon": "layout",
-				"group": "Tools",
-				"writes": null
 			},
 			{
 				"key": "actual-category-template-insights",

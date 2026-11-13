@@ -21,7 +21,6 @@ import { tooltipStyling } from "./core/tooltip";
 import { backgroundPattern } from "./layout/background-pattern";
 import { borderRadius } from "./layout/border-radius";
 import { borders } from "./layout/borders";
-import { budgetGroupSpacing } from "./layout/budget-group-spacing";
 import { budgetRowHover } from "./layout/budget-row-hover";
 import { budgetTableRowHeight } from "./layout/budget-table-row-height";
 import { insetPanels } from "./layout/inset-panels";
@@ -71,7 +70,6 @@ import { liveSidebarNotice } from "./workflows/sidebar/notice";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { syncRecap } from "./workflows/sync-recap";
 import { templatePlan } from "./workflows/template-plan";
-import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
 import { transactionInspector } from "./workflows/transaction-inspector";
 
 export type PageSetting = Exclude<Setting<any>, CoreSetting>;
@@ -142,13 +140,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: "Layout",
-				items: [
-					budgetTableRowHeight,
-					budgetRowHover,
-					budgetGroupSpacing,
-					budgetMonthHeader,
-					budgetSummaryRow,
-				],
+				items: [budgetTableRowHeight, budgetRowHover, budgetMonthHeader, budgetSummaryRow],
 			},
 			{
 				label: "Readability",
@@ -168,13 +160,7 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Tools",
-				items: [
-					templatePlan,
-					nextMonthCoverageMethod,
-					categoryTemplateInsights,
-					hideFundedTemplateBars,
-					goalFunding,
-				],
+				items: [templatePlan, categoryTemplateInsights, hideFundedTemplateBars, goalFunding],
 			},
 		],
 	},
@@ -245,7 +231,6 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[sidebarGroupTotals, experimentalSidebar],
 	[sidebarClosedAccounts, experimentalSidebar],
 	[accountIconPicker, experimentalSidebar],
-	[nextMonthCoverageMethod, templatePlan],
 	[hideFundedTemplateBars, categoryTemplateInsights],
 	[reconcileConfetti, modernReconcile],
 ]);

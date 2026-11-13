@@ -124,7 +124,6 @@ export const templatePlanState = $state({
 	customizingCards: false,
 	/** The card the menu points at, spotlit in the panel. */
 	highlightCard: null as CardId | typeof TEMPLATES_BAR | null,
-	coverageMethod: "goal-templates" as "goal-templates" | "spending-average",
 	activeTab: "overview" as InsightsTab,
 	trackingBudget: false,
 	/** Whether the Insights feature is on, for other features that link into it. */

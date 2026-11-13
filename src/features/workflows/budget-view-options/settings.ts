@@ -17,7 +17,6 @@ import { categoryTemplateInsights } from "@features/workflows/category-template-
 import { goalFunding } from "@features/workflows/goal-funding";
 import { hideFundedTemplateBars } from "@features/workflows/category-template-insights/hide-funded";
 import { templatePlan } from "@features/workflows/template-plan";
-import { nextMonthCoverageMethod } from "@features/workflows/template-plan/coverage-method";
 import SettingsDialog, { type SettingsTab } from "@lib/components/SettingsDialog.svelte";
 import { openDialog } from "@lib/utilities/dialog";
 
@@ -71,7 +70,7 @@ export function openBudgetSettings(): void {
 		{
 			value: "insights",
 			label: "Insights",
-			groups: [{ settings: [templatePlan, nextMonthCoverageMethod] as Setting[] }],
+			groups: [{ settings: [templatePlan] as Setting[] }],
 		},
 	];
 

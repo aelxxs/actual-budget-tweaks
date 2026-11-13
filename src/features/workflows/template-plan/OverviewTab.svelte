@@ -13,14 +13,20 @@
 	import { flip } from "svelte/animate";
 	import { fade, slide } from "svelte/transition";
 	import { type CardId, TEMPLATES_BAR, cardLabel } from "./cards";
-	import { firstMoveRows, groupMoves, heldForNextMonth, nextMonthGoalNeed } from "./overview";
+	import {
+		firstMoveRows,
+		groupMoves,
+		heldForNextMonth,
+		nextMonthGoalNeed,
+		usesGoalTemplates,
+	} from "./overview";
 	import NextMonth from "./NextMonth.svelte";
 	import OverviewToolbar from "./OverviewToolbar.svelte";
 	import TabSkeleton from "./TabSkeleton.svelte";
 	import TrendChart from "./TrendChart.svelte";
 
 	const data = $derived(templatePlanState.overviewData);
-	const useGoalTemplates = $derived(templatePlanState.coverageMethod === "goal-templates");
+	const useGoalTemplates = $derived(!!data && usesGoalTemplates(data));
 	const coverageTarget = $derived(
 		data ? (useGoalTemplates ? data.nextMonthGoalTotal : data.recentAvgSpending) : null,
 	);

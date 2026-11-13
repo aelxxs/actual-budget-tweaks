@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { runway } from "@features/workflows/template-plan/overview";
+	import { runway, usesGoalTemplates } from "@features/workflows/template-plan/overview";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
@@ -144,7 +144,7 @@
 			? templatePlanState.overviewData
 			: (templatePlanState.peekOverview?.(sheet) ?? null),
 	);
-	const goalTemplates = $derived(templatePlanState.coverageMethod === "goal-templates");
+	const goalTemplates = $derived(!!overview && usesGoalTemplates(overview));
 	const plan = $derived(overview ? nextMonthPlan(overview, goalTemplates) : null);
 	const ahead = $derived(
 		overview && plan && plan.need !== null

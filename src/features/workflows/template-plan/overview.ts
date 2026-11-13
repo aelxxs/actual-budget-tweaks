@@ -121,6 +121,11 @@ export function heldForNextMonth(d: CoverageInputs): number {
 	return d.bufferedSelected + Math.max(0, d.toBudget - pending);
 }
 
+/** Envelope budgets with templates plan next month by them; the rest by recent spending. */
+export function usesGoalTemplates(d: Pick<OverviewData, "hasTemplates" | "budgetType">): boolean {
+	return d.hasTemplates && d.budgetType === "envelope";
+}
+
 /** Next month's need by its goal templates; null when they couldn't be previewed. */
 export function nextMonthGoalNeed(d: CoverageInputs): number | null {
 	return d.nextMonthGoalTotal === null
