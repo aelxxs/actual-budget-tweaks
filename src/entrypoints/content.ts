@@ -1,5 +1,4 @@
 import "@lib/styles/ui.css";
-import { settingsAnchor } from "@lib/utilities/settings-page";
 import { getBaseUrl } from "@lib/utilities/store";
 import type { PublicPath } from "wxt/browser";
 
@@ -104,24 +103,13 @@ export default defineContentScript({
 			const all = [...coreScripts, ...scripts.flat()];
 			bootstrapSettings(all);
 			ctx.onInvalidated(startSettingsSync(all));
-			const ui = createIntegratedUi(ctx, {
-				position: "inline",
-				anchor: settingsAnchor,
-				onMount: (container) => {
-					const parent = container.parentElement;
-					if (parent) {
-						parent.replaceChildren();
-						return mount(Settings, { target: parent });
-					}
-				},
-				onRemove: (app) => {
-					if (app) {
-						unmount(app);
-					}
-				},
-			});
-
-			ui.autoMount();
+			const { mountSettingsPanel } = await import("@lib/utilities/settings-mount");
+			ctx.onInvalidated(
+				mountSettingsPanel(
+					(anchor) => mount(Settings, { target: anchor }),
+					(app) => void unmount(app),
+				),
+			);
 		}
 
 		// Off, ABT keeps only its settings tab, which says so and turns it back on.
@@ -140,23 +128,13 @@ export default defineContentScript({
 				return;
 			}
 			ctx.onInvalidated(settingsTab.init());
-			const ui = createIntegratedUi(ctx, {
-				position: "inline",
-				anchor: settingsAnchor,
-				onMount: (container) => {
-					const parent = container.parentElement;
-					if (parent) {
-						parent.replaceChildren();
-						return mount(AbtOff, { target: parent });
-					}
-				},
-				onRemove: (app) => {
-					if (app) {
-						unmount(app);
-					}
-				},
-			});
-			ui.autoMount();
+			const { mountSettingsPanel } = await import("@lib/utilities/settings-mount");
+			ctx.onInvalidated(
+				mountSettingsPanel(
+					(anchor) => mount(AbtOff, { target: anchor }),
+					(app) => void unmount(app),
+				),
+			);
 		}
 
 		checkAndMount();
