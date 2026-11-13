@@ -94,4 +94,6 @@ export const experimentalSidebarLayout = defineSetting({
 	},
 	component: LayoutPicker,
 	init: () => {},
+	// The sidebar watches this key itself.
+	apply: () => {},
 });

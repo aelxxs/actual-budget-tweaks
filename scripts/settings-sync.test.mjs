@@ -77,6 +77,13 @@ async function setup(initial, budgets, userId = null) {
 		{ type: "checkbox", context: { key: "calendar", defaultValue: false } },
 		{ type: "select", context: { key: "density", defaultValue: "normal" } },
 		{ type: "custom", context: { key: "custom", defaultValue: "default" } },
+		// Like the theme: other keys it reads come along through `syncs`.
+		{
+			type: "custom",
+			context: { key: "theme", defaultValue: "dark" },
+			apply() {},
+			syncs: ["user-themes"],
+		},
 	];
 	const stop = module.namespace.startSettingsSync(settings);
 	const settle = () => new Promise(setImmediate);
@@ -167,4 +174,13 @@ test("a new user's missing preferences use defaults rather than this browser's c
 		false,
 	);
 	fixture.stop();
+});
+
+test("a synced key a custom setting reads reapplies that setting instead of asking for a reload", async () => {
+	const fixture = await setup(
+		{ theme: "light" },
+		{ a: { "abt:theme": '"light"', "abt:user-themes": '{"user:1":{"name":"Mine"}}' } },
+	);
+	assert.equal(JSON.stringify(fixture.stored.get("user-themes")), '{"user:1":{"name":"Mine"}}');
+	assert.ok(fixture.applied.some(([key, value]) => key === "theme" && value === "light"));
 });

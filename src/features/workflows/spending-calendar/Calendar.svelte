@@ -4,7 +4,7 @@
 	import { SCHEDULE_EDITOR } from "@lib/actual-dom";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import { onListChange } from "@lib/actual/actual-api";
-	import { loadCategoryColors } from "@lib/category-colors";
+	import { loadCategoryColors } from "@lib/category-colors.svelte";
 	import { loadCurrency } from "@lib/format/currency";
 	import {
 		formatDate,

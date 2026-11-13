@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PRESET_COLORS } from "@lib/category-colors";
+	import { PRESET_COLORS } from "@lib/category-colors.svelte";
 
 	const {
 		currentColor,

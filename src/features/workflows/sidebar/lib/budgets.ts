@@ -142,6 +142,16 @@ export async function loadBudgetIcon(budgetId: string): Promise<BudgetIcon | und
 	return icons[budgetId];
 }
 
+/** Calls back with the budget's icon whenever the map is saved, here or by settings sync. */
+export function watchBudgetIcon(
+	budgetId: string,
+	callback: (icon: BudgetIcon | undefined) => void,
+): () => void {
+	return watchValue<Record<string, BudgetIcon>>(BUDGET_ICON_STORAGE_KEY, (icons) =>
+		callback(icons?.[budgetId]),
+	);
+}
+
 export async function setBudgetIcon(budgetId: string, icon: BudgetIcon): Promise<void> {
 	const icons = await loadBudgetIcons();
 	icons[budgetId] = icon;

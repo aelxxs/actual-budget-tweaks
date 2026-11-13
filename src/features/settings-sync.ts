@@ -10,17 +10,8 @@ const log = createLogger("sync");
 
 /** Actual's synced prefs are one table shared with its own keys; ours never collide. */
 const PREFIX = "abt:";
-/** Settings kept outside a setting's own key: theme customisations and per-category/account looks. */
-const EXTRA_KEYS = [
-	"theme-auto-switch",
-	"theme-auto-dark",
-	"theme-auto-light",
-	"user-themes",
-	"theme-effects",
-	"category-colors",
-	"abt-account-icons",
-	"abt-category-icons",
-];
+/** Settings kept outside any setting's own key; their readers watch storage, so they apply live. */
+const EXTRA_KEYS = ["theme-effects", "category-colors", "abt-account-icons", "abt-category-icons"];
 /**
  * The budget's own data, shared by everyone who opens it. Every other synced key is a person's
  * look and feel, kept per user when the server has several (see remoteKey).
@@ -82,7 +73,7 @@ const BUDGET_SCOPED: BudgetScoped[] = [
 			}
 			await setValue(BUDGET_ICONS_KEY, icons);
 		},
-		watched: false,
+		watched: true,
 	},
 ];
 
@@ -167,6 +158,8 @@ export async function pushStoredSettings(): Promise<void> {
  */
 export function startSettingsSync(settings: Setting[]): () => void {
 	const live = new Map<string, Setting>();
+	// Extra keys a custom setting reads, which reapply it when they change.
+	const owners = new Map<string, Setting>();
 	const defaults = new Map<string, unknown>();
 	for (const s of settings) {
 		if (s.type === "core") {
@@ -174,8 +167,14 @@ export function startSettingsSync(settings: Setting[]): () => void {
 		}
 		synced.add(s.context.key);
 		defaults.set(s.context.key, s.context.defaultValue);
-		if (s.type !== "custom") {
+		if (s.type !== "custom" || s.apply) {
 			live.set(s.context.key, s);
+		}
+		if (s.type === "custom" && s.apply) {
+			for (const key of s.syncs ?? []) {
+				synced.add(key);
+				owners.set(key, s);
+			}
 		}
 	}
 
@@ -240,9 +239,12 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			}
 			await adopt(key, () => (value === undefined ? removeValue(key) : setValue(key, value)));
 			const setting = live.get(key);
+			const owner = owners.get(key);
 			if (setting) {
 				await reapplySetting(setting, value);
-			} else {
+			} else if (owner && owner.type !== "core") {
+				await reapplySetting(owner, await getValue(owner.context.key, owner.context.defaultValue));
+			} else if (!EXTRA_KEYS.includes(key)) {
 				needsReload.push(key);
 			}
 		}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getCategoryColor } from "@lib/category-colors";
+	import { getCategoryColor } from "@lib/category-colors.svelte";
 	import { fmtMoney } from "@lib/format/currency";
 	import { hasTransactions } from "./month-data";
 	import { groupByPayee, spendingByCategory, type GroupedTransaction } from "./summary";

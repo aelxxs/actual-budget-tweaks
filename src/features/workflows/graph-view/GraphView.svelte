@@ -19,7 +19,7 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { onOutsideClick } from "@lib/dom/popover";
 	import { Check } from "@lucide/svelte";
-	import { getCategoryColor, loadCategoryColors } from "@lib/category-colors";
+	import { getCategoryColor, loadCategoryColors } from "@lib/category-colors.svelte";
 	import { getValue } from "@lib/store";
 	import { loadCurrency } from "@lib/format/currency";
 	import { loadDatePrefs } from "@lib/format/date-format.svelte";

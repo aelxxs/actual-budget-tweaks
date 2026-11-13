@@ -5,7 +5,7 @@
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import BalanceSpark from "./BalanceSpark.svelte";
-	import { getCategoryColor } from "@lib/category-colors";
+	import { getCategoryColor } from "@lib/category-colors.svelte";
 	import { fmtMoney } from "@lib/format/currency";
 	import { editSchedule } from "./schedules";
 	import type { DayTransaction } from "./types";

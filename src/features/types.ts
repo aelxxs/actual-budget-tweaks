@@ -87,6 +87,13 @@ export interface CustomSetting<C extends SettingContext> {
 	/** The component draws the whole row, label included. */
 	bare?: boolean;
 	init: (ctx: C) => Promise<void> | void;
+	/**
+	 * Brings the page to a value that's already stored, e.g. one synced from another device.
+	 * Without it, a synced change waits for a reload.
+	 */
+	apply?: (value: unknown, ctx: C) => Promise<void> | void;
+	/** Other stored keys it reads; settings sync carries them, and a change to one calls `apply`. */
+	syncs?: string[];
 }
 export interface CoreSetting {
 	type: "core";

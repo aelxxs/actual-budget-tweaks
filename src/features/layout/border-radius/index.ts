@@ -16,4 +16,5 @@ export const borderRadius = defineSetting({
 		const value = await getValue(ctx.key, ctx.defaultValue);
 		document.documentElement.style.setProperty("--border-radius", value as string);
 	},
+	apply: (value) => document.documentElement.style.setProperty("--border-radius", value as string),
 });

@@ -24,7 +24,7 @@
 	import { scrollFade } from "../actions/scroll-fade";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import type { BudgetIcon } from "../lib/budgets";
-	import { loadBudgetIcon, removeBudgetIcon, setBudgetIcon } from "../lib/budgets";
+	import { loadBudgetIcon, watchBudgetIcon, removeBudgetIcon, setBudgetIcon } from "../lib/budgets";
 	import type { SidebarAccount } from "../lib/data";
 	import {
 		type GroupState,
@@ -143,6 +143,7 @@
 			return;
 		}
 		loadBudgetIcon(budgetId).then((icon) => (budgetIcon = icon));
+		return watchBudgetIcon(budgetId, (icon) => (budgetIcon = icon));
 	});
 
 	function onAvatarClick() {

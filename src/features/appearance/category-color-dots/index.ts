@@ -1,6 +1,11 @@
 import { defineSetting } from "@features/types";
 import { rowCategoryId } from "@lib/actual/budget-cells";
-import { getCategoryColor, loadCategoryColors, setCategoryColor } from "@lib/category-colors";
+import {
+	getCategoryColor,
+	loadCategoryColors,
+	onCategoryColorsChange,
+	setCategoryColor,
+} from "@lib/category-colors.svelte";
 import { CATEGORY_ID_ATTR, trackCategoryIds } from "@lib/actual/category-ids";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { onOutsideClick, positionPopover } from "@lib/dom/popover";
@@ -188,9 +193,11 @@ export const categoryColorDots = defineSetting({
 		await loadCategoryColors();
 		const stopTracking = trackCategoryIds();
 		const unwatch = watchDom(scanRows);
+		const stopColors = onCategoryColorsChange(scanRows);
 
 		return () => {
 			unwatch();
+			stopColors();
 			stopTracking();
 			cleanup();
 		};

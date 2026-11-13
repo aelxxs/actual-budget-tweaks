@@ -22,6 +22,7 @@
 		closeToFileList,
 		loadBudgetFiles,
 		loadBudgetIcon,
+		watchBudgetIcon,
 		removeBudgetIcon,
 		renameBudget,
 		selectBudgetFile,
@@ -67,6 +68,11 @@
 	const currentFile = $derived(files.find((f) => f.id === currentId));
 
 	onMount(trackSyncStatus);
+	$effect(() => {
+		if (currentId) {
+			return watchBudgetIcon(currentId, (next) => (icon = next));
+		}
+	});
 
 	onMount(async () => {
 		try {

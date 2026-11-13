@@ -16,6 +16,19 @@ async function migrateRetiredThemes() {
 	}
 }
 
+/** The chosen theme, or with auto-switch on, the one picked for the system's light or dark mode. */
+export async function applyCurrentTheme(fallback: string) {
+	let key: string;
+	if (await getValue<boolean>("theme-auto-switch", false)) {
+		key = window.matchMedia("(prefers-color-scheme: dark)").matches
+			? await getValue<string>("theme-auto-dark", DEFAULT_THEME)
+			: await getValue<string>("theme-auto-light", "latte");
+	} else {
+		key = await getValue<string>(themeSelector.context.key, fallback);
+	}
+	await applyThemeByKey(key, fallback);
+}
+
 export const themeSelector = defineSetting({
 	type: "custom",
 	label: "",
@@ -25,30 +38,19 @@ export const themeSelector = defineSetting({
 		defaultValue: DEFAULT_THEME,
 	},
 	component: ThemeCustomizer,
+	syncs: ["theme-auto-switch", "theme-auto-dark", "theme-auto-light", "user-themes"],
 	init: async (ctx) => {
 		// Always on, like this setting, so it never stops.
 		watchWindowColor();
 		await migrateRetiredThemes();
 		await loadUserThemes();
-
-		const autoSwitch = await getValue<boolean>("theme-auto-switch", false);
-		if (autoSwitch) {
-			const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-			const darkKey = (await getValue<string>("theme-auto-dark", DEFAULT_THEME)) as string;
-			const lightKey = (await getValue<string>("theme-auto-light", "latte")) as string;
-			const key = isDark ? darkKey : lightKey;
-			await applyThemeByKey(key, ctx.defaultValue as string);
-
-			window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", async (e) => {
-				const k = e.matches
-					? ((await getValue<string>("theme-auto-dark", DEFAULT_THEME)) as string)
-					: ((await getValue<string>("theme-auto-light", "latte")) as string);
-				await applyThemeByKey(k, ctx.defaultValue as string);
-			});
-			return;
-		}
-
-		const saved = (await getValue(ctx.key, ctx.defaultValue)) as string;
-		await applyThemeByKey(saved, ctx.defaultValue as string);
+		await applyCurrentTheme(ctx.defaultValue as string);
+		window
+			.matchMedia("(prefers-color-scheme: dark)")
+			.addEventListener("change", () => void applyCurrentTheme(ctx.defaultValue as string));
+	},
+	apply: async (_value, ctx) => {
+		await loadUserThemes();
+		await applyCurrentTheme(ctx.defaultValue as string);
 	},
 });

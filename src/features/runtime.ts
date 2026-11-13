@@ -164,7 +164,11 @@ export async function applySettingChange(setting: Setting, newValue: unknown) {
 
 /** Brings a running setting to a value that's already stored, e.g. one synced from Actual. */
 export async function reapplySetting(setting: Setting, value: unknown) {
-	if (setting.type === "core" || setting.type === "custom") {
+	if (setting.type === "custom") {
+		await setting.apply?.(value, setting.context);
+		return;
+	}
+	if (setting.type === "core") {
 		return;
 	}
 	const willReactivate = shouldRun(setting, value);

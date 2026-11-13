@@ -29,4 +29,5 @@ export const budgetTableRowHeight = defineSetting({
 		const value = await getValue(ctx.key, ctx.defaultValue);
 		applyGlobalCSS(ctx.css(value as string), ctx.key);
 	},
+	apply: (value, ctx) => applyGlobalCSS(ctx.css(value as string), ctx.key),
 });
