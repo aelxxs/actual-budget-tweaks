@@ -610,6 +610,10 @@ select.abt-select-arrow {
 	align-items: stretch;
 }
 
+.abt-setting--wrap {
+	flex-wrap: wrap;
+}
+
 .abt-setting__head {
 	display: flex;
 	align-items: center;

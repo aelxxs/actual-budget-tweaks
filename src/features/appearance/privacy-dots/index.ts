@@ -140,5 +140,6 @@ export const privacyStyle = defineSetting({
 		{ value: "fixed", label: "Dots, fixed length" },
 	],
 	picker: PrivacyPicker,
+	pickerInline: true,
 	css: ({ value }) => STYLES[value as string] ?? "",
 });

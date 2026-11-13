@@ -61,6 +61,8 @@ export interface SelectSetting<C extends SettingContext> extends BaseSetting<C> 
 		selected: string;
 		onPick: (value: string) => void;
 	}>;
+	/** Keeps the picker on the right of the row; anything else it draws wraps onto its own line. */
+	pickerInline?: boolean;
 }
 
 export interface CheckboxSetting<C extends SettingContext> extends BaseSetting<C> {

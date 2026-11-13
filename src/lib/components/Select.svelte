@@ -43,7 +43,12 @@
 	);
 </script>
 
-<div class="abt-setting" class:abt-setting--stacked={Picker} data-testid={ctx.key}>
+<div
+	class="abt-setting"
+	class:abt-setting--stacked={Picker && !setting.pickerInline}
+	class:abt-setting--wrap={Picker && setting.pickerInline}
+	data-testid={ctx.key}
+>
 	<span class="abt-setting__head">
 		{#if icon}
 			<span class="abt-setting__icon"><Icon name={icon} size={15} /></span>

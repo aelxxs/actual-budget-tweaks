@@ -91,7 +91,7 @@
 	<Section card={false} muted caps={false} title="Style for every theme" open={false}>
 		<p class="note">Applies under every theme, not just this one.</p>
 		<div class="rows">
-			{#each [...surfaces, ...details].filter((s) => s.context.key !== "privacy-style") as setting (setting.context.key)}
+			{#each [...surfaces, ...details] as setting (setting.context.key)}
 				<SettingRow {setting} />
 			{/each}
 		</div>
