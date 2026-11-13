@@ -88,7 +88,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [{ label: null, items: [themeSelector] }],
 	},
 	{
-		title: FEATURES_TITLE,
+		title: "Features",
 		groups: [
 			{
 				label: null,
