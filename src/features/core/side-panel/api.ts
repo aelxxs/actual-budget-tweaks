@@ -28,7 +28,8 @@ export type SidePanelApi = {
 	close: (key?: string) => void;
 	/** Hides the page's panels, keeping a persisted one to come back; app panels stay. */
 	dismiss: () => void;
-	setTitle: (title: string) => void;
+	/** Renames the base page panel, or with a key, that panel wherever it is in the stack. */
+	setTitle: (title: string, key?: string) => void;
 	/** Whether the drawer is open; with a key, whether that panel is in it, shown or under another. */
 	isOpen: (key?: string) => boolean;
 	/** Calls back with the key of the panel on top whenever it changes; null once the drawer closes. */
@@ -50,8 +51,8 @@ export const sidepanel: SidePanelApi = {
 	dismiss: () => {
 		document.dispatchEvent(new CustomEvent(PANEL_DISMISS_EVENT));
 	},
-	setTitle: (title) => {
-		document.dispatchEvent(new CustomEvent(PANEL_SET_TITLE_EVENT, { detail: { title } }));
+	setTitle: (title, key) => {
+		document.dispatchEvent(new CustomEvent(PANEL_SET_TITLE_EVENT, { detail: { title, key } }));
 	},
 	isOpen: (key) => {
 		return !!document.querySelector(

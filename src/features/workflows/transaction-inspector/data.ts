@@ -21,7 +21,10 @@ export interface InspectedTransaction {
 
 export interface PayeeHistory {
 	count: number;
-	average: number;
+	/** The median charge: one odd charge doesn't drag it the way it drags an average. */
+	usual: number;
+	/** Charges sit close to the usual, as a bill's do; a shop's vary too much to call one odd. */
+	steady: boolean;
 	/** Typical days between charges, when there are enough to tell. */
 	interval: number | null;
 	recent: {
@@ -54,9 +57,13 @@ export interface Phrase {
 }
 
 export interface RuleChange {
+	/** The transaction field, as Actual names it. */
+	key: string;
 	field: string;
 	from: string;
 	to: string;
+	/** What the rules would store, for applying the change. */
+	value: unknown;
 }
 
 export interface Schedule {
@@ -163,6 +170,17 @@ const TX_SELECT: (string | Record<string, string>)[] = [
 ];
 
 const RECENT = 6;
+/** How close to the usual a payee's charges sit, as a share of it, to count as steady. */
+const STEADY_SPREAD = 0.1;
+
+function median(list: number[]): number {
+	const sorted = [...list].sort((a, b) => a - b);
+	const mid = sorted.length >> 1;
+	if (!sorted.length) {
+		return 0;
+	}
+	return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
 
 export async function inspect(id: string): Promise<Inspection | null> {
 	const [row] = await query<TxRow[]>("transactions", {
@@ -221,10 +239,12 @@ async function loadHistory(payee: string): Promise<PayeeHistory> {
 		options: { splits: "none" },
 	});
 	rows.sort((a, b) => b.date.localeCompare(a.date));
-	const total = rows.reduce((sum, r) => sum + r.amount, 0);
+	const usual = median(rows.map((r) => r.amount));
+	const spread = median(rows.map((r) => Math.abs(r.amount - usual)));
 	return {
 		count: rows.length,
-		average: rows.length ? Math.round(total / rows.length) : 0,
+		usual: Math.round(usual),
+		steady: usual !== 0 && spread / Math.abs(usual) <= STEADY_SPREAD,
 		interval: typicalInterval(rows.map((r) => r.date)),
 		recent: rows.slice(0, RECENT).map((r) => ({
 			id: r.id,
@@ -419,9 +439,20 @@ function diff(row: TxRow, ran: Record<string, unknown>, names: Names): RuleChang
 	const current = row as unknown as Record<string, unknown>;
 	return DIFF_FIELDS.filter((f) => f in ran && (ran[f] ?? null) !== (current[f] ?? null)).map(
 		(f) => ({
+			key: f,
 			field: label(f),
 			from: formatValue(f, current[f], names),
 			to: formatValue(f, ran[f], names),
+			value: ran[f] ?? null,
 		}),
 	);
+}
+
+/** Saves what the rules would set, through Actual, so its own undo and sync pick it up. */
+export async function applyChanges(id: string, changes: RuleChange[]): Promise<void> {
+	const update: Record<string, unknown> = { id };
+	for (const c of changes) {
+		update[c.key] = c.value;
+	}
+	await send("transactions-batch-update", { updated: [update] });
 }

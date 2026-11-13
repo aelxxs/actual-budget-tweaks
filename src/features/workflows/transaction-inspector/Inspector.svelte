@@ -7,22 +7,28 @@
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { formatDate, formatDayMonth } from "@lib/utilities/date-format.svelte";
 	import Icon from "@lib/components/Icon.svelte";
-	import { inspect, type Inspection, type Phrase, type RuleSummary } from "./data";
+	import { applyChanges, inspect, type Inspection, type Phrase, type RuleSummary } from "./data";
 	import { inspector } from "./state.svelte";
+	import { sidepanel } from "@features/core/side-panel";
 
 	// Given by pages that pick the transaction themselves (the graph); otherwise the selected row.
-	const { transactionId }: { transactionId?: string } = $props();
+	const { transactionId, panelKey }: { transactionId?: string; panelKey: string } = $props();
 	const currentId = $derived(transactionId ?? inspector.transactionId);
 
-	// How far from the payee's average an amount reads as unusual.
+	// How far from a steady payee's usual amount a charge reads as unusual.
 	const UNUSUAL = 0.25;
 
 	let data = $state<Inspection | null>(null);
 	let loading = $state(false);
 	let failed = $state(false);
+	// Bumped after a write, so the effect below loads the transaction again.
+	let version = $state(0);
+	let applying = $state(false);
+	let applyFailed = $state(false);
 
 	$effect(() => {
 		const id = currentId;
+		void version;
 		if (!id) {
 			data = null;
 			return;
@@ -52,17 +58,25 @@
 	});
 
 	const tx = $derived(data?.tx);
+
+	// The payee names the panel, so the body can lead with the amount.
+	$effect(() => {
+		sidepanel.setTitle(tx?.payee ?? "Inspector", panelKey);
+	});
 	const history = $derived(data?.history);
 	const unusual = $derived.by(() => {
-		if (!tx || !history || history.count < 3 || history.average === 0) {
+		if (!tx || !history || history.count < 3 || !history.steady) {
 			return null;
 		}
-		const ratio = tx.amount / history.average - 1;
+		const ratio = tx.amount / history.usual - 1;
 		return Math.abs(ratio) >= UNUSUAL ? Math.round(ratio * 100) : null;
 	});
 
 	const ownRules = $derived(data?.rules.filter((r) => !r.schedule) ?? []);
-	const scheduleRules = $derived(data?.rules.filter((r) => r.schedule) ?? []);
+	// The transaction's own schedule has its own section.
+	const scheduleRules = $derived(
+		data?.rules.filter((r) => r.schedule && r.schedule.id !== data?.schedule?.id) ?? [],
+	);
 
 	/** "a, b and c" from phrases, keeping amounts apart for privacy mode. */
 	function joiner(i: number, count: number, word: string): string {
@@ -112,6 +126,22 @@
 				options: { rule: { stage: null, conditionsOp: "and", conditions, actions } },
 			},
 		});
+	}
+
+	async function apply() {
+		if (!tx || !data?.changes.length) {
+			return;
+		}
+		applying = true;
+		applyFailed = false;
+		try {
+			await applyChanges(tx.id, data.changes);
+			version++;
+		} catch {
+			applyFailed = true;
+		} finally {
+			applying = false;
+		}
 	}
 
 	function editRule(raw: unknown) {
@@ -178,12 +208,11 @@
 			{#if !loading}<p class="empty">This transaction is no longer here.</p>{/if}
 		{:else}
 			<div class="summary" class:loading>
-				<div class="line">
-					<span class="payee abt-privacy-number">{tx.payee}</span>
-					<span class="amount abt-privacy-number" class:positive={tx.amount > 0}
-						>{fmtMoney(tx.amount)}</span
-					>
-				</div>
+				<span
+					class="amount abt-privacy-number"
+					class:positive={tx.amount > 0}
+					class:negative={tx.amount < 0}>{fmtMoney(tx.amount)}</span
+				>
 				<div class="meta">
 					{formatDate(tx.date)} · {tx.accountName}{tx.category ? ` · ${tx.category}` : ""}
 				</div>
@@ -203,32 +232,44 @@
 			{#if data?.changes.length}
 				<Section title="Your rules would change" collapsible={false}>
 					{#each data.changes as change (change.field)}
-						<Row name={change.field} value={`${change.from} → ${change.to}`} tone="warning" />
+						<Row name={`${change.field} now`} value={change.from} />
+						<Row name="Your rules say" value={change.to} tone="warning" />
 					{/each}
-					<Callout tone="warning">
-						Rules run when a transaction is added, so this was likely changed by hand or added
-						before the rule.
-					</Callout>
+					<div class="apply">
+						<span class="apply__note"
+							>{applyFailed
+								? "Couldn't apply it. Try again, or edit the transaction."
+								: "Likely set by hand, or before the rule."}</span
+						>
+						<button
+							type="button"
+							class="abt-btn abt-btn--sm abt-tone-accent"
+							disabled={applying}
+							onclick={apply}>{applying ? "Applying…" : "Apply"}</button
+						>
+					</div>
 				</Section>
 			{/if}
 
 			{#if history && history.count > 0}
 				<Section title="Payee history" count={history.count}>
 					{#if history.count > 1}
-						<Row name="Average" value={fmtMoney(history.average)} />
+						<Row name="Usual amount" value={fmtMoney(history.usual)} />
 					{/if}
 					{#if history.interval != null}
-						<Row name="Usually" value={every(history.interval)} />
+						<Row name="How often" value={every(history.interval)} />
 					{/if}
 					<div class="recent">
 						{#each history.recent as item (item.id)}
-							<Row
-								name={formatDayMonth(item.date)}
-								meta={[item.accountName, item.category].filter(Boolean).join(" · ")}
-								value={fmtMoney(item.amount)}
-								tone={item.amount > 0 ? "positive" : undefined}
-								strong={item.id === tx.id}
-							/>
+							<div class="recent__row" class:is-this={item.id === tx.id}>
+								<Row
+									name={formatDayMonth(item.date)}
+									meta={[item.accountName, item.category].filter(Boolean).join(" · ")}
+									value={fmtMoney(item.amount)}
+									tone={item.amount > 0 ? "positive" : undefined}
+									strong={item.id === tx.id}
+								/>
+							</div>
 						{/each}
 					</div>
 				</Section>
@@ -255,8 +296,11 @@
 				</Section>
 			{/if}
 
-			<Section title="Rules for this payee" count={data?.rules.length || undefined}>
-				{#if data?.rules.length}
+			<Section
+				title="Rules for this payee"
+				count={ownRules.length + scheduleRules.length || undefined}
+			>
+				{#if ownRules.length || scheduleRules.length}
 					{#if ownRules.length}
 						<ul class="rules">
 							{#each ownRules as rule (rule.id)}{@render ruleItem(rule)}{/each}
@@ -321,34 +365,27 @@
 		text-align: center;
 	}
 	.summary {
-		padding: var(--abt-space-2) var(--abt-space-4);
+		padding: var(--abt-space-3) var(--abt-space-4) var(--abt-space-4);
 		display: flex;
 		flex-direction: column;
-		gap: var(--abt-space-2);
+		gap: var(--abt-space-3);
 		transition: opacity 0.15s;
 	}
 	.summary.loading {
 		opacity: 0.5;
 	}
-	.line {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		gap: var(--abt-space-3);
-		font-size: var(--abt-text-lg);
-		font-weight: 600;
-	}
-	.payee {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
 	.amount {
-		flex-shrink: 0;
+		font-size: 22px; /* raw: the panel's headline figure, above the token scale */
+		font-weight: 600;
+		line-height: 1.1;
 		font-variant-numeric: tabular-nums;
 	}
+	/* The panel rows' money colours, so the headline matches the history below it. */
 	.amount.positive {
-		color: var(--color-noticeTextLight);
+		color: var(--color-budgetNumberPositive);
+	}
+	.amount.negative {
+		color: var(--color-errorText);
 	}
 	.meta {
 		font-size: var(--abt-text-sm);
@@ -357,6 +394,17 @@
 	.notes {
 		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
+	}
+	.apply {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
+		margin-top: var(--abt-space-2);
+	}
+	.apply__note {
+		flex: 1;
+		font-size: var(--abt-text-sm);
+		color: var(--abt-subtle);
 	}
 	.badges {
 		display: flex;
@@ -415,6 +463,16 @@
 	.rule__stage {
 		font-size: var(--abt-text-xs);
 		color: var(--abt-subtle);
+	}
+	/* This transaction among its payee's recent ones: a tint bled to the card's edges. */
+	/* Each Row is alone in its wrapper, which drops its own spacing, so the wrapper carries it. */
+	.recent__row {
+		margin: 0 calc(-1 * var(--abt-space-3));
+		padding: 4px var(--abt-space-3); /* raw: a panel row's own spacing */
+		border-radius: var(--abt-radius-sm);
+	}
+	.recent__row.is-this {
+		background: var(--abt-accent-2);
 	}
 	.edit {
 		flex-shrink: 0;

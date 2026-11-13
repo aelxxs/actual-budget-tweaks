@@ -59,7 +59,7 @@ async function openPanel() {
 	selected = [];
 	followSelection();
 	if (!panel) {
-		panel = mountToPanelBody(Inspector, {});
+		panel = mountToPanelBody(Inspector, { panelKey: PANEL_KEY });
 	}
 	sidepanel.open({ title: "Inspector", bodyNode: panel.node, key: PANEL_KEY });
 	inspector.open = true;

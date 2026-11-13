@@ -663,7 +663,17 @@
 	function openInspector(id: string) {
 		closeInspector();
 		const body = document.createElement("div");
-		inspecting = mount(Inspector, { target: body, props: { transactionId: id } });
+		// Fills the panel, as mountToPanelBody does, so the inspector's footer sits at the bottom.
+		Object.assign(body.style, {
+			display: "flex",
+			flex: "1",
+			flexDirection: "column",
+			minHeight: "0",
+		});
+		inspecting = mount(Inspector, {
+			target: body,
+			props: { transactionId: id, panelKey: INSPECT_KEY },
+		});
 		sidepanel.open({ title: "Inspector", bodyNode: body, key: INSPECT_KEY, stack: true });
 	}
 

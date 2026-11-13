@@ -361,9 +361,11 @@ export const sidePanel = {
 		});
 
 		document.addEventListener(PANEL_SET_TITLE_EVENT, (event) => {
-			const { title } = (event as CustomEvent).detail ?? {};
-			// Only base page panels (Insights, reconcile) set titles; one stacked on top keeps its own.
-			const base = stack.find((e) => e.scope === "page") ?? stack[0];
+			const { title, key } = (event as CustomEvent).detail ?? {};
+			// Without a key, the base page panel (Insights, reconcile); one stacked on top keeps its own.
+			const base = key
+				? stack.find((e) => e.key === key)
+				: (stack.find((e) => e.scope === "page") ?? stack[0]);
 			if (!base) {
 				return;
 			}
