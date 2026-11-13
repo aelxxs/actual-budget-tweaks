@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { spendingCalendar } from "@features/workflows/spending-calendar";
+	import { graphView, openGraphView } from "@features/workflows/graph-view";
 	import { openCalendar } from "@features/workflows/spending-calendar";
 	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import { navigate } from "@lib/utilities/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
 	import { getValue, setValue } from "@lib/utilities/store";
-	import { CalendarDays, ChevronDown } from "@lucide/svelte";
+	import { CalendarDays, ChevronDown, Network } from "@lucide/svelte";
 	import { settingsItem, settingsMenu } from "../lib/nav";
 	import { mainItems, settingsItems, trackSidebarMenu } from "../lib/menu.svelte";
 	import { route, trackRoute } from "../lib/route.svelte";
@@ -15,10 +16,14 @@
 	// to storage keyed by the setting's own context.key, per features/runtime.ts,
 	// so this is safe to read from an unrelated feature).
 	let calendarFeatureEnabled = $state(false);
+	let graphFeatureEnabled = $state(false);
 
 	$effect(() => {
 		getValue<boolean>(spendingCalendar.context.key, spendingCalendar.context.defaultValue).then(
 			(v) => (calendarFeatureEnabled = v),
+		);
+		getValue<boolean>(graphView.context.key, graphView.context.defaultValue).then(
+			(v) => (graphFeatureEnabled = v),
 		);
 	});
 
@@ -99,6 +104,18 @@
 		>
 			<span class="nav-icon"><CalendarDays strokeWidth={1.5} /></span>
 			<span class="nav-label">Calendar</span>
+		</button>
+	{/if}
+
+	{#if graphFeatureEnabled}
+		<button
+			type="button"
+			class="nav-link"
+			class:active={isActive(Page.Graph)}
+			onclick={openGraphView}
+		>
+			<span class="nav-icon"><Network strokeWidth={1.5} /></span>
+			<span class="nav-label">Graph</span>
 		</button>
 	{/if}
 

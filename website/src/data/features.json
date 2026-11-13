@@ -68,6 +68,17 @@
 				"icon": "trendingUp",
 				"group": null,
 				"writes": null
+			},
+			{
+				"key": "graph-view",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Graph view",
+				"description": "Experimental: a page showing how your accounts, payees and categories connect. May change or be removed.",
+				"icon": "network",
+				"group": null,
+				"writes": null
 			}
 		]
 	},

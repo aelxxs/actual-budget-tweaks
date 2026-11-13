@@ -10,6 +10,10 @@
 	import { inspect, type Inspection, type Phrase, type RuleSummary } from "./data";
 	import { inspector } from "./state.svelte";
 
+	// Given by pages that pick the transaction themselves (the graph); otherwise the selected row.
+	const { transactionId }: { transactionId?: string } = $props();
+	const currentId = $derived(transactionId ?? inspector.transactionId);
+
 	// How far from the payee's average an amount reads as unusual.
 	const UNUSUAL = 0.25;
 
@@ -18,7 +22,7 @@
 	let failed = $state(false);
 
 	$effect(() => {
-		const id = inspector.transactionId;
+		const id = currentId;
 		if (!id) {
 			data = null;
 			return;
@@ -166,7 +170,7 @@
 
 <div class="shell">
 	<div class="body">
-		{#if !inspector.transactionId}
+		{#if !currentId}
 			<p class="empty">Select a transaction to inspect it.</p>
 		{:else if failed}
 			<div class="message"><Callout tone="negative">Couldn't load this transaction.</Callout></div>

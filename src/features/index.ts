@@ -58,6 +58,7 @@ import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { syncRecap } from "./workflows/sync-recap";
+import { graphView } from "./workflows/graph-view";
 import { templatePlan } from "./workflows/template-plan";
 import { transactionInspector } from "./workflows/transaction-inspector";
 
@@ -99,6 +100,7 @@ export const scriptSections: SettingsSection[] = [
 					syncRecap,
 					transactionInspector,
 					incomeBreakdown,
+					graphView,
 				],
 			},
 		],

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { spendingCalendar } from "@features/workflows/spending-calendar";
+	import { graphView, openGraphView } from "@features/workflows/graph-view";
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
@@ -13,6 +14,7 @@
 	import {
 		CalendarDays,
 		Folder,
+		Network,
 		PanelLeftClose,
 		PanelLeftOpen,
 		Plus,
@@ -59,10 +61,14 @@
 
 	// See PrimaryNav.svelte for the full explanation of both of these.
 	let calendarFeatureEnabled = $state(false);
+	let graphFeatureEnabled = $state(false);
 
 	$effect(() => {
 		getValue<boolean>(spendingCalendar.context.key, spendingCalendar.context.defaultValue).then(
 			(v) => (calendarFeatureEnabled = v),
+		);
+		getValue<boolean>(graphView.context.key, graphView.context.defaultValue).then(
+			(v) => (graphFeatureEnabled = v),
 		);
 	});
 
@@ -392,6 +398,18 @@
 			use:tooltip={"Calendar"}
 		>
 			<CalendarDays strokeWidth={1.5} />
+		</button>
+	{/if}
+	{#if graphFeatureEnabled}
+		<button
+			type="button"
+			class="rail-icon"
+			class:active={isActive(Page.Graph)}
+			onclick={openGraphView}
+			aria-label="Graph"
+			use:tooltip={"Graph"}
+		>
+			<Network strokeWidth={1.5} />
 		</button>
 	{/if}
 	{#if showAccounts}

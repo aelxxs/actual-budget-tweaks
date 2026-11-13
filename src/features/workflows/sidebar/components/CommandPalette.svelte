@@ -27,6 +27,7 @@
 	} from "@features/workflows/reconcile";
 	import { compactAge } from "@features/workflows/reconcile/relative-time";
 	import { openInsights, templatePlan } from "@features/workflows/template-plan";
+	import { graphView, openGraphView } from "@features/workflows/graph-view";
 	import { themes } from "@lib/design";
 	import { dispatch, navigate, notify, query as queryTable, send } from "@lib/utilities/actual-api";
 	import { calculate } from "@lib/utilities/calc";
@@ -50,6 +51,7 @@
 		Landmark,
 		LayoutGrid,
 		ListChecks,
+		Network,
 		Paintbrush,
 		Palette,
 		Percent,
@@ -347,6 +349,9 @@
 				: []),
 			...(enabled[templatePlan.context.key]
 				? [{ label: "Insights", icon: Sparkles, run: showInsights }]
+				: []),
+			...(enabled[graphView.context.key]
+				? [{ label: "Graph", icon: Network, run: openGraphView }]
 				: []),
 			{ label: "Tweaks", icon: Wrench, run: () => navigate(TWEAKS_PATH) },
 		];

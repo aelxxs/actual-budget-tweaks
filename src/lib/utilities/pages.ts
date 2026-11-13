@@ -13,10 +13,11 @@ export enum Page {
 	Tags = "tags",
 	Settings = "settings",
 	Calendar = "calendar",
+	Graph = "graph",
 }
 
 /**
- * A view ABT draws over Actual's page (the calendar), which counts as the page while open.
+ * A view ABT draws over Actual's page (the calendar, the graph), which counts as the page while open.
  * Only while its element is mounted on the same route, so a navigation or teardown nobody
  * reported (Actual's own route changes aren't visible to content scripts) can't leave it stuck.
  */
@@ -32,7 +33,7 @@ export function clearOverlayPage(): void {
 
 /** An overlay's address: the page under it plus this hash, so a reload brings it back. */
 export const overlayHash = (page: Page) => `#${page}`;
-const OVERLAY_PAGES: readonly Page[] = [Page.Calendar];
+const OVERLAY_PAGES: readonly Page[] = [Page.Calendar, Page.Graph];
 
 /** The overlay the address names; on a reload it counts before it has mounted, so the page under it stays untouched. */
 function addressedOverlay(): Page | undefined {
