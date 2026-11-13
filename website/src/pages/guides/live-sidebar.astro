@@ -30,34 +30,35 @@ const base = import.meta.env.BASE_URL;
 				alt="The top of the sidebar with the + button at the end of the shortcuts outlined"
 			/>
 			</div>
-			<p>Then choose a shortcut from the list on the right.</p>
-			<div class="docs__stage docs__stage--dialog">
+			<p>Then choose a shortcut from the panel beside the sidebar.</p>
+			<div class="docs__stage docs__stage--card">
 			<img
 				src={`${base}images/guides/sidebar-shortcuts.png`}
-				width="640"
-				height="620"
-				alt="The Shortcuts tab of Sidebar settings, with your shortcuts on the left and the items you can add on the right"
+				width="288"
+				height="342"
+				alt="The Add a shortcut page of the Customize sidebar panel, listing the shortcuts you can add"
 			/>
 			</div>
+			<p>While the panel is open:</p>
 			<ul>
 				<li>Drag a shortcut to move it.</li>
-				<li>To remove a shortcut, hover over it on the Shortcuts tab and click the X.</li>
+				<li>To remove a shortcut, hover over it and click the X.</li>
 			</ul>
 		</section>
 
 		<section class="docs__section">
 			<h2>Group your accounts</h2>
 			<ol>
-				<li>Open the <a href="/guides/command-palette">command palette</a> and choose <strong>Sidebar settings</strong>.</li>
-				<li>Go to the Groups tab.</li>
+				<li>Open the <a href="/guides/command-palette">command palette</a> and choose <strong>Customize sidebar</strong>.</li>
+				<li>Click <strong>Account groups</strong>.</li>
 				<li>Add a group under On budget or Off budget.</li>
 			</ol>
-			<div class="docs__stage docs__stage--dialog">
+			<div class="docs__stage docs__stage--card">
 			<img
 				src={`${base}images/guides/sidebar-groups.png`}
-				width="640"
-				height="315"
-				alt="The Groups tab of Sidebar settings with a Cash group holding two accounts"
+				width="288"
+				height="252"
+				alt="The Account groups page of the Customize sidebar panel, with Credit Cards and Savings on budget and Retirement off budget"
 			/>
 			</div>
 			<ul>
@@ -73,7 +74,18 @@ const base = import.meta.env.BASE_URL;
 
 		<section class="docs__section">
 			<h2>Choose a layout</h2>
-			<p>Change the layout on the General tab of Sidebar settings. Split is the default.</p>
+			<p>
+				Change the layout in the Customize sidebar panel, which also sets the density and which parts
+				of the sidebar show. Split is the default.
+			</p>
+			<div class="docs__stage docs__stage--card">
+			<img
+				src={`${base}images/guides/sidebar-customize.png`}
+				width="288"
+				height="470"
+				alt="The Customize sidebar panel with Layout and Density choices and switches for each part of the sidebar"
+			/>
+			</div>
 			<div class="docs__stage docs__stage--pair">
 				<figure>
 					<img
@@ -103,7 +115,7 @@ const base = import.meta.env.BASE_URL;
 			<img
 				src={`${base}images/guides/sidebar-hover.png`}
 				width="292"
-				height="265"
+				height="186"
 				alt="An account's hover card with a 30-day balance chart and its cleared and uncleared amounts"
 			/>
 			</div>

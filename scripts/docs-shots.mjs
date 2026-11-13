@@ -227,7 +227,9 @@ function waitForServer(url) {
 		let tries = 0;
 		const check = async () => {
 			try {
-				await fetch(url);
+				if (!(await fetch(url)).ok) {
+					throw new Error("not ready");
+				}
 				done();
 			} catch {
 				if (++tries > 90) {
@@ -257,6 +259,7 @@ async function startStack() {
 			PACKAGE_JSON_PATH: resolve(ROOT, "package.json"),
 		},
 	});
+	await waitForServer(`http://localhost:${ACTUAL_PORT}`);
 	await waitForServer(BASE);
 	return () => {
 		sidecar.kill();
@@ -266,8 +269,8 @@ async function startStack() {
 
 async function createBudget(page) {
 	await page.goto(BASE);
-	const confirm = page.getByRole("textbox", { name: "Confirm password" });
-	await page.getByRole("textbox", { name: "Password", exact: true }).fill(PASSWORD);
+	const confirm = page.getByPlaceholder("Confirm password");
+	await page.getByPlaceholder("Password", { exact: true }).fill(PASSWORD);
 	await confirm.fill(PASSWORD);
 	await confirm.press("Enter");
 	await page.getByRole("button", { name: "Sign in" }).waitFor();
@@ -457,9 +460,11 @@ async function applySettings(page, { accountIds, budgetId, groupSections }, sett
 		ACCOUNTS.map((a) => [accountIds[a.name], { type: "emoji", value: a.emoji }]),
 	);
 	await page.evaluate(
-		([settings, icons, shortcuts, budgetId, sections]) => {
+		async ([settings, icons, shortcuts, budgetId, sections]) => {
 			for (const [key, value] of Object.entries(settings)) {
 				localStorage.setItem(`local:${key}`, JSON.stringify(value));
+				// The budget's synced copy wins over local storage on the next pull.
+				await window.$send("preferences/save", { id: `abt:${key}`, value: JSON.stringify(value) });
 			}
 			localStorage.setItem("local:abt-account-icons", JSON.stringify(icons));
 			localStorage.setItem(`local:abt-sidebar-shortcuts:${budgetId}`, JSON.stringify(shortcuts));
@@ -470,6 +475,7 @@ async function applySettings(page, { accountIds, budgetId, groupSections }, sett
 		},
 		[settings, icons, SHORTCUTS, budgetId, groupSections],
 	);
+	await saveBudgetData(page, { accountIds, groupSections });
 }
 
 /** Outlines drawn into the page, so they follow the real elements. Numbered unless `plain`. */
@@ -650,22 +656,22 @@ async function sidebarShots(page) {
 	await page.mouse.move(700, 500);
 
 	await page.keyboard.press("Control+k");
-	await page.locator(".cp-input").fill("sidebar settings");
+	await page.locator(".cp-input").fill("customize sidebar");
 	await page.keyboard.press("Enter");
-	const dialog = ".settings-dialog";
-	await page.locator(dialog).waitFor();
-	const tab = (name) =>
-		page
-			.locator(`${dialog} .abt-tabs button, ${dialog} [role="tab"], ${dialog} button`)
-			.filter({ hasText: name })
-			.first();
-	await tab("Shortcuts").click();
+	const panel = ".layer .panel.abt-popover";
+	await page.locator(panel).waitFor();
 	await page.waitForTimeout(800);
-	await shot(page, "sidebar-shortcuts", dialog, { room: 0, cutout: true });
-	await tab("Groups").click();
+	await shot(page, "sidebar-customize", panel, { room: 0, cutout: true });
+	await page.locator(panel).getByRole("button", { name: "Add a shortcut" }).click();
 	await page.waitForTimeout(800);
-	await shot(page, "sidebar-groups", dialog, { room: 0, height: 315, cutout: true });
+	await shot(page, "sidebar-shortcuts", panel, { room: 0, cutout: true });
 	await page.keyboard.press("Escape");
+	await page.locator(panel).getByRole("button", { name: "Account groups" }).click();
+	await page.waitForTimeout(800);
+	await shot(page, "sidebar-groups", panel, { room: 0, cutout: true });
+	await page.keyboard.press("Escape");
+	await page.keyboard.press("Escape");
+	await page.locator(panel).waitFor({ state: "detached" });
 	await page.waitForTimeout(400);
 
 	// Live, since settings sync would restore the stored layout on a reload.
@@ -788,7 +794,7 @@ async function recapShots(page, { accountIds }) {
 		JSON.stringify(result),
 	);
 
-	const review = page.getByRole("button", { name: "Review" });
+	const review = page.getByRole("button", { name: "Review", exact: true });
 	await review.waitFor();
 	await page.waitForTimeout(800);
 	const toast = page.getByText("Imported 7 transactions");
@@ -800,9 +806,9 @@ async function recapShots(page, { accountIds }) {
 	const panel = "[data-abt-side-drawer-sidebar]";
 	await page.getByText("Needs a category").waitFor();
 	await page.waitForTimeout(1200);
-	await page.getByRole("combobox", { name: "Category for Garden Center" }).selectOption({
-		label: "🍿 Fun",
-	});
+	await page.getByRole("button", { name: /^Category for Garden Center/ }).click();
+	await page.getByLabel("Search categories").fill("Fun");
+	await page.getByRole("option", { name: /Fun/ }).first().click();
 	await page.waitForTimeout(800);
 	await shot(page, "recap", panel, { room: 0, cutout: true });
 }
@@ -858,7 +864,7 @@ async function readmeShots(page, seeded) {
 		await page.keyboard.press("Control+k");
 		await input.fill("spending calendar");
 		await page.keyboard.press("Enter");
-		await page.locator("[data-abt-calendar]").waitFor();
+		await page.locator(".cal-page").waitFor();
 	};
 
 	await page.keyboard.press("Control+k");
