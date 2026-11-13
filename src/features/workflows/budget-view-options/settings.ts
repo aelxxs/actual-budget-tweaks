@@ -5,7 +5,6 @@ import { balancePills } from "@features/readability/balance-pills";
 import { categoryProgress } from "@features/readability/category-progress";
 import { quietCategoryIcons } from "@features/readability/quiet-category-icons";
 import type { Setting } from "@features/types";
-import { budgetCategoryFilter } from "@features/workflows/budget-category-filter";
 import { modernHeaders } from "@features/layout/modern-headers";
 import { monthCards } from "@features/workflows/budget-summary-row";
 import { categoryTemplateInsights } from "@features/workflows/category-template-insights";
@@ -28,10 +27,6 @@ export function openBudgetSettings(): void {
 				{
 					heading: "Colors & icons",
 					settings: [categoryColorDots, categoryEmojiPicker, quietCategoryIcons] as Setting[],
-				},
-				{
-					heading: "Filter",
-					settings: [budgetCategoryFilter] as Setting[],
 				},
 			],
 		},

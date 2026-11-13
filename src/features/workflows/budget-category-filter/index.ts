@@ -22,7 +22,6 @@ import {
 	BALANCE_CELL,
 	BUDGETED_CELL,
 	BUDGET_TABLE,
-	BUDGET_TOTALS,
 	CATEGORY_NAME,
 	LEFTOVER_CELL,
 	ROW,
@@ -197,28 +196,14 @@ function pick(filter: CategoryFilter): void {
 	void refresh(table, true);
 }
 
-/** In the month header like the mockup when it's on, else in the category column header. */
-function mountControl(table: HTMLElement): void {
-	const slot = document.querySelector(HEADER_SLOT);
-	const bar = table.querySelector(BUDGET_TOTALS)?.firstElementChild;
-	const parent = slot ?? bar;
-	if (!parent || control?.node.parentElement === parent) {
+function mountControl(slot: Element): void {
+	if (control?.node.parentElement === slot) {
 		return;
 	}
 	unmountControl();
-	control = mountToNodeWithReturn(FilterControl, {
-		onpick: pick,
-		size: slot ? "md" : "sm",
-	});
-	const { node } = control;
-	node.setAttribute(CONTROL_ATTR, "");
-	if (slot) {
-		slot.append(node);
-	}
-	// Before ABT's view options when present, else before Actual's ⋮ menu.
-	else {
-		bar!.insertBefore(node, bar!.querySelector(".abt-view-options") ?? bar!.lastElementChild);
-	}
+	control = mountToNodeWithReturn(FilterControl, { onpick: pick });
+	control.node.setAttribute(CONTROL_ATTR, "");
+	slot.append(control.node);
 }
 
 function unmountControl(): void {
@@ -336,7 +321,16 @@ function sync(): void {
 	if (!table) {
 		return;
 	}
-	mountControl(table);
+	// Lives in Modern headers' month header; without it, nothing is filtered.
+	const slot = document.querySelector(HEADER_SLOT);
+	if (!slot) {
+		unmountControl();
+		if (tableShown) {
+			reset();
+		}
+		return;
+	}
+	mountControl(slot);
 	tableShown = table;
 	const key = shownSheets(table).join();
 	if (key !== shownKey) {
@@ -350,10 +344,9 @@ function sync(): void {
 export const budgetCategoryFilter = defineSetting({
 	type: "checkbox",
 	label: "Category Filter",
-	description:
-		"Filter the budget table to categories that need attention (overspent or short of their target) or are on track.",
+	description: "Filter the budget to categories that need attention or are on track.",
 	icon: "filter",
-	group: "Budget",
+	group: "General",
 	context: {
 		key: "budget-category-filter",
 		defaultValue: false,
@@ -361,8 +354,6 @@ export const budgetCategoryFilter = defineSetting({
 	css: () => `
 		[${HIDDEN_ATTR}] { display: none !important; }
 		[${CONTROL_ATTR}] { display: contents; }
-		/* Actual's category header row has no gap, so the control spaces itself from its icons. */
-		${BUDGET_TOTALS} [${CONTROL_ATTR}] > * { margin-right: var(--abt-space-2); }
 	`,
 	init: () => {
 		changes = collectChanges(REFRESH_MS, () =>

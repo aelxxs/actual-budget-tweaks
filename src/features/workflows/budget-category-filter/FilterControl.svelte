@@ -1,14 +1,7 @@
 <script lang="ts">
 	import { filterState, type CategoryFilter } from "./state.svelte";
 
-	const {
-		onpick,
-		size = "md",
-	}: {
-		onpick: (filter: CategoryFilter) => void;
-		/** Small in Actual's category column header, full size in the month header. */
-		size?: "sm" | "md";
-	} = $props();
+	const { onpick }: { onpick: (filter: CategoryFilter) => void } = $props();
 
 	const options = $derived([
 		{ key: "all" as const, label: "All", short: "", count: null, empty: "" },
@@ -29,7 +22,7 @@
 	]);
 </script>
 
-<div class="abt-seg" class:abt-seg--sm={size === "sm"} role="group" aria-label="Filter categories">
+<div class="abt-seg" role="group" aria-label="Filter categories">
 	{#each options as o (o.key)}
 		<button
 			type="button"

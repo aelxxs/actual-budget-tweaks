@@ -100,7 +100,12 @@ export const scriptSections: SettingsSection[] = [
 	},
 	{
 		title: "General",
-		groups: [{ label: "Components", items: [modernTitlebar, modernHeaders, modernToasts] }],
+		groups: [
+			{
+				label: "Components",
+				items: [modernTitlebar, modernHeaders, budgetCategoryFilter, modernToasts],
+			},
+		],
 	},
 	{
 		title: "Sidebar",
@@ -139,7 +144,7 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Categories",
-				items: [categoryColorDots, categoryEmojiPicker, quietCategoryIcons, budgetCategoryFilter],
+				items: [categoryColorDots, categoryEmojiPicker, quietCategoryIcons],
 			},
 			{
 				label: "Tools",
@@ -216,6 +221,7 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[sidebarClosedAccounts, experimentalSidebar],
 	[accountIconPicker, experimentalSidebar],
 	[reconcileConfetti, modernReconcile],
+	[budgetCategoryFilter, modernHeaders],
 ]);
 
 export function sectionItems(section: SettingsSection): PageSetting[] {

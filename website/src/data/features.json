@@ -87,6 +87,17 @@
 				"writes": null
 			},
 			{
+				"key": "budget-category-filter",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Category Filter",
+				"description": "Filter the budget to categories that need attention or are on track.",
+				"icon": "filter",
+				"group": "Components",
+				"writes": null
+			},
+			{
 				"key": "modern-toasts",
 				"type": "checkbox",
 				"defaultValue": true,
@@ -310,17 +321,6 @@
 				"label": "Quiet Category Icons",
 				"description": "Show the template and notes icons on hover, keeping notes visible where there are some.",
 				"icon": "note",
-				"group": "Categories",
-				"writes": null
-			},
-			{
-				"key": "budget-category-filter",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Category Filter",
-				"description": "Filter the budget table to categories that need attention (overspent or short of their target) or are on track.",
-				"icon": "filter",
 				"group": "Categories",
 				"writes": null
 			},
