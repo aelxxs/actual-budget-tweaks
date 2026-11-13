@@ -4,7 +4,6 @@ import { budgetRowHover } from "@features/layout/budget-row-hover";
 import { budgetTableRowHeight } from "@features/layout/budget-table-row-height";
 import { balancePills } from "@features/readability/balance-pills";
 import { budgetCardStyling } from "@features/readability/budget-card-styling";
-import { budgetPageBorders } from "@features/readability/budget-page-borders";
 import { budgetTotalsLabelStyling } from "@features/readability/budget-totals-label-styling";
 import { categoryProgress } from "@features/readability/category-progress";
 import { quietCategoryIcons } from "@features/readability/quiet-category-icons";
@@ -57,7 +56,7 @@ export function openBudgetSettings(): void {
 			groups: [
 				{
 					heading: "Table",
-					settings: [budgetTableRowHeight, budgetRowHover, budgetPageBorders] as Setting[],
+					settings: [budgetTableRowHeight, budgetRowHover] as Setting[],
 				},
 				{
 					heading: "Months",

@@ -1,3 +1,4 @@
+import { NAV_BORDER_CSS } from "@features/layout/borders";
 import { sidepanel } from "@features/core/side-panel";
 import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 import { defineSetting } from "@features/types";
@@ -243,6 +244,7 @@ export const spendingCalendar = defineSetting({
 		key: "spending-calendar-enabled",
 		defaultValue: false,
 	},
+	css: () => NAV_BORDER_CSS,
 	init: () => {
 		let injectedOnce = false;
 

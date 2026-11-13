@@ -1,3 +1,4 @@
+import { NAV_BORDER_CSS } from "@features/layout/borders";
 import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { matchesPage, Page } from "@lib/utilities/pages";
@@ -63,6 +64,8 @@ export const reportsHeader = defineSetting({
 		defaultValue: true,
 	},
 	css: () => `
+		${NAV_BORDER_CSS}
+
 		/* Grows to its widgets, which otherwise overflow it; the header only sticks within it. */
 		${PAGE} {
 			flex-shrink: 0 !important;

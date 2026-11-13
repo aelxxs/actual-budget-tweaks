@@ -48,12 +48,12 @@
 				"writes": null
 			},
 			{
-				"key": "header-border",
+				"key": "borders",
 				"type": "checkbox",
 				"defaultValue": true,
 				"platform": "desktop",
-				"label": "Header Border",
-				"description": "Add a border under the top navigation bar.",
+				"label": "Borders",
+				"description": "Borders under the top bar and around the budget table and report cards.",
 				"icon": "square",
 				"group": null,
 				"writes": null
@@ -266,17 +266,6 @@
 				"label": "Taller Group Rows",
 				"description": "Makes category group rows taller so each group stands apart from its categories.",
 				"icon": "rows",
-				"group": "Layout",
-				"writes": null
-			},
-			{
-				"key": "budget-page-borders",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Budget Page Borders",
-				"description": "Add borders around sections of the budget table.",
-				"icon": "square",
 				"group": "Layout",
 				"writes": null
 			},
@@ -622,17 +611,6 @@
 		"title": "Reports",
 		"description": null,
 		"items": [
-			{
-				"key": "report-card-borders",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Report Card Borders",
-				"description": "Add borders around widget cards on the Reports page.",
-				"icon": "square",
-				"group": null,
-				"writes": null
-			},
 			{
 				"key": "reports-header",
 				"type": "checkbox",

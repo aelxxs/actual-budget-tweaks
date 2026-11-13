@@ -1,3 +1,4 @@
+import { NAV_BORDER_CSS } from "@features/layout/borders";
 import { dockInsightsTrigger } from "@features/workflows/template-plan";
 import { defineSetting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
@@ -154,6 +155,8 @@ export const budgetMonthHeader = defineSetting({
 		defaultValue: false,
 	},
 	css: () => `
+		${NAV_BORDER_CSS}
+
 		[${NATIVE_HEADER_ATTR}], [${NATIVE_COUNT_ATTR}] { display: none !important; }
 
 		/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */

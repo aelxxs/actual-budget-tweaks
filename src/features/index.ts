@@ -20,6 +20,7 @@ import { sidePanel } from "./core/side-panel";
 import { tooltipStyling } from "./core/tooltip";
 import { backgroundPattern } from "./layout/background-pattern";
 import { borderRadius } from "./layout/border-radius";
+import { borders } from "./layout/borders";
 import { budgetGroupSpacing } from "./layout/budget-group-spacing";
 import { budgetRowHover } from "./layout/budget-row-hover";
 import { budgetTableRowHeight } from "./layout/budget-table-row-height";
@@ -38,7 +39,6 @@ import { mobileTransactionList } from "./mobile/transaction-list";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { balancePills } from "./readability/balance-pills";
 import { budgetCardStyling } from "./readability/budget-card-styling";
-import { budgetPageBorders } from "./readability/budget-page-borders";
 import { budgetTotalsLabelStyling } from "./readability/budget-totals-label-styling";
 import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
@@ -48,11 +48,9 @@ import { groupOverspent } from "./readability/group-overspent";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { newTransactionStyle } from "./readability/new-transactions";
 import { quietCategoryIcons } from "./readability/quiet-category-icons";
-import { reportCardBorders } from "./readability/report-card-borders";
 import { scheduleIconDetails } from "./readability/schedule-icon-details";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
-import { headerBorder } from "./readability/top-nav-border";
 import { themeMenu } from "./theme/menu";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/theme-loader";
@@ -95,7 +93,7 @@ export const styleSettings: PageSetting[] = [
 	backgroundPattern,
 	insetPanels,
 	themedScrollbars,
-	headerBorder,
+	borders,
 	privacyStyle,
 ];
 
@@ -148,7 +146,6 @@ export const scriptSections: SettingsSection[] = [
 					budgetTableRowHeight,
 					budgetRowHover,
 					budgetGroupSpacing,
-					budgetPageBorders,
 					budgetMonthHeader,
 					budgetSummaryRow,
 				],
@@ -213,7 +210,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: null,
-				items: [reportCardBorders, reportsHeader, spendingCalendar, incomeBreakdown],
+				items: [reportsHeader, spendingCalendar, incomeBreakdown],
 			},
 		],
 	},
