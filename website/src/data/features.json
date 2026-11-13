@@ -286,7 +286,7 @@
 				"defaultValue": false,
 				"platform": "desktop",
 				"label": "Balance Status Pills",
-				"description": "Show balances as pills: overspent, or funded and underfunded for categories with templates.",
+				"description": "Adds an icon to each balance's status, so it doesn't rely on colour alone.",
 				"icon": "gauge",
 				"group": "Readability",
 				"writes": null
@@ -393,7 +393,7 @@
 			{
 				"key": "actual-category-template-insights",
 				"type": "checkbox",
-				"defaultValue": true,
+				"defaultValue": false,
 				"platform": "desktop",
 				"label": "Category Template Insights",
 				"description": "Progress bars showing how funded each category's template is.",

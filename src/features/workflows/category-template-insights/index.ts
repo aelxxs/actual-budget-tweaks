@@ -83,7 +83,7 @@ export const categoryTemplateInsights = defineSetting({
 	icon: "interest",
 	context: {
 		key: "actual-category-template-insights",
-		defaultValue: true,
+		defaultValue: false,
 	},
 	css: () => CSS,
 	init: async (ctx) => {
