@@ -1,6 +1,7 @@
 import { query, send } from "@lib/utilities/actual-api";
 import { fmtMoney } from "@lib/utilities/currency";
 import { formatDayMonth } from "@lib/utilities/date-format.svelte";
+import { payeeStats, type PayeeStats } from "@lib/utilities/payee-stats";
 
 export interface InspectedTransaction {
 	id: string;
@@ -19,14 +20,8 @@ export interface InspectedTransaction {
 	transfer: boolean;
 }
 
-export interface PayeeHistory {
+export interface PayeeHistory extends PayeeStats {
 	count: number;
-	/** The median charge: one odd charge doesn't drag it the way it drags an average. */
-	usual: number;
-	/** Charges sit close to the usual, as a bill's do; a shop's vary too much to call one odd. */
-	steady: boolean;
-	/** Typical days between charges, when there are enough to tell. */
-	interval: number | null;
 	recent: {
 		id: string;
 		date: string;
@@ -170,17 +165,6 @@ const TX_SELECT: (string | Record<string, string>)[] = [
 ];
 
 const RECENT = 6;
-/** How close to the usual a payee's charges sit, as a share of it, to count as steady. */
-const STEADY_SPREAD = 0.1;
-
-function median(list: number[]): number {
-	const sorted = [...list].sort((a, b) => a - b);
-	const mid = sorted.length >> 1;
-	if (!sorted.length) {
-		return 0;
-	}
-	return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
 
 export async function inspect(id: string): Promise<Inspection | null> {
 	const [row] = await query<TxRow[]>("transactions", {
@@ -239,13 +223,14 @@ async function loadHistory(payee: string): Promise<PayeeHistory> {
 		options: { splits: "none" },
 	});
 	rows.sort((a, b) => b.date.localeCompare(a.date));
-	const usual = median(rows.map((r) => r.amount));
-	const spread = median(rows.map((r) => Math.abs(r.amount - usual)));
+	const stats = payeeStats(
+		rows.map((r) => r.amount),
+		rows.map((r) => r.date),
+	);
 	return {
+		...stats,
 		count: rows.length,
-		usual: Math.round(usual),
-		steady: usual !== 0 && spread / Math.abs(usual) <= STEADY_SPREAD,
-		interval: typicalInterval(rows.map((r) => r.date)),
+		usual: Math.round(stats.usual),
 		recent: rows.slice(0, RECENT).map((r) => ({
 			id: r.id,
 			date: r.date,
@@ -254,19 +239,6 @@ async function loadHistory(payee: string): Promise<PayeeHistory> {
 			category: r.categoryName,
 		})),
 	};
-}
-
-/** The median gap in days between distinct dates, newest first; null with fewer than three. */
-export function typicalInterval(dates: string[]): number | null {
-	const days = [...new Set(dates)].map((d) => Date.parse(`${d}T00:00:00Z`) / 86_400_000);
-	if (days.length < 3) {
-		return null;
-	}
-	const gaps = days
-		.slice(1)
-		.map((d, i) => days[i] - d)
-		.sort((a, b) => a - b);
-	return Math.round(gaps[Math.floor(gaps.length / 2)]);
 }
 
 async function loadNames(): Promise<Names> {

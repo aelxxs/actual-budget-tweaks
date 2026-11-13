@@ -6,6 +6,7 @@
 	import { dispatch } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { formatDate, formatDayMonth } from "@lib/utilities/date-format.svelte";
+	import { PRICE_CHANGE } from "@lib/utilities/payee-stats";
 	import Icon from "@lib/components/Icon.svelte";
 	import { applyChanges, inspect, type Inspection, type Phrase, type RuleSummary } from "./data";
 	import { inspector } from "./state.svelte";
@@ -14,9 +15,6 @@
 	// Given by pages that pick the transaction themselves (the graph); otherwise the selected row.
 	const { transactionId, panelKey }: { transactionId?: string; panelKey: string } = $props();
 	const currentId = $derived(transactionId ?? inspector.transactionId);
-
-	// How far from a steady payee's usual amount a charge reads as unusual.
-	const UNUSUAL = 0.25;
 
 	let data = $state<Inspection | null>(null);
 	let loading = $state(false);
@@ -65,11 +63,11 @@
 	});
 	const history = $derived(data?.history);
 	const unusual = $derived.by(() => {
-		if (!tx || !history || history.count < 3 || !history.steady) {
+		if (!tx || !history?.steady) {
 			return null;
 		}
 		const ratio = tx.amount / history.usual - 1;
-		return Math.abs(ratio) >= UNUSUAL ? Math.round(ratio * 100) : null;
+		return Math.abs(ratio) >= PRICE_CHANGE ? Math.round(ratio * 100) : null;
 	});
 
 	const ownRules = $derived(data?.rules.filter((r) => !r.schedule) ?? []);

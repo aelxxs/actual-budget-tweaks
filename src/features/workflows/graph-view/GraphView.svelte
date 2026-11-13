@@ -69,13 +69,17 @@
 	let summary = $state("");
 	// Nodes opened out to their payees; the graph always starts as accounts to categories.
 	let expanded = $state.raw<ReadonlySet<string>>(new Set());
+	type Kind = Exclude<Highlight, null>;
 	let highlight = $state<Highlight>(null);
 	// Highlighted payees (or similar groups) added from the panel past the drawn limit.
 	let picked = $state.raw<ReadonlySet<string>>(new Set());
-	let mixedCount = $state(0);
-	let sharedCount = $state(0);
-	let similarCount = $state(0);
-	let duplicateCount = $state(0);
+	let counts = $state<Record<Kind, number>>({
+		mixed: 0,
+		shared: 0,
+		similar: 0,
+		duplicates: 0,
+		unusual: 0,
+	});
 	let menuOpen = $state(false);
 	let menuWrap = $state<HTMLElement | null>(null);
 	$effect(() => {
@@ -83,7 +87,6 @@
 			return onOutsideClick(menuWrap, () => (menuOpen = false));
 		}
 	});
-	let unusualCount = $state(0);
 	type DrawLink = {
 		key: string;
 		s: string;
@@ -208,18 +211,14 @@
 		candidates = searchable(data);
 		const present = new Set(candidates.map((c) => c.id));
 		expanded = new Set([...expanded].filter((id) => present.has(id)));
-		mixedCount = data.mixed.size;
-		sharedCount = data.shared.size;
-		similarCount = data.similar.length;
-		duplicateCount = data.duplicates.length;
-		unusualCount = data.unusual.length;
-		if (
-			(highlight === "mixed" && !mixedCount) ||
-			(highlight === "shared" && !sharedCount) ||
-			(highlight === "similar" && !similarCount) ||
-			(highlight === "duplicates" && !duplicateCount) ||
-			(highlight === "unusual" && !unusualCount)
-		) {
+		counts = {
+			mixed: data.mixed.size,
+			shared: data.shared.size,
+			similar: data.similar.length,
+			duplicates: data.duplicates.length,
+			unusual: data.unusual.length,
+		};
+		if (highlight && !counts[highlight]) {
 			highlight = null;
 		}
 		summary = `${data.rows.length} transactions`;
@@ -366,34 +365,6 @@
 		draw(n);
 	}
 
-	const HIGHLIGHTS = $derived([
-		{
-			kind: "mixed" as const,
-			count: mixedCount,
-			hint: "Payees spread over more than one category",
-		},
-		{
-			kind: "shared" as const,
-			count: sharedCount,
-			hint: "Categories paid from more than one account",
-		},
-		{
-			kind: "similar" as const,
-			count: similarCount,
-			hint: "One place under different payee names",
-		},
-		{
-			kind: "duplicates" as const,
-			count: duplicateCount,
-			hint: "The same charge entered twice",
-		},
-		{
-			kind: "unusual" as const,
-			count: unusualCount,
-			hint: "Steady bills that charged more than usual",
-		},
-	]);
-
 	function collapseAll() {
 		spotlight = null;
 		picked = new Set();
@@ -460,29 +431,51 @@
 		view = { k, x: view.x * (k / view.k), y: view.y * (k / view.k) };
 	}
 
-	const LISTS = {
-		mixed: {
-			title: "Mixed payees",
-			label: "Payees",
-			note: "Payees whose transactions land in more than one category. Often a slip, or a rule worth adding.",
-			empty: "Every payee sticks to one category.",
-		},
-		shared: {
-			title: "Shared categories",
-			label: "Categories",
-			note: "Categories paid from more than one account. Fine if planned, otherwise a card used by mistake.",
-			empty: "Every category is paid from one account.",
-		},
-	};
-	const TITLES = {
-		mixed: LISTS.mixed.title,
-		shared: LISTS.shared.title,
-		similar: "Similar payees",
-		duplicates: "Duplicates",
-		unusual: "Price changes",
-	};
+	/** `limited` lists draw only their largest on the graph; the rest are added from the panel. */
+	const HIGHLIGHTS: Record<Kind, { title: string; hint: string; note: string; limited: boolean }> =
+		{
+			mixed: {
+				title: "Mixed payees",
+				hint: "Payees spread over more than one category",
+				note: "Payees whose transactions land in more than one category. Often a slip, or a rule worth adding.",
+				limited: true,
+			},
+			shared: {
+				title: "Shared categories",
+				hint: "Categories paid from more than one account",
+				note: "Categories paid from more than one account. Fine if planned, otherwise a card used by mistake.",
+				limited: false,
+			},
+			similar: {
+				title: "Similar payees",
+				hint: "One place under different payee names",
+				note: "Payees that look like one place under different names. Pick the name to keep, then merge; a rule can catch the other names on future imports.",
+				limited: true,
+			},
+			duplicates: {
+				title: "Duplicates",
+				hint: "The same charge entered twice",
+				note: "Charges with the same account, payee and amount a couple of days apart. At least one has no bank id: entered by hand, or from a file imported twice.",
+				limited: true,
+			},
+			unusual: {
+				title: "Price changes",
+				hint: "Steady bills that charged more than usual",
+				note: "Steady bills that charged a quarter or more above their usual, judged over the range and the year before it. An amount a payee has charged before isn't counted.",
+				limited: true,
+			},
+		};
+	const KINDS = Object.keys(HIGHLIGHTS) as Kind[];
 
-	function pickHighlight(next: Exclude<Highlight, null>) {
+	/** The panel's note, saying so when the graph draws only the largest of the list. */
+	function noteFor(kind: Kind): string {
+		const { note, limited } = HIGHLIGHTS[kind];
+		return limited && counts[kind] > HIGHLIGHT_LIMIT
+			? `${note} The graph draws the ${HIGHLIGHT_LIMIT} largest; pick one here to add it.`
+			: note;
+	}
+
+	function pickHighlight(next: Kind) {
 		spotlight = null;
 		picked = new Set();
 		highlight = highlight === next ? null : next;
@@ -494,9 +487,10 @@
 		}
 	}
 
-	function openList(d: GraphData, kind: Exclude<Highlight, null>) {
+	function openList(d: GraphData, kind: Kind) {
 		releasePanels();
 		const body = document.createElement("div");
+		const note = noteFor(kind);
 		if (kind === "similar") {
 			const uses = new Map<string, number>();
 			for (const r of d.rows) {
@@ -507,7 +501,7 @@
 			detail = mount(SimilarPayees, {
 				target: body,
 				props: {
-					note: noteFor("similar", SIMILAR_NOTE),
+					note,
 					groups: d.similar,
 					names: d.names,
 					uses,
@@ -515,66 +509,42 @@
 					onMerge: mergePayees,
 				},
 			});
-			sidepanel.open({ title: TITLES.similar, bodyNode: body, key: LIST_KEY });
-			return;
-		}
-		if (kind === "unusual") {
+		} else if (kind === "unusual") {
 			detail = mount(UnusualList, {
 				target: body,
-				props: {
-					note: noteFor("unusual", UNUSUAL_NOTE),
-					charges: d.unusual,
-					names: d.names,
-					onPick: pickUnusual,
-				},
+				props: { note, charges: d.unusual, names: d.names, onPick: pickUnusual },
 			});
-			sidepanel.open({ title: TITLES.unusual, bodyNode: body, key: LIST_KEY });
-			return;
-		}
-		if (kind === "duplicates") {
+		} else if (kind === "duplicates") {
 			detail = mount(DuplicateList, {
 				target: body,
+				props: { note, sets: d.duplicates, names: d.names, onPick: pickDuplicate },
+			});
+		} else {
+			detail = mount(FlagList, {
+				target: body,
 				props: {
-					note: noteFor("duplicates", DUPLICATE_NOTE),
-					sets: d.duplicates,
+					note,
+					label: kind === "mixed" ? "Payees" : "Categories",
+					empty:
+						kind === "mixed"
+							? "Every payee sticks to one category."
+							: "Every category is paid from one account.",
+					spread: kind === "mixed" ? d.mixed : d.shared,
 					names: d.names,
-					onPick: pickDuplicate,
+					onPick: (id: string) => {
+						const n = kind === "mixed" ? placePayee(id) : placed.get(`category:${id}`);
+						// A mixed payee opens out to show where it lands; a category's accounts already show.
+						if (n && kind === "mixed" && !expanded.has(n.id)) {
+							toggle(n);
+						} else if (n) {
+							openDetail(n);
+						}
+					},
 				},
 			});
-			sidepanel.open({ title: TITLES.duplicates, bodyNode: body, key: LIST_KEY });
-			return;
 		}
-		detail = mount(FlagList, {
-			target: body,
-			props: {
-				label: LISTS[kind].label,
-				note: noteFor(kind, LISTS[kind].note),
-				empty: LISTS[kind].empty,
-				spread: kind === "mixed" ? d.mixed : d.shared,
-				names: d.names,
-				onPick: (id: string) => {
-					if (kind === "mixed" && !placed.has(`payee:${id}`)) {
-						picked = new Set([...picked, id]);
-						draw(null);
-					}
-					const n = placed.get(`${kind === "mixed" ? "payee" : "category"}:${id}`);
-					// A mixed payee opens out to show where it lands; a category's accounts already show.
-					if (n && kind === "mixed" && !expanded.has(n.id)) {
-						toggle(n);
-					} else if (n) {
-						openDetail(n);
-					}
-				},
-			},
-		});
-		sidepanel.open({ title: TITLES[kind], bodyNode: body, key: LIST_KEY });
+		sidepanel.open({ title: HIGHLIGHTS[kind].title, bodyNode: body, key: LIST_KEY });
 	}
-
-	const DUPLICATE_NOTE =
-		"Charges with the same account, payee and amount a couple of days apart. At least one has no bank id: entered by hand, or from a file imported twice.";
-
-	const UNUSUAL_NOTE =
-		"Steady bills that charged a quarter or more above their usual, judged over the range and the year before it. An amount a payee has charged before isn't counted.";
 
 	/** Draws a payee if the graph left it out. */
 	function placePayee(id: string): GraphNode | undefined {
@@ -604,26 +574,6 @@
 		} else if (n) {
 			openDetail(n);
 		}
-	}
-
-	const SIMILAR_NOTE =
-		"Payees that look like one place under different names. Pick the name to keep, then merge; a rule can catch the other names on future imports.";
-
-	/** The panel's note, saying so when the graph draws only the largest of the list. */
-	function noteFor(kind: Exclude<Highlight, null>, note: string): string {
-		const size =
-			kind === "mixed"
-				? mixedCount
-				: kind === "similar"
-					? similarCount
-					: kind === "duplicates"
-						? duplicateCount
-						: kind === "unusual"
-							? unusualCount
-							: 0;
-		return size > HIGHLIGHT_LIMIT
-			? `${note} The graph draws the ${HIGHLIGHT_LIMIT} largest; pick one here to add it.`
-			: note;
 	}
 
 	/** Opens a group's payees out one by one, with their accounts, and frames them. */
@@ -1063,10 +1013,8 @@
 				>
 					<Icon name="flag" size={13} />
 					{#if highlight}
-						{TITLES[highlight]}
-						<span class="abt-num gv__count"
-							>{HIGHLIGHTS.find((h) => h.kind === highlight)?.count}</span
-						>
+						{HIGHLIGHTS[highlight].title}
+						<span class="abt-num gv__count">{counts[highlight]}</span>
 					{:else}
 						Highlight
 					{/if}
@@ -1084,29 +1032,29 @@
 				{/if}
 				{#if menuOpen}
 					<div class="gv__hl-menu abt-popover abt-menu" role="menu" aria-label="Highlight">
-						{#each HIGHLIGHTS as h (h.kind)}
+						{#each KINDS as kind (kind)}
 							<button
 								type="button"
 								class="abt-menu__item"
 								role="menuitemradio"
-								aria-checked={highlight === h.kind}
-								disabled={!h.count}
+								aria-checked={highlight === kind}
+								disabled={!counts[kind]}
 								onclick={() => {
 									menuOpen = false;
-									pickHighlight(h.kind);
+									pickHighlight(kind);
 								}}
 							>
 								<!-- Room for the tick only while one is on, so the rows don't sit indented. -->
 								{#if highlight}
 									<span class="gv__hl-tick">
-										{#if highlight === h.kind}<Check size={14} />{/if}
+										{#if highlight === kind}<Check size={14} />{/if}
 									</span>
 								{/if}
 								<span class="gv__hl-text">
-									<span>{TITLES[h.kind]}</span>
-									<span class="gv__hl-hint">{h.hint}</span>
+									<span>{HIGHLIGHTS[kind].title}</span>
+									<span class="gv__hl-hint">{HIGHLIGHTS[kind].hint}</span>
 								</span>
-								<span class="abt-num gv__count">{h.count}</span>
+								<span class="abt-num gv__count">{counts[kind]}</span>
 							</button>
 						{/each}
 					</div>

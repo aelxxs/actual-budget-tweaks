@@ -1,6 +1,6 @@
 import type { BaseFilters } from "@features/workflows/filters/types";
-import { typicalInterval } from "@features/workflows/transaction-inspector/data";
 import { query } from "@lib/utilities/actual-api";
+import { PRICE_CHANGE, payeeStats } from "@lib/utilities/payee-stats";
 
 export type NodeKind = "account" | "payee" | "category";
 
@@ -232,27 +232,8 @@ function duplicates(rows: TxRow[]): TxRow[][] {
 	return sets.sort((a, b) => Math.abs(b[0].amount) - Math.abs(a[0].amount));
 }
 
-/** Charges a payee needs, in the range and the year before it, before any can look unusual. */
-const MIN_HISTORY = 4;
-/** A payee whose charges sit this close to their median is a steady bill, like a subscription. */
-const STEADY_SPREAD = 0.1;
-/** Billing rhythms a steady bill keeps, as days between charges: monthly, quarterly, yearly. */
-const BILL_CYCLES: [number, number][] = [
-	[27, 32],
-	[85, 95],
-	[350, 380],
-];
-
-/** How far above a steady bill's usual a charge has to be to count as a price change. */
-const STEADY_SHIFT = 0.25;
 /** Smaller differences than this, in cents, aren't worth a look. */
 const UNUSUAL_FLOOR = 500;
-
-const median = (list: number[]) => {
-	const sorted = [...list].sort((a, b) => a - b);
-	const mid = sorted.length >> 1;
-	return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-};
 
 /**
  * Steady bills that went up by a quarter or more, like an internet bill that jumped. A bill keeps
@@ -266,31 +247,26 @@ function unusualCharges(rows: TxRow[], history: TxRow[]): Unusual[] {
 	const seen = new Map<string, number>();
 	for (const r of history) {
 		if (r.payee && r.amount < 0) {
-			amounts.set(r.payee, [...(amounts.get(r.payee) ?? []), -r.amount]);
-			dates.set(r.payee, [...(dates.get(r.payee) ?? []), r.date]);
+			const list = amounts.get(r.payee);
+			if (list) {
+				list.push(-r.amount);
+				dates.get(r.payee)!.push(r.date);
+			} else {
+				amounts.set(r.payee, [-r.amount]);
+				dates.set(r.payee, [r.date]);
+			}
 			const key = `${r.payee}|${r.amount}`;
 			seen.set(key, (seen.get(key) ?? 0) + 1);
 		}
 	}
-	const stats = new Map<string, { usual: number; steady: boolean } | null>();
+	const stats = new Map<string, ReturnType<typeof payeeStats>>();
 	const statsOf = (payee: string) => {
-		if (!stats.has(payee)) {
-			const list = amounts.get(payee) ?? [];
-			const usual = list.length >= MIN_HISTORY ? median(list) : 0;
-			const gap = typicalInterval([...(dates.get(payee) ?? [])].sort().reverse());
-			const onCycle = gap != null && BILL_CYCLES.some(([lo, hi]) => gap >= lo && gap <= hi);
-			stats.set(
-				payee,
-				usual > 0
-					? {
-							usual,
-							steady:
-								onCycle && median(list.map((a) => Math.abs(a - usual))) / usual <= STEADY_SPREAD,
-						}
-					: null,
-			);
+		let stat = stats.get(payee);
+		if (!stat) {
+			stat = payeeStats(amounts.get(payee) ?? [], dates.get(payee) ?? []);
+			stats.set(payee, stat);
 		}
-		return stats.get(payee);
+		return stat;
 	};
 	const found: Unusual[] = [];
 	for (const r of rows) {
@@ -303,7 +279,7 @@ function unusualCharges(rows: TxRow[], history: TxRow[]): Unusual[] {
 			continue;
 		}
 		const ratio = -r.amount / stat.usual - 1;
-		if (ratio >= STEADY_SHIFT) {
+		if (ratio >= PRICE_CHANGE) {
 			found.push({ row: r, usual: -stat.usual, ratio });
 		}
 	}
