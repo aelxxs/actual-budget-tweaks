@@ -70,7 +70,7 @@
 				"defaultValue": true,
 				"platform": "desktop",
 				"label": "Modern Titlebar",
-				"description": "Restyles the top bar's buttons with matching icons and status chips.",
+				"description": "Restyles the top bar and adds a theme menu.",
 				"icon": "layout",
 				"group": "Components",
 				"writes": null
@@ -83,17 +83,6 @@
 				"label": "Modern headers",
 				"description": "Restyles the Budget and Reports page headers.",
 				"icon": "layout",
-				"group": "Components",
-				"writes": null
-			},
-			{
-				"key": "theme-menu",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Theme Menu",
-				"description": "A palette button in the top bar to change theme, edit style or open Theme Studio.",
-				"icon": "palette",
 				"group": "Components",
 				"writes": null
 			},

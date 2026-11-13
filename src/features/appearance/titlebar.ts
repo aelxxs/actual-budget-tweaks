@@ -1,6 +1,8 @@
 import { defineSetting } from "@features/types";
 import { type IconName, iconMask } from "@lib/utilities/icons";
 import { watchDom } from "@lib/utilities/dom-watcher";
+import { removeValue } from "@lib/utilities/store";
+import { mountThemeMenu } from "@features/theme/menu";
 import { HELP_BUTTON, NOTIFICATIONS_BUTTON, NOTIFICATIONS_COUNT } from "@lib/actual-dom";
 
 /*
@@ -216,7 +218,7 @@ const CSS = `
 export const modernTitlebar = defineSetting({
 	type: "checkbox",
 	label: "Modern Titlebar",
-	description: "Restyles the top bar's buttons with matching icons and status chips.",
+	description: "Restyles the top bar and adds a theme menu.",
 	group: "General",
 	icon: "layout",
 	context: {
@@ -225,20 +227,26 @@ export const modernTitlebar = defineSetting({
 	},
 	css: () => CSS,
 	init: () => {
+		void removeValue("theme-menu");
 		let bar: Element | null = null;
+		const menu = mountThemeMenu();
 
 		const unwatch = watchDom(() => {
 			const next = document.querySelector(HELP_BUTTON)?.parentElement?.parentElement ?? null;
-			if (next === bar) {
-				return;
+			if (next !== bar) {
+				bar?.removeAttribute(BAR_ATTR);
+				bar = next;
+				bar?.setAttribute(BAR_ATTR, "");
 			}
-			bar?.removeAttribute(BAR_ATTR);
-			bar = next;
-			bar?.setAttribute(BAR_ATTR, "");
+			// Last in the row, after Help.
+			if (bar && bar.lastElementChild !== menu.host) {
+				bar.appendChild(menu.host);
+			}
 		});
 
 		return () => {
 			unwatch();
+			menu.destroy();
 			bar?.removeAttribute(BAR_ATTR);
 			bar = null;
 		};

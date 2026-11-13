@@ -46,7 +46,6 @@ import { newTransactionStyle } from "./readability/new-transactions";
 import { quietCategoryIcons } from "./readability/quiet-category-icons";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
-import { themeMenu } from "./theme/menu";
 import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/theme-loader";
 import type { CoreSetting, Setting } from "./types";
@@ -101,9 +100,7 @@ export const scriptSections: SettingsSection[] = [
 	},
 	{
 		title: "General",
-		groups: [
-			{ label: "Components", items: [modernTitlebar, modernHeaders, themeMenu, modernToasts] },
-		],
+		groups: [{ label: "Components", items: [modernTitlebar, modernHeaders, modernToasts] }],
 	},
 	{
 		title: "Sidebar",
