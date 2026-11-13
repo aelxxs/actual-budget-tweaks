@@ -2,9 +2,6 @@
 	import { clamp } from "@lib/utilities/math";
 	import { panelState } from "./panel-state.svelte";
 
-	const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
-	const SIDEBAR_ANIMATION_MS = 110;
-
 	let {
 		onBack,
 		onClose,
@@ -23,37 +20,6 @@
 		onResize: (width: number) => void;
 		onResizeEnd: (width: number) => void;
 	} = $props();
-
-	function handleClose() {
-		const sidebar = document.querySelector(
-			"[data-abt-side-drawer-sidebar]",
-		) as HTMLDivElement | null;
-		if (!sidebar || sidebar.classList.contains(SIDEBAR_CLOSING_CLASS)) {
-			onClose();
-			return;
-		}
-
-		sidebar.classList.add(SIDEBAR_CLOSING_CLASS);
-
-		let settled = false;
-		const finish = () => {
-			if (settled) {
-				return;
-			}
-			settled = true;
-			sidebar.removeEventListener("animationend", onAnimationEnd);
-			onClose();
-		};
-
-		const onAnimationEnd = (e: AnimationEvent) => {
-			if (e.target === sidebar) {
-				finish();
-			}
-		};
-
-		sidebar.addEventListener("animationend", onAnimationEnd);
-		window.setTimeout(finish, SIDEBAR_ANIMATION_MS + 40);
-	}
 
 	let headerSlotEl: HTMLDivElement | undefined;
 	let bodyEl: HTMLDivElement | undefined;
@@ -209,7 +175,7 @@
 			type="button"
 			title={panelState.backTitle ? "Close all panels" : "Close side drawer"}
 			aria-label={panelState.backTitle ? "Close all panels" : "Close side drawer"}
-			onclick={handleClose}
+			onclick={onClose}
 		>
 			<svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;display:block;">
 				<path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />

@@ -16,7 +16,6 @@ import {
 import SidePanelContent from "./Content.svelte";
 import { panelState } from "./panel-state.svelte";
 
-const SIDEBAR_CLOSING_CLASS = "abt-side-drawer-sidebar-closing";
 const DEFAULT_SIDEBAR_WIDTH = 350;
 const MIN_SIDEBAR_WIDTH = 0;
 const MAX_SIDEBAR_WIDTH = 640;
@@ -85,10 +84,6 @@ function setPersistedRoute(route: string | null, key: string | null = null): voi
 }
 
 const CSS = `
-	@keyframes abt-side-drawer-exit {
-		from { opacity: 1; transform: translateX(0); }
-		to { opacity: 0; transform: translateX(14px); }
-	}
 	[${GRID_ATTR}][${OPEN_ATTR}] {
 		display: grid;
 		height: 100vh;
@@ -134,10 +129,6 @@ const CSS = `
 		overflow: visible;
 		/* Derived, not --border: themes may omit tableBorder or set it to the page background. */
 		border-left: 1px solid var(--abt-panel-border);
-	}
-	.abt-side-drawer-sidebar.${SIDEBAR_CLOSING_CLASS} {
-		pointer-events: none;
-		animation: abt-side-drawer-exit 90ms cubic-bezier(0.4, 0, 1, 1) forwards;
 	}
 `;
 
@@ -292,7 +283,6 @@ export const sidePanel = {
 						}
 						stack = [];
 						reserved = false;
-						sidebar?.classList.remove(SIDEBAR_CLOSING_CLASS);
 						show();
 						sync();
 					},
