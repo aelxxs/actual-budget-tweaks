@@ -133,6 +133,7 @@ export const modernReconcile = defineSetting({
 	icon: "shield",
 	writes:
 		"Clears transactions you tick, adds an adjustment if you ask, and locks them when you finish.",
+	guide: "/guides/modern-reconcile",
 	context: {
 		key: "modern-reconcile",
 		defaultValue: false,

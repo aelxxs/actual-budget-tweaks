@@ -34,6 +34,8 @@ export interface BaseSetting<C extends SettingContext> {
 	icon?: IconName;
 	/** Optional subgroup label — settings sharing the same group render under one subheading within their section. */
 	group?: SettingGroup;
+	/** Its guide's path on the website (e.g. "/guides/sync-recap"), linked from its row. */
+	guide?: string;
 	/** What this tweak can change in the budget, and on which action. Marks it in settings and on the website. */
 	writes?: string;
 	context: C;

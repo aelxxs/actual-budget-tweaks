@@ -10,6 +10,8 @@
 	import WritesMark from "./WritesMark.svelte";
 	import type { IconName } from "../utilities/icons";
 
+	const SITE_URL = "https://abt.alexis.lol";
+
 	const {
 		labelText,
 		setting,
@@ -55,6 +57,15 @@
 			>
 		{/if}
 	</span>
+	{#if setting.guide}
+		<a
+			class="guide"
+			href={`${SITE_URL}${setting.guide}`}
+			target="_blank"
+			rel="noreferrer"
+			onclick={(e) => e.stopPropagation()}>Guide</a
+		>
+	{/if}
 	{#if setting.preview}
 		<PreviewToggle settingKey={ctx.key} />
 	{/if}
@@ -64,6 +75,17 @@
 <style>
 	.switch-row {
 		cursor: pointer;
+	}
+
+	.guide {
+		flex-shrink: 0;
+		font-size: var(--abt-text-sm);
+		color: var(--abt-accent-text);
+		text-decoration: none;
+	}
+
+	.guide:hover {
+		text-decoration: underline;
 	}
 
 	.switch-row:hover {

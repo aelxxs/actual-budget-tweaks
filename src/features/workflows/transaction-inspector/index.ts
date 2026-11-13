@@ -130,6 +130,7 @@ export const transactionInspector = defineSetting({
 		"Shows the selected transaction's payee history, rules and schedule in a side panel.",
 	group: "General",
 	icon: "eye",
+	guide: "/guides/transaction-inspector",
 	context: {
 		key: "transaction-inspector",
 		defaultValue: false,

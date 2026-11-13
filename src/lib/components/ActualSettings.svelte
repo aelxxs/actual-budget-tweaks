@@ -3,6 +3,7 @@
 	import { Ellipsis, ExternalLink, X } from "@lucide/svelte";
 	import { tick } from "svelte";
 	import {
+		FEATURES_TITLE,
 		scriptSections,
 		scripts,
 		sectionItems,
@@ -116,6 +117,19 @@
 		};
 		browser.storage.onChanged.addListener(onChanged);
 		return () => browser.storage.onChanged.removeListener(onChanged);
+	});
+
+	// With every feature already on, there's nothing to find there, so it doesn't push the page down.
+	let featuresDecided = false;
+	$effect(() => {
+		if (featuresDecided || !Object.keys(stored).length) {
+			return;
+		}
+		featuresDecided = true;
+		const section = scriptSections.find((s) => s.title === FEATURES_TITLE);
+		if (section && sectionItems(section).every(storedOn)) {
+			collapsed[FEATURES_TITLE] = true;
+		}
 	});
 
 	function isChanged(item: PageSetting): boolean {
@@ -672,6 +686,13 @@
 						aria-expanded={!isCollapsed}
 					>
 						<h3 class="section-title">{section.title}</h3>
+						{#if isCollapsed && section.title === FEATURES_TITLE}
+							{@const items = sectionItems(section)}
+							{@const on = items.filter(storedOn).length}
+							<span class="section-count" class:is-all={on === items.length}>
+								{on === items.length ? "All on" : `${on} of ${items.length} on`}
+							</span>
+						{/if}
 						{#if section.elsewhere}<span class="section-elsewhere">Also in {section.elsewhere}</span
 							>{/if}
 						<Icon name="chevronDown" strokeWidth={1.5} class="chevron" />
@@ -1130,6 +1151,20 @@
 		margin: 0;
 		font-size: var(--abt-text-lg);
 		font-weight: 600;
+	}
+
+	.section-count {
+		padding: 1px var(--abt-space-3);
+		border-radius: var(--abt-radius-pill);
+		background: var(--abt-fill);
+		color: var(--color-pageTextSubdued);
+		font-size: var(--abt-text-xs);
+		white-space: nowrap;
+	}
+
+	.section-count.is-all {
+		background: var(--abt-accent-2);
+		color: var(--abt-accent-text);
 	}
 
 	.section-elsewhere {

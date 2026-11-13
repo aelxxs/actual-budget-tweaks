@@ -131,6 +131,7 @@ export const syncRecap = defineSetting({
 	icon: "download",
 	group: "Accounts",
 	writes: "Sets a transaction's category when you pick one in the recap.",
+	guide: "/guides/sync-recap",
 	context: {
 		key: "sync-recap",
 		defaultValue: true,

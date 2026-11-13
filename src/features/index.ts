@@ -76,12 +76,31 @@ export interface SettingsSection {
 // How Actual looks across every page, edited from Theme → Style and Theme Studio.
 export const styleSettings: PageSetting[] = [borderRadius, backgroundPattern, insetPanels, borders];
 
+/** Its section starts collapsed once every feature in it is on. */
+export const FEATURES_TITLE = "Features";
+
 // Grouped by where each tweak shows up in Actual, which is how people look for them.
 export const scriptSections: SettingsSection[] = [
 	{
 		title: "Theme",
 		headerSlot: true,
 		groups: [{ label: null, items: [themeSelector] }],
+	},
+	{
+		title: FEATURES_TITLE,
+		groups: [
+			{
+				label: null,
+				items: [
+					templatePlan,
+					spendingCalendar,
+					modernReconcile,
+					syncRecap,
+					transactionInspector,
+					incomeBreakdown,
+				],
+			},
+		],
 	},
 	{
 		title: "Style",
@@ -144,7 +163,7 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Tools",
-				items: [templatePlan, categoryTemplateInsights],
+				items: [categoryTemplateInsights],
 			},
 		],
 	},
@@ -157,16 +176,7 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Accounts",
-				items: [showDailyAvailable, modernReconcile, syncRecap, transactionInspector],
-			},
-		],
-	},
-	{
-		title: "Reports",
-		groups: [
-			{
-				label: null,
-				items: [spendingCalendar, incomeBreakdown],
+				items: [showDailyAvailable],
 			},
 		],
 	},

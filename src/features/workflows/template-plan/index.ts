@@ -961,6 +961,7 @@ export const templatePlan = defineSetting({
 	icon: "layout",
 	group: "Budget",
 	writes: "Applies the month's budget templates when you click Apply.",
+	guide: "/guides/budget-insights",
 	context: {
 		key: "actual-template-apply-breakdown",
 		defaultValue: true,

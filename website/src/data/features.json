@@ -1,5 +1,77 @@
 [
 	{
+		"title": "",
+		"description": null,
+		"items": [
+			{
+				"key": "actual-template-apply-breakdown",
+				"type": "checkbox",
+				"defaultValue": true,
+				"platform": "desktop",
+				"label": "Budget insights",
+				"description": "Shows the month's summary, templates and plan in a side panel.",
+				"icon": "layout",
+				"group": null,
+				"writes": "Applies the month's budget templates when you click Apply."
+			},
+			{
+				"key": "spending-calendar-enabled",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Spending calendar",
+				"description": "A page showing daily spending on a calendar, opened from the sidebar.",
+				"icon": "calendar",
+				"group": null,
+				"writes": null
+			},
+			{
+				"key": "modern-reconcile",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Modern reconcile",
+				"description": "Reconciles in a side panel that tracks the difference as you clear transactions.",
+				"icon": "shield",
+				"group": null,
+				"writes": "Clears transactions you tick, adds an adjustment if you ask, and locks them when you finish."
+			},
+			{
+				"key": "sync-recap",
+				"type": "checkbox",
+				"defaultValue": true,
+				"platform": "desktop",
+				"label": "Sync recap",
+				"description": "Lists what each bank sync or import added, for you to review.",
+				"icon": "download",
+				"group": null,
+				"writes": "Sets a transaction's category when you pick one in the recap."
+			},
+			{
+				"key": "transaction-inspector",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Transaction inspector",
+				"description": "Shows the selected transaction's payee history, rules and schedule in a side panel.",
+				"icon": "eye",
+				"group": null,
+				"writes": null
+			},
+			{
+				"key": "income-breakdown",
+				"type": "checkbox",
+				"defaultValue": true,
+				"platform": "desktop",
+				"label": "Income breakdown widget",
+				"description": "Adds an income breakdown chart to the reports' widget menu.",
+				"icon": "trendingUp",
+				"group": null,
+				"writes": null
+			}
+		]
+	},
+	{
 		"title": "Style",
 		"description": null,
 		"items": [
@@ -31,7 +103,7 @@
 				"defaultValue": "off",
 				"platform": "desktop",
 				"label": "Inset panels",
-				"description": "Shows the sidebar and page as rounded panels on a frame. Floating page blends the sidebar into the frame.",
+				"description": "Shows the sidebar and page as rounded panels on a frame.",
 				"icon": "layout",
 				"group": null,
 				"writes": null
@@ -336,17 +408,6 @@
 				"writes": null
 			},
 			{
-				"key": "actual-template-apply-breakdown",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Budget insights",
-				"description": "Shows the month's summary, templates and plan in a side panel.",
-				"icon": "layout",
-				"group": "Tools",
-				"writes": "Applies the month's budget templates when you click Apply."
-			},
-			{
 				"key": "actual-category-template-insights",
 				"type": "select",
 				"defaultValue": "off",
@@ -416,67 +477,6 @@
 				"description": "Shows how much an account can spend per day for the rest of the month.",
 				"icon": "calculator",
 				"group": "Accounts",
-				"writes": null
-			},
-			{
-				"key": "modern-reconcile",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Modern reconcile",
-				"description": "Reconciles in a side panel that tracks the difference as you clear transactions.",
-				"icon": "shield",
-				"group": "Accounts",
-				"writes": "Clears transactions you tick, adds an adjustment if you ask, and locks them when you finish."
-			},
-			{
-				"key": "sync-recap",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Sync recap",
-				"description": "Lists what each bank sync or import added, for you to review.",
-				"icon": "download",
-				"group": "Accounts",
-				"writes": "Sets a transaction's category when you pick one in the recap."
-			},
-			{
-				"key": "transaction-inspector",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Transaction inspector",
-				"description": "Shows the selected transaction's payee history, rules and schedule in a side panel.",
-				"icon": "eye",
-				"group": "Accounts",
-				"writes": null
-			}
-		]
-	},
-	{
-		"title": "Reports",
-		"description": null,
-		"items": [
-			{
-				"key": "spending-calendar-enabled",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Spending calendar",
-				"description": "Adds a calendar of daily spending to the sidebar.",
-				"icon": "calendar",
-				"group": null,
-				"writes": null
-			},
-			{
-				"key": "income-breakdown",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Income breakdown widget",
-				"description": "Adds an income breakdown chart to the reports' widget menu.",
-				"icon": "trendingUp",
-				"group": null,
 				"writes": null
 			}
 		]
