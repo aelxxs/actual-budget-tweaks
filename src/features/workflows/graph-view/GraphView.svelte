@@ -9,7 +9,7 @@
 		forceY,
 		type Simulation,
 	} from "d3-force";
-	import { mount, onMount, unmount } from "svelte";
+	import { mount, onMount, unmount, untrack } from "svelte";
 	import {
 		accountIconPicker,
 		getEmojiAssetUrl,
@@ -378,6 +378,8 @@
 
 	// Room around the nodes for their labels, and for the edge of the page.
 	const MARGIN = 48;
+	// The legend's strip along the bottom of the canvas.
+	const LEGEND_SPACE = 32;
 
 	/** Zooms and centres so every node and its label is on screen, never past full size. */
 	function fit(list: GraphNode[]) {
@@ -398,10 +400,24 @@
 		const k = Math.min(
 			1,
 			(width - MARGIN * 2) / Math.max(1, x1 - x0),
-			(height - MARGIN * 2) / Math.max(1, y1 - y0),
+			(height - MARGIN * 2 - LEGEND_SPACE) / Math.max(1, y1 - y0),
 		);
-		view = { k, x: -((x0 + x1) / 2) * k, y: -((y0 + y1) / 2) * k };
+		// Centred in the space above the legend.
+		view = { k, x: -((x0 + x1) / 2) * k, y: -((y0 + y1) / 2) * k - LEGEND_SPACE / 2 };
 	}
+
+	// A fitted graph stays fitted when the canvas changes size, e.g. the side panel opening.
+	$effect(() => {
+		if (!width || !height) {
+			return;
+		}
+		untrack(() => {
+			if (autoFit && !following) {
+				const all = [...placed.values()];
+				fit(spotlight ? all.filter((n) => spotlight!.near.has(n.id)) : all);
+			}
+		});
+	});
 
 	function refit() {
 		following = null;
