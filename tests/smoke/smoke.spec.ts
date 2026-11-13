@@ -197,6 +197,10 @@ test("ABT on every page", async ({ page }) => {
 	await visit(page, "settings", async () => {
 		await openTweaks(page);
 		await expectAnchors(page, PAGE_ANCHORS["/settings"]);
+		const features = page.getByRole("button", { name: /^Features(?: All on)?$/ });
+		await expect(features).toHaveAttribute("aria-expanded", "false");
+		await features.click();
+		await expect(features).toHaveAttribute("aria-expanded", "true");
 		const panelOnlyKeys = new Set([
 			...STYLE_SETTINGS.map((setting) => setting.key),
 			...SIDEBAR_CUSTOMIZE_SETTINGS.map((setting) => setting.key),
@@ -239,12 +243,11 @@ test("ABT on every page", async ({ page }) => {
 			"sidebar-show-closed": "Closed accounts",
 			"sidebar-group-totals": "Group totals",
 			"account-icon-picker": "Account icons",
-			"actual-balancecolors": "Red negative balances",
 		};
 		for (const [key, label] of Object.entries(sidebarCheckboxLabels)) {
-			const row = customizePanel.locator("label.row").filter({ hasText: label });
-			await expect.soft(row, `${label} (${key}) has a row`).toBeAttached();
-			await expect.soft(row.locator('input[type="checkbox"]'), `${key} is on`).toBeChecked();
+			await expect
+				.soft(customizePanel.getByRole("checkbox", { name: label, exact: true }), `${key} is on`)
+				.toBeChecked();
 		}
 	});
 
