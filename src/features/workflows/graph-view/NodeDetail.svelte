@@ -3,16 +3,19 @@
 	import Section from "@lib/components/panel/Section.svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { formatDayMonth } from "@lib/utilities/date-format.svelte";
-	import type { NodeKind, TxRow } from "./data";
+	import type { NodeKind, TransferSum, TxRow } from "./data";
 
 	const {
 		kind,
 		rows,
+		transfers = [],
 		names,
 		onInspect,
 	}: {
 		kind: NodeKind;
 		rows: TxRow[];
+		/** An account's transfers, kept out of its money in and out. */
+		transfers?: TransferSum[];
 		names: Map<string, string>;
 		/** Set when the transaction inspector is on; each row then opens it. */
 		onInspect?: (id: string) => void;
@@ -22,6 +25,8 @@
 
 	const out = $derived(rows.reduce((sum, r) => sum + Math.min(0, r.amount), 0));
 	const into = $derived(rows.reduce((sum, r) => sum + Math.max(0, r.amount), 0));
+	const movedOut = $derived(transfers.reduce((sum, t) => sum + Math.min(0, t.amount), 0));
+	const movedIn = $derived(transfers.reduce((sum, t) => sum + Math.max(0, t.amount), 0));
 
 	// What each row names: the payee, except on a payee's own panel, where that's the category.
 	const nameOf = (r: TxRow) =>
@@ -74,41 +79,67 @@
 		{#if into}
 			<Row name="Money in" value={fmtMoney(into)} tone="positive" />
 		{/if}
-	</Section>
-
-	<Section title="Transactions" count={rows.length}>
-		{#each days as day (day.date)}
-			<p class="nd__day">{formatDayMonth(day.date)}</p>
-			{#each day.rows as f (f.id)}
-				{#snippet row()}
-					<Row
-						name={f.name}
-						meta={f.other}
-						count={f.count}
-						sensitive
-						value={fmtMoney(f.amount)}
-						tone={f.amount < 0 ? "negative" : f.amount > 0 ? "positive" : undefined}
-					/>
-				{/snippet}
-				{#if onInspect}
-					<button
-						type="button"
-						class="nd__row"
-						title={f.count > 1 ? "Inspect the newest of these" : "Inspect this transaction"}
-						onclick={() => onInspect(f.id)}
-					>
-						{@render row()}
-					</button>
-				{:else}
-					<div class="nd__row is-static">{@render row()}</div>
-				{/if}
-			{/each}
-		{/each}
-		{#if rows.length > SHOWN}
-			<p class="nd__more">{rows.length - SHOWN} older ones aren't listed.</p>
+		{#if movedOut}
+			<Row name="Moved out" value={fmtMoney(movedOut)} tone="negative" />
+		{/if}
+		{#if movedIn}
+			<Row name="Moved in" value={fmtMoney(movedIn)} tone="positive" />
 		{/if}
 	</Section>
+
+	{#if transfers.length}
+		<Section title="Transfers" count={transfers.length}>
+			{#each transfers as t (t.id)}
+				{@render entry(
+					t.id,
+					`${t.amount < 0 ? "To" : "From"} ${names.get(t.account) ?? "Unknown"}`,
+					"",
+					t.count,
+					t.amount,
+				)}
+			{/each}
+		</Section>
+	{/if}
+
+	{#if rows.length || !transfers.length}
+		<Section title="Transactions" count={rows.length}>
+			{#each days as day (day.date)}
+				<p class="nd__day">{formatDayMonth(day.date)}</p>
+				{#each day.rows as f (f.id)}
+					{@render entry(f.id, f.name, f.other, f.count, f.amount)}
+				{/each}
+			{/each}
+			{#if rows.length > SHOWN}
+				<p class="nd__more">{rows.length - SHOWN} older ones aren't listed.</p>
+			{/if}
+		</Section>
+	{/if}
 </div>
+
+{#snippet entry(id: string, name: string, other: string, count: number, amount: number)}
+	{#snippet row()}
+		<Row
+			{name}
+			meta={other}
+			{count}
+			sensitive
+			value={fmtMoney(amount)}
+			tone={amount < 0 ? "negative" : amount > 0 ? "positive" : undefined}
+		/>
+	{/snippet}
+	{#if onInspect}
+		<button
+			type="button"
+			class="nd__row"
+			title={count > 1 ? "Inspect the newest of these" : "Inspect this transaction"}
+			onclick={() => onInspect(id)}
+		>
+			{@render row()}
+		</button>
+	{:else}
+		<div class="nd__row is-static">{@render row()}</div>
+	{/if}
+{/snippet}
 
 <style>
 	/* Bled into the card's padding so the hover fill reaches its edges. */

@@ -25,6 +25,8 @@ export interface GraphLink {
 	source: string | GraphNode;
 	target: string | GraphNode;
 	total: number;
+	/** Money moved from the source account to the target account. */
+	transfer?: boolean;
 }
 
 export interface Graph {
@@ -55,6 +57,8 @@ export interface GraphData {
 	similar: string[][];
 	/** Money through each payee in the range, for ranking which highlighted ones to draw. */
 	payeeTotals: Map<string, number>;
+	/** The sending side of each transfer, off-budget accounts included, and the account it went to. */
+	transfers: (TxRow & { to: string })[];
 }
 
 /** How many highlighted payees (or similar-payee groups) the graph draws; the panel lists the rest. */
@@ -179,22 +183,42 @@ function spread(rows: TxRow[], key: (r: TxRow) => string | null, value: (r: TxRo
 	return new Map([...by].filter(([, set]) => set.size > 1));
 }
 
+const TX_FIELDS = [
+	"id",
+	"date",
+	"account",
+	"payee",
+	"category",
+	"amount",
+	"notes",
+	"imported_payee",
+];
+
 /**
- * The range's on-budget transactions (transfers left out) and the names they point at; 0 days is
- * all time. Off-budget accounts can't carry categories, so they'd only pile onto Uncategorized.
+ * The range's on-budget transactions and transfers, and the names they point at; 0 days is all
+ * time. Off-budget accounts can't carry categories, so they'd only pile onto Uncategorized, but
+ * their transfers stay to show where money left the budget for.
  */
 export async function loadGraphData(days: number): Promise<GraphData> {
 	const inRange = days > 0 ? [{ date: { $gte: isoDaysAgo(days) } }] : [];
-	const [all, accounts, payees, categories] = await Promise.all([
+	const [all, sent, accounts, payees, categories] = await Promise.all([
 		query<TxRow[]>("transactions", {
 			filter: { $and: [...inRange, { transfer_id: null }] },
-			select: ["id", "date", "account", "payee", "category", "amount", "notes", "imported_payee"],
+			select: TX_FIELDS,
+			options: { splits: "inline" },
+		}),
+		// Each transfer is two transactions; the sending side is enough.
+		query<TxRow[]>("transactions", {
+			filter: { $and: [...inRange, { transfer_id: { $ne: null } }, { amount: { $lt: 0 } }] },
+			select: TX_FIELDS,
 			options: { splits: "inline" },
 		}),
 		query<{ id: string; name: string; offbudget: boolean }[]>("accounts", {
 			select: ["id", "name", "offbudget"],
 		}),
-		query<{ id: string; name: string }[]>("payees", { select: ["id", "name"] }),
+		query<{ id: string; name: string; transfer_acct: string | null }[]>("payees", {
+			select: ["id", "name", "transfer_acct"],
+		}),
 		query<{ id: string; name: string }[]>("categories", { select: ["id", "name"] }),
 	]);
 	const names = new Map<string, string>([[NONE, "Uncategorized"]]);
@@ -203,8 +227,21 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 			names.set(id, name);
 		}
 	}
+	const accountIds = new Set(accounts.map((a) => a.id));
+	const transferTo = new Map<string, string>();
+	for (const p of payees) {
+		if (p.transfer_acct && accountIds.has(p.transfer_acct)) {
+			transferTo.set(p.id, p.transfer_acct);
+			// Transfer payees have no name of their own; Actual shows the account's.
+			names.set(p.id, names.get(p.transfer_acct) ?? "Transfer");
+		}
+	}
 	const onBudget = new Set(accounts.filter((a) => !a.offbudget).map((a) => a.id));
 	const rows = all.filter((r) => r.account && onBudget.has(r.account));
+	const transfers = sent.flatMap((r) => {
+		const to = r.payee ? transferTo.get(r.payee) : undefined;
+		return r.account && accountIds.has(r.account) && to && to !== r.account ? [{ ...r, to }] : [];
+	});
 	return {
 		rows,
 		names,
@@ -220,6 +257,7 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 				r.payee ? totals.set(r.payee, (totals.get(r.payee) ?? 0) + Math.abs(r.amount)) : totals,
 			new Map<string, number>(),
 		),
+		transfers,
 	};
 }
 
@@ -229,7 +267,7 @@ export async function loadGraphData(days: number): Promise<GraphData> {
  * joined to its categories.
  */
 export function buildGraph(
-	{ rows, names, mixed, shared, similar, payeeTotals }: GraphData,
+	{ rows, names, mixed, shared, similar, payeeTotals, transfers }: GraphData,
 	expanded: ReadonlySet<string>,
 	highlight: Highlight,
 	/** Highlighted payees (or groups, by their first payee) added from the panel past the limit. */
@@ -283,15 +321,24 @@ export function buildGraph(
 		}
 		return key;
 	};
-	const link = (a: string, b: string, amount: number) => {
+	const link = (a: string, b: string, amount: number, transfer = false) => {
 		const key = `${a}|${b}`;
 		const found = links.get(key);
 		if (found) {
 			found.total += amount;
 		} else {
-			links.set(key, { source: a, target: b, total: amount });
+			links.set(key, { source: a, target: b, total: amount, transfer });
 		}
 	};
+
+	for (const r of transfers) {
+		const amount = Math.abs(r.amount);
+		const from = node("account", r.account!);
+		const to = node("account", r.to);
+		nodes.get(from)!.total += amount;
+		nodes.get(to)!.total += amount;
+		link(from, to, amount, true);
+	}
 
 	for (const r of rows) {
 		const amount = Math.abs(r.amount);
@@ -340,6 +387,41 @@ export function rowsFor({ rows }: GraphData, nodeId: string, members?: string[])
 	return rows.filter(match).sort((a, b) => b.date.localeCompare(a.date));
 }
 
+export interface TransferSum {
+	/** The newest transfer behind the sum, which the inspector opens. */
+	id: string;
+	/** The account at the other end. */
+	account: string;
+	/** Signed from this account's side: negative went out, positive came in. */
+	amount: number;
+	count: number;
+}
+
+/** An account's transfers summed per other account and direction, largest first. */
+export function transfersFor({ transfers }: GraphData, nodeId: string): TransferSum[] {
+	const id = nodeId.slice(nodeId.indexOf(":") + 1);
+	const sums = new Map<string, TransferSum & { date: string }>();
+	for (const t of transfers) {
+		const out = t.account === id;
+		if (!out && t.to !== id) {
+			continue;
+		}
+		const other = out ? t.to : t.account!;
+		const key = `${out ? "out" : "in"}:${other}`;
+		const sum = sums.get(key) ?? { id: t.id, date: t.date, account: other, amount: 0, count: 0 };
+		sum.amount += out ? t.amount : -t.amount;
+		sum.count++;
+		if (t.date > sum.date) {
+			sum.id = t.id;
+			sum.date = t.date;
+		}
+		sums.set(key, sum);
+	}
+	return [...sums.values()]
+		.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount))
+		.map(({ date: _, ...sum }) => sum);
+}
+
 export interface Searchable {
 	id: string;
 	kind: NodeKind;
@@ -347,7 +429,7 @@ export interface Searchable {
 }
 
 /** Every node the range could show, whether or not it's on the graph yet. */
-export function searchable({ rows, names }: GraphData): Searchable[] {
+export function searchable({ rows, names, transfers }: GraphData): Searchable[] {
 	const found = new Map<string, Searchable>();
 	const add = (kind: NodeKind, id: string) => {
 		const key = `${kind}:${id}`;
@@ -361,6 +443,10 @@ export function searchable({ rows, names }: GraphData): Searchable[] {
 		if (r.payee) {
 			add("payee", r.payee);
 		}
+	}
+	for (const t of transfers) {
+		add("account", t.account!);
+		add("account", t.to);
 	}
 	return [...found.values()];
 }

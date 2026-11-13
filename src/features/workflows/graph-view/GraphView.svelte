@@ -28,6 +28,7 @@
 		HIGHLIGHT_LIMIT,
 		loadGraphData,
 		rowsFor,
+		transfersFor,
 		searchable,
 		type GraphData,
 		type GraphLink,
@@ -67,9 +68,23 @@
 		t: string;
 		total: number;
 		flagged: boolean;
+		transfer: boolean;
 		a: GraphNode;
 		b: GraphNode;
 	};
+
+	/**
+	 * A transfer bows to one side, so money each way between two accounts gets its own curve. It's
+	 * drawn as two halves so the arrow marker sits on the join in the middle.
+	 */
+	function flowPath(a: GraphNode, b: GraphNode): string {
+		const [ax, ay, bx, by] = [a.x ?? 0, a.y ?? 0, b.x ?? 0, b.y ?? 0];
+		const px = (ax + bx) / 2 + (ay - by) * 0.2;
+		const py = (ay + by) / 2 + (bx - ax) * 0.2;
+		const mx = (ax + 2 * px + bx) / 4;
+		const my = (ay + 2 * py + by) / 4;
+		return `M${ax} ${ay}Q${(ax + px) / 2} ${(ay + py) / 2} ${mx} ${my}Q${(px + bx) / 2} ${(py + by) / 2} ${bx} ${by}`;
+	}
 	// Set once per layout. Svelte draws the elements; each tick then moves them directly, since
 	// running every node and link through Svelte each frame made dragging lag on big budgets.
 	let nodes = $state.raw<GraphNode[]>([]);
@@ -245,7 +260,9 @@
 			for (const l of drawLinks) {
 				for (const els of [lineEls, focusLineEls]) {
 					const line = els.get(l.key);
-					if (line) {
+					if (line && l.transfer) {
+						line.setAttribute("d", flowPath(l.a, l.b));
+					} else if (line) {
 						line.setAttribute("x1", String(l.a.x ?? 0));
 						line.setAttribute("y1", String(l.a.y ?? 0));
 						line.setAttribute("x2", String(l.b.x ?? 0));
@@ -265,6 +282,7 @@
 				t: b.id,
 				total: l.total,
 				flagged: !!(a.flagged || b.flagged),
+				transfer: !!l.transfer,
 				a,
 				b,
 			};
@@ -534,6 +552,7 @@
 			props: {
 				kind: n.kind,
 				rows: rowsFor(data, n.id, n.members),
+				transfers: n.kind === "account" ? transfersFor(data, n.id) : [],
 				names: data.names,
 				onInspect: canInspect ? openInspector : undefined,
 			},
@@ -790,6 +809,7 @@
 				: true;
 	const focusNodes = $derived(near ? nodes.filter((n) => near.has(n.id)) : []);
 	const focusLinks = $derived(lit ? links.filter(linkNear) : []);
+	const hasFlows = $derived(links.some((l) => l.transfer));
 </script>
 
 <div class="gv">
@@ -927,21 +947,48 @@
 			onpointerup={up}
 			onpointercancel={up}
 		>
+			<defs>
+				{#each ["gv-flow-arrow", "gv-flow-arrow-lit"] as id (id)}
+					<marker
+						{id}
+						class="gv__arrow"
+						viewBox="0 0 10 10"
+						refX="5"
+						refY="5"
+						markerWidth="9"
+						markerHeight="9"
+						markerUnits="userSpaceOnUse"
+						orient="auto"
+					>
+						<path d="M1 1L9 5L1 9z" />
+					</marker>
+				{/each}
+			</defs>
 			<g
 				transform="translate({width / 2 + view.x} {height / 2 + view.y}) scale({view.k})"
 				style="--gv-label-scale: {Math.max(1, view.k)}"
 			>
 				<g class="gv__links">
 					{#each links as l (l.key)}
-						<line
-							use:track={[lineEls, l.key]}
-							x1={l.a.x ?? 0}
-							y1={l.a.y ?? 0}
-							x2={l.b.x ?? 0}
-							y2={l.b.y ?? 0}
-							stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
-							class:is-flagged={l.flagged}
-						/>
+						{#if l.transfer}
+							<path
+								use:track={[lineEls, l.key]}
+								d={flowPath(l.a, l.b)}
+								stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
+								class="gv__flow"
+								marker-mid="url(#gv-flow-arrow)"
+							/>
+						{:else}
+							<line
+								use:track={[lineEls, l.key]}
+								x1={l.a.x ?? 0}
+								y1={l.a.y ?? 0}
+								x2={l.b.x ?? 0}
+								y2={l.b.y ?? 0}
+								stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
+								class:is-flagged={l.flagged}
+							/>
+						{/if}
 					{/each}
 				</g>
 				{#each nodes as n (n.id)}
@@ -985,15 +1032,25 @@
 				>
 					<g class="gv__links">
 						{#each focusLinks as l (l.key)}
-							<line
-								use:track={[focusLineEls, l.key]}
-								x1={l.a.x ?? 0}
-								y1={l.a.y ?? 0}
-								x2={l.b.x ?? 0}
-								y2={l.b.y ?? 0}
-								stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
-								class="is-lit"
-							/>
+							{#if l.transfer}
+								<path
+									use:track={[focusLineEls, l.key]}
+									d={flowPath(l.a, l.b)}
+									stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
+									class="gv__flow is-lit"
+									marker-mid="url(#gv-flow-arrow-lit)"
+								/>
+							{:else}
+								<line
+									use:track={[focusLineEls, l.key]}
+									x1={l.a.x ?? 0}
+									y1={l.a.y ?? 0}
+									x2={l.b.x ?? 0}
+									y2={l.b.y ?? 0}
+									stroke-width={0.6 + Math.sqrt(l.total / maxTotal) * 4}
+									class="is-lit"
+								/>
+							{/if}
 						{/each}
 					</g>
 					{#each focusNodes as n (n.id)}
@@ -1036,6 +1093,9 @@
 					{/if}Categories
 				</li>
 				<li><span class="gv__dot"></span>Payees</li>
+				{#if hasFlows}
+					<li><span class="gv__flow-key"></span>Transfers</li>
+				{/if}
 			</ul>
 			<span class="gv__meta">{loading ? "Loading…" : summary}</span>
 		</div>
@@ -1295,6 +1355,13 @@
 		margin-left: -3px;
 	}
 
+	.gv__flow-key {
+		width: 14px; /* raw: a short stroke of the transfer line */
+		height: 2px; /* raw */
+		border-radius: var(--abt-radius-pill);
+		background: var(--gv-account);
+	}
+
 	.gv__meta {
 		padding-left: var(--abt-space-4);
 		border-left: 1px solid var(--abt-line);
@@ -1367,6 +1434,25 @@
 
 	.gv__links line.is-lit {
 		stroke: var(--abt-accent-4);
+	}
+
+	.gv__links .gv__flow {
+		fill: none;
+		stroke: var(--gv-account);
+		stroke-opacity: 0.55;
+	}
+
+	.gv__links .gv__flow.is-lit {
+		stroke: var(--abt-accent-4);
+		stroke-opacity: 1;
+	}
+
+	.gv__arrow path {
+		fill: var(--gv-account);
+	}
+
+	#gv-flow-arrow-lit path {
+		fill: var(--abt-accent-4);
 	}
 
 	.gv__node {
