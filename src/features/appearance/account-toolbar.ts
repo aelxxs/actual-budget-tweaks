@@ -258,7 +258,7 @@ function wraps(bar: HTMLElement): boolean {
 
 export const modernAccountToolbar = defineSetting({
 	type: "checkbox",
-	label: "Modern account toolbar",
+	label: "Account toolbar",
 	description: "Restyles the account page's buttons and search.",
 	group: "General",
 	icon: "rectangleEllipsis",

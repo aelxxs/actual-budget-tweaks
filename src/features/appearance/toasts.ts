@@ -108,7 +108,7 @@ const CSS = `
 
 export const modernToasts = defineSetting({
 	type: "checkbox",
-	label: "Modern toasts",
+	label: "Notifications",
 	description: "Restyles notifications as compact cards.",
 	group: "General",
 	icon: "messageSquare",

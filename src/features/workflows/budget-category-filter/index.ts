@@ -321,7 +321,7 @@ function sync(): void {
 	if (!table) {
 		return;
 	}
-	// Lives in Modern headers' month header; without it, nothing is filtered.
+	// Lives in Page headers' month header; without it, nothing is filtered.
 	const slot = document.querySelector(HEADER_SLOT);
 	if (!slot) {
 		unmountControl();

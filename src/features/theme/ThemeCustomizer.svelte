@@ -55,7 +55,7 @@
 		galleryOnly = false,
 	}: {
 		ctx: { key: string; defaultValue: string };
-		/** Only the gallery, opened at once as a panel that follows you (the Modern Titlebar's theme menu). */
+		/** Only the gallery, opened at once as a panel that follows you (the Titlebar setting's theme menu). */
 		galleryOnly?: boolean;
 	} = $props();
 

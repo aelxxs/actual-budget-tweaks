@@ -9,7 +9,7 @@ import { MONTH_HEADER_CSS, startMonthHeader } from "@features/workflows/budget-m
 
 export const modernHeaders = defineSetting({
 	type: "checkbox",
-	label: "Modern headers",
+	label: "Page headers",
 	description: "Restyles the Budget and Reports page headers.",
 	icon: "heading",
 	group: "General",
