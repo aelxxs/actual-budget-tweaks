@@ -9,11 +9,13 @@ import {
 	TWEAKS_SECTIONS_ATTR,
 	settingsNav,
 } from "@lib/utilities/settings-page";
-import { SETTINGS, SETTINGS_NAV_LINK } from "@lib/actual-dom";
+import { SETTINGS, SETTINGS_ADVANCED_LINK, SETTINGS_NAV_LINK } from "@lib/actual-dom";
 
 const LINK_ATTR = "data-abt-tweaks-link";
 /** On Actual's settings nav, widened so the tab's section names fit on one line. */
 const NAV_ATTR = "data-abt-settings-nav";
+/** On Advanced's link, whose icon the stylesheet redraws. */
+const ADVANCED_ATTR = "data-abt-settings-advanced";
 /** On the nav while the tab is open, so Actual's own current link stops looking selected. */
 const OPEN_ATTR = "data-abt-tweaks-open";
 /** On the pane beside the nav, hiding Actual's page under ABT's. */
@@ -117,6 +119,9 @@ function sync(): void {
 	if (link.parentElement !== nav) {
 		nav.append(link);
 		nav.setAttribute(NAV_ATTR, "");
+	}
+	for (const a of nav.querySelectorAll(SETTINGS_ADVANCED_LINK)) {
+		a.setAttribute(ADVANCED_ATTR, "");
 	}
 	const pane = nav.nextElementSibling;
 	if (!open || !pane) {

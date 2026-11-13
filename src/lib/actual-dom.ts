@@ -51,6 +51,7 @@ export const ACCOUNT_LINK = 'a[href^="/accounts/"]';
 export const SETTINGS_PAGE_LINK = 'a[href^="/settings/"]';
 /** Its settings nav; older Actual lists every setting on one page. */
 export const SETTINGS_NAV_LINK = `${NAVIGATION} > a[href="/settings/general"]`;
+export const SETTINGS_ADVANCED_LINK = `${NAVIGATION} > a[href="/settings/advanced"]`;
 
 // ── Titlebar and sidebar ────────────────────────────────────────────────
 
