@@ -186,7 +186,7 @@
 					class:is-active={idx === startIdx}
 					class:is-in-range={idx > startIdx && idx < startIdx + span}
 					class:is-current={pickerYear === now.getFullYear() && m === now.getMonth()}
-					class:is-muted={mark === "muted"}
+					class:is-muted={mark === "muted" || mark === "future"}
 					aria-current={idx === startIdx ? "date" : undefined}
 					disabled={isDisabled(pickerYear, m)}
 					onclick={() => {
@@ -195,19 +195,13 @@
 					}}
 				>
 					{name.slice(0, 3)}
-					{#if mark && mark !== "muted"}
-						<span class="picker__dot is-{mark}"></span>
+					<!-- On track is the norm, so only a month that needs a look is marked. -->
+					{#if mark === "warn"}
+						<span class="picker__dot" title="Needs attention"></span>
 					{/if}
 				</button>
 			{/each}
 		</div>
-		{#if loadMarks}
-			<div class="picker__legend">
-				<span><i class="picker__dot is-ok"></i>On track</span>
-				<span><i class="picker__dot is-warn"></i>Needs attention</span>
-				<span><i class="picker__dot is-future"></i>Future</span>
-			</div>
-		{/if}
 	</div>
 {/if}
 
@@ -279,8 +273,9 @@
 	.picker__month:hover:not(:disabled):not(.is-active) {
 		background: var(--abt-fill-hover);
 	}
+	/* This month stays findable after browsing other years. */
 	.picker__month.is-current:not(.is-active) {
-		box-shadow: inset 0 0 0 1px var(--color-tableBorder);
+		font-weight: 700;
 	}
 	.picker__month.is-in-range {
 		background: var(--abt-accent-1);
@@ -299,45 +294,14 @@
 	}
 
 	.picker__dot {
-		display: inline-block;
-		width: 4px;
-		height: 4px;
-		border-radius: var(--abt-radius-pill);
-	}
-	.picker__month .picker__dot {
 		position: absolute;
 		bottom: 3px;
 		left: 50%;
+		width: 4px;
+		height: 4px;
 		margin-left: -2px;
-	}
-	.picker__dot.is-ok {
-		background: var(--color-noticeTextLight);
-	}
-	.picker__dot.is-warn {
+		border-radius: var(--abt-radius-pill);
 		background: var(--color-errorText);
-	}
-	.picker__dot.is-future {
-		box-shadow: inset 0 0 0 1px var(--color-pageTextSubdued);
-	}
-	.picker__legend {
-		display: flex;
-		justify-content: space-between;
-		gap: 6px;
-		margin-top: 8px;
-		padding-top: 8px;
-		border-top: 1px solid var(--color-tableBorder);
-		font-size: var(--abt-text-sm);
-		color: var(--color-pageTextSubdued);
-	}
-	.picker__legend span {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		white-space: nowrap;
-	}
-	.picker__legend .picker__dot {
-		width: 5px;
-		height: 5px;
 	}
 
 	/* The same height as the toolbar controls beside it, whatever the text's line height. */
@@ -379,18 +343,18 @@
 		opacity: 0.7;
 	}
 	.picker.is-compact {
-		width: 264px;
-		padding: var(--abt-space-4);
+		width: 240px;
+		padding: var(--abt-space-3);
 	}
 	.picker.is-compact .picker__head {
-		margin-bottom: 8px;
+		margin-bottom: 4px;
 	}
 	.picker.is-compact .picker__months {
 		grid-template-columns: repeat(4, 1fr);
-		gap: 4px;
+		gap: 2px;
 	}
 	.picker.is-compact .picker__month {
-		padding: 9px 0 13px;
+		padding: 8px 0 10px;
 		font-size: var(--abt-text-base);
 		font-weight: 550;
 	}
@@ -406,18 +370,6 @@
 		background: var(--abt-accent-3);
 	}
 	.picker.is-compact .picker__month.is-current:not(.is-active):not(.is-in-range) {
-		box-shadow: none;
 		font-weight: 700;
-	}
-	.picker.is-compact .picker__month .picker__dot {
-		width: 5px;
-		height: 5px;
-		bottom: 4px;
-		margin-left: -2.5px;
-	}
-	.picker.is-compact .picker__legend {
-		margin-top: 10px;
-		padding-top: 10px;
-		font-size: var(--abt-text-sm);
 	}
 </style>
