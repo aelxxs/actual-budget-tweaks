@@ -1,4 +1,3 @@
-import { defineSetting } from "@features/types";
 import { BUDGET_TOTALS, BUDGET_TOTAL_LABELS } from "@lib/actual-dom";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -6,7 +5,7 @@ import { Page, matchesPage } from "@lib/utilities/pages";
 const LABEL_ATTR = "data-abt-budget-total-label";
 const CATEGORY_ATTR = "data-abt-budget-category-label";
 
-const CSS = `
+export const TOTALS_LABEL_CSS = `
 	[${LABEL_ATTR}] {
 		color: var(--color-tableHeaderText);
 		font-size: var(--abt-text-xs);
@@ -52,23 +51,11 @@ function cleanup() {
 		.forEach((el) => el.removeAttribute(CATEGORY_ATTR));
 }
 
-export const budgetTotalsLabelStyling = defineSetting({
-	type: "checkbox",
-	label: "Budget Totals Label Styling",
-	description: "Mute and uppercase the Category, Budgeted, Spent and Balance labels.",
-	group: "Budget",
-	icon: "layout",
-	context: {
-		key: "budget-totals-label-styling",
-		defaultValue: true,
-	},
-	css: () => CSS,
-	init: () => {
-		const unwatch = watchDom(styleLabels);
-
-		return () => {
-			unwatch();
-			cleanup();
-		};
-	},
-});
+/** Mutes and uppercases the budget table header's labels, like ABT's other headers; returns its cleanup. */
+export function startTotalsLabels(): () => void {
+	const unwatch = watchDom(styleLabels);
+	return () => {
+		unwatch();
+		cleanup();
+	};
+}

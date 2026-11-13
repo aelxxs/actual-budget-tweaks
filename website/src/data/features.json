@@ -303,39 +303,6 @@
 				"writes": null
 			},
 			{
-				"key": "schedule-icon-details",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Schedule Icon Details",
-				"description": "Line up the schedule icons beside the spent amounts, with a hover card for each schedule.",
-				"icon": "calendar",
-				"group": "Readability",
-				"writes": null
-			},
-			{
-				"key": "actual-daily",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Show Daily Available",
-				"description": "Show what an account's balance allows per day for the rest of the month.",
-				"icon": "calculator",
-				"group": "Readability",
-				"writes": null
-			},
-			{
-				"key": "budget-totals-label-styling",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Budget Totals Label Styling",
-				"description": "Mute and uppercase the Category, Budgeted, Spent and Balance labels.",
-				"icon": "layout",
-				"group": "Readability",
-				"writes": null
-			},
-			{
 				"key": "category-color-dots",
 				"type": "checkbox",
 				"defaultValue": true,
@@ -392,36 +359,14 @@
 			},
 			{
 				"key": "actual-category-template-insights",
-				"type": "checkbox",
-				"defaultValue": false,
+				"type": "select",
+				"defaultValue": "off",
 				"platform": "desktop",
 				"label": "Category Template Insights",
 				"description": "Progress bars showing how funded each category's template is.",
 				"icon": "interest",
 				"group": "Tools",
 				"writes": null
-			},
-			{
-				"key": "cti-hide-funded",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Quiet Funded Bars",
-				"description": "Leave fully funded categories as an empty track, so the ones still needing money stand out.",
-				"icon": "eyeOff",
-				"group": "Tools",
-				"writes": null
-			},
-			{
-				"key": "goal-funding",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Goal Funding",
-				"description": "Click a category's balance to see its goal progress and assign money to an underfunded goal. Actual 26.11 and later show this themselves.",
-				"icon": "interest",
-				"group": "Tools",
-				"writes": "Budgets the rest of a goal to its category when you click Assign."
 			}
 		]
 	},
@@ -514,6 +459,17 @@
 				"label": "Modern Account Toolbar",
 				"description": "Restyles the account page's actions, search and icon buttons with matching icons.",
 				"icon": "layout",
+				"group": "Accounts",
+				"writes": null
+			},
+			{
+				"key": "actual-daily",
+				"type": "checkbox",
+				"defaultValue": true,
+				"platform": "desktop",
+				"label": "Show Daily Available",
+				"description": "Show what an account's balance allows per day for the rest of the month.",
+				"icon": "calculator",
 				"group": "Accounts",
 				"writes": null
 			},

@@ -87,7 +87,7 @@ export const showDailyAvailable = defineSetting({
 	type: "checkbox",
 	label: "Show Daily Available",
 	description: "Show what an account's balance allows per day for the rest of the month.",
-	group: "Budget",
+	group: "Accounts",
 	icon: "calculator",
 	context: {
 		key: "actual-daily",

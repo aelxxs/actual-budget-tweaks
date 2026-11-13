@@ -1,4 +1,5 @@
-import { defineSetting } from "@features/types";
+import { reapplySetting } from "@features/runtime";
+import { defineSetting, type Setting } from "@features/types";
 import {
 	type BudgetTableChange,
 	collectChanges,
@@ -30,8 +31,9 @@ import { CATEGORY_NAME, ROW } from "@lib/actual-dom";
 const BAR_CLASS = "abt-cti-bar";
 const BAR_ATTR = "data-abt-cti-row";
 export const STATE_ATTR = "data-abt-cti-state";
-// The bars used to have their own hide flag; it is folded into this setting once (see init).
+// Older switches folded into this setting once (see migratedMode).
 const LEGACY_BARS_KEY = "abt-cti-bars-enabled";
+const QUIET_FUNDED_KEY = "cti-hide-funded";
 const ROW_SELECTOR = `${ROW}:has(${CATEGORY_NAME})`;
 const HOVER_DELAY_MS = 200;
 // Long enough to fold one edit's burst of cell updates into a single re-read.
@@ -76,24 +78,68 @@ const CSS = `
 	}
 `;
 
+// Funded categories keep an empty track, so the ones still needing money stand out.
+const UNFUNDED_ONLY_CSS = `
+	.${BAR_CLASS}:is([data-state="full"], [data-state="paid"])::after {
+		display: none;
+	}
+`;
+
+type Mode = "off" | "all" | "unfunded";
+
+// Was a switch; booleans are read until init stores the mode.
+const modeOf = (value: unknown): Mode =>
+	value === true ? "all" : value === "all" || value === "unfunded" ? value : "off";
+
+async function migratedMode(key: string, value: unknown): Promise<Mode> {
+	if (typeof value === "string") {
+		return modeOf(value);
+	}
+	let on = value === true;
+	const legacyBars = await getValue<boolean | null>(LEGACY_BARS_KEY, null);
+	if (legacyBars !== null) {
+		await removeValue(LEGACY_BARS_KEY);
+		on &&= legacyBars;
+	}
+	const quiet = await getValue(QUIET_FUNDED_KEY, false);
+	await removeValue(QUIET_FUNDED_KEY);
+	const mode: Mode = on ? (quiet ? "unfunded" : "all") : "off";
+	await setValue(key, mode);
+	return mode;
+}
+
 export const categoryTemplateInsights = defineSetting({
-	type: "checkbox",
+	type: "select",
 	label: "Category Template Insights",
 	description: "Progress bars showing how funded each category's template is.",
 	icon: "interest",
 	context: {
 		key: "actual-category-template-insights",
-		defaultValue: false,
+		defaultValue: "off",
 	},
-	css: () => CSS,
-	init: async (ctx) => {
-		const legacyBarsEnabled = await getValue<boolean | null>(LEGACY_BARS_KEY, null);
-		if (legacyBarsEnabled !== null) {
-			await removeValue(LEGACY_BARS_KEY);
-			if (!legacyBarsEnabled) {
-				await setValue(ctx.key, false);
-				return;
-			}
+	options: [
+		{ value: "off", label: "Off" },
+		{ value: "all", label: "All", description: "A bar under each category with a template." },
+		{
+			value: "unfunded",
+			label: "Unfunded only",
+			description: "Funded categories keep an empty track, so the ones still short stand out.",
+		},
+	],
+	segmented: true,
+	css: ({ value }) => {
+		const mode = modeOf(value);
+		return mode === "off" ? "" : mode === "unfunded" ? CSS + UNFUNDED_ONLY_CSS : CSS;
+	},
+	init: async ({ key, value }) => {
+		const mode = await migratedMode(key, value);
+		if (mode !== modeOf(value)) {
+			// After this activation finishes, so the runtime restarts it with the stored mode.
+			setTimeout(() => void reapplySetting(categoryTemplateInsights as unknown as Setting, mode));
+			return;
+		}
+		if (mode === "off") {
+			return;
 		}
 
 		loadCurrency();

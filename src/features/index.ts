@@ -36,7 +36,6 @@ import { mobileToasts } from "./mobile/toasts";
 import { mobileTransactionList } from "./mobile/transaction-list";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { balancePills } from "./readability/balance-pills";
-import { budgetTotalsLabelStyling } from "./readability/budget-totals-label-styling";
 import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
@@ -45,7 +44,6 @@ import { groupOverspent } from "./readability/group-overspent";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { newTransactionStyle } from "./readability/new-transactions";
 import { quietCategoryIcons } from "./readability/quiet-category-icons";
-import { scheduleIconDetails } from "./readability/schedule-icon-details";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
 import { themeMenu } from "./theme/menu";
@@ -56,8 +54,6 @@ import { budgetCategoryFilter } from "./workflows/budget-category-filter";
 import { monthCards } from "./workflows/budget-summary-row";
 import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
-import { hideFundedTemplateBars } from "./workflows/category-template-insights/hide-funded";
-import { goalFunding } from "./workflows/goal-funding";
 import { incomeBreakdown } from "./workflows/income-breakdown";
 import { modernReconcile } from "./workflows/reconcile";
 import { reconcileConfetti } from "./workflows/reconcile/confetti";
@@ -143,14 +139,7 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Readability",
-				items: [
-					categoryProgress,
-					balancePills,
-					groupOverspent,
-					scheduleIconDetails,
-					showDailyAvailable,
-					budgetTotalsLabelStyling,
-				],
+				items: [categoryProgress, balancePills, groupOverspent],
 			},
 			{
 				label: "Categories",
@@ -158,7 +147,7 @@ export const scriptSections: SettingsSection[] = [
 			},
 			{
 				label: "Tools",
-				items: [templatePlan, categoryTemplateInsights, hideFundedTemplateBars, goalFunding],
+				items: [templatePlan, categoryTemplateInsights],
 			},
 		],
 	},
@@ -181,6 +170,7 @@ export const scriptSections: SettingsSection[] = [
 				label: "Accounts",
 				items: [
 					modernAccountToolbar,
+					showDailyAvailable,
 					modernReconcile,
 					reconcileConfetti,
 					syncRecap,
@@ -229,7 +219,6 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[sidebarGroupTotals, experimentalSidebar],
 	[sidebarClosedAccounts, experimentalSidebar],
 	[accountIconPicker, experimentalSidebar],
-	[hideFundedTemplateBars, categoryTemplateInsights],
 	[reconcileConfetti, modernReconcile],
 ]);
 

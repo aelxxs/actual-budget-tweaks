@@ -1,6 +1,5 @@
 import { defineSetting } from "@features/types";
 import CategoryProgressPreview from "../previews/CategoryProgress.svelte";
-import { goalFunding } from "@features/workflows/goal-funding";
 import { icon } from "@lib/utilities/icons";
 import { type BudgetTableChange, readCell, watchBudgetTable } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
@@ -8,7 +7,6 @@ import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { positionPopover } from "@lib/utilities/popover";
-import { getValue } from "@lib/utilities/store";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import {
 	BALANCE_CELL_RE,
@@ -332,10 +330,9 @@ async function openPopover(ring: HTMLElement) {
 	const row = ring.closest<HTMLElement>(ROW);
 	const name = row?.querySelector(CATEGORY_NAME)?.textContent?.trim() || "Category";
 
-	const [data, avgSpent, canFund] = await Promise.all([
+	const [data, avgSpent] = await Promise.all([
 		fetchCells(sheet, catId, true),
 		fetchAvgSpent(sheet, catId),
-		getValue(goalFunding.context.key, goalFunding.context.defaultValue),
 	]);
 	if (!ring.isConnected) {
 		return;
@@ -351,7 +348,6 @@ async function openPopover(ring: HTMLElement) {
 		spent: data.spent,
 		balance: data.balance,
 		goalShortfall: data.goalShortfall,
-		canFund: Boolean(canFund),
 		avgSpent,
 		daysLeft: daysLeftInMonth(sheet),
 	});

@@ -2,18 +2,13 @@ import { categoryColorDots } from "@features/appearance/category-color-dots";
 import { categoryEmojiPicker } from "@features/appearance/category-emoji-picker";
 import { budgetTableRowHeight } from "@features/layout/budget-table-row-height";
 import { balancePills } from "@features/readability/balance-pills";
-import { budgetTotalsLabelStyling } from "@features/readability/budget-totals-label-styling";
 import { categoryProgress } from "@features/readability/category-progress";
 import { quietCategoryIcons } from "@features/readability/quiet-category-icons";
-import { scheduleIconDetails } from "@features/readability/schedule-icon-details";
-import { showDailyAvailable } from "@features/readability/show-daily-available";
 import type { Setting } from "@features/types";
 import { budgetCategoryFilter } from "@features/workflows/budget-category-filter";
 import { modernHeaders } from "@features/layout/modern-headers";
 import { monthCards } from "@features/workflows/budget-summary-row";
 import { categoryTemplateInsights } from "@features/workflows/category-template-insights";
-import { goalFunding } from "@features/workflows/goal-funding";
-import { hideFundedTemplateBars } from "@features/workflows/category-template-insights/hide-funded";
 import { templatePlan } from "@features/workflows/template-plan";
 import SettingsDialog, { type SettingsTab } from "@lib/components/SettingsDialog.svelte";
 import { openDialog } from "@lib/utilities/dialog";
@@ -28,14 +23,7 @@ export function openBudgetSettings(): void {
 			groups: [
 				{
 					heading: "On each category",
-					settings: [
-						categoryTemplateInsights,
-						hideFundedTemplateBars,
-						categoryProgress,
-						balancePills,
-						scheduleIconDetails,
-						goalFunding,
-					] as Setting[],
+					settings: [categoryTemplateInsights, categoryProgress, balancePills] as Setting[],
 				},
 				{
 					heading: "Colors & icons",
@@ -58,10 +46,6 @@ export function openBudgetSettings(): void {
 				{
 					heading: "Months",
 					settings: [modernHeaders, monthCards] as Setting[],
-				},
-				{
-					heading: "Summary",
-					settings: [budgetTotalsLabelStyling, showDailyAvailable] as Setting[],
 				},
 			],
 		},

@@ -9,23 +9,12 @@
 		spent: number;
 		balance: number;
 		goalShortfall: number;
-		/** Goal Funding is on, so the balance menu can fund the shortfall. */
-		canFund: boolean;
 		avgSpent: number | null;
 		daysLeft: number | null;
 	};
 
-	const {
-		name,
-		month,
-		budgeted,
-		spent,
-		balance,
-		goalShortfall,
-		canFund,
-		avgSpent,
-		daysLeft,
-	}: Props = $props();
+	const { name, month, budgeted, spent, balance, goalShortfall, avgSpent, daysLeft }: Props =
+		$props();
 
 	const ratio = $derived(budgeted > 0 ? spent / budgeted : spent > 0 ? Infinity : 0);
 	const fillPct = $derived(Math.min(100, Math.max(0, (Number.isFinite(ratio) ? ratio : 1) * 100)));
@@ -122,8 +111,7 @@
 	<!-- Funding lives in the balance menu (Goal Funding); this only points there. -->
 	{#if goalShortfall > 0}
 		<div class="cp__goal-hint">
-			<span class="abt-privacy-number">{fmtMoney(goalShortfall)}</span> short of goal{#if canFund}
-				· click balance to fund{/if}
+			<span class="abt-privacy-number">{fmtMoney(goalShortfall)}</span> short of goal
 		</div>
 	{/if}
 </div>

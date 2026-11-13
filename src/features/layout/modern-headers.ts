@@ -1,5 +1,9 @@
 import { NAV_BORDER_CSS } from "@features/layout/borders";
 import { REPORTS_HEADER_CSS, startReportsHeader } from "@features/layout/reports-header";
+import {
+	TOTALS_LABEL_CSS,
+	startTotalsLabels,
+} from "@features/readability/budget-totals-label-styling";
 import { defineSetting } from "@features/types";
 import { MONTH_HEADER_CSS, startMonthHeader } from "@features/workflows/budget-month-header";
 
@@ -14,13 +18,9 @@ export const modernHeaders = defineSetting({
 		key: "budget-month-header",
 		defaultValue: false,
 	},
-	css: () => NAV_BORDER_CSS + MONTH_HEADER_CSS + REPORTS_HEADER_CSS,
+	css: () => NAV_BORDER_CSS + MONTH_HEADER_CSS + TOTALS_LABEL_CSS + REPORTS_HEADER_CSS,
 	init: () => {
-		const stopMonth = startMonthHeader();
-		const stopReports = startReportsHeader();
-		return () => {
-			stopMonth();
-			stopReports();
-		};
+		const stops = [startMonthHeader(), startTotalsLabels(), startReportsHeader()];
+		return () => stops.forEach((stop) => stop());
 	},
 });

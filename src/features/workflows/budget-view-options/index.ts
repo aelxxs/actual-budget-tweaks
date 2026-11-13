@@ -1,5 +1,5 @@
 import { applySettingChange } from "@features/runtime";
-import type { CheckboxSetting } from "@features/types";
+import type { Setting } from "@features/types";
 import { categoryTemplateInsights } from "@features/workflows/category-template-insights";
 import { icon } from "@lib/utilities/icons";
 import { applyGlobalCSS } from "@lib/utilities/dom";
@@ -59,12 +59,22 @@ const CSS = `
 	}
 `;
 
-const insightsSetting: CheckboxSetting<any> = categoryTemplateInsights;
-const INSIGHTS_KEY = insightsSetting.context.key;
+const insightsSetting = categoryTemplateInsights as unknown as Setting;
+const INSIGHTS_KEY = categoryTemplateInsights.context.key;
 
 let group: HTMLElement | null = null;
 let toggleBtn: HTMLButtonElement | null = null;
-let insightsOn = categoryTemplateInsights.context.defaultValue;
+let insightsMode: unknown = categoryTemplateInsights.context.defaultValue;
+// Turning the bars back on restores the last mode shown (a boolean is a mode not migrated yet).
+let lastOnMode = "all";
+const isOn = (mode: unknown) => mode === true || mode === "all" || mode === "unfunded";
+
+function setMode(mode: unknown): void {
+	insightsMode = mode;
+	if (mode === "all" || mode === "unfunded") {
+		lastOnMode = mode;
+	}
+}
 
 /** Bullseye toggles insight bars in one click; the sliders button opens Budget settings. */
 function injectControl(): void {
@@ -83,7 +93,7 @@ function injectControl(): void {
 	const toggle = document.createElement("button");
 	toggle.type = "button";
 	toggle.addEventListener("click", () => {
-		applySettingChange(insightsSetting, !insightsOn);
+		applySettingChange(insightsSetting, isOn(insightsMode) ? "off" : lastOnMode);
 	});
 
 	const settings = document.createElement("button");
@@ -104,11 +114,12 @@ function renderToggle(): void {
 	if (!toggleBtn) {
 		return;
 	}
-	const label = insightsOn ? "Hide template insight bars" : "Show template insight bars";
+	const on = isOn(insightsMode);
+	const label = on ? "Hide template insight bars" : "Show template insight bars";
 	toggleBtn.title = label;
 	toggleBtn.setAttribute("aria-label", label);
-	toggleBtn.setAttribute("aria-pressed", String(insightsOn));
-	toggleBtn.innerHTML = icon(insightsOn ? "target" : "targetOff", { size: 15 });
+	toggleBtn.setAttribute("aria-pressed", String(on));
+	toggleBtn.innerHTML = icon(on ? "target" : "targetOff", { size: 15 });
 }
 
 function sync(): void {
@@ -125,13 +136,13 @@ export const budgetViewOptions = {
 	type: "core" as const,
 	init: async () => {
 		applyGlobalCSS(CSS, "budget-view-options");
-		insightsOn = Boolean(await getValue(INSIGHTS_KEY, insightsOn));
+		setMode(await getValue(INSIGHTS_KEY, insightsMode));
 		// Follows changes from the settings dialog and page too.
 		browser.storage.onChanged.addListener((changes, area) => {
 			if (area !== "local" || !(`local:${INSIGHTS_KEY}` in changes)) {
 				return;
 			}
-			insightsOn = Boolean(changes[`local:${INSIGHTS_KEY}`].newValue);
+			setMode(changes[`local:${INSIGHTS_KEY}`].newValue);
 			renderToggle();
 		});
 		watchDom(sync);
