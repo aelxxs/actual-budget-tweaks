@@ -623,17 +623,6 @@
 		"description": null,
 		"items": [
 			{
-				"key": "report-card-color-dark",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Dark Report Cards",
-				"description": "Use a darker background for widget cards on the Reports page.",
-				"icon": "palette",
-				"group": null,
-				"writes": null
-			},
-			{
 				"key": "report-card-borders",
 				"type": "checkbox",
 				"defaultValue": true,

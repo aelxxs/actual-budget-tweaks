@@ -1,19 +1,15 @@
 import { accountIconPicker } from "./appearance/account-icon-picker";
-import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
+import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
-import { sidebarDensity } from "./appearance/sidebar-density";
+import { themedScrollbars } from "./appearance/scrollbars";
 import { sidebarClosedAccounts } from "./appearance/sidebar-closed-accounts";
+import { sidebarDensity } from "./appearance/sidebar-density";
 import { sidebarGroupTotals } from "./appearance/sidebar-group-totals";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts, sidebarShortcutsAddTile } from "./appearance/sidebar-shortcuts";
 import { modernTitlebar } from "./appearance/titlebar";
-import { modernAccountToolbar } from "./appearance/account-toolbar";
-import { mobilePageTransitions } from "./mobile/page-transitions";
-import { modernReconcile } from "./workflows/reconcile";
-import { reconcileConfetti } from "./workflows/reconcile/confetti";
-import { themedScrollbars } from "./appearance/scrollbars";
 import { modernToasts } from "./appearance/toasts";
 import { nativeHooks } from "./core/native-hooks";
 import { privacyMode } from "./core/privacy-mode";
@@ -24,11 +20,21 @@ import { sidePanel } from "./core/side-panel";
 import { tooltipStyling } from "./core/tooltip";
 import { backgroundPattern } from "./layout/background-pattern";
 import { borderRadius } from "./layout/border-radius";
-import { budgetTableRowHeight } from "./layout/budget-table-row-height";
-import { budgetRowHover } from "./layout/budget-row-hover";
 import { budgetGroupSpacing } from "./layout/budget-group-spacing";
-import { reportWidgetBackgroundColor } from "./layout/report-widget-background-color";
+import { budgetRowHover } from "./layout/budget-row-hover";
+import { budgetTableRowHeight } from "./layout/budget-table-row-height";
+import { insetPanels } from "./layout/inset-panels";
+import { reportsHeader } from "./layout/reports-header";
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
+import { mobileAccounts } from "./mobile/accounts";
+import { mobileBudgetBanners } from "./mobile/budget-banners";
+import { mobileBudgetCards } from "./mobile/budget-cards";
+import { mobileHeader } from "./mobile/header";
+import { mobileModalSheets } from "./mobile/modal-sheets";
+import { mobilePageTransitions } from "./mobile/page-transitions";
+import { mobileTabBar } from "./mobile/tab-bar";
+import { mobileToasts } from "./mobile/toasts";
+import { mobileTransactionList } from "./mobile/transaction-list";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { balancePills } from "./readability/balance-pills";
 import { budgetCardStyling } from "./readability/budget-card-styling";
@@ -41,25 +47,14 @@ import { dimReconciled } from "./readability/dim-reconciled";
 import { groupOverspent } from "./readability/group-overspent";
 import { highlightUncategorized } from "./readability/highlight-uncategorized";
 import { newTransactionStyle } from "./readability/new-transactions";
-import { reportCardBorders } from "./readability/report-card-borders";
 import { quietCategoryIcons } from "./readability/quiet-category-icons";
+import { reportCardBorders } from "./readability/report-card-borders";
 import { scheduleIconDetails } from "./readability/schedule-icon-details";
-import { reportsHeader } from "./layout/reports-header";
-import { incomeBreakdown } from "./workflows/income-breakdown";
-import { mobileAccounts } from "./mobile/accounts";
-import { mobileBudgetBanners } from "./mobile/budget-banners";
-import { mobileBudgetCards } from "./mobile/budget-cards";
-import { mobileHeader } from "./mobile/header";
-import { mobileModalSheets } from "./mobile/modal-sheets";
-import { mobileTabBar } from "./mobile/tab-bar";
-import { mobileToasts } from "./mobile/toasts";
-import { mobileTransactionList } from "./mobile/transaction-list";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
 import { headerBorder } from "./readability/top-nav-border";
-import { insetPanels } from "./layout/inset-panels";
-import { themeSelector } from "./theme/theme";
 import { themeMenu } from "./theme/menu";
+import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/theme-loader";
 import type { CoreSetting, Setting } from "./types";
 import { budgetCategoryFilter } from "./workflows/budget-category-filter";
@@ -69,13 +64,17 @@ import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { hideFundedTemplateBars } from "./workflows/category-template-insights/hide-funded";
 import { goalFunding } from "./workflows/goal-funding";
+import { incomeBreakdown } from "./workflows/income-breakdown";
+import { modernReconcile } from "./workflows/reconcile";
+import { reconcileConfetti } from "./workflows/reconcile/confetti";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
+import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
 import { spendingCalendar } from "./workflows/spending-calendar";
 import { syncRecap } from "./workflows/sync-recap";
-import { transactionInspector } from "./workflows/transaction-inspector";
 import { templatePlan } from "./workflows/template-plan";
 import { nextMonthCoverageMethod } from "./workflows/template-plan/coverage-method";
+import { transactionInspector } from "./workflows/transaction-inspector";
 
 export type PageSetting = Exclude<Setting<any>, CoreSetting>;
 
@@ -214,13 +213,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: null,
-				items: [
-					reportWidgetBackgroundColor,
-					reportCardBorders,
-					reportsHeader,
-					spendingCalendar,
-					incomeBreakdown,
-				],
+				items: [reportCardBorders, reportsHeader, spendingCalendar, incomeBreakdown],
 			},
 		],
 	},
