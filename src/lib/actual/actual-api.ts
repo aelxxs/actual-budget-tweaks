@@ -1,5 +1,5 @@
 import type { ActualTable, SendMethodMap, TableName } from "@lib/types/actual-schema";
-import { timeRequest } from "./watch-timing";
+import { timeRequest } from "@lib/dom/watch-timing";
 import { BUDGET_LINK } from "@lib/actual-dom";
 
 let reqId = 0;

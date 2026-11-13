@@ -1,5 +1,5 @@
-import { onSyncedPref } from "@lib/utilities/actual-api";
-import { Page, setSidebarPages } from "@lib/utilities/pages";
+import { onSyncedPref } from "@lib/actual/actual-api";
+import { Page, setSidebarPages } from "@lib/actual/pages";
 import { untrack } from "svelte";
 import {
 	Banknote,

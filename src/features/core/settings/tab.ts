@@ -1,7 +1,7 @@
-import "./settings-tab.css";
-import { navigate } from "@lib/utilities/actual-api";
-import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
-import { isMobileView } from "@lib/utilities/pages";
+import "./tab.css";
+import { navigate } from "@lib/actual/actual-api";
+import { watchDom, watchElement } from "@lib/dom/dom-watcher";
+import { isMobileView } from "@lib/actual/pages";
 import {
 	TWEAKS_HASH,
 	TWEAKS_HOST_ATTR,
@@ -10,7 +10,7 @@ import {
 	openTweaksAt,
 	settingsNav,
 	tweaksSections,
-} from "@lib/utilities/settings-page";
+} from "@lib/actual/settings-page";
 import { SETTINGS, SETTINGS_ADVANCED_LINK, SETTINGS_NAV_LINK } from "@lib/actual-dom";
 
 const LINK_ATTR = "data-abt-tweaks-link";

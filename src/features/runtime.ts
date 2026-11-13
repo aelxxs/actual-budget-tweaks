@@ -1,9 +1,9 @@
-import { isTrackingBudget, onBudgetType } from "@lib/utilities/budget-type";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { createLogger } from "@lib/utilities/logger";
-import { getValue, setValue } from "@lib/utilities/store";
-import { labelWatchers } from "@lib/utilities/watch-timing";
-import { DESKTOP_QUERY, desktopOnly, mobileOnly } from "@lib/utilities/pages";
+import { isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
+import { applyGlobalCSS } from "@lib/dom/dom";
+import { createLogger } from "@lib/logger";
+import { getValue, setValue } from "@lib/store";
+import { labelWatchers } from "@lib/dom/watch-timing";
+import { DESKTOP_QUERY, desktopOnly, mobileOnly } from "@lib/actual/pages";
 import type { Platform, Setting, SettingContext } from "./types";
 
 const log = createLogger("runtime");

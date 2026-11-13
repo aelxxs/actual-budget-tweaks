@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { isAbtEnabled, setAbtEnabled } from "@lib/utilities/abt-enabled";
-	import { getValue, normalizeBaseUrl, setValue } from "@lib/utilities/store";
+	import { isAbtEnabled, setAbtEnabled } from "@lib/abt-enabled";
+	import { getValue, normalizeBaseUrl, setValue } from "@lib/store";
 	import { onMount } from "svelte";
 
 	let userLink = $state("");

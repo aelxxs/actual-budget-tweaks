@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from "@lib/components/panel/Section.svelte";
 	import Icon from "@lib/components/Icon.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { fmtMoney } from "@lib/format/currency";
 	import { runway } from "./overview";
 
 	let {

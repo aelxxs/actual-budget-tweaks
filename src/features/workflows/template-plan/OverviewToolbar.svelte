@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { fmtMoney } from "@lib/format/currency";
 	import { templatePlanState } from "./state.svelte";
 
 	const data = $derived(templatePlanState.overviewData);

@@ -1,4 +1,4 @@
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue } from "@lib/store";
 import type { Recipe } from "./studio/generator";
 
 export type UserTheme = {

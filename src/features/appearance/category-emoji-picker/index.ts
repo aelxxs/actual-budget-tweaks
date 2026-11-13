@@ -1,14 +1,14 @@
 import { defineSetting } from "@features/types";
-import { rowCategoryId, watchBudgetTable } from "@lib/utilities/budget-cells";
+import { rowCategoryId, watchBudgetTable } from "@lib/actual/budget-cells";
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
-import { notify, send } from "@lib/utilities/actual-api";
-import { CATEGORY_ID_ATTR, trackCategoryIds } from "@lib/utilities/category-ids";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { getValue, setValue } from "@lib/utilities/store";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
-import { createLogger } from "@lib/utilities/logger";
+import { notify, send } from "@lib/actual/actual-api";
+import { CATEGORY_ID_ATTR, trackCategoryIds } from "@lib/actual/category-ids";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { getValue, setValue } from "@lib/store";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
+import { createLogger } from "@lib/logger";
 import { CATEGORY_CELL, CATEGORY_ITEM, CATEGORY_NAME, ROW } from "@lib/actual-dom";
 
 const log = createLogger("emoji");

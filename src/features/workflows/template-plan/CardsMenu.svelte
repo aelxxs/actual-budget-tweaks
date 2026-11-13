@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { onOutsideClick } from "@lib/utilities/popover";
+	import { onOutsideClick } from "@lib/dom/popover";
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
-	import { scrollParent } from "@lib/utilities/dom";
+	import { scrollParent } from "@lib/dom/dom";
 	import Switch from "@lib/components/Switch.svelte";
 	import {
 		ArrowLeftRight,

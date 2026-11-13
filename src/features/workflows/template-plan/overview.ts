@@ -1,7 +1,7 @@
 import type { Schedule } from "@lib/types/actual-schema";
-import { addMonths, isoDate } from "@lib/utilities/months";
-import type { Category } from "@lib/template-plan/priority-plan";
-import type { BudgetMove } from "@lib/utilities/budget-moves";
+import { addMonths, isoDate } from "@lib/format/months";
+import type { Category } from "@lib/actual/templates/priority-plan";
+import type { BudgetMove } from "@lib/actual/budget-moves";
 import type {
 	MonthTrend,
 	OverviewCategoryRow,

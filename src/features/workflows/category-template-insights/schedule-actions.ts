@@ -1,5 +1,5 @@
 import { ROW, byFocusKey } from "@lib/actual-dom";
-import { navigate } from "@lib/utilities/actual-api";
+import { navigate } from "@lib/actual/actual-api";
 
 /** Opens the schedule's edit modal: Actual has no route to it, so this clicks its row on /schedules. */
 export function openSchedule(id: string) {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { THEME_APPLIED_EVENT } from "@lib/theme-events";
-	import { isBulkEditing, onBulkEditEnd } from "@lib/utilities/bulk-edit";
+	import { isBulkEditing, onBulkEditEnd } from "@lib/actual/bulk-edit";
 
 	/**
 	 * Rolls one of Actual's own numbers. React owns `source`, so its text stays (made

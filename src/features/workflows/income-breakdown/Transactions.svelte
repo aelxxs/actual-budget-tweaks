@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { onOutsideClick } from "@lib/utilities/popover";
-	import { portal } from "@lib/utilities/svelte";
+	import { fmtMoney } from "@lib/format/currency";
+	import { onOutsideClick } from "@lib/dom/popover";
+	import { portal } from "@lib/dom/svelte";
 	import { Check, Lock, X } from "@lucide/svelte";
 	import type { BreakdownTransaction } from "./data";
 

@@ -1,5 +1,5 @@
 import { ACTUAL_TOOLTIP } from "@lib/actual-dom";
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS } from "@lib/dom/dom";
 
 /*
  * Every `title` on the page, ABT's and Actual's, shown as ABT's tooltip. An element can add a muted

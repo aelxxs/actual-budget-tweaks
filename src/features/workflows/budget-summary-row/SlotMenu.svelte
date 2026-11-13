@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { portal } from "@lib/utilities/svelte";
-	import { loadCategories } from "@lib/template-plan/actual-data";
-	import type { Category } from "@lib/template-plan/priority-plan";
-	import { readCells } from "@lib/utilities/budget-cells";
-	import { type CategoryIcons, followCategoryIcons } from "@lib/utilities/category-icons";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+	import { portal } from "@lib/dom/svelte";
+	import { loadCategories } from "@lib/actual/templates/actual-data";
+	import type { Category } from "@lib/actual/templates/priority-plan";
+	import { readCells } from "@lib/actual/budget-cells";
+	import { type CategoryIcons, followCategoryIcons } from "@lib/category-icons";
+	import { fmtMoney } from "@lib/format/currency";
+	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
 	import {
 		Banknote,
 		CalendarClock,

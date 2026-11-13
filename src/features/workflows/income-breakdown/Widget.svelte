@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Tick from "@lib/components/Tick.svelte";
-	import { navigate } from "@lib/utilities/actual-api";
-	import { createLogger } from "@lib/utilities/logger";
-	import { onOutsideClick } from "@lib/utilities/popover";
-	import { portal } from "@lib/utilities/svelte";
+	import { navigate } from "@lib/actual/actual-api";
+	import { createLogger } from "@lib/logger";
+	import { onOutsideClick } from "@lib/dom/popover";
+	import { portal } from "@lib/dom/svelte";
 	import { EllipsisVertical } from "@lucide/svelte";
 	import Chart from "./Chart.svelte";
 	import {

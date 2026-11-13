@@ -1,4 +1,4 @@
-import { findAccountToolbar } from "./native-ui";
+import { findAccountToolbar } from "@lib/actual/native-ui";
 
 export function createToolbarButton(options: {
 	id: string;

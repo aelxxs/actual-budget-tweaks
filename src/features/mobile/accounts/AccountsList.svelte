@@ -4,7 +4,7 @@
 		getEmojiAssetUrl,
 		loadIconCache,
 		watchAccountIcons,
-	} from "@features/appearance/account-icon-picker";
+	} from "@lib/account-icons";
 	import StatusIcon from "@features/workflows/sidebar/components/StatusIcon.svelte";
 	import { type SidebarAccount, loadSidebarAccounts } from "@features/workflows/sidebar/lib/data";
 	import {
@@ -24,8 +24,8 @@
 		navigate,
 		onListChange,
 		onSyncingAccounts,
-	} from "@lib/utilities/actual-api";
-	import { fmtMoney, loadCurrency } from "@lib/utilities/currency";
+	} from "@lib/actual/actual-api";
+	import { fmtMoney, loadCurrency } from "@lib/format/currency";
 	import { ChevronDown, ChevronRight } from "@lucide/svelte";
 	import { onMount, untrack } from "svelte";
 

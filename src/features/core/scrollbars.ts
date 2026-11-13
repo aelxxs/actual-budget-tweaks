@@ -1,4 +1,4 @@
-import { applyGlobalCSS } from "@lib/utilities/dom";
+import { applyGlobalCSS } from "@lib/dom/dom";
 
 // The colour inherits, so it's set only where ui.css redeclares --abt-ink-5, not resolved on every
 // element. No !important: scrollers that hide their bar keep it hidden.

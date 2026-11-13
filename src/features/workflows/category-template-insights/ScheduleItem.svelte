@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { formatDate, loadDatePrefs } from "@lib/utilities/date-format.svelte";
-	import { isoDate } from "@lib/utilities/months";
+	import { fmtMoney } from "@lib/format/currency";
+	import { formatDate, loadDatePrefs } from "@lib/format/date-format.svelte";
+	import { isoDate } from "@lib/format/months";
 	import { getAccountName, parseScheduleAmount } from "./data";
 	import type { LinkedSchedule } from "./types";
 

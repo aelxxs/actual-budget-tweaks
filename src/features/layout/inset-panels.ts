@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
-import { desktopOnly } from "@lib/utilities/pages";
-import { setValue } from "@lib/utilities/store";
+import { desktopOnly } from "@lib/actual/pages";
+import { setValue } from "@lib/store";
 import { syncWindowColor } from "@features/theme/theme-apply";
 
 // 5.5px between the panels, 6px around them.

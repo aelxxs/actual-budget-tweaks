@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
 	import Tabs from "@lib/components/Tabs.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { monthLabelForHeader } from "@lib/template-plan/actual-data";
-	import { setValue } from "@lib/utilities/store";
+	import { fmtMoney } from "@lib/format/currency";
+	import { monthLabelForHeader } from "@lib/actual/templates/actual-data";
+	import { setValue } from "@lib/store";
 	import BreakdownTab from "./BreakdownTab.svelte";
 	import CardsMenu from "./CardsMenu.svelte";
 	import { TAB_STORAGE_KEY } from "./constants";

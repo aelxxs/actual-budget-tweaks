@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { getValue, setValue } from "@lib/store";
 
 	let { ctx }: { ctx: { key: string; defaultValue: string } } = $props();
 

@@ -1,5 +1,5 @@
 import "@lib/styles/ui.css";
-import { getBaseUrl } from "@lib/utilities/store";
+import { getBaseUrl } from "@lib/store";
 import type { PublicPath } from "wxt/browser";
 
 const contentCssPath = "/content-scripts/content.css" as unknown as PublicPath;
@@ -40,7 +40,7 @@ export default defineContentScript({
 			}
 			mounted = true;
 
-			const { isAbtEnabled, ABT_ENABLED_KEY } = await import("@lib/utilities/abt-enabled");
+			const { isAbtEnabled, ABT_ENABLED_KEY } = await import("@lib/abt-enabled");
 			const enabled = await isAbtEnabled();
 			// Turning ABT on or off reloads, as core scripts and themes have no teardown.
 			function onToggle(changes: Record<string, unknown>, areaName: string) {
@@ -57,7 +57,7 @@ export default defineContentScript({
 
 			// The bridge's own content script only checks the address at page load, so a page
 			// enabled from the popup afterwards would have none; injecting twice is a no-op.
-			const { injectMainWorldScript } = await import("@lib/utilities/inject-main-world");
+			const { injectMainWorldScript } = await import("@lib/actual/inject-main-world");
 			void injectMainWorldScript("/actual-api-bridge-main.js");
 
 			const [
@@ -68,9 +68,9 @@ export default defineContentScript({
 				{ bootstrapSettings },
 				{ startSettingsSync },
 			] = await Promise.all([
-				import("@lib/components/ActualSettings.svelte"),
+				import("@features/core/settings/ActualSettings.svelte"),
 				import("@features/index"),
-				import("@lib/utilities/dom"),
+				import("@lib/dom/dom"),
 				import("svelte"),
 				import("@features/runtime"),
 				import("@features/settings-sync"),
@@ -103,7 +103,7 @@ export default defineContentScript({
 			const all = [...coreScripts, ...scripts.flat()];
 			bootstrapSettings(all);
 			ctx.onInvalidated(startSettingsSync(all));
-			const { mountSettingsPanel } = await import("@lib/utilities/settings-mount");
+			const { mountSettingsPanel } = await import("@lib/actual/settings-mount");
 			ctx.onInvalidated(
 				mountSettingsPanel(
 					(anchor) => mount(Settings, { target: anchor }),
@@ -117,8 +117,8 @@ export default defineContentScript({
 			const [{ default: AbtOff }, { settingsTab }, { createElement }, { mount, unmount }] =
 				await Promise.all([
 					import("@lib/components/AbtOff.svelte"),
-					import("@features/core/settings-tab"),
-					import("@lib/utilities/dom"),
+					import("@features/core/settings/tab"),
+					import("@lib/dom/dom"),
 					import("svelte"),
 				]);
 			try {
@@ -128,7 +128,7 @@ export default defineContentScript({
 				return;
 			}
 			ctx.onInvalidated(settingsTab.init());
-			const { mountSettingsPanel } = await import("@lib/utilities/settings-mount");
+			const { mountSettingsPanel } = await import("@lib/actual/settings-mount");
 			ctx.onInvalidated(
 				mountSettingsPanel(
 					(anchor) => mount(AbtOff, { target: anchor }),

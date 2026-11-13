@@ -26,7 +26,7 @@ Marks smaller than about 8px (bars, swatches, dots) may use 1–3px corners.
 - Layout: `abt-stack`, `abt-cluster`, `abt-repel`.
 - Controls: `abt-btn` (with `--sm`, `--icon`, `--ghost`, `--pill`, and tones `abt-tone-accent`, `abt-tone-danger`), `abt-btn-group`, `abt-seg`, `abt-input`, `abt-card`.
 - Floating: `abt-popover` for every popover and menu surface, with `abt-menu` for item lists; `Dialog.svelte` for dialogs.
-- Behaviour: `positionPopover` and `onOutsideClick` in `src/lib/utilities/popover.ts`, `portal` in `src/lib/utilities/svelte.ts`.
+- Behaviour: `positionPopover` and `onOutsideClick` in `src/lib/dom/popover.ts`, `portal` in `src/lib/dom/svelte.ts`.
 
 Write component CSS only where a component differs from these, with a one-line comment saying why. Components don't set outer margins; parents space children with `gap`.
 

@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { desktopOnly } from "@lib/utilities/pages";
-import { getValue } from "@lib/utilities/store";
+import { applyGlobalCSS } from "@lib/dom/dom";
+import { desktopOnly } from "@lib/actual/pages";
+import { getValue } from "@lib/store";
 import { BG_PATTERN_SELECTORS, bgPatterns } from "./data";
 import BackgroundPatternPicker from "./Picker.svelte";
 

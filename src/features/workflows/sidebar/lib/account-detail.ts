@@ -1,7 +1,7 @@
 import type { Account, Payee, Schedule, Transaction } from "@lib/types/actual-schema";
-import { calculate, query } from "@lib/utilities/actual-api";
-import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
-import { isoDaysAgo } from "@lib/utilities/months";
+import { calculate, query } from "@lib/actual/actual-api";
+import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
+import { isoDaysAgo } from "@lib/format/months";
 import type { SyncStatus } from "./data";
 
 export interface UpcomingItem {

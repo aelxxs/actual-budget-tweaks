@@ -7,9 +7,9 @@ import {
 	matchesPage,
 	overlayHash,
 	setOverlayPage,
-} from "@lib/utilities/pages";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { watchRoute } from "@lib/utilities/route-watcher";
+} from "@lib/actual/pages";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { watchRoute } from "@lib/dom/route-watcher";
 import { type Component, mount, unmount } from "svelte";
 
 /**

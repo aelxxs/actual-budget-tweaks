@@ -4,8 +4,8 @@
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Icon from "@lib/components/Icon.svelte";
-	import { onListChange, send } from "@lib/utilities/actual-api";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { onListChange, send } from "@lib/actual/actual-api";
+	import { getValue, setValue } from "@lib/store";
 	import {
 		addMonths,
 		currentMonth,

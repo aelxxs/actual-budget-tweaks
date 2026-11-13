@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { SourceTextModule, SyntheticModule } from "node:vm";
 
 const srcRoot = new URL("../src/", import.meta.url);
-const sourceRoot = new URL("lib/template-plan/", srcRoot);
+const sourceRoot = new URL("lib/actual/templates/", srcRoot);
 
 // Resolves the bundler's aliases and relative imports from the module that asks for them.
 function resolve(name, referrer) {
@@ -40,7 +40,7 @@ async function preview(rows) {
 		]),
 	);
 	const mocks = {
-		"@lib/utilities/actual-api": { send },
+		"@lib/actual/actual-api": { send },
 		"./actual-data": {
 			loadTemplatesByCategoryId: async (fresh) => {
 				assert.equal(fresh, true);

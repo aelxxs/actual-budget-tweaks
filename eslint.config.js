@@ -60,6 +60,23 @@ export default ts.config(
 		},
 	},
 	{
+		files: ["src/lib/**"],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: ["@features/*", "**/features", "**/features/*"],
+							message:
+								"src/lib is shared code and can't depend on a feature; move this into the feature.",
+						},
+					],
+				},
+			],
+		},
+	},
+	{
 		files: ["src/entrypoints/actual-api-bridge-main.ts"],
 		rules: {
 			// Untyped interop with Actual's own internal window globals ($q, $query,

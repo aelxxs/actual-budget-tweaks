@@ -1,9 +1,9 @@
 import { defineSetting } from "@features/types";
-import { createElement, createToolbarButton } from "@lib/utilities/dom";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { watchRoute } from "@lib/utilities/route-watcher";
-import { getValue, setValue } from "@lib/utilities/store";
+import { createElement, createToolbarButton } from "@lib/dom/dom";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { watchRoute } from "@lib/dom/route-watcher";
+import { getValue, setValue } from "@lib/store";
 import {
 	ACCOUNT_CELL,
 	AUTO_SIZER,

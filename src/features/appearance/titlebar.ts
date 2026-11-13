@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
-import { type IconName, iconMask } from "@lib/utilities/icons";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { removeValue } from "@lib/utilities/store";
+import { type IconName, iconMask } from "@lib/icons";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { removeValue } from "@lib/store";
 import { mountThemeMenu } from "@features/theme/menu";
 import { HELP_BUTTON, NOTIFICATIONS_BUTTON, NOTIFICATIONS_COUNT } from "@lib/actual-dom";
 

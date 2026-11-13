@@ -2,16 +2,12 @@
 	import { balanceColors, followBalanceColors } from "../lib/balance-colors.svelte";
 
 	followBalanceColors();
-	import type { AccountIconData } from "@features/appearance/account-icon-picker";
-	import {
-		getEmojiAssetUrl,
-		removeAccountIcon,
-		setAccountIcon,
-	} from "@features/appearance/account-icon-picker";
+	import { type AccountIconData } from "@lib/account-icons";
+	import { getEmojiAssetUrl, removeAccountIcon, setAccountIcon } from "@lib/account-icons";
 	import IconPickerModal from "@features/appearance/account-icon-picker/Modal.svelte";
 	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
-	import { navigate } from "@lib/utilities/actual-api";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { navigate } from "@lib/actual/actual-api";
+	import { fmtMoney } from "@lib/format/currency";
 	import { Smile } from "@lucide/svelte";
 	import { mount, unmount } from "svelte";
 	import { autofocus } from "../actions/autofocus";

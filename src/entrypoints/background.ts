@@ -1,5 +1,5 @@
-import { setValue } from "@lib/utilities/store";
-import { createLogger } from "@lib/utilities/logger";
+import { setValue } from "@lib/store";
+import { createLogger } from "@lib/logger";
 
 const log = createLogger("background");
 

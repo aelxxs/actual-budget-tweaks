@@ -1,4 +1,4 @@
-import { getValue, removeValue } from "@lib/utilities/store";
+import { getValue, removeValue } from "@lib/store";
 
 export const SIDEBAR_MOUNT_ATTR = "data-abt-live-sidebar";
 // In the page's own storage, like Actual's sidebar width: it reads synchronously, so the first

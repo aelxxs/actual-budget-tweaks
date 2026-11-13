@@ -1,7 +1,7 @@
-import { loadCurrentBudgetId, notify, send } from "@lib/utilities/actual-api";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { createLogger } from "@lib/utilities/logger";
-import { getValue, hasValue, onSetValue, removeValue, setValue } from "@lib/utilities/store";
+import { loadCurrentBudgetId, notify, send } from "@lib/actual/actual-api";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { createLogger } from "@lib/logger";
+import { getValue, hasValue, onSetValue, removeValue, setValue } from "@lib/store";
 import { reapplySetting } from "./runtime";
 import type { Setting } from "./types";
 import { BUDGET_LINK } from "@lib/actual-dom";

@@ -1,5 +1,5 @@
 import { SETTINGS } from "@lib/actual-dom";
-import { watchElement } from "./dom-watcher";
+import { watchElement } from "@lib/dom/dom-watcher";
 import { TWEAKS_HOST_ATTR, settingsAnchor } from "./settings-page";
 
 /**

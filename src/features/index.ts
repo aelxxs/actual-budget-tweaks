@@ -1,4 +1,4 @@
-import { provideTweaksSections } from "@lib/utilities/settings-page";
+import { provideTweaksSections } from "@lib/actual/settings-page";
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { categoryColorDots } from "./appearance/category-color-dots";
@@ -16,7 +16,7 @@ import { privacyMode } from "./core/privacy-mode";
 import { releaseNotification } from "./core/release-notification";
 import { scheduleHighlight } from "./core/schedule-highlight";
 import { scrollbars } from "./core/scrollbars";
-import { settingsTab } from "./core/settings-tab";
+import { settingsTab } from "./core/settings/tab";
 import { sidePanel } from "./core/side-panel";
 import { tooltipStyling } from "./core/tooltip";
 import { backgroundPattern } from "./layout/background-pattern";

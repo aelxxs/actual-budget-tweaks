@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import AccountsList from "./AccountsList.svelte";
 import { LISTBOX, MOBILE_ACCOUNT_ROW } from "@lib/actual-dom";
 

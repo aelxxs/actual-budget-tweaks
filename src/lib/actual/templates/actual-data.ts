@@ -1,11 +1,11 @@
-import { query, send } from "@lib/utilities/actual-api";
+import { query, send } from "@lib/actual/actual-api";
 import type { GoalDefEntry } from "@lib/types/actual-schema";
-import { sheetToMonth } from "@lib/utilities/months";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { sheetToMonth } from "@lib/format/months";
+import { Page, matchesPage } from "@lib/actual/pages";
 import type { Category } from "./priority-plan";
 import { templateEntriesFromGoalDef } from "./templates";
 import type { TemplateEntry } from "./templates";
-import { createLogger } from "@lib/utilities/logger";
+import { createLogger } from "@lib/logger";
 import { BUDGET_LINK, BUDGET_TABLE, SHOWN_MONTH } from "@lib/actual-dom";
 
 const log = createLogger("template-plan");

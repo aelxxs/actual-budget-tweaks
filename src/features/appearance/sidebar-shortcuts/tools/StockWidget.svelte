@@ -2,7 +2,7 @@
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { onMount } from "svelte";
 	import { refreshWhileVisible } from "./refresh";
-	import { createLogger } from "@lib/utilities/logger";
+	import { createLogger } from "@lib/logger";
 
 	const log = createLogger("stock");
 

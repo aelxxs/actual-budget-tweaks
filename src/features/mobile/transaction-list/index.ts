@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 import { LISTBOX, MODAL, OPTION } from "@lib/actual-dom";
 
 /*

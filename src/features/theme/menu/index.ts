@@ -1,4 +1,4 @@
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { mountToNodeWithReturn } from "@lib/dom/svelte";
 import ThemeMenu from "./ThemeMenu.svelte";
 
 // The palette button the Titlebar setting adds.

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PRESET_COLORS } from "@lib/utilities/category-colors";
+	import { PRESET_COLORS } from "@lib/category-colors";
 
 	const {
 		currentColor,

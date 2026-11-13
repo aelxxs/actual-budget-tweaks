@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
 import { BUDGET_SCROLLER, BUDGET_SUMMARY, BUDGET_TOTALS } from "@lib/actual-dom";
-import { getValue, hasValue, removeValue, setValue } from "@lib/utilities/store";
+import { getValue, hasValue, removeValue, setValue } from "@lib/store";
 
 /** The top bar's border, also drawn by the modern page headers so they don't float under it. */
 export const NAV_BORDER_CSS = `

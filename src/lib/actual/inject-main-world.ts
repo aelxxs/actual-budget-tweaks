@@ -1,5 +1,5 @@
 import type { PublicPath } from "wxt/browser";
-import { createElement } from "./dom";
+import { createElement } from "@lib/dom/dom";
 
 export async function injectMainWorldScript(path: string): Promise<void> {
 	const id = path.replace(/^\/|\.js$/g, "");

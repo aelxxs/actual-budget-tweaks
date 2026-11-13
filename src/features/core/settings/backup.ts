@@ -1,6 +1,6 @@
-import { scripts } from "../../features";
-import { pushStoredSettings } from "../../features/settings-sync";
-import { isoDate } from "./months";
+import { scripts } from "@features/index";
+import { pushStoredSettings } from "@features/settings-sync";
+import { isoDate } from "@lib/format/months";
 
 // Stored by features outside any one setting, so an export carries them even before first use.
 const AUX_DEFAULTS: Record<string, unknown> = {

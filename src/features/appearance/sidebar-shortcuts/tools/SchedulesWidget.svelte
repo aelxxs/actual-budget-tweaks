@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { query, navigate } from "@lib/utilities/actual-api";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { query, navigate } from "@lib/actual/actual-api";
+	import { fmtMoney } from "@lib/format/currency";
 
 	interface Schedule {
 		id: string;

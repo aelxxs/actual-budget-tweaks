@@ -3,18 +3,18 @@
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 	import { SCHEDULE_EDITOR } from "@lib/actual-dom";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
-	import { onListChange } from "@lib/utilities/actual-api";
-	import { loadCategoryColors } from "@lib/utilities/category-colors";
-	import { loadCurrency } from "@lib/utilities/currency";
+	import { onListChange } from "@lib/actual/actual-api";
+	import { loadCategoryColors } from "@lib/category-colors";
+	import { loadCurrency } from "@lib/format/currency";
 	import {
 		formatDate,
 		formatDayMonth,
 		loadDatePrefs,
 		weekdayNames,
-	} from "@lib/utilities/date-format.svelte";
-	import { watchDom } from "@lib/utilities/dom-watcher";
-	import { createLogger } from "@lib/utilities/logger";
-	import { isoDate } from "@lib/utilities/months";
+	} from "@lib/format/date-format.svelte";
+	import { watchDom } from "@lib/dom/dom-watcher";
+	import { createLogger } from "@lib/logger";
+	import { isoDate } from "@lib/format/months";
 	import { mount, onMount, tick, unmount } from "svelte";
 	import { cubicOut } from "svelte/easing";
 	import { fly } from "svelte/transition";

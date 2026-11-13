@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { GripVertical, Info, Plus, X } from "@lucide/svelte";
 	import { onMount, tick } from "svelte";
-	import { onListChange, query } from "@lib/utilities/actual-api";
+	import { onListChange, query } from "@lib/actual/actual-api";
 	import type { Account } from "@lib/types/actual-schema";
 	import type { AccountGroup, GroupState, Section } from "../lib/groups";
 	import {

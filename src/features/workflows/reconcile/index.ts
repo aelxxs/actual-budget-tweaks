@@ -1,10 +1,10 @@
 import { defineSetting } from "@features/types";
-import { navigate } from "@lib/utilities/actual-api";
-import { UUID } from "@lib/utilities/ids";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { findAccountToolbar } from "@lib/utilities/native-ui";
-import { getCurrentPath } from "@lib/utilities/route-watcher";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { navigate } from "@lib/actual/actual-api";
+import { UUID } from "@lib/ids";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { findAccountToolbar } from "@lib/actual/native-ui";
+import { getCurrentPath } from "@lib/dom/route-watcher";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import { NATIVE_LOCK } from "./dom";
 import { closePanel, destroyPanel, openPanel, panelWasClosed } from "./panel";
 import ReconcileButton from "./ReconcileButton.svelte";

@@ -5,7 +5,7 @@ import {
 	query,
 	refetchTransactions,
 	send,
-} from "@lib/utilities/actual-api";
+} from "@lib/actual/actual-api";
 import { whenLock } from "./dom";
 import { isPanelShowing, openPanel } from "./panel";
 

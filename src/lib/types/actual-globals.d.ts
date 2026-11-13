@@ -3,7 +3,7 @@
  * These are only available in the main world (actual-api-bridge-main.ts).
  *
  * Do NOT use these directly in content scripts — use the typed bridge
- * functions in @lib/utilities/actual-api instead.
+ * functions in @lib/actual/actual-api instead.
  */
 
 import type { ActualTable, TableName } from "./actual-schema";
@@ -25,7 +25,7 @@ declare global {
 		 * Actual Budget's internal query executor.
 		 * Accepts a query built with $q() and returns the matching rows.
 		 *
-		 * Available in the main world only. Use query() from @lib/utilities/actual-api
+		 * Available in the main world only. Use query() from @lib/actual/actual-api
 		 * in content scripts.
 		 */
 		$query:

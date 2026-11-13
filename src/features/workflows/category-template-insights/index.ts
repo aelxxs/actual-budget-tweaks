@@ -1,20 +1,16 @@
 import { reapplySetting } from "@features/runtime";
 import { defineSetting, type Setting } from "@features/types";
-import {
-	type BudgetTableChange,
-	collectChanges,
-	watchBudgetTable,
-} from "@lib/utilities/budget-cells";
-import { rowCategoryId } from "@lib/utilities/budget-cells";
-import { loadCurrency } from "@lib/utilities/currency";
-import { getCurrentSheet } from "@lib/template-plan/actual-data";
-import { type BudgetMove, loadMonthMoves } from "@lib/utilities/budget-moves";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { sheetToMonth } from "@lib/utilities/months";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { positionPopover } from "@lib/utilities/popover";
-import { getValue, removeValue, setValue } from "@lib/utilities/store";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { type BudgetTableChange, collectChanges, watchBudgetTable } from "@lib/actual/budget-cells";
+import { rowCategoryId } from "@lib/actual/budget-cells";
+import { loadCurrency } from "@lib/format/currency";
+import { getCurrentSheet } from "@lib/actual/templates/actual-data";
+import { type BudgetMove, loadMonthMoves } from "@lib/actual/budget-moves";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { sheetToMonth } from "@lib/format/months";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { positionPopover } from "@lib/dom/popover";
+import { getValue, removeValue, setValue } from "@lib/store";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import {
 	type MonthValues,
 	getInsights,

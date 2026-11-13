@@ -1,5 +1,5 @@
 import type { Schedule, Transaction } from "@lib/types/actual-schema";
-import { calculate } from "@lib/utilities/actual-api";
+import { calculate } from "@lib/actual/actual-api";
 import { parseScheduleAmount } from "./month-data";
 
 /** One unpaid scheduled occurrence, signed as it lands in the selected accounts. */

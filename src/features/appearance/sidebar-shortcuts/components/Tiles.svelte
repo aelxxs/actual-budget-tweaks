@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getFaviconUrl } from "@lib/utilities/favicon";
-	import { icon } from "@lib/utilities/icons";
+	import { getFaviconUrl } from "@lib/dom/favicon";
+	import { icon } from "@lib/icons";
 	import { X } from "@lucide/svelte";
 	import { onDestroy, tick, type Snippet } from "svelte";
 	import type { AnimationConfig } from "svelte/animate";

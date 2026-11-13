@@ -1,4 +1,4 @@
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 import { CLEARED_CELL, ROW, byTestId } from "@lib/actual-dom";
 
 // Marked in JS: as `row:has(<lock>)`, every test id Actual rewrote anywhere restyled the page.

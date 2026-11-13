@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 import { AMOUNT_INPUT, DIALOG, MODAL } from "@lib/actual-dom";
 
 // Every Actual modal: an overlay with a `<name>-modal` test id, a wrapper sized to the visible

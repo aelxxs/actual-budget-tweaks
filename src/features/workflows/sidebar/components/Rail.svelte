@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { spendingCalendar } from "@features/workflows/spending-calendar";
 	import { graphView, openGraphView } from "@features/workflows/graph-view";
-	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
-	import type { AccountIconData } from "@features/appearance/account-icon-picker";
+	import { getEmojiAssetUrl } from "@lib/account-icons";
+	import { type AccountIconData } from "@lib/account-icons";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { openCalendar } from "@features/workflows/spending-calendar";
 	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
-	import { dispatch, navigate } from "@lib/utilities/actual-api";
-	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
-	import { getValue, watchValue } from "@lib/utilities/store";
-	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
+	import { dispatch, navigate } from "@lib/actual/actual-api";
+	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
+	import { getValue, watchValue } from "@lib/store";
+	import { lastShown, rememberShown } from "@lib/last-shown";
 	import {
 		CalendarDays,
 		Folder,

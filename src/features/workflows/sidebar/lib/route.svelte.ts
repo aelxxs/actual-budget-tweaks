@@ -1,5 +1,5 @@
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
 
 /*
  * Actual's navigations aren't observable from a content script, so the route is re-read on DOM

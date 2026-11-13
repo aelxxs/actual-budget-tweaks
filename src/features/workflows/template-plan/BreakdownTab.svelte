@@ -3,9 +3,9 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { priorityKey, priorityLabel } from "@lib/template-plan/constants";
-	import type { BreakdownSummary } from "@lib/template-plan/priority-plan";
+	import { fmtMoney } from "@lib/format/currency";
+	import { priorityKey, priorityLabel } from "@lib/actual/templates/constants";
+	import type { BreakdownSummary } from "@lib/actual/templates/priority-plan";
 	import { statusBadge, statusTone } from "./status";
 	import { templatePlanState } from "./state.svelte";
 	import TabSkeleton from "./TabSkeleton.svelte";

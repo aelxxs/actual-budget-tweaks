@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { getValue } from "@lib/utilities/store";
+import { getValue } from "@lib/store";
 import BorderRadiusPicker from "./Picker.svelte";
 
 export const borderRadius = defineSetting({

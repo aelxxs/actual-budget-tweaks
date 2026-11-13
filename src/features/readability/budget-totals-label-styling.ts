@@ -1,6 +1,6 @@
 import { BUDGET_TOTALS, BUDGET_TOTAL_LABELS } from "@lib/actual-dom";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
 
 const LABEL_ATTR = "data-abt-budget-total-label";
 const CATEGORY_ATTR = "data-abt-budget-category-label";

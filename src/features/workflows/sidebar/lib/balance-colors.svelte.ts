@@ -1,5 +1,5 @@
 import { colorAmounts } from "@features/readability/color-amounts";
-import { getValue, watchValue } from "@lib/utilities/store";
+import { getValue, watchValue } from "@lib/store";
 
 const { key, defaultValue } = colorAmounts.context;
 

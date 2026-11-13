@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { mountToNodeWithReturn } from "@lib/dom/svelte";
 import TabBar from "./TabBar.svelte";
 import { MOBILE_NAV } from "@lib/actual-dom";
 

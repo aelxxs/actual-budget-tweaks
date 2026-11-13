@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { clamp } from "@lib/utilities/math";
+	import { clamp } from "@lib/math";
 	import { panelState } from "./panel-state.svelte";
 
 	let {

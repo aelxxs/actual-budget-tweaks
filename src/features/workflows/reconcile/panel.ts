@@ -1,5 +1,5 @@
 import { sidepanel } from "@features/core/side-panel";
-import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
+import { type Mounted, mountToPanelBody } from "@lib/dom/svelte";
 import ReconcilePanel from "./ReconcilePanel.svelte";
 import { reconcile } from "./state.svelte";
 

@@ -1,4 +1,4 @@
-import { getValue, hasValue, setValue, watchValue } from "@lib/utilities/store";
+import { getValue, hasValue, setValue, watchValue } from "@lib/store";
 import { type BreakdownOptions, DEFAULT_OPTIONS } from "./data";
 
 const OPTIONS_KEY = "income-breakdown-options";

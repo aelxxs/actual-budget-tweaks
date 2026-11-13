@@ -1,5 +1,5 @@
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue } from "@lib/utilities/store";
+import { applyGlobalCSS } from "@lib/dom/dom";
+import { getValue } from "@lib/store";
 import { DEFAULT_THEME } from "../defaults";
 import { applyThemeByKey, applyUserPaletteTheme } from "../theme-apply";
 import { paletteKeys, STUDIO_STYLE_ID, studioCSS } from "./effects";

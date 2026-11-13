@@ -1,4 +1,4 @@
-import { getCurrentPath } from "./route-watcher";
+import { getCurrentPath } from "@lib/dom/route-watcher";
 import { PAYEES_LINK, SETTINGS_LINK, SETTINGS_PAGE_LINK, SIDEBAR_NAV } from "@lib/actual-dom";
 
 /** Known top-level routes in the Actual Budget app, matched as a `pathname` substring. */

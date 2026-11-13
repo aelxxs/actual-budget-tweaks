@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { BudgetMove } from "@lib/utilities/budget-moves";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import type { BudgetMove } from "@lib/actual/budget-moves";
+	import { fmtMoney } from "@lib/format/currency";
 	import { getCategoryName, progressState } from "./data";
 	import { openSchedule } from "./schedule-actions";
 	import ScheduleItem from "./ScheduleItem.svelte";

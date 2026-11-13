@@ -1,4 +1,4 @@
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue } from "@lib/store";
 import { mount, unmount } from "svelte";
 import ToolPopover from "./components/ToolPopover.svelte";
 import type { ToolId } from "./types";

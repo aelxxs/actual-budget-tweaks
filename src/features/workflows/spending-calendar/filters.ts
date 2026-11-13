@@ -1,5 +1,5 @@
 import type { BaseFilters } from "@features/workflows/filters/types";
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue } from "@lib/store";
 
 export type { Flow } from "@features/workflows/filters/types";
 

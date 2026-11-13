@@ -1,8 +1,8 @@
 import { heldForNextMonth, nextMonthGoalNeed } from "@features/workflows/template-plan/overview";
 import type { OverviewData } from "@features/workflows/template-plan/state.svelte";
-import { loadCategories } from "@lib/template-plan/actual-data";
-import { readCells } from "@lib/utilities/budget-cells";
-import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
+import { loadCategories } from "@lib/actual/templates/actual-data";
+import { readCells } from "@lib/actual/budget-cells";
+import { addMonths, monthToSheet, sheetToMonth } from "@lib/format/months";
 
 /** How many earlier months "usual" averages over. */
 export const USUAL_MONTHS = 3;

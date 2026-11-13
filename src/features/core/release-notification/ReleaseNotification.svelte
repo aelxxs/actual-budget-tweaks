@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
-	import { summarizeReleaseNotes, type ReleaseNoteSection } from "@lib/utilities/changelog";
+	import { summarizeReleaseNotes, type ReleaseNoteSection } from "@lib/changelog";
 
 	const {
 		version,

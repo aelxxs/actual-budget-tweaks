@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getCategoryColor } from "@lib/utilities/category-colors";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { getCategoryColor } from "@lib/category-colors";
+	import { fmtMoney } from "@lib/format/currency";
 	import { hasTransactions } from "./month-data";
 	import { groupByPayee, spendingByCategory, type GroupedTransaction } from "./summary";
 	import type { DayData } from "./types";

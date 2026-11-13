@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { fmtMoney } from "@lib/format/currency";
 	import { sankey, sankeyJustify, sankeyLinkHorizontal } from "d3-sankey";
 	import { type SankeyLink, type SankeyNode, SUMMARY_NODES } from "./data";
 

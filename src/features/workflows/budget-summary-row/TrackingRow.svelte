@@ -1,6 +1,6 @@
 <script lang="ts">
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { currentMonth } from "@lib/utilities/months";
+	import { currentMonth } from "@lib/format/months";
 	import ActionCard from "./ActionCard.svelte";
 	import SlotCard from "./SlotCard.svelte";
 	import { smoothRow } from "./smooth-row";

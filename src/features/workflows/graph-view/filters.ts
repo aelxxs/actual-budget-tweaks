@@ -1,4 +1,4 @@
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue } from "@lib/store";
 import type { GraphFilters } from "./data";
 
 export const CLEARED: GraphFilters = {

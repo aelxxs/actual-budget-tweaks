@@ -1,10 +1,10 @@
-import { send } from "@lib/utilities/actual-api";
-import { readCell } from "@lib/utilities/budget-cells";
-import { getCurrencyCode } from "@lib/utilities/currency";
+import { send } from "@lib/actual/actual-api";
+import { readCell } from "@lib/actual/budget-cells";
+import { getCurrencyCode } from "@lib/format/currency";
 import { CELL, leftoverCellOf } from "@lib/actual-dom";
-import { loadTemplatesByCategoryId } from "@lib/template-plan/actual-data";
-import { comparePriority, type PriorityValue } from "@lib/template-plan/constants";
-import { isRemainderTemplate } from "@lib/template-plan/templates";
+import { loadTemplatesByCategoryId } from "@lib/actual/templates/actual-data";
+import { comparePriority, type PriorityValue } from "@lib/actual/templates/constants";
+import { isRemainderTemplate } from "@lib/actual/templates/templates";
 
 /** What an action changed, so its toast can describe and undo it. */
 export interface ActionResult {

@@ -1,4 +1,4 @@
-import { getValue, setValue, watchValue } from "@lib/utilities/store";
+import { getValue, setValue, watchValue } from "@lib/store";
 import type { Effects } from "./studio/generator";
 
 const KEY = "theme-effects";

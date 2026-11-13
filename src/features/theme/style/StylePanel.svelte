@@ -2,7 +2,7 @@
 	import { styleSettings } from "@features/index";
 	import { untrack } from "svelte";
 	import Section from "@lib/components/panel/Section.svelte";
-	import SettingRow from "@lib/components/SettingRow.svelte";
+	import SettingRow from "@features/core/settings/SettingRow.svelte";
 	import Switch from "@lib/components/Switch.svelte";
 	import { editorState } from "../editor-state.svelte";
 	import { effectsFor, loadThemeEffects, setThemeEffects } from "../effects-store.svelte";

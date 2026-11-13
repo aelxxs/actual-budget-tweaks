@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { themes } from "@lib/design";
-	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
-	import { portal } from "@lib/utilities/svelte";
-	import { getValue } from "@lib/utilities/store";
+	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
+	import { portal } from "@lib/dom/svelte";
+	import { getValue } from "@lib/store";
 	import { LayoutGrid, Paintbrush, Palette, Shapes } from "@lucide/svelte";
 	import { editorState } from "../editor-state.svelte";
 	import ThemeThumb from "../picker/ThemeThumb.svelte";

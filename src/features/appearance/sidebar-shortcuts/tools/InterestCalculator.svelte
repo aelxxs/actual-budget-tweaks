@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fmtNumber } from "@lib/utilities/currency";
+	import { fmtNumber } from "@lib/format/currency";
 	// Closing is handled by the parent popover's own backdrop/outside-click
 	// logic; this component doesn't need to trigger it itself.
 	const { onClose: _onClose } = $props<{ onClose: () => void }>();

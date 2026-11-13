@@ -1,4 +1,4 @@
-import { watchRoute } from "@lib/utilities/route-watcher";
+import { watchRoute } from "@lib/dom/route-watcher";
 import { ROW, byFocusKey } from "@lib/actual-dom";
 
 export const scheduleHighlight = {

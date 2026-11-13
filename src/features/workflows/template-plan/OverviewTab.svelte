@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { scrollLaidOutIntoView } from "@lib/utilities/dom";
+	import { scrollLaidOutIntoView } from "@lib/dom/dom";
 	import Badge from "@lib/components/panel/Badge.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { monthOf } from "@lib/utilities/months";
-	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
-	import { type CategoryIcons, followCategoryIcons } from "@lib/utilities/category-icons";
+	import { fmtMoney } from "@lib/format/currency";
+	import { monthOf } from "@lib/format/months";
+	import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
+	import { type CategoryIcons, followCategoryIcons } from "@lib/category-icons";
 	import { onMount } from "svelte";
 	import { cardsInRow } from "@features/workflows/budget-summary-row/state.svelte";
 	import { templatePlanState } from "./state.svelte";

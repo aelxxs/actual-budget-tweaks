@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { applyGlobalCSS } from "@lib/utilities/dom";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { applyGlobalCSS } from "@lib/dom/dom";
+	import { getValue, setValue } from "@lib/store";
 	import { bgPatterns } from "./data";
 
 	let { ctx }: { ctx: { key: string; defaultValue: string; css: (v: string) => string } } =

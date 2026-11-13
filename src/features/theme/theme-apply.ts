@@ -1,8 +1,8 @@
 import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
 import { getTheme, themes } from "@lib/design";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { watchElement } from "@lib/utilities/dom-watcher";
+import { applyGlobalCSS } from "@lib/dom/dom";
+import { watchElement } from "@lib/dom/dom-watcher";
 import { editorState } from "./editor-state.svelte";
 import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte";
 import { STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";

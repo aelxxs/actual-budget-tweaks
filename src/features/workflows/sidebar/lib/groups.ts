@@ -1,5 +1,5 @@
-import { invalidateQueries, onListChange, send } from "@lib/utilities/actual-api";
-import { getValue, setValue, watchValue } from "@lib/utilities/store";
+import { invalidateQueries, onListChange, send } from "@lib/actual/actual-api";
+import { getValue, setValue, watchValue } from "@lib/store";
 
 export type Section = "onbudget" | "offbudget";
 

@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { CheckboxSetting } from "../../features/types";
-	import { applySettingChange } from "../../features/runtime";
-	import { isTrackingBudget, onBudgetType } from "../utilities/budget-type";
-	import { getValue, watchValue } from "../utilities/store";
-	import Icon from "./Icon.svelte";
-	import PreviewToggle from "./PreviewToggle.svelte";
-	import Switch from "./Switch.svelte";
-	import ExperimentalMark from "./ExperimentalMark.svelte";
-	import WritesMark from "./WritesMark.svelte";
-	import type { IconName } from "../utilities/icons";
+	import type { CheckboxSetting } from "@features/types";
+	import { applySettingChange } from "@features/runtime";
+	import { isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
+	import { getValue, watchValue } from "@lib/store";
+	import Icon from "@lib/components/Icon.svelte";
+	import PreviewToggle from "@lib/components/PreviewToggle.svelte";
+	import Switch from "@lib/components/Switch.svelte";
+	import ExperimentalMark from "@lib/components/ExperimentalMark.svelte";
+	import WritesMark from "@lib/components/WritesMark.svelte";
+	import type { IconName } from "@lib/icons";
 
 	const SITE_URL = "https://abt.alexis.lol";
 

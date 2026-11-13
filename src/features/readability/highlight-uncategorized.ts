@@ -1,4 +1,4 @@
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 import { CATEGORY_CELL, ROW } from "@lib/actual-dom";
 
 export const UNCATEGORIZED_CSS = `

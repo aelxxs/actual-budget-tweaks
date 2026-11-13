@@ -1,6 +1,6 @@
 import { sidepanel } from "@features/core/side-panel";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/dom/svelte";
 import { userThemeState } from "../user-themes.svelte";
 import { restoreSavedTheme } from "./apply";
 import { recipeFromPalette } from "./generator";

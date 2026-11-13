@@ -1,4 +1,4 @@
-import { Page } from "@lib/utilities/pages";
+import { Page } from "@lib/actual/pages";
 import { type NavItem, settingsItems } from "./menu.svelte";
 import {
 	Banknote,

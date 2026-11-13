@@ -1,7 +1,7 @@
 import { BUDGET_LINK } from "@lib/actual-dom";
 import { loadCurrentBudgetId } from "./actual-api";
-import { watchDom } from "./dom-watcher";
-import { getValue, setValue, watchValue } from "./store";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { getValue, setValue, watchValue } from "@lib/store";
 
 export interface BudgetValue {
 	/** Saves under the open budget; does nothing with no budget open. */

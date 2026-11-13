@@ -1,11 +1,11 @@
 import { fetchCells, markCellsStale } from "@features/readability/category-progress/cells";
 import { defineSetting } from "@features/types";
 import { BALANCE_CELL, BUDGET_TABLE, CATEGORY_NAME, ROW } from "@lib/actual-dom";
-import { loadCategories } from "@lib/template-plan/actual-data";
-import { onListChange } from "@lib/utilities/actual-api";
-import { collectChanges, shownSheets, watchBudgetTable } from "@lib/utilities/budget-cells";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { loadCategories } from "@lib/actual/templates/actual-data";
+import { onListChange } from "@lib/actual/actual-api";
+import { collectChanges, shownSheets, watchBudgetTable } from "@lib/actual/budget-cells";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
 
 const ATTR = "data-abt-group-over";
 const REFRESH_MS = 250;

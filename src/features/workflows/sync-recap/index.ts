@@ -1,15 +1,10 @@
 import { sidepanel } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
 import { HELP_BUTTON } from "@lib/actual-dom";
-import {
-	dismissNotification,
-	notify,
-	onImported,
-	type ImportResult,
-} from "@lib/utilities/actual-api";
-import { loadCurrency } from "@lib/utilities/currency";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
+import { dismissNotification, notify, onImported, type ImportResult } from "@lib/actual/actual-api";
+import { loadCurrency } from "@lib/format/currency";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/dom/svelte";
 import { loadTransactions } from "./data";
 import { withBatch } from "./queue";
 import { followQueue, updateQueue } from "./queue-state.svelte";

@@ -1,5 +1,5 @@
 import { query } from "./actual-api";
-import { parseMoney } from "./currency";
+import { parseMoney } from "@lib/format/currency";
 
 export interface BudgetMove {
 	amount: number;

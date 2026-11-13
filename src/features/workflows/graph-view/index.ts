@@ -1,8 +1,8 @@
 import { addNativeNavLink, followOverlayPage, openOverlayPage } from "@features/core/overlay-page";
 import { NAV_BORDER_CSS } from "@features/layout/borders";
 import { defineSetting } from "@features/types";
-import { icon } from "@lib/utilities/icons";
-import { Page } from "@lib/utilities/pages";
+import { icon } from "@lib/icons";
+import { Page } from "@lib/actual/pages";
 import GraphView from "./GraphView.svelte";
 
 export function openGraphView(): void {

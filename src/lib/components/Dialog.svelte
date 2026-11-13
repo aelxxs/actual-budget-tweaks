@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { portal } from "@lib/utilities/svelte";
+	import { portal } from "@lib/dom/svelte";
 	import { X } from "@lucide/svelte";
 	import type { Snippet } from "svelte";
 

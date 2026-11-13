@@ -1,6 +1,6 @@
 import type { Category, CategoryGroup } from "@lib/types/actual-schema";
-import { query } from "@lib/utilities/actual-api";
-import { isoDate } from "@lib/utilities/months";
+import { query } from "@lib/actual/actual-api";
+import { isoDate } from "@lib/format/months";
 
 export interface BreakdownOptions {
 	/** A preset's label, or "" for the custom range in `start` and `end`. */

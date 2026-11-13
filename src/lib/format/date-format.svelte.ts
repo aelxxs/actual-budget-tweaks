@@ -1,5 +1,5 @@
-import { onSyncedPref, query } from "@lib/utilities/actual-api";
-import { createLogger } from "@lib/utilities/logger";
+import { onSyncedPref, query } from "@lib/actual/actual-api";
+import { createLogger } from "@lib/logger";
 
 const log = createLogger("date-format");
 

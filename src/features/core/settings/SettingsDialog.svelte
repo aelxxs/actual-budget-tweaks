@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { Setting } from "../../features/types";
+	import type { Setting } from "@features/types";
 	import type { Component } from "svelte";
 
 	export interface SettingsGroup {
@@ -19,9 +19,9 @@
 </script>
 
 <script lang="ts">
-	import Dialog from "./Dialog.svelte";
+	import Dialog from "@lib/components/Dialog.svelte";
 	import SettingRow from "./SettingRow.svelte";
-	import Tabs from "./Tabs.svelte";
+	import Tabs from "@lib/components/Tabs.svelte";
 
 	const {
 		title,

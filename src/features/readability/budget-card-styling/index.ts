@@ -1,9 +1,9 @@
-import { isTrackingBudget, onBudgetType } from "@lib/utilities/budget-type";
-import { readCell } from "@lib/utilities/budget-cells";
-import { loadCurrency } from "@lib/utilities/currency";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { watchRoute } from "@lib/utilities/route-watcher";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
+import { readCell } from "@lib/actual/budget-cells";
+import { loadCurrency } from "@lib/format/currency";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { watchRoute } from "@lib/dom/route-watcher";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import FlowBar from "./FlowBar.svelte";
 import { AVAILABLE_FUNDS_CELL, BUDGET_SUMMARY, CELL, TO_BUDGET_CELL } from "@lib/actual-dom";
 

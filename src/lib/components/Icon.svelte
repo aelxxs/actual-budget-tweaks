@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { icon, type IconName } from "../utilities/icons";
+	import { icon, type IconName } from "@lib/icons";
 
 	const {
 		name,

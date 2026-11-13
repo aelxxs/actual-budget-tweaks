@@ -1,5 +1,5 @@
 import { sidepanel } from "@features/core/side-panel";
-import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
+import { type Mounted, mountToPanelBody } from "@lib/dom/svelte";
 import StylePanel from "./StylePanel.svelte";
 
 // Kept apart from the settings card that opens it, which a settings search can unmount.

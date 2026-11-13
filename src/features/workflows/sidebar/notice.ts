@@ -1,7 +1,7 @@
 import { applySettingChange } from "@features/runtime";
-import { notify } from "@lib/utilities/actual-api";
-import { isMobileView } from "@lib/utilities/pages";
-import { getValue, hasValue, setValue } from "@lib/utilities/store";
+import { notify } from "@lib/actual/actual-api";
+import { isMobileView } from "@lib/actual/pages";
+import { getValue, hasValue, setValue } from "@lib/store";
 import { experimentalSidebar } from "./index";
 
 const SEEN_KEY = "live-sidebar-notice-seen";

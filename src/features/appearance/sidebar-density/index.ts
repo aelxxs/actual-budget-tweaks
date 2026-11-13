@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue } from "@lib/utilities/store";
+import { applyGlobalCSS } from "@lib/dom/dom";
+import { getValue } from "@lib/store";
 import DensityPicker from "./Picker.svelte";
 
 // Stored as the rem values the old native-sidebar version used, so saved choices carry over.

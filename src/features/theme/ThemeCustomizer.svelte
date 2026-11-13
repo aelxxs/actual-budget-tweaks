@@ -4,8 +4,8 @@
 
 <script lang="ts">
 	import { FEATURED_THEMES, themes } from "@lib/design";
-	import { getValue, setValue, watchValue } from "@lib/utilities/store";
-	import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/utilities/svelte";
+	import { getValue, setValue, watchValue } from "@lib/store";
+	import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/dom/svelte";
 	import { type Component, onDestroy, onMount, untrack } from "svelte";
 	import { sidepanel } from "../core/side-panel";
 	import { DEFAULT_THEME } from "./defaults";
@@ -31,7 +31,7 @@
 		userThemeState,
 		type UserTheme,
 	} from "./user-themes.svelte";
-	import { createLogger } from "@lib/utilities/logger";
+	import { createLogger } from "@lib/logger";
 	import { openPaletteInStudio, openThemeStudio } from "./studio/open";
 	import ThemeCard, { type CardAction } from "./picker/ThemeCard.svelte";
 	import ThemeThumb from "./picker/ThemeThumb.svelte";

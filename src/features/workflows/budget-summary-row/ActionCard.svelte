@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { portal } from "@lib/utilities/svelte";
+	import { portal } from "@lib/dom/svelte";
 	import {
 		templatePlanState,
 		type TrackedAction,
 	} from "@features/workflows/template-plan/state.svelte";
 	import { BUDGET_SUMMARY } from "@lib/actual-dom";
-	import { loadCategories } from "@lib/template-plan/actual-data";
+	import { loadCategories } from "@lib/actual/templates/actual-data";
 	import Icon from "@lib/components/Icon.svelte";
-	import type { IconName } from "@lib/utilities/icons";
-	import { notify } from "@lib/utilities/actual-api";
-	import { bulkEdit } from "@lib/utilities/bulk-edit";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+	import type { IconName } from "@lib/icons";
+	import { notify } from "@lib/actual/actual-api";
+	import { bulkEdit } from "@lib/actual/bulk-edit";
+	import { fmtMoney } from "@lib/format/currency";
+	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
 	import { onMount } from "svelte";
 	import {
 		coverFromCategory,

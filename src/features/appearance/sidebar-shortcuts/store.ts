@@ -1,4 +1,4 @@
-import { getValue, hasValue, removeValue, setValue, watchValue } from "@lib/utilities/store";
+import { getValue, hasValue, removeValue, setValue, watchValue } from "@lib/store";
 import type { BuiltinTool, BuiltinWidget, Shortcut } from "./types";
 
 // Kept per budget: links point at its accounts, and tickers follow its finances.

@@ -5,8 +5,8 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { formatMoneyInput, fmtMoney, parseMoney } from "@lib/utilities/currency";
-	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
+	import { formatMoneyInput, fmtMoney, parseMoney } from "@lib/format/currency";
+	import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
 	import { onMount } from "svelte";
 	import { closePanel } from "./panel";
 	import { reconciledOn } from "./relative-time";

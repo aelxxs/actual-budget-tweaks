@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 
 // Actual's mobile page header: a row with the <h1> title between left and right buttons. It
 // renders into a slot that stays mounted between pages, so the slot is styled with it.

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onOutsideClick } from "@lib/utilities/popover";
+	import { onOutsideClick } from "@lib/dom/popover";
 	import { Ellipsis, Moon, Sun } from "@lucide/svelte";
 	import ThemeThumb from "./ThemeThumb.svelte";
 	import type { Thumb } from "./thumbs";

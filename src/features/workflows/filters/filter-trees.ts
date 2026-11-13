@@ -1,8 +1,5 @@
-import {
-	accountIconPicker,
-	loadIconCache,
-	type AccountIconData,
-} from "@features/appearance/account-icon-picker";
+import { accountIconPicker } from "@features/appearance/account-icon-picker";
+import { loadIconCache, type AccountIconData } from "@lib/account-icons";
 import {
 	groupOf,
 	groupsIn,
@@ -11,8 +8,8 @@ import {
 } from "@features/workflows/sidebar/lib/groups";
 import { applyOrder, loadAccountOrder } from "@features/workflows/sidebar/lib/order";
 import type { Account, Category, CategoryGroup } from "@lib/types/actual-schema";
-import { loadCurrentBudgetId } from "@lib/utilities/actual-api";
-import { getValue } from "@lib/utilities/store";
+import { loadCurrentBudgetId } from "@lib/actual/actual-api";
+import { getValue } from "@lib/store";
 import type { TreeSection } from "./FilterTree.svelte";
 
 export type FilterAccount = Pick<Account, "id" | "name" | "offbudget" | "closed">;

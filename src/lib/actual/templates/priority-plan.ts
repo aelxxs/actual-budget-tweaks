@@ -1,5 +1,5 @@
-import { send } from "@lib/utilities/actual-api";
-import { amountToCents } from "@lib/utilities/currency";
+import { send } from "@lib/actual/actual-api";
+import { amountToCents } from "@lib/format/currency";
 import {
 	PRIORITY_CACHE_MS,
 	PRIORITY_MODE,

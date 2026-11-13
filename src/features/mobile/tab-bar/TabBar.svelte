@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { MOBILE_NAV } from "@lib/actual-dom";
-	import { navigate } from "@lib/utilities/actual-api";
-	import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
+	import { navigate } from "@lib/actual/actual-api";
+	import { watchDom, watchElement } from "@lib/dom/dom-watcher";
 	import { Ellipsis, Plus } from "@lucide/svelte";
 	import MoreSheet from "./MoreSheet.svelte";
 	import { ADD_PATH, isActive, type NavLink, PRIMARY, readLinks, TAB_BAR_ATTR } from "./nav";

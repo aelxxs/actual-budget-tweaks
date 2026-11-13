@@ -1,4 +1,4 @@
-import { getValue, setValue, watchValue } from "@lib/utilities/store";
+import { getValue, setValue, watchValue } from "@lib/store";
 
 const ORDER_KEY = "experimental-sidebar-account-order";
 

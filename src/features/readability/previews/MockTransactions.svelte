@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { CircleCheck, Lock } from "@lucide/svelte";
-	import { fmtNumber } from "@lib/utilities/currency";
+	import { fmtNumber } from "@lib/format/currency";
 
 	/** A few rows of Actual's transaction table, for the transaction tweaks' previews. */
 	const {

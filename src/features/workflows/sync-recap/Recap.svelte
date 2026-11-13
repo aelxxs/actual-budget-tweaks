@@ -2,8 +2,8 @@
 	import CategoryPicker from "@lib/components/CategoryPicker.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { formatDayMonth } from "@lib/utilities/date-format.svelte";
+	import { fmtMoney } from "@lib/format/currency";
+	import { formatDayMonth } from "@lib/format/date-format.svelte";
 	import { onMount, untrack } from "svelte";
 	import {
 		loadCategoryGroups,

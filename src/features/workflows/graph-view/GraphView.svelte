@@ -10,22 +10,19 @@
 		type Simulation,
 	} from "d3-force";
 	import { mount, onMount, unmount, untrack } from "svelte";
-	import { mountToPanelBody, type Mounted } from "@lib/utilities/svelte";
-	import {
-		accountIconPicker,
-		getEmojiAssetUrl,
-		loadIconCache,
-	} from "@features/appearance/account-icon-picker";
+	import { mountToPanelBody, type Mounted } from "@lib/dom/svelte";
+	import { accountIconPicker } from "@features/appearance/account-icon-picker";
+	import { getEmojiAssetUrl, loadIconCache } from "@lib/account-icons";
 	import { categoryColorDots } from "@features/appearance/category-color-dots";
 	import { transactionInspector } from "@features/workflows/transaction-inspector";
 	import Inspector from "@features/workflows/transaction-inspector/Inspector.svelte";
 	import Icon from "@lib/components/Icon.svelte";
-	import { onOutsideClick } from "@lib/utilities/popover";
+	import { onOutsideClick } from "@lib/dom/popover";
 	import { Check } from "@lucide/svelte";
-	import { getCategoryColor, loadCategoryColors } from "@lib/utilities/category-colors";
-	import { getValue } from "@lib/utilities/store";
-	import { loadCurrency } from "@lib/utilities/currency";
-	import { loadDatePrefs } from "@lib/utilities/date-format.svelte";
+	import { getCategoryColor, loadCategoryColors } from "@lib/category-colors";
+	import { getValue } from "@lib/store";
+	import { loadCurrency } from "@lib/format/currency";
+	import { loadDatePrefs } from "@lib/format/date-format.svelte";
 	import {
 		buildGraph,
 		HIGHLIGHT_LIMIT,
@@ -49,7 +46,7 @@
 	import UnusualList from "./UnusualList.svelte";
 	import FlagList from "./FlagList.svelte";
 	import SimilarPayees from "./SimilarPayees.svelte";
-	import { dispatch, send } from "@lib/utilities/actual-api";
+	import { dispatch, send } from "@lib/actual/actual-api";
 	import NodeDetail from "./NodeDetail.svelte";
 	import GraphSearch from "./GraphSearch.svelte";
 	import FilterPopover from "@features/workflows/filters/FilterPopover.svelte";

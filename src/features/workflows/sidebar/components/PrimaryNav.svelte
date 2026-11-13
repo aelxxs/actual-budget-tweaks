@@ -3,9 +3,9 @@
 	import { graphView, openGraphView } from "@features/workflows/graph-view";
 	import { openCalendar } from "@features/workflows/spending-calendar";
 	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
-	import { navigate } from "@lib/utilities/actual-api";
-	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
-	import { getValue, setValue, watchValue } from "@lib/utilities/store";
+	import { navigate } from "@lib/actual/actual-api";
+	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
+	import { getValue, setValue, watchValue } from "@lib/store";
 	import { CalendarDays, ChevronDown, Network } from "@lucide/svelte";
 	import { settingsItem, settingsMenu } from "../lib/nav";
 	import { mainItems, settingsItems, trackSidebarMenu } from "../lib/menu.svelte";

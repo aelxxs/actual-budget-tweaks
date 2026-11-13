@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Setting } from "../../features/types";
+	import type { Setting } from "@features/types";
 	import CheckboxOption from "./Checkbox.svelte";
-	import { previewState } from "./preview.svelte";
+	import { previewState } from "@lib/components/preview.svelte";
 	import SelectOption from "./Select.svelte";
 
 	/** One ABT setting, rendered the same wherever it's shown: settings page or dialogs. */

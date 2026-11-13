@@ -1,4 +1,4 @@
-import type { Status } from "@lib/template-plan/priority-plan";
+import type { Status } from "@lib/actual/templates/priority-plan";
 
 export function statusTone(status: Status | undefined): "positive" | "warning" | "muted" {
 	return status === "full" ? "positive" : status === "partial" ? "warning" : "muted";

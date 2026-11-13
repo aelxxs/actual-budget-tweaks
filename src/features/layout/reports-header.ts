@@ -1,5 +1,5 @@
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { matchesPage, Page } from "@lib/utilities/pages";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { matchesPage, Page } from "@lib/actual/pages";
 import { REPORTS_PAGE } from "@lib/actual-dom";
 
 /*

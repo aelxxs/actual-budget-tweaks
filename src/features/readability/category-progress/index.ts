@@ -1,13 +1,13 @@
 import { defineSetting } from "@features/types";
 import CategoryProgressPreview from "../previews/CategoryProgress.svelte";
-import { icon } from "@lib/utilities/icons";
-import { type BudgetTableChange, readCell, watchBudgetTable } from "@lib/utilities/budget-cells";
-import { loadCurrency } from "@lib/utilities/currency";
-import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { positionPopover } from "@lib/utilities/popover";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { icon } from "@lib/icons";
+import { type BudgetTableChange, readCell, watchBudgetTable } from "@lib/actual/budget-cells";
+import { loadCurrency } from "@lib/format/currency";
+import { addMonths, monthToSheet, sheetToMonth } from "@lib/format/months";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { positionPopover } from "@lib/dom/popover";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import {
 	BALANCE_CELL_RE,
 	clearCellCache,

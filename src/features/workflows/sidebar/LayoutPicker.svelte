@@ -1,6 +1,6 @@
 <script lang="ts">
 	import OptionPicker from "@lib/components/OptionPicker.svelte";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { getValue, setValue } from "@lib/store";
 	import { onMount } from "svelte";
 	import { toLayout, type SidebarLayout } from "./lib/layout";
 

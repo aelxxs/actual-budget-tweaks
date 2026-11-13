@@ -1,8 +1,8 @@
-import { send } from "@lib/utilities/actual-api";
-import { monthToSheet } from "@lib/utilities/months";
+import { send } from "@lib/actual/actual-api";
+import { monthToSheet } from "@lib/format/months";
 import { loadTemplatesByCategoryId } from "./actual-data";
 import { isRemainderTemplate, type TemplateEntry } from "./templates";
-import { createLogger } from "@lib/utilities/logger";
+import { createLogger } from "@lib/logger";
 
 const log = createLogger("template-plan");
 

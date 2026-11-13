@@ -1,24 +1,24 @@
-import { loadMonthMoves } from "@lib/utilities/budget-moves";
+import { loadMonthMoves } from "@lib/actual/budget-moves";
 import { isPanelPersistedOpen, sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
-import { icon } from "@lib/utilities/icons";
+import { icon } from "@lib/icons";
 import type { Schedule } from "@lib/types/actual-schema";
-import { loadCurrentBudgetId, notify, onListChange, query, send } from "@lib/utilities/actual-api";
+import { loadCurrentBudgetId, notify, onListChange, query, send } from "@lib/actual/actual-api";
 import {
 	type BudgetTableChange,
 	collectChanges,
 	readCells,
 	watchBudgetTable,
-} from "@lib/utilities/budget-cells";
-import { loadCurrency } from "@lib/utilities/currency";
-import { isTrackingBudget, onBudgetType } from "@lib/utilities/budget-type";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { addMonths, monthToSheet, sheetToMonth } from "@lib/utilities/months";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { getValue, removeValue, setValue } from "@lib/utilities/store";
-import { followBudgetValue } from "@lib/utilities/budget-value";
+} from "@lib/actual/budget-cells";
+import { loadCurrency } from "@lib/format/currency";
+import { isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { addMonths, monthToSheet, sheetToMonth } from "@lib/format/months";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { getValue, removeValue, setValue } from "@lib/store";
+import { followBudgetValue } from "@lib/actual/budget-value";
 import { CARDS_KEY, toLayout } from "./cards";
-import { type Mounted, mountToPanelBody } from "@lib/utilities/svelte";
+import { type Mounted, mountToPanelBody } from "@lib/dom/svelte";
 import {
 	diffSnapshots,
 	finishSnapshots,
@@ -31,13 +31,13 @@ import {
 	startSnapshotAllVisible,
 	waitForQuiescence,
 	type SnapshotDescriptor,
-} from "@lib/template-plan/actual-data";
+} from "@lib/actual/templates/actual-data";
 import {
 	previewMonthTemplates,
 	previewMonthTemplateTotal,
-} from "@lib/template-plan/next-month-coverage";
-import { type Category, createPriorityPlanner } from "@lib/template-plan/priority-plan";
-import type { TemplateEntry } from "@lib/template-plan/templates";
+} from "@lib/actual/templates/next-month-coverage";
+import { type Category, createPriorityPlanner } from "@lib/actual/templates/priority-plan";
+import type { TemplateEntry } from "@lib/actual/templates/templates";
 import {
 	BREAKDOWN_STORAGE_KEY,
 	PRIO_COLLAPSE_STORAGE_KEY,
@@ -67,7 +67,7 @@ import {
 	type TrackedAction,
 } from "./state.svelte";
 import TemplatePlanPanel from "./TemplatePlanPanel.svelte";
-import { createLogger } from "@lib/utilities/logger";
+import { createLogger } from "@lib/logger";
 import { BUDGET_LINK, BUDGET_TABLE } from "@lib/actual-dom";
 
 const log = createLogger("template-plan");

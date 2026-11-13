@@ -4,7 +4,7 @@ import { stripTypeScriptTypes } from "node:module";
 import { test } from "node:test";
 import { SourceTextModule } from "node:vm";
 
-const source = await readFile(new URL("../src/lib/utilities/calc.ts", import.meta.url), "utf8");
+const source = await readFile(new URL("../src/lib/calc.ts", import.meta.url), "utf8");
 const module = new SourceTextModule(stripTypeScriptTypes(source));
 await module.link(() => {
 	throw new Error("calc.ts should have no imports");

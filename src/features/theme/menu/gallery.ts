@@ -1,6 +1,6 @@
 import { sidepanel } from "@features/core/side-panel";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import { DEFAULT_THEME } from "../defaults";
 import ThemeCustomizer, { GALLERY_APP_KEY } from "../ThemeCustomizer.svelte";
 

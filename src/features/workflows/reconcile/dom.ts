@@ -1,4 +1,4 @@
-import { findAccountToolbar } from "@lib/utilities/native-ui";
+import { findAccountToolbar } from "@lib/actual/native-ui";
 
 // Actual's lock button, by its glyph; its label is translated.
 export const NATIVE_LOCK = 'path[d^="M4 8V6a6 6"]';

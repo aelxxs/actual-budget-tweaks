@@ -3,10 +3,10 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { setValue } from "@lib/utilities/store";
-	import { priorityKey, priorityLabel } from "@lib/template-plan/constants";
-	import { statusFor, type SummaryTier } from "@lib/template-plan/priority-plan";
+	import { fmtMoney } from "@lib/format/currency";
+	import { setValue } from "@lib/store";
+	import { priorityKey, priorityLabel } from "@lib/actual/templates/constants";
+	import { statusFor, type SummaryTier } from "@lib/actual/templates/priority-plan";
 	import { PRIO_COLLAPSE_STORAGE_KEY } from "./constants";
 	import { statusBadge, statusTone } from "./status";
 	import { templatePlanState } from "./state.svelte";

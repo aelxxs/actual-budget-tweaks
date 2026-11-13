@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { getValue, setValue } from "@lib/store";
 	import ColorRow from "./ColorRow.svelte";
 	import { editorState, type ThemeOverrides } from "../editor-state.svelte";
 	import { setRootProperty } from "../theme-apply";

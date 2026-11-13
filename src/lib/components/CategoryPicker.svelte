@@ -7,8 +7,8 @@
 </script>
 
 <script lang="ts">
-	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
-	import { portal } from "@lib/utilities/svelte";
+	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
+	import { portal } from "@lib/dom/svelte";
 	import { Check, ChevronDown, Search } from "@lucide/svelte";
 	import { tick } from "svelte";
 

@@ -1,4 +1,4 @@
-import { watchDom } from "./dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 
 export const CATEGORY_ID_ATTR = "data-abt-category-id";
 

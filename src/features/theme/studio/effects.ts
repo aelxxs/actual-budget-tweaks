@@ -1,5 +1,5 @@
 import { MAIN, PAGE_COLUMN, REPORTS_PAGE } from "@lib/actual-dom";
-import { desktopOnly } from "@lib/utilities/pages";
+import { desktopOnly } from "@lib/actual/pages";
 import {
 	type Effects,
 	type Generated,

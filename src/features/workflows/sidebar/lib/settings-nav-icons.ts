@@ -1,7 +1,7 @@
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { isMobileView } from "@lib/utilities/pages";
-import { settingsNav } from "@lib/utilities/settings-page";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { isMobileView } from "@lib/actual/pages";
+import { settingsNav } from "@lib/actual/settings-page";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import NavIcon from "../components/NavIcon.svelte";
 import { settingsNavIcons } from "./nav";
 import { SETTINGS_PAGE_LINK } from "@lib/actual-dom";

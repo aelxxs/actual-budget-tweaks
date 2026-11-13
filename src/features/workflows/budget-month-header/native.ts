@@ -1,8 +1,8 @@
 import type { MonthMark } from "@lib/components/MonthPicker.svelte";
-import { dispatch, send, setLocalPref } from "@lib/utilities/actual-api";
-import { readCell } from "@lib/utilities/budget-cells";
-import { createLogger } from "@lib/utilities/logger";
-import { addMonths, currentMonth, monthKey, monthToSheet, parseMonth } from "@lib/utilities/months";
+import { dispatch, send, setLocalPref } from "@lib/actual/actual-api";
+import { readCell } from "@lib/actual/budget-cells";
+import { createLogger } from "@lib/logger";
+import { addMonths, currentMonth, monthKey, monthToSheet, parseMonth } from "@lib/format/months";
 import { SHOWN_MONTH } from "@lib/actual-dom";
 
 const log = createLogger("month-header");

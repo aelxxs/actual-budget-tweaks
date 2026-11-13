@@ -10,12 +10,12 @@ import {
 	collectChanges,
 	shownSheets,
 	watchBudgetTable,
-} from "@lib/utilities/budget-cells";
-import { loadMonthMoves, movedOutById } from "@lib/utilities/budget-moves";
-import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
-import { currentMonth, sheetToMonth } from "@lib/utilities/months";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+} from "@lib/actual/budget-cells";
+import { loadMonthMoves, movedOutById } from "@lib/actual/budget-moves";
+import { watchDom, watchElement } from "@lib/dom/dom-watcher";
+import { currentMonth, sheetToMonth } from "@lib/format/months";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import FilterControl from "./FilterControl.svelte";
 import { filterState, type CategoryFilter } from "./state.svelte";
 import {

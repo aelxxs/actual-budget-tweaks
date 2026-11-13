@@ -1,5 +1,5 @@
 import { HELP_BUTTON } from "@lib/actual-dom";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 
 /** Actual's own sync status (its redesigned sidebar's line), less "Local file", told from the file. */
 export type SyncStatus = "no-server" | "syncing" | "error" | "offline" | "disabled" | "synced";

@@ -3,10 +3,10 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
-	import { dispatch } from "@lib/utilities/actual-api";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { formatDate, formatDayMonth } from "@lib/utilities/date-format.svelte";
-	import { PRICE_CHANGE } from "@lib/utilities/payee-stats";
+	import { dispatch } from "@lib/actual/actual-api";
+	import { fmtMoney } from "@lib/format/currency";
+	import { formatDate, formatDayMonth } from "@lib/format/date-format.svelte";
+	import { PRICE_CHANGE } from "@lib/payee-stats";
 	import Icon from "@lib/components/Icon.svelte";
 	import { applyChanges, inspect, type Inspection, type Phrase, type RuleSummary } from "./data";
 	import { inspector } from "./state.svelte";

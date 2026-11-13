@@ -1,5 +1,5 @@
 import type { Component } from "svelte";
-import type { IconName } from "@lib/utilities/icons";
+import type { IconName } from "@lib/icons";
 
 /** Actual's desktop view, its mobile view (below 512px, a separate component tree), or both. */
 export type Platform = "desktop" | "mobile" | "all";

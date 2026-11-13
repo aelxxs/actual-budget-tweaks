@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { AccountIconData } from "@features/appearance/account-icon-picker";
+	import { type AccountIconData } from "@lib/account-icons";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
 	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import { openRecap } from "@features/workflows/sync-recap";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { dispatch, navigate } from "@lib/utilities/actual-api";
-	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
-	import { getValue, setValue, watchValue } from "@lib/utilities/store";
+	import { dispatch, navigate } from "@lib/actual/actual-api";
+	import { lastShown, rememberShown } from "@lib/last-shown";
+	import { getValue, setValue, watchValue } from "@lib/store";
 	import { ChevronDown, List, ListTree, Plus } from "@lucide/svelte";
 	import { overlayScrollbar } from "../actions/overlay-scrollbar";
 	import { portal } from "../actions/portal";

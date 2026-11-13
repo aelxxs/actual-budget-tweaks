@@ -9,8 +9,8 @@
 </script>
 
 <script lang="ts">
-	import { portal } from "@lib/utilities/svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { portal } from "@lib/dom/svelte";
+	import { fmtMoney } from "@lib/format/currency";
 
 	const {
 		anchors,

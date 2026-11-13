@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
+	import { getEmojiAssetUrl } from "@lib/account-icons";
 	import Tabs from "@lib/components/Tabs.svelte";
 	import type { Category, CategoryGroup } from "@lib/types/actual-schema";
-	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
 	import { Wallet } from "@lucide/svelte";
 	import { onMount, type Snippet } from "svelte";
 	import FilterTree from "./FilterTree.svelte";

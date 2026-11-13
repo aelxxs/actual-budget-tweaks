@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 import { GRID, GRID_ROW, MOBILE_BUDGET_HEADER } from "@lib/actual-dom";
 
 // The budget's banners (uncategorized, overspent, over-budgeted) are a list above the table's

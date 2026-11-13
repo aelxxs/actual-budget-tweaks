@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear } from "d3";
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { currentMonth } from "@lib/utilities/months";
+	import { fmtMoney } from "@lib/format/currency";
+	import { currentMonth } from "@lib/format/months";
 	import type { MonthTrend } from "./state.svelte";
 
 	interface Props {

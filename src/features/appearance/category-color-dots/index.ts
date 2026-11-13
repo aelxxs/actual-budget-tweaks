@@ -1,14 +1,10 @@
 import { defineSetting } from "@features/types";
-import { rowCategoryId } from "@lib/utilities/budget-cells";
-import {
-	getCategoryColor,
-	loadCategoryColors,
-	setCategoryColor,
-} from "@lib/utilities/category-colors";
-import { CATEGORY_ID_ATTR, trackCategoryIds } from "@lib/utilities/category-ids";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { rowCategoryId } from "@lib/actual/budget-cells";
+import { getCategoryColor, loadCategoryColors, setCategoryColor } from "@lib/category-colors";
+import { CATEGORY_ID_ATTR, trackCategoryIds } from "@lib/actual/category-ids";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { onOutsideClick, positionPopover } from "@lib/dom/popover";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import ColorPicker from "./ColorPicker.svelte";
 import { CATEGORY_CELL, CATEGORY_NAME, ROW } from "@lib/actual-dom";
 

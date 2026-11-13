@@ -1,18 +1,15 @@
 <script lang="ts">
-	import type { AccountIconData } from "@features/appearance/account-icon-picker";
-	import {
-		accountIconPicker,
-		loadIconCache,
-		watchAccountIcons,
-	} from "@features/appearance/account-icon-picker";
+	import { type AccountIconData } from "@lib/account-icons";
+	import { accountIconPicker } from "@features/appearance/account-icon-picker";
+	import { loadIconCache, watchAccountIcons } from "@lib/account-icons";
 	import { sidebarSearch } from "@features/appearance/sidebar-search";
 	import { sidebarShortcuts } from "@features/appearance/sidebar-shortcuts";
-	import { loadCurrentBudgetId, onListChange, onSyncingAccounts } from "@lib/utilities/actual-api";
-	import { loadCurrency } from "@lib/utilities/currency";
-	import { watchDom } from "@lib/utilities/dom-watcher";
-	import { createLogger } from "@lib/utilities/logger";
-	import { getValue, removeValue, setValue } from "@lib/utilities/store";
-	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
+	import { loadCurrentBudgetId, onListChange, onSyncingAccounts } from "@lib/actual/actual-api";
+	import { loadCurrency } from "@lib/format/currency";
+	import { watchDom } from "@lib/dom/dom-watcher";
+	import { createLogger } from "@lib/logger";
+	import { getValue, removeValue, setValue } from "@lib/store";
+	import { lastShown, rememberShown } from "@lib/last-shown";
 	import { Search, SlidersHorizontal } from "@lucide/svelte";
 	import { onMount, untrack } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";

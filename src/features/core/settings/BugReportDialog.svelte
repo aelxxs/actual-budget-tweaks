@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ExternalLink } from "@lucide/svelte";
-	import { scriptSections, sectionItems } from "../../features";
-	import Dialog from "./Dialog.svelte";
+	import { scriptSections, sectionItems } from "@features/index";
+	import Dialog from "@lib/components/Dialog.svelte";
 
 	const { repoUrl, onClose }: { repoUrl: string; onClose: () => void } = $props();
 

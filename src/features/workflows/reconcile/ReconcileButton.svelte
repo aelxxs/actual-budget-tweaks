@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
-	import { calculate, send } from "@lib/utilities/actual-api";
+	import { calculate, send } from "@lib/actual/actual-api";
 	import { openPanel } from "./panel";
 	import { compactAge, reconciledOn } from "./relative-time";
 	import { reconcile } from "./state.svelte";

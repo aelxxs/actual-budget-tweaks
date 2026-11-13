@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onOutsideClick } from "@lib/utilities/popover";
-	import { takeTweaksSearch } from "@lib/utilities/settings-page";
+	import { onOutsideClick } from "@lib/dom/popover";
+	import { takeTweaksSearch } from "@lib/actual/settings-page";
 	import { Ellipsis } from "@lucide/svelte";
 	import { onMount, tick } from "svelte";
 	import {
@@ -9,19 +9,19 @@
 		sectionItems,
 		settingRequires,
 		type PageSetting,
-	} from "../../features";
-	import { exportSettings, pickSettingsFile, resetToDefaults } from "../utilities/settings-backup";
-	import Icon from "./Icon.svelte";
+	} from "@features/index";
+	import { exportSettings, pickSettingsFile, resetToDefaults } from "./backup";
+	import Icon from "@lib/components/Icon.svelte";
 	import BugReportDialog from "./BugReportDialog.svelte";
-	import Dialog from "./Dialog.svelte";
+	import Dialog from "@lib/components/Dialog.svelte";
 	import SettingRow from "./SettingRow.svelte";
-	import Switch from "./Switch.svelte";
-	import WritesMark from "./WritesMark.svelte";
-	import { applySettingChange } from "../../features/runtime";
-	import { setAbtEnabled } from "../utilities/abt-enabled";
-	import { watchDom } from "../utilities/dom-watcher";
-	import { DESKTOP_QUERY } from "../utilities/pages";
-	import { TWEAKS_SECTIONS_ATTR, takeTweaksSection } from "../utilities/settings-page";
+	import Switch from "@lib/components/Switch.svelte";
+	import WritesMark from "@lib/components/WritesMark.svelte";
+	import { applySettingChange } from "@features/runtime";
+	import { setAbtEnabled } from "@lib/abt-enabled";
+	import { watchDom } from "@lib/dom/dom-watcher";
+	import { DESKTOP_QUERY } from "@lib/actual/pages";
+	import { TWEAKS_SECTIONS_ATTR, takeTweaksSection } from "@lib/actual/settings-page";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
 	const version = browser.runtime.getManifest().version;

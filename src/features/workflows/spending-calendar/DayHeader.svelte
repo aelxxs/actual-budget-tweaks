@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { fmtMoney } from "@lib/format/currency";
 
 	const { dateStr, total } = $props<{
 		dateStr: string;

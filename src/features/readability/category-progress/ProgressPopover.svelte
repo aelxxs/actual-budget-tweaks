@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { fmtMoney } from "@lib/format/currency";
 
 	type Props = {
 		name: string;

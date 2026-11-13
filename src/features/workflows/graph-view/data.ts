@@ -1,6 +1,6 @@
 import type { BaseFilters } from "@features/workflows/filters/types";
-import { query } from "@lib/utilities/actual-api";
-import { PRICE_CHANGE, payeeStats } from "@lib/utilities/payee-stats";
+import { query } from "@lib/actual/actual-api";
+import { PRICE_CHANGE, payeeStats } from "@lib/payee-stats";
 
 export type NodeKind = "account" | "payee" | "category";
 

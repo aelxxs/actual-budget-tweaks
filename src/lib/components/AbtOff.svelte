@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setAbtEnabled } from "../utilities/abt-enabled";
+	import { setAbtEnabled } from "@lib/abt-enabled";
 
 	const logoUrl = browser.runtime.getURL("/icon.svg");
 	let turningOn = $state(false);

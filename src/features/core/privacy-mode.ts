@@ -1,5 +1,5 @@
-import { query, readDetail } from "@lib/utilities/actual-api";
-import { createLogger } from "@lib/utilities/logger";
+import { query, readDetail } from "@lib/actual/actual-api";
+import { createLogger } from "@lib/logger";
 
 const log = createLogger("privacy");
 

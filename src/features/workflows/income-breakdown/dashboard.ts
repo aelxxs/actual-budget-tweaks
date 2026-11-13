@@ -1,4 +1,4 @@
-import { invalidateQueries, markMenuKeys, query, send } from "@lib/utilities/actual-api";
+import { invalidateQueries, markMenuKeys, query, send } from "@lib/actual/actual-api";
 
 /*
  * The widget is a Text widget whose content is this placeholder, so Actual saves, places and

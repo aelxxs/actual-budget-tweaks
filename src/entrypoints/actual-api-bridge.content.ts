@@ -1,6 +1,6 @@
-import { injectMainWorldScript } from "@lib/utilities/inject-main-world";
-import { isAbtEnabled } from "@lib/utilities/abt-enabled";
-import { getBaseUrl } from "@lib/utilities/store";
+import { injectMainWorldScript } from "@lib/actual/inject-main-world";
+import { isAbtEnabled } from "@lib/abt-enabled";
+import { getBaseUrl } from "@lib/store";
 
 export default defineContentScript({
 	matches: ["<all_urls>"],

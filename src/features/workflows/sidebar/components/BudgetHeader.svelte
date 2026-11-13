@@ -16,7 +16,7 @@
 	import { onMount } from "svelte";
 	import { autofocus } from "../actions/autofocus";
 	import { tooltip } from "../actions/tooltip.svelte";
-	import { loadCurrentBudgetId } from "@lib/utilities/actual-api";
+	import { loadCurrentBudgetId } from "@lib/actual/actual-api";
 	import type { BudgetFile, BudgetIcon, FileState } from "../lib/budgets";
 	import {
 		closeToFileList,
@@ -28,7 +28,7 @@
 		setBudgetIcon,
 	} from "../lib/budgets";
 	import { type SyncStatus, syncStatus, trackSyncStatus } from "../lib/sync-status.svelte";
-	import { createLogger } from "@lib/utilities/logger";
+	import { createLogger } from "@lib/logger";
 
 	const log = createLogger("sidebar");
 

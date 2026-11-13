@@ -1,8 +1,14 @@
 import { defineSetting } from "@features/types";
-import { onListChange, query } from "@lib/utilities/actual-api";
-import { createElement } from "@lib/utilities/dom";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { getValue, setValue, watchValue } from "@lib/utilities/store";
+import { onListChange, query } from "@lib/actual/actual-api";
+import { createElement } from "@lib/dom/dom";
+import { watchDom } from "@lib/dom/dom-watcher";
+import {
+	cachedIcons,
+	getEmojiAssetUrl,
+	loadIconCache,
+	watchAccountIcons,
+	type AccountIconData,
+} from "@lib/account-icons";
 import {
 	ACCOUNT_CELL,
 	ACCOUNT_LINK,
@@ -12,7 +18,6 @@ import {
 } from "@lib/actual-dom";
 
 const ROOT_TOGGLE_ATTR = "data-abt-account-icons";
-const STORAGE_KEY_PREFIX = "abt-account-icons";
 const ACCOUNT_ICON_IMG_CLASS = "abt-account-icon-img";
 const ICON_SIZE = 28;
 // Mobile's accounts page: each row's name, drawn with its icon through a CSS variable.
@@ -21,89 +26,12 @@ const MOBILE_ICON_ATTR = "data-abt-m-account-icon";
 // Transaction tables' Account column, tagged with the id by the bridge.
 const ACCOUNT_ID_ATTR = "data-abt-account-id";
 const CELL_ICON_CLASS = "abt-account-cell-icon";
-const EMOJI_ASSET_BASE_URL = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg";
 
-export interface AccountIconData {
-	type: "emoji" | "dataUrl" | "url";
-	value: string;
-}
-
-let iconCache: Record<string, AccountIconData> | null = null;
-let iconCachePromise: Promise<Record<string, AccountIconData>> | null = null;
 let enabled = false;
-
-export async function loadIconCache(): Promise<Record<string, AccountIconData>> {
-	if (iconCache) {
-		return iconCache;
-	}
-	if (iconCachePromise) {
-		return iconCachePromise;
-	}
-
-	iconCachePromise = (async () => {
-		const icons = (await getValue(
-			STORAGE_KEY_PREFIX,
-			{} as Record<string, AccountIconData>,
-		)) as Record<string, AccountIconData>;
-		iconCache = icons;
-		iconCachePromise = null;
-		return icons;
-	})().catch((error) => {
-		iconCachePromise = null;
-		throw error;
-	});
-
-	return iconCachePromise;
-}
-
-/** Calls `callback` with the whole map whenever it's saved, here or by settings sync. */
-export function watchAccountIcons(
-	callback: (icons: Record<string, AccountIconData>) => void,
-): () => void {
-	return watchValue<Record<string, AccountIconData>>(STORAGE_KEY_PREFIX, (icons) => {
-		iconCache = icons ?? {};
-		callback(iconCache);
-	});
-}
 
 function currentAccountId(): string | null {
 	const match = location.pathname.match(/^\/accounts\/([a-f0-9-]+)$/);
 	return match && match[1].includes("-") ? match[1] : null;
-}
-
-function emojiToCodepoint(emoji: string): string {
-	const codepoints = Array.from(emoji)
-		.map((char) => char.codePointAt(0)?.toString(16))
-		.filter((part): part is string => Boolean(part));
-
-	return codepoints
-		.filter((part, index) => {
-			if (part !== "fe0f") {
-				return true;
-			}
-			const next = codepoints[index + 1];
-			// Keep VS16 when it is semantically important in keycap/ZWJ sequences.
-			return next === "200d" || next === "20e3";
-		})
-		.join("-");
-}
-
-export function getEmojiAssetUrl(emoji: string): string {
-	return `${EMOJI_ASSET_BASE_URL}/${emojiToCodepoint(emoji)}.svg`;
-}
-
-export async function setAccountIcon(accountId: string, iconData: AccountIconData): Promise<void> {
-	const icons = await loadIconCache();
-	icons[accountId] = iconData;
-	await setValue(STORAGE_KEY_PREFIX, icons);
-	syncTitle();
-}
-
-export async function removeAccountIcon(accountId: string): Promise<void> {
-	const icons = await loadIconCache();
-	delete icons[accountId];
-	await setValue(STORAGE_KEY_PREFIX, icons);
-	syncTitle();
 }
 
 /** The account page's title; the live sidebar draws its own icons. */
@@ -176,7 +104,7 @@ function syncTitle(): void {
 		return;
 	}
 	const id = currentAccountId();
-	const iconData = id ? iconCache?.[id] : undefined;
+	const iconData = id ? cachedIcons()?.[id] : undefined;
 	for (const el of els) {
 		if (iconData) {
 			renderTitle(el, iconData);
@@ -207,7 +135,7 @@ function cellIcon(iconData: AccountIconData, url: string): HTMLElement {
 function syncCells(): void {
 	document.dispatchEvent(new CustomEvent("abt:api:mark-account-ids"));
 	for (const cell of document.querySelectorAll(`${ACCOUNT_CELL}[${ACCOUNT_ID_ATTR}]`)) {
-		const iconData = iconCache?.[cell.getAttribute(ACCOUNT_ID_ATTR) ?? ""];
+		const iconData = cachedIcons()?.[cell.getAttribute(ACCOUNT_ID_ATTR) ?? ""];
 		const url = iconData ? iconUrl(iconData) : null;
 		const shown = cell.querySelector<HTMLElement>(`.${CELL_ICON_CLASS}`);
 		if ((shown?.dataset.abtIcon ?? null) === url) {
@@ -255,7 +183,7 @@ function syncMobileRows(): void {
 	}
 	for (const el of rows) {
 		const id = accountIds.get(el.textContent?.trim() ?? "");
-		const iconData = id ? iconCache?.[id] : undefined;
+		const iconData = id ? cachedIcons()?.[id] : undefined;
 		const url = iconData ? iconUrl(iconData) : null;
 		const value = url ? `url("${url.replace(/"/g, "%22")}")` : "";
 		if (el.style.getPropertyValue("--abt-account-icon") === value) {
@@ -337,6 +265,7 @@ export const accountIconPicker = defineSetting({
 			void loadAccountIds().catch(() => undefined);
 		});
 		const unwatchIcons = watchAccountIcons(() => {
+			syncTitle();
 			syncMobileRows();
 			syncCells();
 		});

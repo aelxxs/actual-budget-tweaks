@@ -1,5 +1,5 @@
-import { readCell } from "@lib/utilities/budget-cells";
-import { UUID } from "@lib/utilities/ids";
+import { readCell } from "@lib/actual/budget-cells";
+import { UUID } from "@lib/ids";
 
 // Shared by the progress rings and the balance status pills, so both read one cache.
 

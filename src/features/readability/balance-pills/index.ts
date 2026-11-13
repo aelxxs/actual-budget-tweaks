@@ -6,9 +6,9 @@ import {
 	markCellsStale,
 	type CatCells,
 } from "@features/readability/category-progress/cells";
-import { type BudgetTableChange, watchBudgetTable } from "@lib/utilities/budget-cells";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { type BudgetTableChange, watchBudgetTable } from "@lib/actual/budget-cells";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
 import { BALANCE_CELL, CELL, GOAL_RING } from "@lib/actual-dom";
 
 const STATUS_ATTR = "data-abt-balance-status";

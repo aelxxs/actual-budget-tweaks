@@ -1,4 +1,4 @@
-import { query, send } from "@lib/utilities/actual-api";
+import { query, send } from "@lib/actual/actual-api";
 import type { Category, CategoryGroup } from "@lib/types/actual-schema";
 
 export interface RecapTransaction {

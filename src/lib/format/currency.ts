@@ -1,4 +1,4 @@
-import { onSyncedPref, query } from "./actual-api";
+import { onSyncedPref, query } from "@lib/actual/actual-api";
 import { numberPrefs } from "./number-format.svelte";
 
 let loaded = false;

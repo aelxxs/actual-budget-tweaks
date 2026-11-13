@@ -18,8 +18,8 @@
 	import { applySettingChange } from "@features/runtime";
 	import type { CheckboxSetting } from "@features/types";
 	import Switch from "@lib/components/Switch.svelte";
-	import { applyGlobalCSS } from "@lib/utilities/dom";
-	import { getValue, setValue, watchValue } from "@lib/utilities/store";
+	import { applyGlobalCSS } from "@lib/dom/dom";
+	import { getValue, setValue, watchValue } from "@lib/store";
 	import {
 		Archive,
 		Calculator,

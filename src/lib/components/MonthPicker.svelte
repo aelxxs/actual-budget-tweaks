@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { onOutsideClick, positionPopover } from "@lib/utilities/popover";
+	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
 
 	const MONTH_NAMES = [
 		"January",

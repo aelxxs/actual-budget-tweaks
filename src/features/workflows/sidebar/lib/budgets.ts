@@ -1,6 +1,6 @@
 import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
-import { dispatch, loadCurrentBudgetId, send } from "@lib/utilities/actual-api";
-import { getValue, setValue, watchValue } from "@lib/utilities/store";
+import { dispatch, loadCurrentBudgetId, send } from "@lib/actual/actual-api";
+import { getValue, setValue, watchValue } from "@lib/store";
 
 export type FileState = "local" | "remote" | "synced" | "detached" | "broken" | "unknown";
 

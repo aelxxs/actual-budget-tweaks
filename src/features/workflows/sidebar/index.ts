@@ -1,13 +1,13 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import LayoutPicker from "./LayoutPicker.svelte";
 import { SIDEBAR_MOUNT_ATTR as MOUNT_ATTR } from "./lib/collapse";
 import { NATIVE_ROOT_ATTR } from "./lib/data";
 import { LAYOUT_KEY } from "./lib/layout";
 import { NATIVE_ICON_ATTR, NAV_ICON_ATTR, swapSettingsNavIcons } from "./lib/settings-nav-icons";
 import Sidebar from "./Sidebar.svelte";
-import { findNativeSidebarRoot } from "@lib/utilities/native-ui";
+import { findNativeSidebarRoot } from "@lib/actual/native-ui";
 
 const WRAP_ATTR = "data-abt-live-sidebar-wrap";
 

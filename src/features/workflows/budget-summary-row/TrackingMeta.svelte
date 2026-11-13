@@ -1,6 +1,6 @@
 <script lang="ts">
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { currentMonth, monthToSheet } from "@lib/utilities/months";
+	import { currentMonth, monthToSheet } from "@lib/format/months";
 	import { summaryState } from "./state.svelte";
 	import { cachedTrackingTotals, loadTrackingTotals, type TrackingTotals } from "./totals";
 

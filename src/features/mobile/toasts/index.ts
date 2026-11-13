@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
+import { watchDom } from "@lib/dom/dom-watcher";
 import { TAB_BAR_ATTR } from "../tab-bar/nav";
 import { TOAST } from "@lib/actual-dom";
 

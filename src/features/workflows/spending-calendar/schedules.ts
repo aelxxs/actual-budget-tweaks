@@ -1,5 +1,5 @@
-import { dispatch } from "@lib/utilities/actual-api";
-import { createLogger } from "@lib/utilities/logger";
+import { dispatch } from "@lib/actual/actual-api";
+import { createLogger } from "@lib/logger";
 
 const log = createLogger("calendar");
 

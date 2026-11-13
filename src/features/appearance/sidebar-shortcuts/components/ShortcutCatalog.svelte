@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@lib/components/Icon.svelte";
-	import type { IconName } from "@lib/utilities/icons";
+	import type { IconName } from "@lib/icons";
 	import { Check, ChevronLeft, Globe, Plus } from "@lucide/svelte";
 	import { BUILTIN_TOOLS as builtinTools, BUILTIN_WIDGETS as builtinWidgets } from "../store";
 	import type { Shortcut } from "../types";

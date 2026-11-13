@@ -3,8 +3,8 @@
 
 	followBalanceColors();
 	import { customizeSidebar } from "../lib/customize.svelte";
-	import type { AccountIconData } from "@features/appearance/account-icon-picker";
-	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
+	import { type AccountIconData } from "@lib/account-icons";
+	import { getEmojiAssetUrl } from "@lib/account-icons";
 	import { openTool } from "@features/appearance/sidebar-shortcuts/open-tool";
 	import { BUILTIN_TOOLS } from "@features/appearance/sidebar-shortcuts/store";
 	import type { ToolId } from "@features/appearance/sidebar-shortcuts/types";
@@ -29,12 +29,12 @@
 	import { openInsights, templatePlan } from "@features/workflows/template-plan";
 	import { graphView, openGraphView } from "@features/workflows/graph-view";
 	import { themes } from "@lib/design";
-	import { dispatch, navigate, notify, query as queryTable, send } from "@lib/utilities/actual-api";
-	import { calculate } from "@lib/utilities/calc";
-	import { fmtMoney, fmtNumber } from "@lib/utilities/currency";
-	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
-	import { TWEAKS_PATH, searchTweaksFor } from "@lib/utilities/settings-page";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { dispatch, navigate, notify, query as queryTable, send } from "@lib/actual/actual-api";
+	import { calculate } from "@lib/calc";
+	import { fmtMoney, fmtNumber } from "@lib/format/currency";
+	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
+	import { TWEAKS_PATH, searchTweaksFor } from "@lib/actual/settings-page";
+	import { getValue, setValue } from "@lib/store";
 	import {
 		ArrowLeft,
 		ArrowLeftRight,

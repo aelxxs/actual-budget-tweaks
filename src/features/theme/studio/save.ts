@@ -1,5 +1,5 @@
 import { sidepanel } from "@features/core/side-panel";
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue } from "@lib/store";
 import { generateThemeId, saveUserTheme } from "../user-themes.svelte";
 import { paletteKeys } from "./effects";
 import { generate } from "./generator";

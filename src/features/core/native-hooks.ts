@@ -1,9 +1,9 @@
-import { markBudgetType, refreshBudgetType } from "@lib/utilities/budget-type";
-import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { getCurrentPath, watchRoute } from "@lib/utilities/route-watcher";
-import { findNativeSidebarRoot } from "@lib/utilities/native-ui";
-import { hasSettingsPages } from "@lib/utilities/settings-page";
+import { markBudgetType, refreshBudgetType } from "@lib/actual/budget-type";
+import { watchDom, watchElement } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { getCurrentPath, watchRoute } from "@lib/dom/route-watcher";
+import { findNativeSidebarRoot } from "@lib/actual/native-ui";
+import { hasSettingsPages } from "@lib/actual/settings-page";
 import {
 	DIALOG,
 	HELP_BUTTON,

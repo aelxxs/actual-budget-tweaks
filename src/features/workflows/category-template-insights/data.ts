@@ -1,6 +1,6 @@
-import { query } from "@lib/utilities/actual-api";
-import { readCell } from "@lib/utilities/budget-cells";
-import { isoDate } from "@lib/utilities/months";
+import { query } from "@lib/actual/actual-api";
+import { readCell } from "@lib/actual/budget-cells";
+import { isoDate } from "@lib/format/months";
 import type { GoalDefEntry } from "@lib/types/actual-schema";
 import type {
 	CategoryInsight,
@@ -9,7 +9,7 @@ import type {
 	RawSchedule,
 	ScheduleStatus,
 } from "./types";
-import { createLogger } from "@lib/utilities/logger";
+import { createLogger } from "@lib/logger";
 import { BUDGETED_CELL } from "@lib/actual-dom";
 
 const log = createLogger("insights");

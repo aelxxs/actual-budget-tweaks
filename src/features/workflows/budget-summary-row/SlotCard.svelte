@@ -2,9 +2,9 @@
 	import { runway, usesGoalTemplates } from "@features/workflows/template-plan/overview";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { fmtMoney } from "@lib/utilities/currency";
+	import { fmtMoney } from "@lib/format/currency";
 	import { ArrowLeftRight } from "@lucide/svelte";
-	import { type CategoryIcons, followCategoryIcons } from "@lib/utilities/category-icons";
+	import { type CategoryIcons, followCategoryIcons } from "@lib/category-icons";
 	import { untrack } from "svelte";
 	import { cubicOut } from "svelte/easing";
 	import { fly } from "svelte/transition";

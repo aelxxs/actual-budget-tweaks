@@ -1,4 +1,4 @@
-import { type BudgetValue, followBudgetValue } from "@lib/utilities/budget-value";
+import { type BudgetValue, followBudgetValue } from "@lib/actual/budget-value";
 import { countByAccount } from "./data";
 import { emptyQueue, pendingIds, QUEUE_KEY, type ReviewQueue, sameQueue, toQueue } from "./queue";
 

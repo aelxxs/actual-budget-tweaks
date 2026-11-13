@@ -1,7 +1,7 @@
-import { applyGlobalCSS, createElement } from "@lib/utilities/dom";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { clamp } from "@lib/utilities/math";
-import { getValue, setValue } from "@lib/utilities/store";
+import { applyGlobalCSS, createElement } from "@lib/dom/dom";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { clamp } from "@lib/math";
+import { getValue, setValue } from "@lib/store";
 import { mount, unmount } from "svelte";
 import { CONTENT_GRID } from "@lib/actual-dom";
 import {

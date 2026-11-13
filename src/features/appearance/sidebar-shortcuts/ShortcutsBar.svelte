@@ -3,8 +3,8 @@
 		customizeSidebar,
 		customizeState,
 	} from "@features/workflows/sidebar/lib/customize.svelte";
-	import { getValue, watchValue } from "@lib/utilities/store";
-	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
+	import { getValue, watchValue } from "@lib/store";
+	import { lastShown, rememberShown } from "@lib/last-shown";
 	import { onMount } from "svelte";
 	import { sidebarShortcutsAddTile } from ".";
 	import Tiles from "./components/Tiles.svelte";

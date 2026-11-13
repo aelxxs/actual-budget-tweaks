@@ -1,8 +1,8 @@
 <script lang="ts">
 	import OptionPicker from "@lib/components/OptionPicker.svelte";
 	import { onMount } from "svelte";
-	import { applyGlobalCSS } from "@lib/utilities/dom";
-	import { getValue, setValue } from "@lib/utilities/store";
+	import { applyGlobalCSS } from "@lib/dom/dom";
+	import { getValue, setValue } from "@lib/store";
 
 	let { ctx }: { ctx: { key: string; defaultValue: string; css: (v: string) => string } } =
 		$props();

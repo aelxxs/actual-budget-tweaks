@@ -1,7 +1,7 @@
 import type { Account, Transaction } from "@lib/types/actual-schema";
-import { calculate, dispatch, query, send } from "@lib/utilities/actual-api";
-import { readCell } from "@lib/utilities/budget-cells";
-import { findUncategorizedButton } from "@lib/utilities/native-ui";
+import { calculate, dispatch, query, send } from "@lib/actual/actual-api";
+import { readCell } from "@lib/actual/budget-cells";
+import { findUncategorizedButton } from "@lib/actual/native-ui";
 import {
 	ACCOUNT_BALANCE_CELL,
 	ACCOUNT_BALANCE_PREFIX,

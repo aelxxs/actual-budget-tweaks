@@ -2,8 +2,7 @@
 	import { onMount } from "svelte";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 	import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
-	import type { AccountIconData } from "./index";
-	import { loadIconCache } from "./index";
+	import { loadIconCache, type AccountIconData } from "@lib/account-icons";
 
 	const { accountId, hasIcon, anchorRect, onSave, onRemove, onClose } = $props<{
 		accountId: string;

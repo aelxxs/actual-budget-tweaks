@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { matchesPage, Page } from "@lib/utilities/pages";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { matchesPage, Page } from "@lib/actual/pages";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import { extendAddMenu, loadWidgets, PLACEHOLDER } from "./dashboard";
 import { breakdown, loadOptions } from "./state.svelte";
 import Widget from "./Widget.svelte";

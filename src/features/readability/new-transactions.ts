@@ -1,5 +1,5 @@
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
 import { byTestId } from "@lib/actual-dom";
 
 const NEW_ATTR = "data-abt-tx-new";

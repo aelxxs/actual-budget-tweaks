@@ -1,7 +1,7 @@
 import { defineSetting } from "@features/types";
-import { type IconName, iconMask } from "@lib/utilities/icons";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { findAccountToolbar } from "@lib/utilities/native-ui";
+import { type IconName, iconMask } from "@lib/icons";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { findAccountToolbar } from "@lib/actual/native-ui";
 import { ACCOUNT_BALANCE } from "@lib/actual-dom";
 
 /*

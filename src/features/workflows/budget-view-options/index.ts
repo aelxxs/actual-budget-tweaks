@@ -1,7 +1,7 @@
-import { icon } from "@lib/utilities/icons";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { watchDom } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { icon } from "@lib/icons";
+import { applyGlobalCSS } from "@lib/dom/dom";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
 import { openBudgetSettings } from "./settings";
 import { BUDGET_TOTALS } from "@lib/actual-dom";
 

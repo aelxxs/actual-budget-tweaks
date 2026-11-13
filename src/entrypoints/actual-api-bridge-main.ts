@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { createLogger } from "@lib/utilities/logger";
-import { closestFiber, closestProps, propsUnderRoot } from "@lib/utilities/react-fiber";
+import { createLogger } from "@lib/logger";
+import { closestFiber, closestProps, propsUnderRoot } from "@lib/actual/react-fiber";
 import {
 	ACCOUNT_CELL,
 	CATEGORY_CELL,

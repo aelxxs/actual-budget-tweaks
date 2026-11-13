@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { SelectSetting } from "../../features/types";
-	import { applySettingChange } from "../../features/runtime";
-	import { getValue, watchValue } from "../utilities/store";
-	import Icon from "./Icon.svelte";
-	import PreviewToggle from "./PreviewToggle.svelte";
-	import ExperimentalMark from "./ExperimentalMark.svelte";
-	import WritesMark from "./WritesMark.svelte";
-	import type { IconName } from "../utilities/icons";
+	import type { SelectSetting } from "@features/types";
+	import { applySettingChange } from "@features/runtime";
+	import { getValue, watchValue } from "@lib/store";
+	import Icon from "@lib/components/Icon.svelte";
+	import PreviewToggle from "@lib/components/PreviewToggle.svelte";
+	import ExperimentalMark from "@lib/components/ExperimentalMark.svelte";
+	import WritesMark from "@lib/components/WritesMark.svelte";
+	import type { IconName } from "@lib/icons";
 
 	const { labelText, options, setting, icon } = $props<{
 		labelText: string;

@@ -1,7 +1,7 @@
 import { dockInsightsTrigger } from "@features/workflows/template-plan";
 import { isOverlayOpen } from "@features/core/overlay-page";
-import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
-import { Page, matchesPage } from "@lib/utilities/pages";
+import { watchDom, watchElement } from "@lib/dom/dom-watcher";
+import { Page, matchesPage } from "@lib/actual/pages";
 import { mount, unmount } from "svelte";
 import MonthHeader from "./MonthHeader.svelte";
 import {

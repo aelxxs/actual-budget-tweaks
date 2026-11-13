@@ -2,8 +2,8 @@
 	import { balanceColors, followBalanceColors } from "../lib/balance-colors.svelte";
 
 	followBalanceColors();
-	import { fmtMoney } from "@lib/utilities/currency";
-	import { createLogger } from "@lib/utilities/logger";
+	import { fmtMoney } from "@lib/format/currency";
+	import { createLogger } from "@lib/logger";
 	import { ArrowRight } from "@lucide/svelte";
 	import { portal } from "../actions/portal";
 	import type { AccountDetail } from "../lib/account-detail";

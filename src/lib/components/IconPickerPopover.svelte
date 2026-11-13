@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onOutsideClick } from "@lib/utilities/popover";
-	import { getFaviconUrl } from "@lib/utilities/favicon";
+	import { onOutsideClick } from "@lib/dom/popover";
+	import { getFaviconUrl } from "@lib/dom/favicon";
 	import {
 		Flag,
 		Globe,

@@ -1,4 +1,4 @@
-import { formatDayMonth } from "@lib/utilities/date-format.svelte";
+import { formatDayMonth } from "@lib/format/date-format.svelte";
 
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 	["year", 365 * 24 * 3600e3],

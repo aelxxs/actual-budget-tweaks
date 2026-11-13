@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
 import { RETIRED_THEMES } from "@lib/design";
-import { getValue, setValue } from "@lib/utilities/store";
+import { getValue, setValue } from "@lib/store";
 import { DEFAULT_THEME } from "./defaults";
 import { applyThemeByKey, watchWindowColor } from "./theme-apply";
 import ThemeCustomizer from "./ThemeCustomizer.svelte";

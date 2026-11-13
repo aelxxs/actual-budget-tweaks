@@ -1,6 +1,6 @@
 import { defineSetting } from "@features/types";
 import { RETIRED_THEMES } from "@lib/design";
-import { getValue as getVal, getValue, setValue } from "@lib/utilities/store";
+import { getValue as getVal, getValue, setValue } from "@lib/store";
 import { DEFAULT_THEME } from "./defaults";
 import { editorState, type ThemeOverrides } from "./editor-state.svelte";
 import { applyOverrides } from "./theme-apply";

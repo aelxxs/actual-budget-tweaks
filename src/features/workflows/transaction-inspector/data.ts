@@ -1,7 +1,7 @@
-import { query, send } from "@lib/utilities/actual-api";
-import { fmtMoney } from "@lib/utilities/currency";
-import { formatDayMonth } from "@lib/utilities/date-format.svelte";
-import { payeeStats, type PayeeStats } from "@lib/utilities/payee-stats";
+import { query, send } from "@lib/actual/actual-api";
+import { fmtMoney } from "@lib/format/currency";
+import { formatDayMonth } from "@lib/format/date-format.svelte";
+import { payeeStats, type PayeeStats } from "@lib/payee-stats";
 
 export interface InspectedTransaction {
 	id: string;

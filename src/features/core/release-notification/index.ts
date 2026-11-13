@@ -1,7 +1,7 @@
-import { fetchReleaseNotes } from "@lib/utilities/changelog";
-import { applyGlobalCSS } from "@lib/utilities/dom";
-import { getValue, setValue } from "@lib/utilities/store";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { fetchReleaseNotes } from "@lib/changelog";
+import { applyGlobalCSS } from "@lib/dom/dom";
+import { getValue, setValue } from "@lib/store";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import ReleaseNotification from "./ReleaseNotification.svelte";
 
 const PENDING_KEY = "release-notes-pending-version";

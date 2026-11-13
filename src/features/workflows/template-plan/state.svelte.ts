@@ -1,6 +1,6 @@
-import type { BudgetMove } from "@lib/utilities/budget-moves";
+import type { BudgetMove } from "@lib/actual/budget-moves";
 import { type CardId, type CardLayout, TEMPLATES_BAR, defaultLayout } from "./cards";
-import type { BreakdownSummary, PriorityCache } from "@lib/template-plan/priority-plan";
+import type { BreakdownSummary, PriorityCache } from "@lib/actual/templates/priority-plan";
 
 // ── Overview tab ──────────────────────────────────────────────────
 export interface MonthTrend {

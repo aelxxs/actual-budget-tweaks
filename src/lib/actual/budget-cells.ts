@@ -1,8 +1,8 @@
 import { getCells } from "./actual-api";
 import { isBulkEditing, onBulkEditEnd } from "./bulk-edit";
-import { watchElement } from "./dom-watcher";
-import { UUID } from "./ids";
-import { monthToSheet } from "./months";
+import { watchElement } from "@lib/dom/dom-watcher";
+import { UUID } from "@lib/ids";
+import { monthToSheet } from "@lib/format/months";
 import { BUDGET_TABLE, CATEGORY_AMOUNT_CELL, CELL, SHOWN_MONTH } from "@lib/actual-dom";
 
 /*

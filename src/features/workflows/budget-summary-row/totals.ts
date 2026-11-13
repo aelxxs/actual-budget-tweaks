@@ -1,10 +1,10 @@
 import { BALANCE_CELL_RE, fetchCells } from "@features/readability/category-progress/cells";
-import { readCell } from "@lib/utilities/budget-cells";
-import { loadMonthMoves, movedOutById } from "@lib/utilities/budget-moves";
-import { loadCurrency } from "@lib/utilities/currency";
-import { addMonths, currentMonth, monthToSheet, sheetToMonth } from "@lib/utilities/months";
-import { loadCategories } from "@lib/template-plan/actual-data";
-import { previewMonthTemplates } from "@lib/template-plan/next-month-coverage";
+import { readCell } from "@lib/actual/budget-cells";
+import { loadMonthMoves, movedOutById } from "@lib/actual/budget-moves";
+import { loadCurrency } from "@lib/format/currency";
+import { addMonths, currentMonth, monthToSheet, sheetToMonth } from "@lib/format/months";
+import { loadCategories } from "@lib/actual/templates/actual-data";
+import { previewMonthTemplates } from "@lib/actual/templates/next-month-coverage";
 import { templatesEnabled, type Shortfall } from "./actions";
 import { LEFTOVER_CELL } from "@lib/actual-dom";
 

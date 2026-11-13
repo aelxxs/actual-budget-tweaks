@@ -9,8 +9,8 @@ import { modernHeaders } from "@features/layout/modern-headers";
 import { monthCards } from "@features/workflows/budget-summary-row";
 import { categoryTemplateInsights } from "@features/workflows/category-template-insights";
 import { templatePlan } from "@features/workflows/template-plan";
-import SettingsDialog, { type SettingsTab } from "@lib/components/SettingsDialog.svelte";
-import { openDialog } from "@lib/utilities/dialog";
+import SettingsDialog, { type SettingsTab } from "@features/core/settings/SettingsDialog.svelte";
+import { openDialog } from "@lib/dom/dialog";
 
 /** Every setting that changes the budget page, in one dialog opened from the page itself. */
 export function openBudgetSettings(): void {

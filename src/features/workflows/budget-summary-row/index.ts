@@ -1,20 +1,16 @@
 import { markCellsStale } from "@features/readability/category-progress/cells";
 import { defineSetting, type Setting } from "@features/types";
 import { isOverlayOpen } from "@features/core/overlay-page";
-import { iconMask } from "@lib/utilities/icons";
-import {
-	type BudgetTableChange,
-	collectChanges,
-	watchBudgetTable,
-} from "@lib/utilities/budget-cells";
-import { BUDGET_TYPE_ATTR, isTrackingBudget, onBudgetType } from "@lib/utilities/budget-type";
-import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
-import { currentMonth, monthToSheet } from "@lib/utilities/months";
-import { Page, matchesPage } from "@lib/utilities/pages";
-import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
+import { iconMask } from "@lib/icons";
+import { type BudgetTableChange, collectChanges, watchBudgetTable } from "@lib/actual/budget-cells";
+import { BUDGET_TYPE_ATTR, isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
+import { watchDom, watchElement } from "@lib/dom/dom-watcher";
+import { currentMonth, monthToSheet } from "@lib/format/months";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import MonthMeta from "./MonthMeta.svelte";
-import { followBudgetValue } from "@lib/utilities/budget-value";
-import { getValue, hasValue, removeValue, setValue } from "@lib/utilities/store";
+import { followBudgetValue } from "@lib/actual/budget-value";
+import { getValue, hasValue, removeValue, setValue } from "@lib/store";
 import { reapplySetting } from "@features/runtime";
 import { FLOW_BAR_CSS, startFlowBars } from "@features/readability/budget-card-styling";
 import { SLOTS_KEY, toSlots } from "./slots";
