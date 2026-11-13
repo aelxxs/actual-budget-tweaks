@@ -1,5 +1,5 @@
 import { markCellsStale } from "@features/readability/category-progress/cells";
-import { defineSetting } from "@features/types";
+import { defineSetting, type Setting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
 import { iconMask } from "@lib/utilities/icons";
 import {
@@ -14,7 +14,9 @@ import { Page, matchesPage } from "@lib/utilities/pages";
 import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import MonthMeta from "./MonthMeta.svelte";
 import { followBudgetValue } from "@lib/utilities/budget-value";
-import { removeValue } from "@lib/utilities/store";
+import { getValue, hasValue, removeValue, setValue } from "@lib/utilities/store";
+import { reapplySetting } from "@features/runtime";
+import { FLOW_BAR_CSS, startFlowBars } from "@features/readability/budget-card-styling";
 import { SLOTS_KEY, toSlots } from "./slots";
 import { slotStore, summaryState } from "./state.svelte";
 import SummaryRow from "./SummaryRow.svelte";
@@ -344,352 +346,395 @@ function markToBudgetLabel(card: HTMLElement): void {
 	}
 }
 
-export const budgetSummaryRow = defineSetting({
-	type: "checkbox",
-	label: "Month Cards",
-	description:
-		"Compact month headers when several months are shown; with one, a full-width row of To Budget (or savings, on a tracking budget), spending, targets, and quick budget actions.",
+/*
+ * Adapter CSS: this restyles Actual's own month cards, which have no class hooks, so the
+ * selectors are structural and !important beats Actual's generated styles. ABT's own parts
+ * use the shared utilities in src/lib/styles/ui.css instead.
+ */
+const FULL_CSS = `
+	/*
+	 * The carousel row (the element whose grandchildren are the month cards) at rest: the
+	 * shown months plus one off-screen each side, shifted left by one month.
+	 */
+	[${RESIZING_ATTR}] [${CAROUSEL_ATTR}] {
+		width: 100% !important;
+		transform: translateX(calc(-100% / var(--abt-months))) !important;
+	}
+	[${RESIZING_ATTR}] [${CAROUSEL_ATTR}] > * {
+		flex: 0 0 calc(100% / var(--abt-months)) !important;
+	}
+
+	/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */
+	[${FULL_WIDTH_ATTR}] { max-width: none !important; }
+
+
+	/* Drop the category-column spacer so the card spans the table. */
+	[${SINGLE_MONTH_ATTR}] > :first-child > :first-child { display: none !important; }
+
+	/*
+	 * Actual's card becomes a transparent row of separate cards. One line: wrapping is decided
+	 * on the cards' content widths before they shrink, so it would wrap even when shrinking to
+	 * their floors fits. It wraps only once the row is narrower than those floors.
+	 */
+	[${SINGLE_MONTH_ATTR}] [${CARD_SLOT_ATTR}] {
+		container: abt-month-cards / inline-size;
+	}
+	${SUMMARY_CARD} {
+		flex-direction: row !important;
+		flex-wrap: nowrap;
+		align-items: stretch !important;
+		/* Actual's 13px inset around the cards and table (base.css), so every gap matches. */
+		--abt-sr-gap: 13px;
+		gap: var(--abt-sr-gap);
+		background: none !important;
+		box-shadow: none !important;
+		/* Transparent, not the text colour: Actual animates the border back in multi-month. */
+		border: 0 solid transparent !important;
+		border-radius: 0 !important;
+		transition: none !important;
+		overflow: visible !important;
+	}
+	@container abt-month-cards (max-width: 760px) {
+		${SUMMARY_CARD} {
+			flex-wrap: wrap;
+		}
+		/* Wrapped, every card grows to fill its line, so none sits beside an empty gap. */
+		${ENVELOPE} ${SUMMARY_CARD} > :last-child,
+		${SUMMARY_CARD} :is(.sr__card, .tr__card, .ac) {
+			flex-grow: 1 !important;
+		}
+		/* Cards with a bar still take most of the slack, so their lines don't truncate. */
+		${SUMMARY_CARD} .sr__flex {
+			flex-grow: 4 !important;
+		}
+	}
+	/*
+	 * Header: only Actual's notes button stays, tucked into the To Budget card's corner. The
+	 * header becomes a zero-width item right after that card (order 1), pulled back over the
+	 * row gap, so its button can sit inside the card without being moved in the DOM.
+	 */
+	${SUMMARY_CARD} > :first-child {
+		order: 1;
+		position: relative;
+		flex: 0 0 0;
+		width: 0;
+		min-width: 0;
+		align-self: stretch;
+		margin: 0 0 0 calc(-1 * var(--abt-sr-gap)) !important;
+		padding: 0 !important;
+	}
+	${SUMMARY_CARD} > :first-child > :not(:last-child) { display: none !important; }
+	/* Offsets include the card's 1px border, so it sits in the card's corner. */
+	${SUMMARY_CARD} > :first-child > :last-child {
+		position: absolute !important;
+		top: calc(var(--abt-space-2) + 1px);
+		right: calc(var(--abt-space-2) + 1px);
+		z-index: 1;
+	}
+	/* Actual's notes button, sized and styled like ABT's small icon buttons. */
+	${SUMMARY_CARD} > :first-child > :last-child button {
+		display: grid !important;
+		place-items: center;
+		box-sizing: border-box;
+		width: var(--abt-control-h-sm);
+		height: var(--abt-control-h-sm);
+		padding: 0 !important;
+		border-radius: var(--abt-radius) !important;
+	}
+	/* ABT's notes icon in place of Actual's, matching the Insights icon beside it. */
+	${SUMMARY_CARD} > :first-child > :last-child > :first-child button svg,
+	${MONTH_CARD} > :first-child > :last-child > :first-child button svg {
+		display: none !important;
+	}
+	${SUMMARY_CARD} > :first-child > :last-child > :first-child button::before,
+	${MONTH_CARD} > :first-child > :last-child > :first-child button::before {
+		content: "";
+		width: 17px;
+		height: 17px;
+		background: currentColor;
+		-webkit-mask: ${NOTE_MASK} center / contain no-repeat;
+		mask: ${NOTE_MASK} center / contain no-repeat;
+	}
+	${SUMMARY_CARD} > :first-child > :last-child button:hover {
+		background: var(--abt-fill-hover) !important;
+	}
+	/* The single-month action card covers Actual's menu; tracking keeps menus on other months. */
+	${SUMMARY_CARD} > :first-child > :last-child > :last-child:not(:first-child),
+	${ENVELOPE} ${MONTH_CARD} > :first-child > :last-child > :last-child:not(:first-child) {
+		display: none !important;
+	}
+	/* Actual's totals and ABT's flow bar: the summary cards cover them. */
+	${ENVELOPE} ${SUMMARY_CARD} > :not(:first-child):not(:last-child):not([${SUMMARY_STATS_ATTR}]) {
+		display: none !important;
+	}
+	/* Tracking: Actual's income, expenses and savings; ABT's cards show all three. */
+	${TRACKING} ${SUMMARY_CARD} > :not(:first-child):not([${SUMMARY_STATS_ATTR}]),
+	${TRACKING} ${MONTH_CARD} > :not(:first-child):not([${MONTH_META_ATTR}]) {
+		display: none !important;
+	}
+	/* Each mode's pieces show only in that mode, including the frame before they unmount. */
+	[${SUMMARY_STATS_ATTR}], [${MONTH_META_ATTR}] { display: none; }
+	${SUMMARY_CARD} > [${SUMMARY_STATS_ATTR}] { display: contents; }
+	/* Actual's To Budget, menu and all, is the lead card. */
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child {
+		position: relative;
+		order: 0;
+		/* Its content's width, from a floor that keeps a small amount from looking cramped and
+		   covers the To Budget/Overbudgeted switch; the Targets card absorbs the row's slack. */
+		flex: 0 0 auto;
+		/* The cards' height, held before they mount. */
+		box-sizing: border-box;
+		min-height: ${CARD_HEIGHT}px;
+		align-items: flex-start !important;
+		min-width: 200px;
+		margin: 0 !important;
+		padding: var(--abt-space-3) var(--abt-space-5) !important;
+		justify-content: center;
+		/* The border is drawn by the background's border-box layers: the panel border, glowing
+		   in the card's colour from the top-left corner. */
+		/* Neutral until ABT has read the month, so it never shows the wrong sign. */
+		--abt-card-tone: var(--abt-muted);
+		border: 1px solid transparent !important;
+		border-radius: var(--abt-radius);
+		background:
+			linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) var(--abt-wash), transparent), transparent 70%) padding-box,
+			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
+			linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-card-tone) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
+			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box !important;
+	}
+	${ENVELOPE} ${SUMMARY_CARD}[data-abt-to-budget-known] > :last-child {
+		--abt-card-tone: var(--color-noticeTextLight);
+	}
+	${ENVELOPE} ${SUMMARY_CARD}[data-abt-to-budget-negative] > :last-child {
+		--abt-card-tone: var(--color-errorText);
+	}
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child,
+	${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
+		transition:
+			--abt-glow-angle var(--abt-glow-duration) ease,
+			--abt-glow-reach var(--abt-glow-duration) ease,
+			--abt-glow-strength var(--abt-glow-duration) ease;
+	}
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child:hover,
+	${MONTH_CARD}[${CURRENT_MONTH_ATTR}]:hover {
+		--abt-glow-angle: 225deg;
+		--abt-glow-reach: 100%;
+		--abt-glow-strength: 75%;
+	}
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child > * { margin: 0 !important; }
+	/* Same label colour as the summary cards; the subdued default is faint on the tint. */
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child,
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child .abt-to-budget-label {
+		color: var(--color-tableHeaderText) !important;
+	}
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child * {
+		align-items: flex-start !important;
+		text-align: left !important;
+		padding-left: 0 !important;
+	}
+	/* Top-aligned like the other cards' labels: their 68px of lines sit centred, 3px down. */
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child {
+		justify-content: flex-start;
+		padding-top: calc(var(--abt-space-3) + 3px) !important;
+	}
+	/* Drawn like the other cards' labels; Actual's own text stays in the DOM, hidden. */
+	${ENVELOPE} ${SUMMARY_CARD} [${TO_BUDGET_LABEL_ATTR}] {
+		margin-bottom: var(--abt-space-2) !important;
+		font-size: 0 !important;
+		line-height: 14px;
+	}
+	${ENVELOPE} ${SUMMARY_CARD} [${TO_BUDGET_LABEL_ATTR}]::before {
+		content: attr(${TO_BUDGET_LABEL_ATTR});
+		font-size: var(--abt-text-xs);
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--color-tableHeaderText);
+		white-space: nowrap;
+	}
+
+	/*
+	 * Several months: each card becomes a two-line header, the month then To Budget. A grid
+	 * gives every piece a fixed cell, so nothing moves while ABT's parts mount.
+	 */
+	${MONTH_CARD} {
+		display: grid !important;
+		/* Month, year, tag, space, then notes/menu above the actions. */
+		grid-template-columns: minmax(0, auto) auto auto 1fr auto;
+		grid-template-rows: auto var(--abt-control-h-sm);
+		align-content: start;
+		align-items: center !important;
+		gap: var(--abt-space-3);
+		/* Shared with the single-month row, so switching modes doesn't move the table. */
+		box-sizing: border-box;
+		flex: none !important;
+		height: ${CARD_HEIGHT}px;
+		padding: var(--abt-space-4) var(--abt-space-3) 0 var(--abt-space-5) !important;
+		container-type: inline-size;
+		overflow: visible !important;
+	}
+	/* The current month, tinted like its Now tag, its border glowing like To Budget's. */
+	${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
+		--abt-card-surface: var(--color-budgetCurrentMonth, var(--abt-panel-surface));
+		border-color: transparent !important;
+		background:
+			linear-gradient(135deg, color-mix(in srgb, var(--abt-accent) var(--abt-wash), transparent), transparent 70%) padding-box,
+			linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) padding-box,
+			linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-accent) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
+			linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) border-box !important;
+	}
+	/* Header: its title and notes/menu join the row; the collapse toggle has nothing to collapse. */
+	${MONTH_CARD} > :first-child { display: contents !important; }
+	${MONTH_CARD} > :first-child > :first-child { display: none !important; }
+	${MONTH_CARD} > :first-child > :not(:first-child):not(:last-child) {
+		grid-area: 1 / 1;
+		align-self: baseline;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--abt-text-lg) !important;
+		font-weight: 650 !important;
+	}
+	${MONTH_CARD} > :first-child > :last-child {
+		grid-area: 1 / 5;
+		justify-self: end;
+		position: static !important;
+	}
+	/* Totals and ABT's flow bar move into the To Budget hover. */
+	${ENVELOPE} ${MONTH_CARD} > :not(:first-child):not(:last-child):not([${MONTH_META_ATTR}]) {
+		display: none !important;
+	}
+	${MONTH_CARD} > [${MONTH_META_ATTR}] { display: contents; }
+	/* Actual's To Budget, menu and all: label and amount, beside the suggested action. */
+	${ENVELOPE} ${MONTH_CARD} > :last-child {
+		grid-area: 2 / 1 / 3 / 5;
+		align-items: flex-start !important;
+		min-width: 0;
+		/* Actual's divider above it separated the totals, which are hidden here. */
+		border: 0 !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		background: none !important;
+		font-size: var(--abt-text-xs) !important;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--color-tableHeaderText) !important;
+	}
+	${ENVELOPE} ${MONTH_CARD} > :last-child * {
+		flex-direction: row !important;
+		align-items: baseline !important;
+		gap: var(--abt-space-2);
+		margin: 0 !important;
+		padding: 0 !important;
+		font-size: inherit !important;
+		color: inherit !important;
+	}
+	/* Narrow months keep the amount and drop the label. */
+	@container (max-width: 320px) {
+		${MONTH_CARD} [${MONTH_LABEL_ATTR}] {
+			display: none !important;
+		}
+	}
+	${ENVELOPE} ${MONTH_CARD} > :last-child ${CELL},
+	${ENVELOPE} ${MONTH_CARD} > :last-child ${CELL} * {
+		font-size: var(--abt-text-lg) !important;
+		font-weight: 650;
+		letter-spacing: 0;
+		text-transform: none;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-noticeTextLight) !important;
+	}
+	${ENVELOPE} ${MONTH_CARD}[data-abt-to-budget-negative] > :last-child ${CELL},
+	${ENVELOPE} ${MONTH_CARD}[data-abt-to-budget-negative] > :last-child ${CELL} * {
+		color: var(--color-errorText) !important;
+	}
+`;
+
+function startFullCards(): () => void {
+	// Per budget: a budget with no choice of its own starts from the defaults.
+	const slots = followBudgetValue(SLOTS_KEY, (v) => (summaryState.slots = toSlots(v)));
+	slotStore.save = (next) => void slots.save(next);
+	// From when the choice was one setting for every budget.
+	void removeValue(SLOTS_KEY);
+	changes = collectChanges(REFRESH_MS, (sheets) => {
+		for (const sheet of sheets) {
+			summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
+		}
+	});
+	const unwatch = watchDom(sync);
+	const unwatchTable = watchElement(BUDGET_TABLE, sync);
+	const unwatchCells = watchBudgetTable(onTableChange);
+	// The two types' cards are different components, mounted in different places.
+	const unwatchType = onBudgetType(() => {
+		unmountAll();
+		sync();
+	});
+	return () => {
+		slots.stop();
+		slotStore.save = () => {};
+		unwatch();
+		unwatchTable();
+		unwatchCells();
+		unwatchType();
+		changes?.stop();
+		changes = null;
+		restoreNative();
+	};
+}
+
+type Mode = "off" | "light" | "full";
+
+// Was a switch for the full cards; booleans are read until init stores the mode.
+const modeOf = (value: unknown): Mode =>
+	value === true ? "full" : value === "off" || value === "full" ? value : "light";
+
+// From when the flow bar was its own switch (Budget Card Styling), on by default.
+async function migratedMode(key: string, value: unknown): Promise<Mode | null> {
+	if (typeof value === "string" && (await hasValue(key))) {
+		return null;
+	}
+	if (value === true) {
+		return "full";
+	}
+	const flowBar = await getValue("budget-card-styling", true);
+	await removeValue("budget-card-styling");
+	return flowBar ? "light" : "off";
+}
+
+export const monthCards = defineSetting({
+	type: "select",
+	label: "Month cards",
+	description: "The cards above your budget.",
 	icon: "sparkles",
 	group: "Budget",
 	writes:
-		"Runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget.",
+		"Full runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget.",
 	context: {
 		key: "budget-summary-row",
-		defaultValue: false,
+		defaultValue: "light",
 	},
-	/*
-	 * Adapter CSS: this restyles Actual's own month cards, which have no class hooks, so the
-	 * selectors are structural and !important beats Actual's generated styles. ABT's own parts
-	 * use the shared utilities in src/lib/styles/ui.css instead.
-	 */
-	css: () => `
-		/*
-		 * The carousel row (the element whose grandchildren are the month cards) at rest: the
-		 * shown months plus one off-screen each side, shifted left by one month.
-		 */
-		[${RESIZING_ATTR}] [${CAROUSEL_ATTR}] {
-			width: 100% !important;
-			transform: translateX(calc(-100% / var(--abt-months))) !important;
-		}
-		[${RESIZING_ATTR}] [${CAROUSEL_ATTR}] > * {
-			flex: 0 0 calc(100% / var(--abt-months)) !important;
-		}
-
-		/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */
-		[${FULL_WIDTH_ATTR}] { max-width: none !important; }
-
-
-		/* Drop the category-column spacer so the card spans the table. */
-		[${SINGLE_MONTH_ATTR}] > :first-child > :first-child { display: none !important; }
-
-		/*
-		 * Actual's card becomes a transparent row of separate cards. One line: wrapping is decided
-		 * on the cards' content widths before they shrink, so it would wrap even when shrinking to
-		 * their floors fits. It wraps only once the row is narrower than those floors.
-		 */
-		[${SINGLE_MONTH_ATTR}] [${CARD_SLOT_ATTR}] {
-			container: abt-month-cards / inline-size;
-		}
-		${SUMMARY_CARD} {
-			flex-direction: row !important;
-			flex-wrap: nowrap;
-			align-items: stretch !important;
-			/* Actual's 13px inset around the cards and table (base.css), so every gap matches. */
-			--abt-sr-gap: 13px;
-			gap: var(--abt-sr-gap);
-			background: none !important;
-			box-shadow: none !important;
-			/* Transparent, not the text colour: Actual animates the border back in multi-month. */
-			border: 0 solid transparent !important;
-			border-radius: 0 !important;
-			transition: none !important;
-			overflow: visible !important;
-		}
-		@container abt-month-cards (max-width: 760px) {
-			${SUMMARY_CARD} {
-				flex-wrap: wrap;
-			}
-			/* Wrapped, every card grows to fill its line, so none sits beside an empty gap. */
-			${ENVELOPE} ${SUMMARY_CARD} > :last-child,
-			${SUMMARY_CARD} :is(.sr__card, .tr__card, .ac) {
-				flex-grow: 1 !important;
-			}
-			/* Cards with a bar still take most of the slack, so their lines don't truncate. */
-			${SUMMARY_CARD} .sr__flex {
-				flex-grow: 4 !important;
+	options: [
+		{ value: "off", label: "Off", description: "Actual's cards." },
+		{ value: "light", label: "Light", description: "Adds a spending bar to Actual's cards." },
+		{ value: "full", label: "Full", description: "ABT's cards, with quick budget actions." },
+	],
+	segmented: true,
+	css: ({ value }) => {
+		const mode = modeOf(value);
+		return mode === "full" ? FULL_CSS : mode === "light" ? FLOW_BAR_CSS : "";
+	},
+	init: async ({ key, value }) => {
+		const migrated = await migratedMode(key, value);
+		if (migrated) {
+			await setValue(key, migrated);
+			if (migrated !== modeOf(value)) {
+				// After this activation finishes, so the runtime restarts it with the stored mode.
+				setTimeout(() => void reapplySetting(monthCards as Setting, migrated));
+				return;
 			}
 		}
-		/*
-		 * Header: only Actual's notes button stays, tucked into the To Budget card's corner. The
-		 * header becomes a zero-width item right after that card (order 1), pulled back over the
-		 * row gap, so its button can sit inside the card without being moved in the DOM.
-		 */
-		${SUMMARY_CARD} > :first-child {
-			order: 1;
-			position: relative;
-			flex: 0 0 0;
-			width: 0;
-			min-width: 0;
-			align-self: stretch;
-			margin: 0 0 0 calc(-1 * var(--abt-sr-gap)) !important;
-			padding: 0 !important;
-		}
-		${SUMMARY_CARD} > :first-child > :not(:last-child) { display: none !important; }
-		/* Offsets include the card's 1px border, so it sits in the card's corner. */
-		${SUMMARY_CARD} > :first-child > :last-child {
-			position: absolute !important;
-			top: calc(var(--abt-space-2) + 1px);
-			right: calc(var(--abt-space-2) + 1px);
-			z-index: 1;
-		}
-		/* Actual's notes button, sized and styled like ABT's small icon buttons. */
-		${SUMMARY_CARD} > :first-child > :last-child button {
-			display: grid !important;
-			place-items: center;
-			box-sizing: border-box;
-			width: var(--abt-control-h-sm);
-			height: var(--abt-control-h-sm);
-			padding: 0 !important;
-			border-radius: var(--abt-radius) !important;
-		}
-		/* ABT's notes icon in place of Actual's, matching the Insights icon beside it. */
-		${SUMMARY_CARD} > :first-child > :last-child > :first-child button svg,
-		${MONTH_CARD} > :first-child > :last-child > :first-child button svg {
-			display: none !important;
-		}
-		${SUMMARY_CARD} > :first-child > :last-child > :first-child button::before,
-		${MONTH_CARD} > :first-child > :last-child > :first-child button::before {
-			content: "";
-			width: 17px;
-			height: 17px;
-			background: currentColor;
-			-webkit-mask: ${NOTE_MASK} center / contain no-repeat;
-			mask: ${NOTE_MASK} center / contain no-repeat;
-		}
-		${SUMMARY_CARD} > :first-child > :last-child button:hover {
-			background: var(--abt-fill-hover) !important;
-		}
-		/* The single-month action card covers Actual's menu; tracking keeps menus on other months. */
-		${SUMMARY_CARD} > :first-child > :last-child > :last-child:not(:first-child),
-		${ENVELOPE} ${MONTH_CARD} > :first-child > :last-child > :last-child:not(:first-child) {
-			display: none !important;
-		}
-		/* Actual's totals and ABT's flow bar: the summary cards cover them. */
-		${ENVELOPE} ${SUMMARY_CARD} > :not(:first-child):not(:last-child):not([${SUMMARY_STATS_ATTR}]) {
-			display: none !important;
-		}
-		/* Tracking: Actual's income, expenses and savings; ABT's cards show all three. */
-		${TRACKING} ${SUMMARY_CARD} > :not(:first-child):not([${SUMMARY_STATS_ATTR}]),
-		${TRACKING} ${MONTH_CARD} > :not(:first-child):not([${MONTH_META_ATTR}]) {
-			display: none !important;
-		}
-		/* Each mode's pieces show only in that mode, including the frame before they unmount. */
-		[${SUMMARY_STATS_ATTR}], [${MONTH_META_ATTR}] { display: none; }
-		${SUMMARY_CARD} > [${SUMMARY_STATS_ATTR}] { display: contents; }
-		/* Actual's To Budget, menu and all, is the lead card. */
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child {
-			position: relative;
-			order: 0;
-			/* Its content's width, from a floor that keeps a small amount from looking cramped and
-			   covers the To Budget/Overbudgeted switch; the Targets card absorbs the row's slack. */
-			flex: 0 0 auto;
-			/* The cards' height, held before they mount. */
-			box-sizing: border-box;
-			min-height: ${CARD_HEIGHT}px;
-			align-items: flex-start !important;
-			min-width: 200px;
-			margin: 0 !important;
-			padding: var(--abt-space-3) var(--abt-space-5) !important;
-			justify-content: center;
-			/* The border is drawn by the background's border-box layers: the panel border, glowing
-			   in the card's colour from the top-left corner. */
-			/* Neutral until ABT has read the month, so it never shows the wrong sign. */
-			--abt-card-tone: var(--abt-muted);
-			border: 1px solid transparent !important;
-			border-radius: var(--abt-radius);
-			background:
-				linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) var(--abt-wash), transparent), transparent 70%) padding-box,
-				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
-				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-card-tone) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
-				linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box !important;
-		}
-		${ENVELOPE} ${SUMMARY_CARD}[data-abt-to-budget-known] > :last-child {
-			--abt-card-tone: var(--color-noticeTextLight);
-		}
-		${ENVELOPE} ${SUMMARY_CARD}[data-abt-to-budget-negative] > :last-child {
-			--abt-card-tone: var(--color-errorText);
-		}
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child,
-		${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
-			transition:
-				--abt-glow-angle var(--abt-glow-duration) ease,
-				--abt-glow-reach var(--abt-glow-duration) ease,
-				--abt-glow-strength var(--abt-glow-duration) ease;
-		}
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child:hover,
-		${MONTH_CARD}[${CURRENT_MONTH_ATTR}]:hover {
-			--abt-glow-angle: 225deg;
-			--abt-glow-reach: 100%;
-			--abt-glow-strength: 75%;
-		}
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child > * { margin: 0 !important; }
-		/* Same label colour as the summary cards; the subdued default is faint on the tint. */
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child,
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child .abt-to-budget-label {
-			color: var(--color-tableHeaderText) !important;
-		}
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child * {
-			align-items: flex-start !important;
-			text-align: left !important;
-			padding-left: 0 !important;
-		}
-		/* Top-aligned like the other cards' labels: their 68px of lines sit centred, 3px down. */
-		${ENVELOPE} ${SUMMARY_CARD} > :last-child {
-			justify-content: flex-start;
-			padding-top: calc(var(--abt-space-3) + 3px) !important;
-		}
-		/* Drawn like the other cards' labels; Actual's own text stays in the DOM, hidden. */
-		${ENVELOPE} ${SUMMARY_CARD} [${TO_BUDGET_LABEL_ATTR}] {
-			margin-bottom: var(--abt-space-2) !important;
-			font-size: 0 !important;
-			line-height: 14px;
-		}
-		${ENVELOPE} ${SUMMARY_CARD} [${TO_BUDGET_LABEL_ATTR}]::before {
-			content: attr(${TO_BUDGET_LABEL_ATTR});
-			font-size: var(--abt-text-xs);
-			font-weight: 500;
-			letter-spacing: 0.04em;
-			text-transform: uppercase;
-			color: var(--color-tableHeaderText);
-			white-space: nowrap;
-		}
-
-		/*
-		 * Several months: each card becomes a two-line header, the month then To Budget. A grid
-		 * gives every piece a fixed cell, so nothing moves while ABT's parts mount.
-		 */
-		${MONTH_CARD} {
-			display: grid !important;
-			/* Month, year, tag, space, then notes/menu above the actions. */
-			grid-template-columns: minmax(0, auto) auto auto 1fr auto;
-			grid-template-rows: auto var(--abt-control-h-sm);
-			align-content: start;
-			align-items: center !important;
-			gap: var(--abt-space-3);
-			/* Shared with the single-month row, so switching modes doesn't move the table. */
-			box-sizing: border-box;
-			flex: none !important;
-			height: ${CARD_HEIGHT}px;
-			padding: var(--abt-space-4) var(--abt-space-3) 0 var(--abt-space-5) !important;
-			container-type: inline-size;
-			overflow: visible !important;
-		}
-		/* The current month, tinted like its Now tag, its border glowing like To Budget's. */
-		${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
-			--abt-card-surface: var(--color-budgetCurrentMonth, var(--abt-panel-surface));
-			border-color: transparent !important;
-			background:
-				linear-gradient(135deg, color-mix(in srgb, var(--abt-accent) var(--abt-wash), transparent), transparent 70%) padding-box,
-				linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) padding-box,
-				linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-accent) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
-				linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) border-box !important;
-		}
-		/* Header: its title and notes/menu join the row; the collapse toggle has nothing to collapse. */
-		${MONTH_CARD} > :first-child { display: contents !important; }
-		${MONTH_CARD} > :first-child > :first-child { display: none !important; }
-		${MONTH_CARD} > :first-child > :not(:first-child):not(:last-child) {
-			grid-area: 1 / 1;
-			align-self: baseline;
-			min-width: 0;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			font-size: var(--abt-text-lg) !important;
-			font-weight: 650 !important;
-		}
-		${MONTH_CARD} > :first-child > :last-child {
-			grid-area: 1 / 5;
-			justify-self: end;
-			position: static !important;
-		}
-		/* Totals and ABT's flow bar move into the To Budget hover. */
-		${ENVELOPE} ${MONTH_CARD} > :not(:first-child):not(:last-child):not([${MONTH_META_ATTR}]) {
-			display: none !important;
-		}
-		${MONTH_CARD} > [${MONTH_META_ATTR}] { display: contents; }
-		/* Actual's To Budget, menu and all: label and amount, beside the suggested action. */
-		${ENVELOPE} ${MONTH_CARD} > :last-child {
-			grid-area: 2 / 1 / 3 / 5;
-			align-items: flex-start !important;
-			min-width: 0;
-			/* Actual's divider above it separated the totals, which are hidden here. */
-			border: 0 !important;
-			margin: 0 !important;
-			padding: 0 !important;
-			background: none !important;
-			font-size: var(--abt-text-xs) !important;
-			letter-spacing: 0.04em;
-			text-transform: uppercase;
-			color: var(--color-tableHeaderText) !important;
-		}
-		${ENVELOPE} ${MONTH_CARD} > :last-child * {
-			flex-direction: row !important;
-			align-items: baseline !important;
-			gap: var(--abt-space-2);
-			margin: 0 !important;
-			padding: 0 !important;
-			font-size: inherit !important;
-			color: inherit !important;
-		}
-		/* Narrow months keep the amount and drop the label. */
-		@container (max-width: 320px) {
-			${MONTH_CARD} [${MONTH_LABEL_ATTR}] {
-				display: none !important;
-			}
-		}
-		${ENVELOPE} ${MONTH_CARD} > :last-child ${CELL},
-		${ENVELOPE} ${MONTH_CARD} > :last-child ${CELL} * {
-			font-size: var(--abt-text-lg) !important;
-			font-weight: 650;
-			letter-spacing: 0;
-			text-transform: none;
-			font-variant-numeric: tabular-nums;
-			color: var(--color-noticeTextLight) !important;
-		}
-		${ENVELOPE} ${MONTH_CARD}[data-abt-to-budget-negative] > :last-child ${CELL},
-		${ENVELOPE} ${MONTH_CARD}[data-abt-to-budget-negative] > :last-child ${CELL} * {
-			color: var(--color-errorText) !important;
-		}
-	`,
-	init: () => {
-		// Per budget: a budget with no choice of its own starts from the defaults.
-		const slots = followBudgetValue(SLOTS_KEY, (v) => (summaryState.slots = toSlots(v)));
-		slotStore.save = (next) => void slots.save(next);
-		// From when the choice was one setting for every budget.
-		void removeValue(SLOTS_KEY);
-		changes = collectChanges(REFRESH_MS, (sheets) => {
-			for (const sheet of sheets) {
-				summaryState.versions[sheet] = (summaryState.versions[sheet] ?? 0) + 1;
-			}
-		});
-		const unwatch = watchDom(sync);
-		const unwatchTable = watchElement(BUDGET_TABLE, sync);
-		const unwatchCells = watchBudgetTable(onTableChange);
-		// The two types' cards are different components, mounted in different places.
-		const unwatchType = onBudgetType(() => {
-			unmountAll();
-			sync();
-		});
-		return () => {
-			slots.stop();
-			slotStore.save = () => {};
-			unwatch();
-			unwatchTable();
-			unwatchCells();
-			unwatchType();
-			changes?.stop();
-			changes = null;
-			restoreNative();
-		};
+		const mode = migrated ?? modeOf(value);
+		return mode === "full" ? startFullCards() : mode === "light" ? startFlowBars() : undefined;
 	},
 });

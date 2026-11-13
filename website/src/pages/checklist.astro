@@ -20,7 +20,7 @@ const sections = [
       { feature: "Side Panel", file: "src/features/core/side-panel/index.ts", selectors: ["div:has(> div:nth-child(4))", "nth-child(1..5)"], checks: ["Side panel renders alongside main content", "Panel doesn't overlap or break layout"] },
       { feature: "Spending Calendar", file: "src/features/workflows/spending-calendar/index.ts", selectors: ["a[href=\"/schedules\"]"], checks: ["Calendar renders in side panel", "Month and week views work", "Transaction data loads"] },
       { feature: "Dim Reconciled", file: "src/features/readability/dim-reconciled.ts", selectors: ["svg[viewBox=\"0 0 20 20\"]"], checks: ["Reconciled rows are dimmed", "Un-reconciled rows are normal"] },
-      { feature: "Budget Card / FlowBar", file: "src/features/readability/budget-card-styling/index.ts", selectors: ["data-cellname*=\"object Object\"", "data-cellname*=\"!available-funds\""], checks: ["FlowBar renders on budget summary", "Amounts are correct"] },
+      { feature: "Month cards: Light", file: "src/features/readability/budget-card-styling/index.ts", selectors: ["data-cellname*=\"object Object\"", "data-cellname*=\"!available-funds\""], checks: ["FlowBar renders on budget summary", "Amounts are correct"] },
       { feature: "Budget Row Height", file: "src/features/layout/budget-table-row-height/index.ts", selectors: ["budget-totals + div"], checks: ["Category rows resize correctly", "Group headers unaffected"] },
       { feature: "Income Breakdown", file: "src/lib/main-world/legacy/income-breakdown.ts", selectors: [".react-grid-item", ".hover-visible"], checks: ["Sankey diagram renders on reports", "Popover date picker works"] },
     ],

@@ -87,6 +87,17 @@
 				"writes": null
 			},
 			{
+				"key": "budget-month-header",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Modern headers",
+				"description": "Restyles the Budget and Reports page headers.",
+				"icon": "layout",
+				"group": "Components",
+				"writes": null
+			},
+			{
 				"key": "theme-menu",
 				"type": "checkbox",
 				"defaultValue": true,
@@ -248,48 +259,15 @@
 				"writes": null
 			},
 			{
-				"key": "budget-row-hover",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Highlight Hovered Budget Row",
-				"description": "Tint the category row under the cursor, so its numbers are easy to follow across.",
-				"icon": "rows",
-				"group": "Layout",
-				"writes": null
-			},
-			{
-				"key": "budget-month-header",
-				"type": "checkbox",
-				"defaultValue": false,
-				"platform": "desktop",
-				"label": "Month Header",
-				"description": "Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",
-				"icon": "calendar",
-				"group": "Layout",
-				"writes": null
-			},
-			{
 				"key": "budget-summary-row",
-				"type": "checkbox",
-				"defaultValue": false,
+				"type": "select",
+				"defaultValue": "light",
 				"platform": "desktop",
-				"label": "Month Cards",
-				"description": "Compact month headers when several months are shown; with one, a full-width row of To Budget (or savings, on a tracking budget), spending, targets, and quick budget actions.",
+				"label": "Month cards",
+				"description": "The cards above your budget.",
 				"icon": "sparkles",
 				"group": "Layout",
-				"writes": "Runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget."
-			},
-			{
-				"key": "budget-card-styling",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Budget Card Styling",
-				"description": "Add a spending flow bar to the current month's budget card.",
-				"icon": "networth",
-				"group": "Readability",
-				"writes": null
+				"writes": "Full runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget."
 			},
 			{
 				"key": "category-progress-indicators",
@@ -589,17 +567,6 @@
 		"title": "Reports",
 		"description": null,
 		"items": [
-			{
-				"key": "reports-header",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Modern Reports Header",
-				"description": "Keep the Reports title and dashboard buttons in view while scrolling, titled as a quiet breadcrumb.",
-				"icon": "layout",
-				"group": null,
-				"writes": null
-			},
 			{
 				"key": "spending-calendar-enabled",
 				"type": "checkbox",

@@ -1,9 +1,7 @@
 import { categoryColorDots } from "@features/appearance/category-color-dots";
 import { categoryEmojiPicker } from "@features/appearance/category-emoji-picker";
-import { budgetRowHover } from "@features/layout/budget-row-hover";
 import { budgetTableRowHeight } from "@features/layout/budget-table-row-height";
 import { balancePills } from "@features/readability/balance-pills";
-import { budgetCardStyling } from "@features/readability/budget-card-styling";
 import { budgetTotalsLabelStyling } from "@features/readability/budget-totals-label-styling";
 import { categoryProgress } from "@features/readability/category-progress";
 import { quietCategoryIcons } from "@features/readability/quiet-category-icons";
@@ -11,8 +9,8 @@ import { scheduleIconDetails } from "@features/readability/schedule-icon-details
 import { showDailyAvailable } from "@features/readability/show-daily-available";
 import type { Setting } from "@features/types";
 import { budgetCategoryFilter } from "@features/workflows/budget-category-filter";
-import { budgetMonthHeader } from "@features/workflows/budget-month-header";
-import { budgetSummaryRow } from "@features/workflows/budget-summary-row";
+import { modernHeaders } from "@features/layout/modern-headers";
+import { monthCards } from "@features/workflows/budget-summary-row";
 import { categoryTemplateInsights } from "@features/workflows/category-template-insights";
 import { goalFunding } from "@features/workflows/goal-funding";
 import { hideFundedTemplateBars } from "@features/workflows/category-template-insights/hide-funded";
@@ -55,15 +53,15 @@ export function openBudgetSettings(): void {
 			groups: [
 				{
 					heading: "Table",
-					settings: [budgetTableRowHeight, budgetRowHover] as Setting[],
+					settings: [budgetTableRowHeight as unknown as Setting],
 				},
 				{
 					heading: "Months",
-					settings: [budgetMonthHeader, budgetSummaryRow] as Setting[],
+					settings: [modernHeaders, monthCards] as Setting[],
 				},
 				{
 					heading: "Summary",
-					settings: [budgetCardStyling, budgetTotalsLabelStyling, showDailyAvailable] as Setting[],
+					settings: [budgetTotalsLabelStyling, showDailyAvailable] as Setting[],
 				},
 			],
 		},

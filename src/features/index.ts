@@ -21,10 +21,9 @@ import { tooltipStyling } from "./core/tooltip";
 import { backgroundPattern } from "./layout/background-pattern";
 import { borderRadius } from "./layout/border-radius";
 import { borders } from "./layout/borders";
-import { budgetRowHover } from "./layout/budget-row-hover";
 import { budgetTableRowHeight } from "./layout/budget-table-row-height";
 import { insetPanels } from "./layout/inset-panels";
-import { reportsHeader } from "./layout/reports-header";
+import { modernHeaders } from "./layout/modern-headers";
 import { resizableTransactionColumns } from "./layout/resizable-transaction-columns";
 import { mobileAccounts } from "./mobile/accounts";
 import { mobileBudgetBanners } from "./mobile/budget-banners";
@@ -37,7 +36,6 @@ import { mobileToasts } from "./mobile/toasts";
 import { mobileTransactionList } from "./mobile/transaction-list";
 import { alternatingTransactionRows } from "./readability/alternating-transaction-rows";
 import { balancePills } from "./readability/balance-pills";
-import { budgetCardStyling } from "./readability/budget-card-styling";
 import { budgetTotalsLabelStyling } from "./readability/budget-totals-label-styling";
 import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
@@ -55,8 +53,7 @@ import { themeSelector } from "./theme/theme";
 import { themeLoader } from "./theme/theme-loader";
 import type { CoreSetting, Setting } from "./types";
 import { budgetCategoryFilter } from "./workflows/budget-category-filter";
-import { budgetMonthHeader } from "./workflows/budget-month-header";
-import { budgetSummaryRow } from "./workflows/budget-summary-row";
+import { monthCards } from "./workflows/budget-summary-row";
 import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { hideFundedTemplateBars } from "./workflows/category-template-insights/hide-funded";
@@ -109,7 +106,9 @@ export const scriptSections: SettingsSection[] = [
 	},
 	{
 		title: "General",
-		groups: [{ label: "Components", items: [modernTitlebar, themeMenu, modernToasts] }],
+		groups: [
+			{ label: "Components", items: [modernTitlebar, modernHeaders, themeMenu, modernToasts] },
+		],
 	},
 	{
 		title: "Sidebar",
@@ -140,12 +139,11 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: "Layout",
-				items: [budgetTableRowHeight, budgetRowHover, budgetMonthHeader, budgetSummaryRow],
+				items: [budgetTableRowHeight, monthCards],
 			},
 			{
 				label: "Readability",
 				items: [
-					budgetCardStyling,
 					categoryProgress,
 					balancePills,
 					groupOverspent,
@@ -196,7 +194,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: null,
-				items: [reportsHeader, spendingCalendar, incomeBreakdown],
+				items: [spendingCalendar, incomeBreakdown],
 			},
 		],
 	},

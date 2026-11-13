@@ -51,7 +51,10 @@ export interface BaseSetting<C extends SettingContext> {
 
 export interface SelectSetting<C extends SettingContext> extends BaseSetting<C> {
 	type: "select";
-	options: { value: string; label: string }[];
+	/** An option's `description` replaces the setting's while that option is picked. */
+	options: { value: string; label: string; description?: string }[];
+	/** Shows the options as a segmented control in place of the dropdown, for a few short labels. */
+	segmented?: boolean;
 	/** Optional visual picker shown in place of the dropdown; the runtime still applies `css`. */
 	picker?: Component<{
 		options: { value: string; label: string }[];

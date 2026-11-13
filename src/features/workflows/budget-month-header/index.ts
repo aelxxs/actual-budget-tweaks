@@ -1,6 +1,4 @@
-import { NAV_BORDER_CSS } from "@features/layout/borders";
 import { dockInsightsTrigger } from "@features/workflows/template-plan";
-import { defineSetting } from "@features/types";
 import { isCalendarOpen } from "@features/workflows/spending-calendar";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
@@ -143,56 +141,44 @@ function sync(): void {
 	instance = mount(MonthHeader, { target: host });
 }
 
-export const budgetMonthHeader = defineSetting({
-	type: "checkbox",
-	label: "Month Header",
-	description:
-		"Replace the budget page's month strip with a header: a month picker, months-shown control, and Today.",
-	icon: "calendar",
-	group: "Budget",
-	context: {
-		key: "budget-month-header",
-		defaultValue: false,
-	},
-	css: () => `
-		${NAV_BORDER_CSS}
+export const MONTH_HEADER_CSS = `
+	[${NATIVE_HEADER_ATTR}], [${NATIVE_COUNT_ATTR}] { display: none !important; }
 
-		[${NATIVE_HEADER_ATTR}], [${NATIVE_COUNT_ATTR}] { display: none !important; }
+	/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */
+	[${FULL_WIDTH_ATTR}] { max-width: none !important; }
 
-		/* Actual caps the table at its columns' natural width (500px a month); fill the page instead. */
-		[${FULL_WIDTH_ATTR}] { max-width: none !important; }
+	/* Fills the page as it resizes; Actual's measured width would centre it for a frame first. */
+	[${FILL_ATTR}] { width: 100% !important; }
+`;
 
-		/* Fills the page as it resizes; Actual's measured width would centre it for a frame first. */
-		[${FILL_ATTR}] { width: 100% !important; }
-	`,
-	init: () => {
-		fellBack = false;
-		// Claimed now, not when the header mounts: Insights would otherwise draw its floating
-		// button until the budget table renders.
-		let undock: (() => void) | null = dockInsightsTrigger();
-		const release = () => {
-			undock?.();
-			undock = null;
-		};
-		const stopFallback = onNativeFallback(() => {
-			fellBack = true;
-			release();
-			unmountHeader();
-			restoreNative();
-		});
-		const unwatch = watchDom(sync);
-		const unwatchTable = watchElement(BUDGET_TABLE, sync);
-		return () => {
-			if (pendingMax) {
-				clearTimeout(pendingMax);
-				pendingMax = null;
-			}
-			release();
-			stopFallback();
-			unwatch();
-			unwatchTable();
-			unmountHeader();
-			restoreNative();
-		};
-	},
-});
+/** Mounts the budget page's header in place of Actual's month strip; returns its cleanup. */
+export function startMonthHeader(): () => void {
+	fellBack = false;
+	// Claimed now, not when the header mounts: Insights would otherwise draw its floating
+	// button until the budget table renders.
+	let undock: (() => void) | null = dockInsightsTrigger();
+	const release = () => {
+		undock?.();
+		undock = null;
+	};
+	const stopFallback = onNativeFallback(() => {
+		fellBack = true;
+		release();
+		unmountHeader();
+		restoreNative();
+	});
+	const unwatch = watchDom(sync);
+	const unwatchTable = watchElement(BUDGET_TABLE, sync);
+	return () => {
+		if (pendingMax) {
+			clearTimeout(pendingMax);
+			pendingMax = null;
+		}
+		release();
+		stopFallback();
+		unwatch();
+		unwatchTable();
+		unmountHeader();
+		restoreNative();
+	};
+}

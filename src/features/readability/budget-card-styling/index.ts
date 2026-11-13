@@ -1,5 +1,4 @@
-import { defineSetting } from "@features/types";
-import BudgetCardStylingPreview from "../previews/BudgetCardStyling.svelte";
+import { isTrackingBudget, onBudgetType } from "@lib/utilities/budget-type";
 import { readCell } from "@lib/utilities/budget-cells";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
@@ -8,7 +7,7 @@ import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import FlowBar from "./FlowBar.svelte";
 import { AVAILABLE_FUNDS_CELL, BUDGET_SUMMARY, CELL, TO_BUDGET_CELL } from "@lib/actual-dom";
 
-const CSS = `
+export const FLOW_BAR_CSS = `
 	${BUDGET_SUMMARY} {
 		border-radius: var(--border-radius);
 		overflow: hidden;
@@ -177,31 +176,36 @@ function cleanupCards() {
 	}
 }
 
-export const budgetCardStyling = defineSetting({
-	type: "checkbox",
-	envelopeOnly: true,
-	label: "Budget Card Styling",
-	description: "Add a spending flow bar to the current month's budget card.",
-	group: "Budget",
-	icon: "networth",
-	preview: BudgetCardStylingPreview,
-	context: {
-		key: "budget-card-styling",
-		defaultValue: true,
-	},
-	css: () => CSS,
-	init: async () => {
-		await loadCurrency();
-
-		const unwatch = watchDom(processCards);
-
-		// Re-process when navigating back to the budget page
-		const stopWatchingRoute = watchRoute(processCards);
-
-		return () => {
-			unwatch();
-			stopWatchingRoute();
-			cleanupCards();
-		};
-	},
-});
+/** Adds a flow bar to Actual's month cards, on envelope budgets only; returns its cleanup. */
+export function startFlowBars(): () => void {
+	let stopBars: (() => void) | null = null;
+	let ready = false;
+	const update = () => {
+		if (!ready) {
+			return;
+		}
+		if (isTrackingBudget()) {
+			stopBars?.();
+			stopBars = null;
+		} else if (!stopBars) {
+			const unwatch = watchDom(processCards);
+			// Re-process when navigating back to the budget page
+			const stopWatchingRoute = watchRoute(processCards);
+			stopBars = () => {
+				unwatch();
+				stopWatchingRoute();
+				cleanupCards();
+			};
+		}
+	};
+	void loadCurrency().then(() => {
+		ready = true;
+		update();
+	});
+	const stopType = onBudgetType(update);
+	return () => {
+		stopType();
+		stopBars?.();
+		stopBars = null;
+	};
+}

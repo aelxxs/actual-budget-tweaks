@@ -42,7 +42,7 @@ const HOME_SETTINGS = {
 	...SETTINGS,
 	"experimental-sidebar-layout-mode": "split",
 	"side-panel-width": 280,
-	"budget-summary-row": true,
+	"budget-summary-row": "full",
 	"category-progress-indicators": true,
 	"balance-status-pills": true,
 };

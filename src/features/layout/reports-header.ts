@@ -1,5 +1,3 @@
-import { NAV_BORDER_CSS } from "@features/layout/borders";
-import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { matchesPage, Page } from "@lib/utilities/pages";
 import { REPORTS_PAGE } from "@lib/actual-dom";
@@ -52,78 +50,65 @@ function measureTop() {
 	}
 }
 
-export const reportsHeader = defineSetting({
-	type: "checkbox",
-	label: "Modern Reports Header",
-	description:
-		"Keep the Reports title and dashboard buttons in view while scrolling, titled as a quiet breadcrumb.",
-	group: "Reports",
-	icon: "layout",
-	context: {
-		key: "reports-header",
-		defaultValue: true,
-	},
-	css: () => `
-		${NAV_BORDER_CSS}
+export const REPORTS_HEADER_CSS = `
+	/* Grows to its widgets, which otherwise overflow it; the header only sticks within it. */
+	${PAGE} {
+		flex-shrink: 0 !important;
+		min-height: max-content !important;
+		padding-top: 0 !important;
+	}
 
-		/* Grows to its widgets, which otherwise overflow it; the header only sticks within it. */
-		${PAGE} {
-			flex-shrink: 0 !important;
-			min-height: max-content !important;
-			padding-top: 0 !important;
-		}
+	${HEADER} {
+		position: sticky;
+		top: var(${TOP_VAR}, 0);
+		z-index: 10;
+		box-sizing: border-box;
+		min-height: var(--abt-panel-header-height);
+		/* The widget grid adds its own 10px, so the first row sits one gutter below. */
+		margin-bottom: calc(var(--abt-page-gutter) - 10px);
+		padding-block: var(--abt-space-3);
+		align-items: center;
+		border-bottom: 1px solid var(--abt-panel-border);
+		background: var(--color-pageBackground);
+		margin-inline: 0 !important;
+	}
 
-		${HEADER} {
-			position: sticky;
-			top: var(${TOP_VAR}, 0);
-			z-index: 10;
-			box-sizing: border-box;
-			min-height: var(--abt-panel-header-height);
-			/* The widget grid adds its own 10px, so the first row sits one gutter below. */
-			margin-bottom: calc(var(--abt-page-gutter) - 10px);
-			padding-block: var(--abt-space-3);
-			align-items: center;
-			border-bottom: 1px solid var(--abt-panel-border);
-			background: var(--color-pageBackground);
-			margin-inline: 0 !important;
-		}
+	/*
+	 * "Reports / Main" in place of "Reports: Main". The label's own text stays, invisible, to keep
+	 * Actual's size and spacing; "Reports" is drawn over it, muted, and a slash replaces the colon.
+	 */
+	/* A step down from Actual's page title, nearer ABT's other headers. */
+	${TITLE} > div {
+		font-size: 20px !important; /* raw: no type token this large */
+	}
 
-		/*
-		 * "Reports / Main" in place of "Reports: Main". The label's own text stays, invisible, to keep
-		 * Actual's size and spacing; "Reports" is drawn over it, muted, and a slash replaces the colon.
-		 */
-		/* A step down from Actual's page title, nearer ABT's other headers. */
-		${TITLE} > div {
-			font-size: 20px !important; /* raw: no type token this large */
-		}
+	${LABEL} {
+		position: relative;
+		flex-direction: row !important;
+		color: transparent !important;
+	}
 
-		${LABEL} {
-			position: relative;
-			flex-direction: row !important;
-			color: transparent !important;
-		}
+	${LABEL}::before {
+		content: "Reports";
+		position: absolute;
+		left: 0;
+		color: var(--color-pageTextSubdued);
+	}
 
-		${LABEL}::before {
-			content: "Reports";
-			position: absolute;
-			left: 0;
-			color: var(--color-pageTextSubdued);
-		}
+	${LABEL}::after {
+		content: "/";
+		margin: 0 0.25em 0 0.05em;
+		color: var(--color-pageTextSubdued);
+		font-weight: 300;
+		opacity: 0.6;
+	}
+`;
 
-		${LABEL}::after {
-			content: "/";
-			margin: 0 0.25em 0 0.05em;
-			color: var(--color-pageTextSubdued);
-			font-weight: 300;
-			opacity: 0.6;
-		}
-	`,
-	init: () => {
-		measureTop();
-		const stop = watchDom(measureTop);
-		return () => {
-			stop();
-			document.querySelector<HTMLElement>(REPORTS_PAGE)?.style.removeProperty(TOP_VAR);
-		};
-	},
-});
+export function startReportsHeader(): () => void {
+	measureTop();
+	const stop = watchDom(measureTop);
+	return () => {
+		stop();
+		document.querySelector<HTMLElement>(REPORTS_PAGE)?.style.removeProperty(TOP_VAR);
+	};
+}

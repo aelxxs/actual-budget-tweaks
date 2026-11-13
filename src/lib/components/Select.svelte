@@ -10,7 +10,7 @@
 
 	const { labelText, options, setting, icon } = $props<{
 		labelText: string;
-		options: { value: string; label: string }[];
+		options: { value: string; label: string; description?: string }[];
 		setting: SelectSetting<any>;
 		icon?: IconName;
 	}>();
@@ -38,6 +38,9 @@
 	}
 
 	const Picker = $derived(setting.picker);
+	const description = $derived(
+		options.find((o: { value: string }) => o.value === value)?.description ?? setting.description,
+	);
 </script>
 
 <div class="abt-setting" class:abt-setting--stacked={Picker} data-testid={ctx.key}>
@@ -49,8 +52,8 @@
 			<span class="abt-setting__label"
 				>{labelText}{#if setting.writes}<WritesMark writes={setting.writes} />{/if}</span
 			>
-			{#if setting.description}
-				<span class="abt-setting__desc">{setting.description}</span>
+			{#if description}
+				<span class="abt-setting__desc">{description}</span>
 			{/if}
 		</span>
 	</span>
@@ -59,6 +62,16 @@
 	{/if}
 	{#if Picker}
 		<Picker {options} selected={value} onPick={pick} />
+	{:else if setting.segmented}
+		<div class="abt-seg abt-seg--sm" role="group" aria-label={labelText}>
+			{#each options as option (option.value)}
+				<button
+					type="button"
+					aria-pressed={value === option.value}
+					onclick={() => pick(option.value)}>{option.label}</button
+				>
+			{/each}
+		</div>
 	{:else}
 		<select
 			bind:value
