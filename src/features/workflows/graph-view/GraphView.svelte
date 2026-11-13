@@ -35,7 +35,9 @@
 		type GraphNode,
 		type Highlight,
 		type Searchable,
+		type TxRow,
 	} from "./data";
+	import DuplicateList from "./DuplicateList.svelte";
 	import FlagList from "./FlagList.svelte";
 	import SimilarPayees from "./SimilarPayees.svelte";
 	import { dispatch, send } from "@lib/utilities/actual-api";
@@ -62,6 +64,7 @@
 	let mixedCount = $state(0);
 	let sharedCount = $state(0);
 	let similarCount = $state(0);
+	let duplicateCount = $state(0);
 	type DrawLink = {
 		key: string;
 		s: string;
@@ -168,10 +171,12 @@
 		mixedCount = data.mixed.size;
 		sharedCount = data.shared.size;
 		similarCount = data.similar.length;
+		duplicateCount = data.duplicates.length;
 		if (
 			(highlight === "mixed" && !mixedCount) ||
 			(highlight === "shared" && !sharedCount) ||
-			(highlight === "similar" && !similarCount)
+			(highlight === "similar" && !similarCount) ||
+			(highlight === "duplicates" && !duplicateCount)
 		) {
 			highlight = null;
 		}
@@ -335,6 +340,11 @@
 			count: similarCount,
 			hint: "Payees that look like one place under different names",
 		},
+		{
+			kind: "duplicates" as const,
+			count: duplicateCount,
+			hint: "Charges with the same account, payee and amount a couple of days apart",
+		},
 	]);
 
 	function collapseAll() {
@@ -402,11 +412,12 @@
 		},
 	};
 	// Header labels for a narrow page, e.g. with the side panel open.
-	const SHORT = { mixed: "Mixed", shared: "Shared", similar: "Similar" };
+	const SHORT = { mixed: "Mixed", shared: "Shared", similar: "Similar", duplicates: "Dupes" };
 	const TITLES = {
 		mixed: LISTS.mixed.title,
 		shared: LISTS.shared.title,
 		similar: "Similar payees",
+		duplicates: "Duplicates",
 	};
 
 	function pickHighlight(next: Exclude<Highlight, null>) {
@@ -445,6 +456,19 @@
 			sidepanel.open({ title: TITLES.similar, bodyNode: body, key: LIST_KEY });
 			return;
 		}
+		if (kind === "duplicates") {
+			detail = mount(DuplicateList, {
+				target: body,
+				props: {
+					note: noteFor("duplicates", DUPLICATE_NOTE),
+					sets: d.duplicates,
+					names: d.names,
+					onPick: pickDuplicate,
+				},
+			});
+			sidepanel.open({ title: TITLES.duplicates, bodyNode: body, key: LIST_KEY });
+			return;
+		}
 		detail = mount(FlagList, {
 			target: body,
 			props: {
@@ -471,12 +495,35 @@
 		sidepanel.open({ title: TITLES[kind], bodyNode: body, key: LIST_KEY });
 	}
 
+	const DUPLICATE_NOTE =
+		"Charges with the same account, payee and amount a couple of days apart. At least one has no bank id: entered by hand, or from a file imported twice.";
+
+	/** Draws the set's payee if the graph left it out, and opens its transactions. */
+	function pickDuplicate(set: TxRow[]) {
+		const id = set[0].payee!;
+		if (!placed.has(`payee:${id}`)) {
+			picked = new Set([...picked, id]);
+			draw(null);
+		}
+		const n = placed.get(`payee:${id}`);
+		if (n) {
+			openDetail(n);
+		}
+	}
+
 	const SIMILAR_NOTE =
 		"Payees that look like one place under different names. Pick the name to keep, then merge; a rule can catch the other names on future imports.";
 
 	/** The panel's note, saying so when the graph draws only the largest of the list. */
 	function noteFor(kind: Exclude<Highlight, null>, note: string): string {
-		const size = kind === "mixed" ? mixedCount : kind === "similar" ? similarCount : 0;
+		const size =
+			kind === "mixed"
+				? mixedCount
+				: kind === "similar"
+					? similarCount
+					: kind === "duplicates"
+						? duplicateCount
+						: 0;
 		return size > HIGHLIGHT_LIMIT
 			? `${note} The graph draws the ${HIGHLIGHT_LIMIT} largest; pick one here to add it.`
 			: note;

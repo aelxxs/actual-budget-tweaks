@@ -44,6 +44,10 @@ export interface TxRow {
 	notes: string | null;
 	/** The bank's own text, before rules renamed the payee. */
 	imported_payee: string | null;
+	/** The bank's id for a synced or imported transaction; none when entered by hand. */
+	imported_id?: string | null;
+	/** Set on each part of a split, to the transaction it was split from. */
+	parent_id?: string | null;
 }
 
 export interface GraphData {
@@ -55,6 +59,8 @@ export interface GraphData {
 	shared: Map<string, Set<string>>;
 	/** Payees that look like one place under different names, each group most-used first. */
 	similar: string[][];
+	/** Same account, payee and amount within a couple of days, each set oldest first. */
+	duplicates: TxRow[][];
 	/** Money through each payee in the range, for ranking which highlighted ones to draw. */
 	payeeTotals: Map<string, number>;
 	/** The sending side of each transfer, off-budget accounts included, and the account it went to. */
@@ -64,7 +70,7 @@ export interface GraphData {
 /** How many highlighted payees (or similar-payee groups) the graph draws; the panel lists the rest. */
 export const HIGHLIGHT_LIMIT = 25;
 
-export type Highlight = "mixed" | "shared" | "similar" | null;
+export type Highlight = "mixed" | "shared" | "similar" | "duplicates" | null;
 
 // Words that don't tell one place from another: "Yumbit Inc" and "Yumbit" are the same place.
 const FILLER = new Set(["the", "inc", "llc", "ltd", "co", "corp", "company", "store", "shop"]);
@@ -159,6 +165,61 @@ function similarPayees(rows: TxRow[], names: Map<string, string>): string[][] {
 	);
 }
 
+/** How many days apart two charges can be and still look like one entered twice. */
+const DUPLICATE_DAYS = 2;
+/** Paid this often in the range, a payee is a habit (a vending machine), and repeats are normal. */
+const HABIT_COUNT = 4;
+
+const dayNumber = (date: string) => Date.parse(`${date}T00:00:00Z`) / 86_400_000;
+
+/**
+ * Charges that look entered twice: same account, payee and amount, a couple of days apart at most.
+ * Actual already merges imports that share a bank id or match one entered by hand, so a set needs
+ * at least one charge without a bank id. Habit payees and parts of one split are left out.
+ */
+function duplicates(rows: TxRow[]): TxRow[][] {
+	const uses = new Map<string, number>();
+	for (const r of rows) {
+		if (r.payee) {
+			uses.set(r.payee, (uses.get(r.payee) ?? 0) + 1);
+		}
+	}
+	const by = new Map<string, TxRow[]>();
+	for (const r of rows) {
+		if (r.payee && r.amount && uses.get(r.payee)! < HABIT_COUNT) {
+			const key = `${r.account}|${r.payee}|${r.amount}`;
+			by.set(key, [...(by.get(key) ?? []), r]);
+		}
+	}
+	const sets: TxRow[][] = [];
+	for (const list of by.values()) {
+		if (list.length < 2) {
+			continue;
+		}
+		list.sort((a, b) => a.date.localeCompare(b.date));
+		let run = [list[0]];
+		const close = () => {
+			if (
+				run.length > 1 &&
+				run.some((r) => !r.imported_id) &&
+				new Set(run.map((r) => r.parent_id ?? r.id)).size > 1
+			) {
+				sets.push(run);
+			}
+		};
+		for (const r of list.slice(1)) {
+			if (dayNumber(r.date) - dayNumber(run.at(-1)!.date) <= DUPLICATE_DAYS) {
+				run.push(r);
+			} else {
+				close();
+				run = [r];
+			}
+		}
+		close();
+	}
+	return sets.sort((a, b) => Math.abs(b[0].amount) - Math.abs(a[0].amount));
+}
+
 /** Uncategorized transactions share one category node. */
 const NONE = "uncategorized";
 
@@ -192,6 +253,8 @@ const TX_FIELDS = [
 	"amount",
 	"notes",
 	"imported_payee",
+	"imported_id",
+	"parent_id",
 ];
 
 /**
@@ -252,6 +315,7 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 			(r) => r.account!,
 		),
 		similar: similarPayees(rows, names),
+		duplicates: duplicates(rows),
 		payeeTotals: rows.reduce(
 			(totals, r) =>
 				r.payee ? totals.set(r.payee, (totals.get(r.payee) ?? 0) + Math.abs(r.amount)) : totals,
@@ -267,7 +331,7 @@ export async function loadGraphData(days: number): Promise<GraphData> {
  * joined to its categories.
  */
 export function buildGraph(
-	{ rows, names, mixed, shared, similar, payeeTotals, transfers }: GraphData,
+	{ rows, names, mixed, shared, similar, duplicates, payeeTotals, transfers }: GraphData,
 	expanded: ReadonlySet<string>,
 	highlight: Highlight,
 	/** Highlighted payees (or groups, by their first payee) added from the panel past the limit. */
@@ -300,6 +364,19 @@ export function buildGraph(
 		});
 	}
 	const groupOf = new Map(similar.map((g) => [g[0], g]));
+	// Sets come largest first, so the first few payees are the ones worth drawing.
+	const drawnDuplicates = new Set<string>();
+	if (highlight === "duplicates") {
+		for (const set of duplicates) {
+			if (drawnDuplicates.size >= HIGHLIGHT_LIMIT) {
+				break;
+			}
+			drawnDuplicates.add(set[0].payee!);
+		}
+		for (const id of picked) {
+			drawnDuplicates.add(id);
+		}
+	}
 
 	const nodes = new Map<string, GraphNode>();
 	const links = new Map<string, GraphLink>();
@@ -315,7 +392,8 @@ export function buildGraph(
 				total: 0,
 				members,
 				flagged:
-					(kind === "payee" && (drawnMixed.has(id) || similarIds.has(id))) ||
+					(kind === "payee" &&
+						(drawnMixed.has(id) || similarIds.has(id) || drawnDuplicates.has(id))) ||
 					(highlight === "shared" && kind === "category" && shared.has(id)),
 			});
 		}
@@ -356,13 +434,14 @@ export function buildGraph(
 		const fromAccount = expanded.has(account);
 		const fromCategory = expanded.has(category);
 		const fromPayee = expanded.has(payeeKey);
-		const fromHighlight = drawnMixed.has(payeeId) || similarIds.has(payeeId);
+		const fromDuplicate = drawnDuplicates.has(payeeId);
+		const fromHighlight = drawnMixed.has(payeeId) || similarIds.has(payeeId) || fromDuplicate;
 		if (!fromAccount && !fromCategory && !fromPayee && !fromHighlight) {
 			continue;
 		}
 		const payee = node("payee", payeeId);
 		nodes.get(payee)!.total += amount;
-		if (fromAccount || fromPayee) {
+		if (fromAccount || fromPayee || fromDuplicate) {
 			link(account, payee, amount);
 		}
 		if (fromCategory || fromPayee || fromHighlight) {
