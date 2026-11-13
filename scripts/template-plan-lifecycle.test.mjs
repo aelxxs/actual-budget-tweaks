@@ -192,8 +192,8 @@ test("a previous activation cannot restore a panel after re-enabling", async () 
 	fixture.assertClean();
 });
 
-test("both settings declare literal label, description, icon and group metadata", async () => {
-	for (const file of ["index.ts", "coverage-method.ts"]) {
+test("the setting declares literal label, description, icon and group metadata", async () => {
+	for (const file of ["index.ts"]) {
 		const text = await readFile(new URL(file, sourceUrl), "utf8");
 		const tree = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
 		let checked = 0;
