@@ -261,7 +261,10 @@
 					{/if}
 					<div class="recent">
 						{#each history.recent as item (item.id)}
-							<div class="recent__row" class:is-this={item.id === tx.id}>
+							<div
+								class="recent__row"
+								class:is-this={item.id === tx.id && history.recent.length > 1}
+							>
 								<Row
 									name={formatDayMonth(item.date)}
 									meta={[item.accountName, item.category].filter(Boolean).join(" · ")}

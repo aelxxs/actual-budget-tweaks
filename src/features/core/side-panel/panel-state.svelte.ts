@@ -1,6 +1,8 @@
 /** Live content for the currently mounted side panel — updating this in place avoids tearing down and remounting the panel just to swap its title/body/header. */
 export const panelState = $state({
 	title: "Side Panel",
+	/** The title of the panel underneath, which the back link names; null with nothing under. */
+	backTitle: null as string | null,
 	bodyNode: null as Node | null,
 	headerNode: null as Node | null,
 	/** Every stacked panel's body, bottom first; each keeps its own wrapper, hidden under the top one. */

@@ -6,16 +6,17 @@
 	const SIDEBAR_ANIMATION_MS = 110;
 
 	let {
+		onBack,
 		onClose,
-		stacked,
 		initialWidth,
 		defaultWidth,
 		onResize,
 		onResizeEnd,
 	}: {
+		/** Closes the top panel, showing the one underneath. */
+		onBack: () => void;
+		/** Closes every panel and the drawer with them. */
 		onClose: () => void;
-		/** Whether closing reveals a panel underneath, which the drawer shouldn't slide out for. */
-		stacked: () => boolean;
 		initialWidth: number;
 		/** What a double-click on the resize handle goes back to. */
 		defaultWidth: () => number;
@@ -27,7 +28,7 @@
 		const sidebar = document.querySelector(
 			"[data-abt-side-drawer-sidebar]",
 		) as HTMLDivElement | null;
-		if (!sidebar || stacked() || sidebar.classList.contains(SIDEBAR_CLOSING_CLASS)) {
+		if (!sidebar || sidebar.classList.contains(SIDEBAR_CLOSING_CLASS)) {
 			onClose();
 			return;
 		}
@@ -165,17 +166,49 @@
 >
 	<span class="abt-side-drawer-grip"></span>
 </div>
-<div class="abt-side-drawer-content abt-controls-quiet">
+<!-- Escape steps back out of a stacked panel; a lone panel stays open. -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	class="abt-side-drawer-content abt-controls-quiet"
+	onkeydown={(e) => {
+		if (e.key === "Escape" && panelState.backTitle && !e.defaultPrevented) {
+			e.preventDefault();
+			onBack();
+		}
+	}}
+>
 	<div class="abt-side-drawer-header">
+		{#snippet back()}
+			<button
+				type="button"
+				class="abt-side-drawer-back"
+				title={`Back to ${panelState.backTitle}`}
+				onclick={onBack}
+			>
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+				</svg>
+				<span class="abt-side-drawer-back-label">{panelState.backTitle}</span>
+			</button>
+		{/snippet}
+		<!-- Stacked, the back link sits over the title, so each gets the header's full width. -->
+		{#if panelState.backTitle && !panelState.headerNode}
+			<div class="abt-side-drawer-heading">
+				{@render back()}
+				<h2 class="abt-side-drawer-title" title={panelState.title}>{panelState.title}</h2>
+			</div>
+		{:else if panelState.backTitle}
+			{@render back()}
+		{/if}
 		<div class="abt-side-drawer-header-slot" bind:this={headerSlotEl}></div>
-		{#if !panelState.headerNode}
+		{#if !panelState.headerNode && !panelState.backTitle}
 			<h2 class="abt-side-drawer-title">{panelState.title}</h2>
 		{/if}
 		<button
 			class="abt-side-drawer-close-button abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 			type="button"
-			title="Close side drawer"
-			aria-label="Close side drawer"
+			title={panelState.backTitle ? "Close all panels" : "Close side drawer"}
+			aria-label={panelState.backTitle ? "Close all panels" : "Close side drawer"}
 			onclick={handleClose}
 		>
 			<svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;display:block;">
@@ -276,6 +309,52 @@
 		background: var(--color-pageBackground);
 	}
 
+	.abt-side-drawer-heading {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		align-items: flex-start;
+		min-width: 0;
+	}
+
+	/* The panel underneath, named so it's clear where back goes. */
+	.abt-side-drawer-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		max-width: 100%;
+		margin-left: -4px;
+		padding: 0 6px 0 0;
+		border: none;
+		border-radius: var(--abt-radius-sm);
+		background: none;
+		color: var(--abt-muted);
+		font: inherit;
+		font-size: var(--abt-text-sm);
+		line-height: 1.4;
+		cursor: pointer;
+	}
+
+	.abt-side-drawer-back:hover {
+		color: var(--color-pageText);
+	}
+
+	.abt-side-drawer-back svg {
+		flex-shrink: 0;
+		width: 14px;
+		height: 14px;
+	}
+
+	.abt-side-drawer-back-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.abt-side-drawer-heading .abt-side-drawer-title {
+		max-width: 100%;
+	}
+
 	.abt-side-drawer-header-slot {
 		display: contents;
 	}
@@ -296,6 +375,10 @@
 	}
 
 	.abt-side-drawer-title {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		margin: 0;
 		font-size: var(--abt-text-lg);
 		line-height: 1.3;
