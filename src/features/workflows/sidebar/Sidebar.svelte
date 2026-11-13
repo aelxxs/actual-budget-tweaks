@@ -31,7 +31,6 @@
 	import { loadCurrentBudgetName } from "./lib/budgets";
 	import {
 		adoptOldCollapsed,
-		clearAutoCollapse,
 		isSidebarCollapsed,
 		setSidebarCollapsed,
 		undoAutoCollapse,
@@ -130,7 +129,6 @@
 			return;
 		}
 		setSidebarCollapsed(false);
-		clearAutoCollapse();
 	}
 	function collapseSidebar() {
 		toggled = true;
@@ -139,7 +137,6 @@
 			return;
 		}
 		setSidebarCollapsed(true);
-		clearAutoCollapse();
 	}
 
 	// ---- layout: "standard" (text nav + accounts, the original design) vs
@@ -479,7 +476,6 @@
 	$effect(() => onListChange("accounts", () => void reloadAccounts()));
 
 	onMount(async () => {
-		// Panels don't survive a reload, so a fold one made is undone here.
 		await undoAutoCollapse();
 		const [oldWidth, storedGroupMode, storedLayoutMode, loadedIcons] = await Promise.all([
 			// Saved in the extension's storage before; moved here once.

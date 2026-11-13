@@ -1,6 +1,5 @@
 import { sidepanel } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
-import { collapseLiveSidebar } from "@features/workflows/sidebar/lib/collapse";
 import { loadCurrency } from "@lib/utilities/currency";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { findAccountToolbar } from "@lib/utilities/native-ui";
@@ -27,15 +26,6 @@ let panel: Mounted | null = null;
 // Selected ids, oldest first; the panel shows the newest. Actual clears selection between accounts.
 let selected: string[] = [];
 let selectedOn = "";
-// Like reconcile, inspecting folds the live sidebar to its rail and unfolds it after.
-let sidebarRestore: Promise<(() => void) | null> | null = null;
-
-function restoreSidebar() {
-	const pending = sidebarRestore;
-	sidebarRestore = null;
-	void pending?.then((restore) => restore?.());
-}
-
 /**
  * Updates the selection from the rendered rows. The table only renders what's in view, so a
  * selected row scrolled away keeps its place rather than counting as unselected.
@@ -73,7 +63,6 @@ async function openPanel() {
 	}
 	sidepanel.open({ title: "Inspector", bodyNode: panel.node, key: PANEL_KEY });
 	inspector.open = true;
-	sidebarRestore ??= collapseLiveSidebar();
 }
 
 function destroyPanel() {
@@ -88,7 +77,6 @@ function destroyPanel() {
 	inspector.open = false;
 	inspector.transactionId = null;
 	selected = [];
-	restoreSidebar();
 }
 
 function removeButton() {
@@ -105,7 +93,6 @@ function sync() {
 		inspector.open = false;
 		inspector.transactionId = null;
 		selected = [];
-		restoreSidebar();
 	}
 	if (inspector.open) {
 		followSelection();
