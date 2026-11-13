@@ -46,10 +46,11 @@ export function positionPopover(
 }
 
 /**
- * Closes the popover on the first mousedown outside `elements` (the popover
- * itself, plus any anchors that should also not count as "outside"). The
- * listener is attached after a 0ms delay so the click that opened the popover
- * doesn't immediately close it. Returns an unsubscribe usable at any time.
+ * Closes the popover on the first pointerdown outside `elements` (the popover
+ * itself, plus any anchors that should also not count as "outside"). Listens in
+ * the capture phase, so a page handler that stops propagation can't keep it open,
+ * and after a 0ms delay, so the click that opened the popover doesn't close it.
+ * Returns an unsubscribe usable at any time.
  */
 export function onOutsideClick(
 	elements: HTMLElement | HTMLElement[],
@@ -57,19 +58,19 @@ export function onOutsideClick(
 ): () => void {
 	const els = Array.isArray(elements) ? elements : [elements];
 
-	function handler(e: MouseEvent) {
-		const target = e.target as Node;
-		if (!els.some((el) => el.contains(target))) {
+	function handler(e: PointerEvent) {
+		const path = e.composedPath();
+		if (!els.some((el) => path.includes(el))) {
 			unsubscribe();
 			onClose();
 		}
 	}
 
-	const timer = setTimeout(() => document.addEventListener("mousedown", handler), 0);
+	const timer = setTimeout(() => document.addEventListener("pointerdown", handler, true), 0);
 
 	function unsubscribe() {
 		clearTimeout(timer);
-		document.removeEventListener("mousedown", handler);
+		document.removeEventListener("pointerdown", handler, true);
 	}
 
 	return unsubscribe;

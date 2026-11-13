@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onOutsideClick } from "@lib/utilities/popover";
 	import { getFaviconUrl } from "@lib/utilities/favicon";
 	import {
 		Flag,
@@ -210,14 +211,14 @@
 		}
 	}
 
-	function onOutsideClick(e: MouseEvent) {
-		if (popoverEl && !e.composedPath().includes(popoverEl)) {
-			onClose();
+	$effect(() => {
+		if (popoverEl) {
+			return onOutsideClick(popoverEl, onClose);
 		}
-	}
+	});
 </script>
 
-<svelte:window onkeydown={handleKeydown} onmousedown={onOutsideClick} />
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="pop abt-popover" {style} bind:this={popoverEl} role="dialog" aria-label="Icon picker">
 	<Tabs tabs={TABS} bind:value={activeTab} --abt-tabs-bg="none" --abt-tabs-pad="var(--abt-space-3)">

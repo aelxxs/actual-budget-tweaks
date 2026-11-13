@@ -36,6 +36,8 @@ const LEGACY_BARS_KEY = "abt-cti-bars-enabled";
 const QUIET_FUNDED_KEY = "cti-hide-funded";
 const ROW_SELECTOR = `${ROW}:has(${CATEGORY_NAME})`;
 const HOVER_DELAY_MS = 200;
+/** The category row each decorated name column belongs to. */
+const rowOfCol = new WeakMap<HTMLElement, HTMLElement>();
 // Long enough to fold one edit's burst of cell updates into a single re-read.
 const REFRESH_MS = 100;
 
@@ -234,7 +236,7 @@ function decorateRow(row: HTMLElement, entry: CategoryInsight) {
 		nameCell.style.cursor = "help";
 	}
 
-	(col as any).__abtCtiRow = row;
+	rowOfCol.set(col, row);
 	col.addEventListener("mouseenter", onColMouseEnter);
 	col.addEventListener("mouseleave", onColMouseLeave);
 }
@@ -250,7 +252,7 @@ function undecorateRow(row: HTMLElement) {
 		}
 		col.removeEventListener("mouseenter", onColMouseEnter);
 		col.removeEventListener("mouseleave", onColMouseLeave);
-		delete (col as any).__abtCtiRow;
+		rowOfCol.delete(col);
 	}
 	const nameCell = row.querySelector<HTMLElement>(CATEGORY_NAME);
 
@@ -379,7 +381,7 @@ let popover: Mounted | null = null;
 
 function onColMouseEnter(e: Event) {
 	const col = e.currentTarget as HTMLElement;
-	const row = (col as any).__abtCtiRow as HTMLElement;
+	const row = rowOfCol.get(col);
 	if (!row) {
 		return;
 	}

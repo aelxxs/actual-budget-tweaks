@@ -2,7 +2,6 @@
 	let {
 		themeName,
 		mode,
-		isEditing,
 		onSave,
 		onDelete,
 		onNameChange,
@@ -10,7 +9,6 @@
 	}: {
 		themeName: string;
 		mode: "dark" | "light";
-		isEditing: boolean;
 		onSave: () => void;
 		onDelete: () => void;
 		onNameChange: (name: string) => void;
@@ -37,9 +35,7 @@
 		</select>
 	</div>
 	<div class="creator-header__actions">
-		{#if isEditing}
-			<button class="creator-header__delete" onclick={onDelete}>Delete</button>
-		{/if}
+		<button class="creator-header__delete" onclick={onDelete}>Delete</button>
 		<button class="creator-header__save" onclick={onSave}>Save</button>
 	</div>
 </div>

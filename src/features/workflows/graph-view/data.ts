@@ -323,11 +323,6 @@ const TX_FIELDS = [
 	"parent_id",
 ];
 
-/**
- * The range's on-budget transactions and transfers, and the names they point at; 0 days is all
- * time. Off-budget accounts can't carry categories, so they'd only pile onto Uncategorized, but
- * their transfers stay to show where money left the budget for.
- */
 export interface FilterLists {
 	accounts: { id: string; name: string; offbudget: boolean; closed: boolean }[];
 	categories: { id: string; name: string; group: string }[];
@@ -345,6 +340,11 @@ export interface RawGraphData {
 	lists: FilterLists;
 }
 
+/**
+ * The range's on-budget transactions and transfers, and the names they point at; 0 days is all
+ * time. Off-budget accounts can't carry categories, so they'd only pile onto Uncategorized, but
+ * their transfers stay to show where money left the budget for.
+ */
 export async function loadGraphData(days: number): Promise<RawGraphData> {
 	const inRange = days > 0 ? [{ date: { $gte: isoDaysAgo(days) } }] : [];
 	const [all, sent, accounts, payees, categories, categoryGroups, before] = await Promise.all([

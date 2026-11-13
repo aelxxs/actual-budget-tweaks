@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onOutsideClick } from "@lib/utilities/popover";
 	import { Ellipsis, Moon, Sun } from "@lucide/svelte";
 	import ThemeThumb from "./ThemeThumb.svelte";
 	import type { Thumb } from "./thumbs";
@@ -39,17 +40,10 @@
 	let menuOpen = $state(false);
 	let card: HTMLElement;
 
-	function close(e: PointerEvent) {
-		if (!card.contains(e.target as Node)) {
-			menuOpen = false;
-		}
-	}
 	$effect(() => {
-		if (!menuOpen) {
-			return;
+		if (menuOpen) {
+			return onOutsideClick(card, () => (menuOpen = false));
 		}
-		document.addEventListener("pointerdown", close, true);
-		return () => document.removeEventListener("pointerdown", close, true);
 	});
 </script>
 

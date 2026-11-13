@@ -20,10 +20,6 @@
 		dayIndex: number;
 	} = $props();
 
-	function fmt(cents: number): string {
-		return fmtMoney(cents);
-	}
-
 	// A transfer's payee is the other account; both ends, in the direction the money went.
 	function payeeOf(tx: DayTransaction): string {
 		if (!tx.transfer) {
@@ -90,7 +86,8 @@
 <div>
 	{#if balances?.[dayIndex]}
 		<Section title="Balance">
-			{#snippet trailing()}<span class="abt-privacy-number">{fmt(balances[dayIndex].balance)}</span
+			{#snippet trailing()}<span class="abt-privacy-number"
+					>{fmtMoney(balances[dayIndex].balance)}</span
 				>{/snippet}
 			<BalanceSpark points={balances} selected={dayIndex} />
 		</Section>
@@ -98,7 +95,7 @@
 
 	{#if categoryBreakdown.length > 0}
 		<Section title="Spending">
-			{#snippet trailing()}{fmt(-totalSpent)}{/snippet}
+			{#snippet trailing()}{fmtMoney(-totalSpent)}{/snippet}
 			{#if categoryBreakdown.length > 1}
 				<div class="dd__split" aria-hidden="true">
 					{#each categoryBreakdown as cat (cat.id || cat.name)}
@@ -108,7 +105,7 @@
 			{/if}
 			{#each categoryBreakdown as cat (cat.id || cat.name)}
 				{@const pct = totalSpent > 0 ? Math.round((cat.amount / totalSpent) * 100) : 0}
-				<Row name={cat.name} meta={`${pct}%`} value={fmt(-cat.amount)}>
+				<Row name={cat.name} meta={`${pct}%`} value={fmtMoney(-cat.amount)}>
 					{#snippet leading()}
 						<span class="dd__cat-dot" style="background: {catColor(cat.id)}"></span>
 					{/snippet}
@@ -123,7 +120,7 @@
 				<Row
 					name={payeeOf(tx)}
 					sensitive
-					value={fmt(tx.amount)}
+					value={fmtMoney(tx.amount)}
 					tone={tx.amount < 0 ? "negative" : tx.amount > 0 ? "positive" : undefined}
 				>
 					{#snippet leading()}
@@ -144,7 +141,7 @@
 	{#if missedTxs.length > 0}
 		<Section title="Missed" tone="error" count={missedTxs.length}>
 			{#each missedTxs as tx, i (i)}
-				<Row name={payeeOf(tx)} sensitive value={fmt(tx.amount)} tone="negative">
+				<Row name={payeeOf(tx)} sensitive value={fmtMoney(tx.amount)} tone="negative">
 					{@render txDetails(tx, false)}
 				</Row>
 			{/each}
@@ -154,7 +151,7 @@
 	{#if upcomingTxs.length > 0}
 		<Section title="Upcoming" count={upcomingTxs.length}>
 			{#each upcomingTxs as tx, i (i)}
-				<Row name={payeeOf(tx)} sensitive dim value={fmt(tx.amount)} tone="negative">
+				<Row name={payeeOf(tx)} sensitive dim value={fmtMoney(tx.amount)} tone="negative">
 					{@render txDetails(tx, false)}
 				</Row>
 			{/each}

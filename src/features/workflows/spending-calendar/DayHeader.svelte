@@ -5,17 +5,13 @@
 		dateStr: string;
 		total: number;
 	}>();
-
-	function fmt(cents: number): string {
-		return fmtMoney(cents);
-	}
 </script>
 
 <div class="dh">
 	<div class="dh__top">
 		<span class="dh__date">{dateStr}</span>
 		<span class="dh__total abt-privacy-number" class:is-neg={total < 0} class:is-pos={total > 0}>
-			{fmt(total)}
+			{fmtMoney(total)}
 		</span>
 	</div>
 </div>

@@ -19,7 +19,7 @@
 </script>
 
 <script lang="ts">
-	import { X } from "@lucide/svelte";
+	import Dialog from "./Dialog.svelte";
 	import SettingRow from "./SettingRow.svelte";
 	import Tabs from "./Tabs.svelte";
 
@@ -32,73 +32,43 @@
 
 	let tab = $derived(initialTab ?? tabs[0].value);
 	const current = $derived(tabs.find((t) => t.value === tab) ?? tabs[0]);
-
-	let dialog: HTMLDivElement;
-	$effect(() => dialog.focus());
 </script>
 
-<svelte:window onkeydown={(e) => e.key === "Escape" && onClose()} />
+<Dialog {title} class="settings-dialog" inPlace {onClose}>
+	<Tabs
+		tabs={tabs.map((t) => ({ value: t.value, label: t.label }))}
+		bind:value={tab}
+		--abt-tabs-bg="none"
+		--abt-tabs-pad="var(--abt-space-5)"
+	/>
 
-<div
-	class="abt-dialog-backdrop"
-	role="presentation"
-	onclick={(e) => e.target === e.currentTarget && onClose()}
->
-	<div
-		bind:this={dialog}
-		class="settings-dialog abt-dialog abt-popover abt-controls-quiet"
-		role="dialog"
-		aria-modal="true"
-		aria-label={title}
-		tabindex="-1"
-	>
-		<header class="abt-dialog__header">
-			<h3 class="abt-dialog__title">{title}</h3>
-			<button
-				type="button"
-				class="abt-btn abt-btn--icon abt-btn--ghost"
-				aria-label="Close"
-				onclick={onClose}
-			>
-				<X size={16} strokeWidth={1.75} />
-			</button>
-		</header>
-
-		<Tabs
-			tabs={tabs.map((t) => ({ value: t.value, label: t.label }))}
-			bind:value={tab}
-			--abt-tabs-bg="none"
-			--abt-tabs-pad="var(--abt-space-5)"
-		/>
-
-		<div class="abt-dialog__body body" class:body--bleed={current.bleed}>
-			{#if current.groups?.length}
-				<div class="groups">
-					{#each current.groups as group, i (group.heading ?? i)}
-						<section class="group">
-							{#if group.heading}
-								<h4 class="abt-label">{group.heading}</h4>
-							{/if}
-							<div>
-								{#each group.settings as setting (setting.type === "core" ? setting : setting.context.key)}
-									<SettingRow {setting} />
-								{/each}
-							</div>
-						</section>
-					{/each}
-				</div>
-			{/if}
-			{#if current.content}
-				{@const Content = current.content.component}
-				<Content {...current.content.props ?? {}} />
-			{/if}
-		</div>
+	<div class="abt-dialog__body body" class:body--bleed={current.bleed}>
+		{#if current.groups?.length}
+			<div class="groups">
+				{#each current.groups as group, i (group.heading ?? i)}
+					<section class="group">
+						{#if group.heading}
+							<h4 class="abt-label">{group.heading}</h4>
+						{/if}
+						<div>
+							{#each group.settings as setting (setting.type === "core" ? setting : setting.context.key)}
+								<SettingRow {setting} />
+							{/each}
+						</div>
+					</section>
+				{/each}
+			</div>
+		{/if}
+		{#if current.content}
+			{@const Content = current.content.component}
+			<Content {...current.content.props ?? {}} />
+		{/if}
 	</div>
-</div>
+</Dialog>
 
 <style>
 	/* A fixed height, so switching tabs doesn't resize the dialog and re-centre it. */
-	.settings-dialog {
+	:global(.settings-dialog) {
 		--abt-dialog-w: 640px;
 		height: min(620px, 85vh);
 	}

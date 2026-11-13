@@ -37,3 +37,16 @@ export function applyOrder<T extends { id: string }>(items: T[], order: string[]
 		return ai - bi;
 	});
 }
+
+/** `ids` with `id` moved next to `targetId`; to the end when the target isn't listed. */
+export function moveNextTo(
+	ids: string[],
+	id: string,
+	targetId: string,
+	pos: "before" | "after",
+): string[] {
+	const rest = ids.filter((x) => x !== id);
+	const at = rest.indexOf(targetId);
+	const index = at === -1 ? rest.length : at + (pos === "after" ? 1 : 0);
+	return [...rest.slice(0, index), id, ...rest.slice(index)];
+}

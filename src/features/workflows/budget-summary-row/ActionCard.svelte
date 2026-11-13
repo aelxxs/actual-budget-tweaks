@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { portal } from "@lib/utilities/svelte";
 	import {
 		templatePlanState,
 		type TrackedAction,
@@ -293,10 +294,6 @@
 	});
 
 	// Actual's summary row clips overflow and slides with a transform; float these on <body>.
-	function portal(node: HTMLElement) {
-		document.body.appendChild(node);
-		return { destroy: () => node.remove() };
-	}
 </script>
 
 {#if compact}

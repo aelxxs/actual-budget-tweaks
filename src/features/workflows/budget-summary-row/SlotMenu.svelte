@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { portal } from "@lib/utilities/svelte";
 	import { loadCategories } from "@lib/template-plan/actual-data";
 	import type { Category } from "@lib/template-plan/priority-plan";
 	import { readCells } from "@lib/utilities/budget-cells";
@@ -184,10 +185,6 @@
 	});
 
 	// The row clips overflow and slides with a transform, so the menu floats on <body>.
-	function portal(node: HTMLElement) {
-		document.body.appendChild(node);
-		return { destroy: () => node.remove() };
-	}
 </script>
 
 <div

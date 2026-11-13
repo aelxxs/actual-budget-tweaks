@@ -10,6 +10,7 @@
 		type Simulation,
 	} from "d3-force";
 	import { mount, onMount, unmount, untrack } from "svelte";
+	import { mountToPanelBody, type Mounted } from "@lib/utilities/svelte";
 	import {
 		accountIconPicker,
 		getEmojiAssetUrl,
@@ -50,6 +51,7 @@
 	import SimilarPayees from "./SimilarPayees.svelte";
 	import { dispatch, send } from "@lib/utilities/actual-api";
 	import NodeDetail from "./NodeDetail.svelte";
+	import GraphSearch from "./GraphSearch.svelte";
 	import FilterPopover from "@features/workflows/filters/FilterPopover.svelte";
 	import FilterToggle from "@features/workflows/filters/FilterToggle.svelte";
 	import { CLEARED, loadFilters, saveFilters } from "./filters";
@@ -143,7 +145,7 @@
 	let useColors = $state(false);
 	// Transaction rows open the inspector over the node's panel, when the inspector is on.
 	let canInspect = false;
-	let inspecting: ReturnType<typeof mount> | null = null;
+	let inspecting: Mounted | null = null;
 	// Account icons by account id, when Account icons is on; emoji sit inset, images fill the square.
 	let icons = $state.raw(new Map<string, { href: string; emoji: boolean }>());
 
@@ -155,8 +157,6 @@
 	let lists = $state.raw<FilterLists>({ accounts: [], categories: [], categoryGroups: [] });
 	let query = $state("");
 	let candidates = $state.raw<Searchable[]>([]);
-	let active = $state(0);
-	let searching = $state(false);
 	// The node the view keeps centred on after a search, until the user pans or zooms by hand.
 	let following: string | null = null;
 	// A group picked from a list: it and what it joins stay lit, the view framing just them.
@@ -231,7 +231,7 @@
 
 		const back = focused ? candidates.find((c) => c.id === focused) : null;
 		if (back) {
-			reveal(back, true);
+			reveal(back);
 		} else if (highlight) {
 			openList(data, highlight);
 		} else {
@@ -656,36 +656,30 @@
 
 	function openInspector(id: string) {
 		closeInspector();
-		const body = document.createElement("div");
-		// Fills the panel, as mountToPanelBody does, so the inspector's footer sits at the bottom.
-		Object.assign(body.style, {
-			display: "flex",
-			flex: "1",
-			flexDirection: "column",
-			minHeight: "0",
+		inspecting = mountToPanelBody(Inspector, { transactionId: id, panelKey: INSPECT_KEY });
+		sidepanel.open({
+			title: "Inspector",
+			bodyNode: inspecting.node,
+			key: INSPECT_KEY,
+			stack: true,
 		});
-		inspecting = mount(Inspector, {
-			target: body,
-			props: { transactionId: id, panelKey: INSPECT_KEY },
-		});
-		sidepanel.open({ title: "Inspector", bodyNode: body, key: INSPECT_KEY, stack: true });
 	}
 
 	function closeInspector() {
 		if (inspecting) {
 			sidepanel.close(INSPECT_KEY);
-			unmount(inspecting);
+			inspecting.destroy();
 			inspecting = null;
 		}
 	}
 
 	/**
 	 * Lets go of the panels' contents but leaves the drawer open, for one about to replace them;
-	 * closing first would slide the drawer shut and straight back open.
+	 * closing the last panel removes the drawer, and the page would reflow twice.
 	 */
 	function releasePanels() {
 		if (inspecting) {
-			unmount(inspecting);
+			inspecting.destroy();
 			inspecting = null;
 		}
 		if (detail) {
@@ -743,7 +737,7 @@
 		const stop = sidepanel.onTopChange((key) => {
 			// Back from the inspector: its panel is gone, the node's is on top again.
 			if (key !== INSPECT_KEY && inspecting) {
-				unmount(inspecting);
+				inspecting.destroy();
 				inspecting = null;
 			}
 			if (key !== PANEL_KEY && key !== LIST_KEY && key !== INSPECT_KEY && detail) {
@@ -844,26 +838,8 @@
 		pan = null;
 	}
 
-	const results = $derived.by(() => {
-		const q = query.trim().toLowerCase();
-		if (!q) {
-			return [];
-		}
-		return candidates
-			.filter((c) => c.name.toLowerCase().includes(q))
-			.sort(
-				(a, b) =>
-					Number(!a.name.toLowerCase().startsWith(q)) -
-						Number(!b.name.toLowerCase().startsWith(q)) || a.name.localeCompare(b.name),
-			);
-	});
-	const matches = $derived(new Set(results.map((c) => c.id)));
-
 	/** Puts a node on the graph if it's hidden, then selects it and keeps it centred. */
-	function reveal(c: Searchable, keepQuery = false) {
-		if (!keepQuery) {
-			query = "";
-		}
+	function reveal(c: Searchable) {
 		if (!placed.has(c.id)) {
 			expanded = new Set([...expanded, c.id]);
 			draw(null);
@@ -882,23 +858,12 @@
 		openDetail(n);
 	}
 
-	function searchKey(e: KeyboardEvent) {
-		if (e.key === "Escape") {
-			query = "";
-			(e.currentTarget as HTMLInputElement).blur();
-		} else if (e.key === "ArrowDown" && results.length) {
-			e.preventDefault();
-			active = (active + 1) % Math.min(results.length, SHOWN);
-		} else if (e.key === "ArrowUp" && results.length) {
-			e.preventDefault();
-			active = (active - 1 + Math.min(results.length, SHOWN)) % Math.min(results.length, SHOWN);
-		} else if (e.key === "Enter" && results[active]) {
-			reveal(results[active]);
-		}
-	}
-
-	const SHOWN = 8;
-	const KIND_LABEL = { account: "Account", category: "Category", payee: "Payee" };
+	const matches = $derived.by(() => {
+		const q = query.trim().toLowerCase();
+		return new Set(
+			candidates.filter((c) => q && c.name.toLowerCase().includes(q)).map((c) => c.id),
+		);
+	});
 
 	const focus = $derived(hovered?.id ?? selected);
 	const lit = $derived(!!focus || !!spotlight);
@@ -925,55 +890,7 @@
 				>Experimental</span
 			>
 			<span class="gv__sep" aria-hidden="true"></span>
-			<div class="gv__search">
-				<span class="gv__search-icon" aria-hidden="true"><Icon name="search" size={14} /></span>
-				<input
-					class="abt-input"
-					type="search"
-					placeholder="Find a node"
-					aria-label="Find an account, category or payee"
-					bind:value={query}
-					oninput={() => (active = 0)}
-					onkeydown={searchKey}
-					onfocus={() => (searching = true)}
-					onblur={() => (searching = false)}
-				/>
-				{#if query}
-					<button
-						type="button"
-						class="gv__clear"
-						aria-label="Clear search"
-						onpointerdown={(e) => e.preventDefault()}
-						onclick={() => (query = "")}
-					>
-						<Icon name="close" size={12} />
-					</button>
-				{/if}
-				{#if searching && results.length}
-					<!-- Keeps focus in the field, so a click on a result lands before the list closes. -->
-					<div
-						class="gv__results abt-popover abt-menu"
-						role="listbox"
-						tabindex="-1"
-						onpointerdown={(e) => e.preventDefault()}
-					>
-						{#each results.slice(0, SHOWN) as c, i (c.id)}
-							<button
-								type="button"
-								class="abt-menu__item"
-								class:is-active={i === active}
-								role="option"
-								aria-selected={i === active}
-								onpointerenter={() => (active = i)}
-								onclick={() => reveal(c)}
-							>
-								<span class="gv__result-name">{c.name}</span>
-								<span class="gv__result-kind">{KIND_LABEL[c.kind]}</span>
-							</button>
-						{/each}
-					</div>
-				{/if}
-			</div>
+			<GraphSearch {candidates} bind:query onPick={reveal} />
 		</div>
 		<div class="gv__right">
 			<FilterPopover
@@ -986,8 +903,7 @@
 			>
 				{#snippet toggles()}
 					<FilterToggle
-						label="Off-budget accounts"
-						title="Transfers to and from them"
+						label="Off-budget transfers"
 						checked={!filters.hideOffBudget}
 						onCheckedChange={(checked) => setFilters({ hideOffBudget: !checked })}
 					/>
@@ -1329,10 +1245,6 @@
 		.gv__short {
 			display: inline;
 		}
-
-		.gv__search .abt-input {
-			width: 160px;
-		}
 	}
 
 	/* Calendar's header, so ABT's pages share one. */
@@ -1379,54 +1291,6 @@
 		height: 18px;
 		margin: 0 var(--abt-space-2);
 		background: var(--abt-line);
-	}
-
-	.gv__search {
-		position: relative;
-	}
-
-	.gv__search-icon {
-		position: absolute;
-		top: 50%;
-		left: var(--abt-space-3);
-		display: inline-flex;
-		color: var(--abt-muted);
-		transform: translateY(-50%);
-		pointer-events: none;
-	}
-
-	.gv__search .abt-input {
-		width: 220px;
-		padding-left: calc(var(--abt-space-3) + 20px);
-		padding-right: 28px; /* raw: room for the clear button */
-	}
-
-	/* Chrome's own clear button is blue on every theme; this one follows the field's ink. */
-	.gv__search .abt-input::-webkit-search-cancel-button {
-		appearance: none;
-	}
-
-	.gv__clear {
-		position: absolute;
-		top: 50%;
-		right: var(--abt-space-2);
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 20px;
-		height: 20px;
-		padding: 0;
-		border: none;
-		border-radius: var(--abt-radius-sm);
-		background: none;
-		color: var(--abt-muted);
-		transform: translateY(-50%);
-		cursor: pointer;
-	}
-
-	.gv__clear:hover {
-		background: var(--abt-fill-hover);
-		color: var(--color-pageText);
 	}
 
 	/* The same height as the buttons beside it. */
@@ -1501,35 +1365,6 @@
 
 	.gv__count {
 		margin-left: var(--abt-space-2);
-		color: var(--abt-muted);
-	}
-
-	.gv__results {
-		position: absolute;
-		top: calc(100% + var(--abt-space-2));
-		left: 0;
-		z-index: 2;
-		width: 260px;
-	}
-
-	.gv__results .abt-menu__item {
-		align-items: center;
-	}
-
-	.gv__results .is-active {
-		background: var(--abt-fill);
-	}
-
-	.gv__result-name {
-		flex: 1;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.gv__result-kind {
-		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 	}
 

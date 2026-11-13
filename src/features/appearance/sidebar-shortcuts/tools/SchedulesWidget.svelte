@@ -74,10 +74,6 @@
 		return `${days}d`;
 	}
 
-	function formatAmount(cents: number): string {
-		return fmtMoney(cents);
-	}
-
 	async function load() {
 		try {
 			const [schedules, payees] = await Promise.all([
@@ -162,7 +158,7 @@
 					</span>
 					<span class="sched__name">{item.name}</span>
 					<span class="sched__amt abt-privacy-number">
-						{formatAmount(item.amount)}
+						{fmtMoney(item.amount)}
 					</span>
 				</div>
 			{/each}

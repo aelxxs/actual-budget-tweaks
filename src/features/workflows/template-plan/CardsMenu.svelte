@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onOutsideClick } from "@lib/utilities/popover";
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 	import { scrollParent } from "@lib/utilities/dom";
 	import Switch from "@lib/components/Switch.svelte";
@@ -160,12 +161,6 @@
 		// Out of the panel, whose own box would clip a menu that sits beside it.
 		document.body.append(layer);
 		raf = requestAnimationFrame(frame);
-		const onPointer = (e: PointerEvent) => {
-			const target = e.target as Node;
-			if (!menu.contains(target) && !anchor.contains(target)) {
-				close();
-			}
-		};
 		const onKey = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				e.stopPropagation();
@@ -173,14 +168,14 @@
 				anchor.focus();
 			}
 		};
-		document.addEventListener("pointerdown", onPointer, true);
+		const stopOutside = onOutsideClick([menu, anchor], close);
 		document.addEventListener("keydown", onKey, true);
 		return () => {
+			stopOutside();
 			cancelAnimationFrame(raf);
 			removeEventListener("pointermove", onHandleMove);
 			removeEventListener("pointerup", onHandleUp);
 			removeEventListener("pointercancel", onHandleUp);
-			document.removeEventListener("pointerdown", onPointer, true);
 			document.removeEventListener("keydown", onKey, true);
 			templatePlanState.highlightCard = null;
 		};

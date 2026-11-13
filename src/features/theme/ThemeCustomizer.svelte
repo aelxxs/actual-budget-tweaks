@@ -13,7 +13,6 @@
 	import {
 		applyThemeByKey,
 		applyUserCSSTheme,
-		applyUserPaletteTheme,
 		fetchCommunityThemeCatalog,
 		getNativePreviewColors,
 		isCommunityTheme,
@@ -21,12 +20,11 @@
 		type RemoteTheme,
 	} from "./theme-apply";
 	import ThemeColorEditor from "./editor/ThemeColorEditor.svelte";
-	import ThemeCreator from "./editor/ThemeCreator.svelte";
-	import ThemeCreatorHeader from "./editor/ThemeCreatorHeader.svelte";
+	import CssThemeEditor from "./editor/CssThemeEditor.svelte";
+	import CssThemeHeader from "./editor/CssThemeHeader.svelte";
 	import ThemeEditorHeader from "./editor/ThemeEditorHeader.svelte";
 	import {
 		deleteUserTheme,
-		generateThemeId,
 		isUserTheme,
 		loadUserThemes,
 		saveUserTheme,
@@ -424,45 +422,29 @@
 	let creator: Mounted | null = null;
 	let creatorHeader: Mounted | null = null;
 	let creatorThemeId = "";
-	let creatorThemeName = "My Theme";
+	let creatorThemeName = "";
 	let creatorThemeMode: "dark" | "light" = "dark";
-	let creatorPaletteKeys: Record<string, string> = {};
 	let creatorCss = "";
-	let creatorType: "palette" | "css" = "palette";
 
-	function openCreator(existingId?: string) {
-		const existing = existingId ? userThemeState.themes[existingId] : null;
-		creatorThemeId = existing?.id ?? generateThemeId();
-		creatorThemeName = existing?.name ?? "My Theme";
-		creatorThemeMode = existing?.mode ?? "dark";
-		creatorType = existing?.type ?? "palette";
-		creatorPaletteKeys = existing?.keys ? { ...existing.keys } : {};
-		creatorCss = existing?.css ?? "";
-
-		if (existing && existing.type === "palette" && existing.keys) {
-			applyUserPaletteTheme(existing.id, existing.keys);
-		}
+	/** Themes pasted in as CSS, from before Theme Studio; palette themes open in the studio. */
+	function openCssEditor(theme: UserTheme) {
+		creatorThemeId = theme.id;
+		creatorThemeName = theme.name;
+		creatorThemeMode = theme.mode;
+		creatorCss = theme.css ?? "";
 
 		creator?.destroy();
 		creatorHeader?.destroy();
-		creator = mountToPanelBody(ThemeCreator, {
-			initialKeys: creatorPaletteKeys,
+		creator = mountToPanelBody(CssThemeEditor, {
 			initialCss: creatorCss,
-			initialTab: creatorType,
-			onPaletteChange: (keys: Record<string, string>) => {
-				creatorPaletteKeys = keys;
-				creatorType = "palette";
-			},
 			onCssApply: (css: string) => {
 				creatorCss = css;
-				creatorType = "css";
 				applyUserCSSTheme(creatorThemeId, css);
 			},
 		});
-		creatorHeader = mountHeader(ThemeCreatorHeader, {
+		creatorHeader = mountHeader(CssThemeHeader, {
 			themeName: creatorThemeName,
 			mode: creatorThemeMode,
-			isEditing: !!existing,
 			onSave: handleCreatorSave,
 			onDelete: () => handleCreatorDelete(creatorThemeId),
 			onNameChange: (name: string) => {
@@ -473,7 +455,7 @@
 			},
 		});
 		sidepanel.open({
-			title: "Create Theme",
+			title: "Edit theme",
 			bodyNode: creator.node,
 			headerNode: creatorHeader.node,
 			key: "theme-creator",
@@ -485,8 +467,8 @@
 			id: creatorThemeId,
 			name: creatorThemeName,
 			mode: creatorThemeMode,
-			type: creatorType,
-			...(creatorType === "palette" ? { keys: { ...creatorPaletteKeys } } : { css: creatorCss }),
+			type: "css",
+			css: creatorCss,
 		};
 		await saveUserTheme(theme);
 		activeThemeKey = theme.id;
@@ -512,8 +494,8 @@
 		const theme = userThemeState.themes[id];
 		if (theme?.recipe || theme?.type === "palette") {
 			openThemeStudio(id);
-		} else {
-			openCreator(id);
+		} else if (theme) {
+			openCssEditor(theme);
 		}
 	}
 

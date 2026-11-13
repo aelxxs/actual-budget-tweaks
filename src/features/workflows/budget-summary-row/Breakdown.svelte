@@ -9,6 +9,7 @@
 </script>
 
 <script lang="ts">
+	import { portal } from "@lib/utilities/svelte";
 	import { fmtMoney } from "@lib/utilities/currency";
 
 	const {
@@ -48,11 +49,6 @@
 			hide();
 		};
 	});
-
-	function portal(node: HTMLElement) {
-		document.body.appendChild(node);
-		return { destroy: () => node.remove() };
-	}
 
 	const prevMonthName = $derived.by(() => {
 		const y = Number(sheet.slice(6, 10));

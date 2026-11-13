@@ -1,24 +1,25 @@
 <script lang="ts">
+	import { onOutsideClick } from "@lib/utilities/popover";
 	import { takeTweaksSearch } from "@lib/utilities/settings-page";
-	import { Ellipsis, ExternalLink, X } from "@lucide/svelte";
+	import { Ellipsis } from "@lucide/svelte";
 	import { onMount, tick } from "svelte";
 	import {
 		FEATURES_TITLE,
 		scriptSections,
-		scripts,
 		sectionItems,
 		settingRequires,
 		type PageSetting,
 	} from "../../features";
-	import { pushStoredSettings } from "../../features/settings-sync";
+	import { exportSettings, pickSettingsFile, resetToDefaults } from "../utilities/settings-backup";
 	import Icon from "./Icon.svelte";
+	import BugReportDialog from "./BugReportDialog.svelte";
+	import Dialog from "./Dialog.svelte";
 	import SettingRow from "./SettingRow.svelte";
 	import Switch from "./Switch.svelte";
 	import WritesMark from "./WritesMark.svelte";
 	import { applySettingChange } from "../../features/runtime";
 	import { setAbtEnabled } from "../utilities/abt-enabled";
 	import { watchDom } from "../utilities/dom-watcher";
-	import { isoDate } from "../utilities/months";
 	import { DESKTOP_QUERY } from "../utilities/pages";
 	import { TWEAKS_SECTIONS_ATTR, takeTweaksSection } from "../utilities/settings-page";
 
@@ -32,8 +33,6 @@
 	let activeSection = $state(scriptSections[0]?.title ?? "");
 
 	let showBugModal = $state(false);
-	let bugFeature = $state("");
-	let bugDescription = $state("");
 	let importStatus = $state<"" | "success" | "error">("");
 	let showResetDialog = $state(false);
 	let showOffDialog = $state(false);
@@ -41,18 +40,10 @@
 	let moreActionsEl: HTMLDivElement;
 	let turningOff = $state(false);
 
-	function closeMoreOnOutsidePointer(event: PointerEvent) {
-		if (!moreActionsEl.contains(event.target as Node)) {
-			moreOpen = false;
-		}
-	}
-
 	$effect(() => {
-		if (!moreOpen) {
-			return;
+		if (moreOpen) {
+			return onOutsideClick(moreActionsEl, () => (moreOpen = false));
 		}
-		document.addEventListener("pointerdown", closeMoreOnOutsidePointer, true);
-		return () => document.removeEventListener("pointerdown", closeMoreOnOutsidePointer, true);
 	});
 
 	async function turnOff() {
@@ -61,36 +52,6 @@
 		location.reload();
 	}
 	let resetting = $state(false);
-
-	function openBugReport() {
-		bugFeature = "";
-		bugDescription = "";
-		showBugModal = true;
-	}
-
-	function closeBugReport() {
-		showBugModal = false;
-	}
-
-	function submitBugReport() {
-		// Field names match .github/ISSUE_TEMPLATE/bug_report.yml's `id`s — the
-		// repo has issue forms configured, so /issues/new without `template=`
-		// lands on the template chooser instead of prefilling a blank issue.
-		const params = new URLSearchParams({
-			template: "bug_report.yml",
-			title: bugFeature ? `[Bug]: ${bugFeature}` : "[Bug]: ",
-			version,
-		});
-		if (bugFeature) {
-			params.set("feature", bugFeature);
-		}
-		if (bugDescription) {
-			params.set("description", bugDescription);
-		}
-
-		window.open(`${REPO_URL}/issues/new?${params}`, "_blank", "noopener,noreferrer");
-		closeBugReport();
-	}
 
 	// Each view lists the settings that run in it; ones for both show in both.
 	const desktopQuery = matchMedia(DESKTOP_QUERY);
@@ -375,97 +336,21 @@
 		};
 	});
 
-	const AUX_DEFAULTS: Record<string, unknown> = {
-		"local:category-colors": {},
-		"local:abt-account-icons": {},
-		"local:abt-category-icons": {},
-		"local:abt-sidebar-shortcuts": [],
-		"local:user-themes": {},
-		"local:side-panel-width": 420,
-		"local:side-panel-persist": null,
-		"local:theme-auto-switch": false,
-		"local:theme-auto-dark": null,
-		"local:theme-auto-light": null,
-	};
-
-	async function exportSettings() {
-		const stored = await browser.storage.local.get(null);
-		const data: Record<string, unknown> = { ...AUX_DEFAULTS, ...stored };
-		for (const group of scripts) {
-			for (const item of group) {
-				if ("context" in item && item.context?.key) {
-					const storageKey = `local:${item.context.key}`;
-					if (!(storageKey in data)) {
-						data[storageKey] = item.context.defaultValue;
-					}
-				}
-			}
-		}
-		const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = `abt-settings-${isoDate()}.json`;
-		a.click();
-		URL.revokeObjectURL(url);
-	}
-
-	async function importSettings() {
-		const input = document.createElement("input");
-		input.type = "file";
-		input.accept = ".json";
-		input.style.display = "none";
-		input.onchange = async () => {
-			const file = input.files?.[0];
-			input.remove();
-			if (!file) {
-				return;
-			}
-			try {
-				const text = await file.text();
-				const data = JSON.parse(text);
-				if (typeof data !== "object" || data === null || Array.isArray(data)) {
-					throw new Error("Invalid format");
-				}
-				await browser.storage.local.clear();
-				await browser.storage.local.set(data);
-				// Otherwise the budget's old values would win again after the reload.
-				await pushStoredSettings();
-				importStatus = "success";
+	function importSettings() {
+		pickSettingsFile((ok) => {
+			importStatus = ok ? "success" : "error";
+			if (ok) {
 				setTimeout(() => location.reload(), 1000);
-			} catch {
-				importStatus = "error";
+			} else {
 				setTimeout(() => (importStatus = ""), 3000);
 			}
-		};
-		// Some browsers (Firefox, Safari) won't reliably open the native file
-		// picker from a detached input's synthetic click.
-		document.body.appendChild(input);
-		input.click();
+		});
 	}
 
-	// Writes each default rather than removing the key: removed keys would come back from the
-	// budget's synced copy. Icons, colours, groups, shortcuts and custom themes are untouched.
 	async function resetSettings() {
 		resetting = true;
-		const defaults: Record<string, unknown> = {};
-		for (const item of scripts.flat()) {
-			if (item.type !== "core") {
-				defaults[`local:${item.context.key}`] = item.context.defaultValue;
-			}
-		}
-		await browser.storage.local.set(defaults);
-		await pushStoredSettings();
+		await resetToDefaults();
 		location.reload();
-	}
-
-	function portal(node: HTMLElement) {
-		document.body.appendChild(node);
-		return {
-			destroy() {
-				node.remove();
-			},
-		};
 	}
 </script>
 
@@ -475,13 +360,6 @@
 			return;
 		}
 		moreOpen = false;
-		showBugModal = false;
-		if (!resetting) {
-			showResetDialog = false;
-		}
-		if (!turningOff) {
-			showOffDialog = false;
-		}
 	}}
 />
 
@@ -494,7 +372,7 @@
 	<button
 		type="button"
 		class="abt-btn abt-btn--icon abt-btn--sm"
-		onclick={exportSettings}
+		onclick={() => void exportSettings()}
 		title="Export settings"
 		aria-label="Export settings"
 	>
@@ -552,7 +430,7 @@
 					role="menuitem"
 					onclick={() => {
 						moreOpen = false;
-						openBugReport();
+						showBugModal = true;
 					}}
 				>
 					<Icon name="bug" size={14} /> Report a bug
@@ -736,150 +614,73 @@
 </div>
 
 {#if showResetDialog}
-	<div
-		class="abt-dialog-backdrop"
-		role="presentation"
-		use:portal
-		onclick={(e) => e.target === e.currentTarget && !resetting && (showResetDialog = false)}
+	<Dialog
+		title="Reset to defaults?"
+		label="Reset to defaults"
+		alert
+		busy={resetting}
+		onClose={() => (showResetDialog = false)}
 	>
-		<div
-			class="abt-dialog abt-popover abt-controls-quiet"
-			role="alertdialog"
-			aria-modal="true"
-			aria-label="Reset to defaults"
-		>
-			<header class="abt-dialog__header">
-				<h3 class="abt-dialog__title">Reset to defaults?</h3>
-			</header>
-			<div class="abt-dialog__body dialog-text">
-				<p>
-					Every ABT setting goes back to its default, in this browser and in the budget's synced
-					copy. Account icons, category colours, account groups, shortcuts and custom themes stay.
-				</p>
-				<p>Export your settings first if you might want them back. The page reloads afterwards.</p>
-			</div>
-			<footer class="abt-dialog__footer">
-				<button
-					type="button"
-					class="abt-btn"
-					disabled={resetting}
-					onclick={() => (showResetDialog = false)}
-				>
-					Cancel
-				</button>
-				<button
-					type="button"
-					class="abt-btn abt-tone-danger"
-					disabled={resetting}
-					onclick={resetSettings}
-				>
-					{resetting ? "Resetting…" : "Reset settings"}
-				</button>
-			</footer>
+		<div class="abt-dialog__body dialog-text">
+			<p>
+				Every ABT setting goes back to its default, in this browser and in the budget's synced copy.
+				Account icons, category colours, account groups, shortcuts and custom themes stay.
+			</p>
+			<p>Export your settings first if you might want them back. The page reloads afterwards.</p>
 		</div>
-	</div>
+		{#snippet footer()}
+			<button
+				type="button"
+				class="abt-btn"
+				disabled={resetting}
+				onclick={() => (showResetDialog = false)}
+			>
+				Cancel
+			</button>
+			<button
+				type="button"
+				class="abt-btn abt-tone-danger"
+				disabled={resetting}
+				onclick={resetSettings}
+			>
+				{resetting ? "Resetting…" : "Reset settings"}
+			</button>
+		{/snippet}
+	</Dialog>
 {/if}
 
 {#if showBugModal}
-	<div
-		class="abt-dialog-backdrop"
-		role="presentation"
-		use:portal
-		onclick={(e) => e.target === e.currentTarget && closeBugReport()}
-	>
-		<div
-			class="abt-dialog abt-popover abt-controls-quiet"
-			role="dialog"
-			aria-modal="true"
-			aria-label="Report a bug"
-		>
-			<header class="abt-dialog__header">
-				<h3 class="abt-dialog__title">Report a bug</h3>
-				<button
-					type="button"
-					class="abt-btn abt-btn--icon abt-btn--ghost"
-					aria-label="Close"
-					onclick={closeBugReport}
-				>
-					<X size={16} strokeWidth={1.75} />
-				</button>
-			</header>
-			<div class="abt-dialog__body bug-form">
-				<label class="bug-field">
-					<span class="abt-label">Affected feature</span>
-					<select class="abt-input" bind:value={bugFeature}>
-						<option value="">General / Not sure</option>
-						{#each scriptSections as section (section.title)}
-							<optgroup label={section.title}>
-								{#each sectionItems(section) as item (item.context.key)}
-									<option value={item.label}>{item.label}</option>
-								{/each}
-							</optgroup>
-						{/each}
-					</select>
-				</label>
-				<label class="bug-field">
-					<span class="abt-label">What happened?</span>
-					<textarea
-						class="abt-input bug-textarea"
-						rows="4"
-						placeholder="Describe what you expected vs. what actually happened…"
-						bind:value={bugDescription}></textarea>
-				</label>
-			</div>
-			<footer class="abt-dialog__footer">
-				<button type="button" class="abt-btn" onclick={closeBugReport}>Cancel</button>
-				<button type="button" class="abt-btn abt-tone-accent" onclick={submitBugReport}>
-					Open on GitHub
-					<ExternalLink size={13} strokeWidth={1.5} />
-				</button>
-			</footer>
-		</div>
-	</div>
+	<BugReportDialog repoUrl={REPO_URL} onClose={() => (showBugModal = false)} />
 {/if}
 
 {#if showOffDialog}
-	<div
-		class="abt-dialog-backdrop"
-		role="presentation"
-		use:portal
-		onclick={(e) => e.target === e.currentTarget && !turningOff && (showOffDialog = false)}
+	<Dialog
+		title="Turn off Actual Budget Tweaks?"
+		label="Turn off ABT"
+		alert
+		busy={turningOff}
+		onClose={() => (showOffDialog = false)}
 	>
-		<div
-			class="abt-dialog abt-popover abt-controls-quiet"
-			role="alertdialog"
-			aria-modal="true"
-			aria-label="Turn off ABT"
-		>
-			<header class="abt-dialog__header">
-				<h3 class="abt-dialog__title">Turn off Actual Budget Tweaks?</h3>
-			</header>
-			<div class="abt-dialog__body dialog-text">
-				<p>
-					Actual reloads without any tweaks, in this browser only. Your settings stay as they are.
-				</p>
-				<p>Turn it back on from this page or from the extension's popup.</p>
-			</div>
-			<footer class="abt-dialog__footer">
-				<button
-					type="button"
-					class="abt-btn"
-					disabled={turningOff}
-					onclick={() => (showOffDialog = false)}
-				>
-					Cancel
-				</button>
-				<button
-					type="button"
-					class="abt-btn abt-tone-danger"
-					disabled={turningOff}
-					onclick={turnOff}
-				>
-					{turningOff ? "Turning off…" : "Turn off"}
-				</button>
-			</footer>
+		<div class="abt-dialog__body dialog-text">
+			<p>
+				Actual reloads without any tweaks, in this browser only. Your settings stay as they are.
+			</p>
+			<p>Turn it back on from this page or from the extension's popup.</p>
 		</div>
-	</div>
+		{#snippet footer()}
+			<button
+				type="button"
+				class="abt-btn"
+				disabled={turningOff}
+				onclick={() => (showOffDialog = false)}
+			>
+				Cancel
+			</button>
+			<button type="button" class="abt-btn abt-tone-danger" disabled={turningOff} onclick={turnOff}>
+				{turningOff ? "Turning off…" : "Turn off"}
+			</button>
+		{/snippet}
+	</Dialog>
 {/if}
 
 <style>
@@ -1239,24 +1040,5 @@
 
 	.dialog-text p {
 		margin: 0;
-	}
-
-	.bug-form {
-		display: flex;
-		flex-direction: column;
-		gap: var(--abt-space-4);
-	}
-
-	.bug-field {
-		display: flex;
-		flex-direction: column;
-		gap: var(--abt-space-2);
-	}
-
-	.bug-textarea {
-		height: auto;
-		min-height: 88px;
-		padding-block: var(--abt-space-2);
-		resize: vertical;
 	}
 </style>

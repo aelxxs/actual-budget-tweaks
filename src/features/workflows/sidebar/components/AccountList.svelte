@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
-	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
-	import { dispatch, navigate } from "@lib/utilities/actual-api";
-	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { openRecap } from "@features/workflows/sync-recap";
-	import { getValue, setValue, watchValue } from "@lib/utilities/store";
-	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
+	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
+	import { openRecap } from "@features/workflows/sync-recap";
+	import RollingNumber from "@lib/components/RollingNumber.svelte";
+	import { dispatch, navigate } from "@lib/utilities/actual-api";
+	import { lastShown, rememberShown } from "@lib/utilities/last-shown";
+	import { getValue, setValue, watchValue } from "@lib/utilities/store";
 	import { ChevronDown, List, ListTree, Plus } from "@lucide/svelte";
 	import { overlayScrollbar } from "../actions/overlay-scrollbar";
 	import { portal } from "../actions/portal";
@@ -32,11 +32,18 @@
 		watchCollapsedGroups,
 		watchGroupState,
 	} from "../lib/groups";
-	import { applyOrder, loadAccountOrder, saveAccountOrder, watchAccountOrder } from "../lib/order";
+	import { HoverCard } from "../lib/hover-card.svelte";
+	import {
+		applyOrder,
+		loadAccountOrder,
+		moveNextTo,
+		saveAccountOrder,
+		watchAccountOrder,
+	} from "../lib/order";
+	import { route, trackRoute } from "../lib/route.svelte";
 	import AccountHoverCard from "./AccountHoverCard.svelte";
 	import AccountRow from "./AccountRow.svelte";
 	import GroupHeader from "./GroupHeader.svelte";
-	import { route, trackRoute } from "../lib/route.svelte";
 
 	const {
 		accounts,
@@ -213,7 +220,7 @@
 	function openAccountMenu(e: MouseEvent, account: SidebarAccount) {
 		e.preventDefault();
 		e.stopPropagation();
-		hideHoverCard();
+		hover.hide();
 		const MW = 200;
 		const MH = 90;
 		menuX = Math.min(e.clientX, window.innerWidth - MW - 8);
@@ -222,146 +229,15 @@
 	}
 
 	// ---- account hover card ----
-	// Hover-intent delay so the card doesn't flash while sweeping the list.
-	const HOVER_CARD_WIDTH = 292;
-	const HOVER_DELAY = 600;
-	// Once a card has been waited for, the next row's comes quickly, until the pointer has been
-	// away from the cards for a moment (a tooltip's warm-up and cool-down).
-	const WARM_DELAY = 80;
-	const COOL_DOWN = 500;
-	let warmUntil = 0;
-	let hoverAccount = $state<SidebarAccount | null>(null);
-	let hoverTop = $state(0);
-	let hoverLeft = $state(0);
-	let hoverFlip = $state(false);
-	let hoverTimer: ReturnType<typeof setTimeout> | null = null;
-
-	function showHoverCard(el: HTMLElement, account: SidebarAccount) {
-		const rect = el.getBoundingClientRect();
-		const flip = rect.right + HOVER_CARD_WIDTH + 16 > window.innerWidth;
-		hoverFlip = flip;
-		hoverLeft = flip ? rect.left - HOVER_CARD_WIDTH - 10 : rect.right + 10;
-		// The card moves itself up once it knows its height, so it never runs off the bottom.
-		hoverTop = rect.top - 6;
-		hoverAccount = account;
-	}
+	const hover = new HoverCard<SidebarAccount>(".acard", 292);
+	$effect(() => hover.stopAiming);
 
 	function onAccountRowEnter(e: MouseEvent, account: SidebarAccount) {
 		if (editing || dragSrcId || menuAccount || menuGroup || editingAccountId || editingGroupId) {
 			return;
 		}
-		const el = e.currentTarget as HTMLElement;
-		// Rows crossed on the way to the open card wait; the one the pointer ends on takes over.
-		if (aim) {
-			passing = { el, account };
-			return;
-		}
-		startHover(el, account);
+		hover.enter(e.currentTarget as HTMLElement, account);
 	}
-
-	function startHover(el: HTMLElement, account: SidebarAccount) {
-		const warm = !!hoverAccount || performance.now() < warmUntil;
-		if (hoverAccount && hoverAccount.id !== account.id) {
-			hideHoverCard();
-		}
-		if (hoverTimer) {
-			clearTimeout(hoverTimer);
-		}
-		hoverTimer = setTimeout(() => showHoverCard(el, account), warm ? WARM_DELAY : HOVER_DELAY);
-	}
-
-	function onAccountRowLeave(e: MouseEvent) {
-		if (aim) {
-			if (passing?.el === e.currentTarget) {
-				passing = null;
-			}
-			return;
-		}
-		if (hoverTimer) {
-			clearTimeout(hoverTimer);
-			hoverTimer = null;
-		}
-		if (!hoverAccount) {
-			return;
-		}
-		// A card is open: the pointer may be on its way to it, so it gets a safe triangle.
-		aim = { x: e.clientX, y: e.clientY };
-		addEventListener("pointermove", onAimMove);
-		restartAimTimer();
-	}
-
-	function hideHoverCard() {
-		if (hoverTimer) {
-			clearTimeout(hoverTimer);
-			hoverTimer = null;
-		}
-		stopAiming();
-		if (hoverAccount) {
-			warmUntil = performance.now() + COOL_DOWN;
-		}
-		hoverAccount = null;
-	}
-
-	// The safe triangle: from where the pointer left its row to the card's near corners. Moving
-	// inside it keeps the card, as crossing other rows on the diagonal would otherwise swap it.
-	const AIM_SLACK = 6;
-	// Stopping short of the card for this long counts as giving up on it.
-	const AIM_GRACE = 300;
-	let aim: { x: number; y: number } | null = null;
-	let passing: { el: HTMLElement; account: SidebarAccount } | null = null;
-	let aimTimer: ReturnType<typeof setTimeout> | null = null;
-
-	function restartAimTimer() {
-		if (aimTimer) {
-			clearTimeout(aimTimer);
-		}
-		aimTimer = setTimeout(giveUpAim, AIM_GRACE);
-	}
-
-	function onAimMove(e: PointerEvent) {
-		const card = document.querySelector(".acard")?.getBoundingClientRect();
-		if (!aim || !card || !inTriangle(aim, card, e.clientX, e.clientY)) {
-			giveUpAim();
-			return;
-		}
-		restartAimTimer();
-	}
-
-	function inTriangle(apex: { x: number; y: number }, card: DOMRect, x: number, y: number) {
-		const nearX = apex.x <= card.left ? card.left : card.right;
-		const top = { x: nearX, y: card.top - AIM_SLACK };
-		const bottom = { x: nearX, y: card.bottom + AIM_SLACK };
-		// Nudged away from the card, so a wobble right at the start isn't outside already.
-		const a = { x: apex.x + (nearX > apex.x ? -AIM_SLACK : AIM_SLACK), y: apex.y };
-		const side = (p: { x: number; y: number }, q: { x: number; y: number }) =>
-			(q.x - p.x) * (y - p.y) - (q.y - p.y) * (x - p.x);
-		const d1 = side(a, top);
-		const d2 = side(top, bottom);
-		const d3 = side(bottom, a);
-		const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
-		const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
-		return !(hasNeg && hasPos);
-	}
-
-	function stopAiming() {
-		if (aimTimer) {
-			clearTimeout(aimTimer);
-			aimTimer = null;
-		}
-		removeEventListener("pointermove", onAimMove);
-		aim = null;
-		passing = null;
-	}
-
-	function giveUpAim() {
-		const next = passing;
-		hideHoverCard();
-		if (next) {
-			startHover(next.el, next.account);
-		}
-	}
-
-	$effect(() => stopAiming);
 
 	function commitAccountRename(accountId: string, name: string) {
 		const trimmed = name.trim();
@@ -389,7 +265,7 @@
 	function openGroupMenu(e: MouseEvent, group: AccountGroup) {
 		e.preventDefault();
 		e.stopPropagation();
-		hideHoverCard();
+		hover.hide();
 		const MW = 200;
 		const MH = 90;
 		menuX = Math.min(e.clientX, window.innerWidth - MW - 8);
@@ -415,6 +291,27 @@
 	let overPos = $state<"before" | "after">("before");
 	let overGroupId = $state<string | null>(null);
 
+	function startMove(e: DragEvent, id: string) {
+		hover.hide();
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = "move";
+			e.dataTransfer.setData("text/plain", id);
+		}
+	}
+
+	function allowMove(e: DragEvent) {
+		e.preventDefault();
+		if (e.dataTransfer) {
+			e.dataTransfer.dropEffect = "move";
+		}
+	}
+
+	/** Which half of the hovered row the pointer is over. */
+	function halfOf(e: DragEvent): "before" | "after" {
+		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		return e.clientY < rect.top + rect.height / 2 ? "before" : "after";
+	}
+
 	function endDrag() {
 		dragSrcId = null;
 		overId = null;
@@ -422,26 +319,18 @@
 	}
 
 	function onDragStart(e: DragEvent, id: string) {
-		hideHoverCard();
+		startMove(e, id);
 		dragSrcId = id;
-		if (e.dataTransfer) {
-			e.dataTransfer.effectAllowed = "move";
-			e.dataTransfer.setData("text/plain", id);
-		}
 	}
 
 	function onDragOver(e: DragEvent, targetId: string) {
 		if (!dragSrcId || dragSrcId === targetId || sectionOf(dragSrcId) !== sectionOf(targetId)) {
 			return;
 		}
-		e.preventDefault();
-		if (e.dataTransfer) {
-			e.dataTransfer.dropEffect = "move";
-		}
+		allowMove(e);
 		overId = targetId;
 		overGroupId = null;
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		overPos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
+		overPos = halfOf(e);
 	}
 
 	function canDropInGroup(groupId: string): boolean {
@@ -462,10 +351,7 @@
 		if (!canDropInGroup(groupId)) {
 			return;
 		}
-		e.preventDefault();
-		if (e.dataTransfer) {
-			e.dataTransfer.dropEffect = "move";
-		}
+		allowMove(e);
 		overGroupId = groupId;
 		overId = null;
 	}
@@ -489,27 +375,16 @@
 	}
 
 	function onGroupDragStart(e: DragEvent, id: string) {
-		hideHoverCard();
+		startMove(e, id);
 		dragGroupId = id;
-		if (e.dataTransfer) {
-			e.dataTransfer.effectAllowed = "move";
-			e.dataTransfer.setData("text/plain", id);
-		}
 	}
 
 	function onBlockDragOver(e: DragEvent, kind: "onbudget" | "offbudget", id: string) {
 		if (!dragGroupId || !groupsForSection(kind).some((g) => g.id === dragGroupId)) {
 			return;
 		}
-		e.preventDefault();
-		if (e.dataTransfer) {
-			e.dataTransfer.dropEffect = "move";
-		}
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		overBlock =
-			id === dragGroupId
-				? null
-				: { id, pos: e.clientY < rect.top + rect.height / 2 ? "before" : "after" };
+		allowMove(e);
+		overBlock = id === dragGroupId ? null : { id, pos: halfOf(e) };
 	}
 
 	function onBlockDrop(e: DragEvent, kind: "onbudget" | "offbudget") {
@@ -554,19 +429,12 @@
 			assign(dragSrcId, targetGroupId);
 		}
 
-		const ids = sectionItems.map((a) => a.id);
-		const srcIndex = ids.indexOf(dragSrcId);
-		if (srcIndex !== -1) {
-			ids.splice(srcIndex, 1);
-		}
-		let targetIndex = ids.indexOf(targetId);
-		if (targetIndex === -1) {
-			targetIndex = ids.length;
-		}
-		if (overPos === "after") {
-			targetIndex += 1;
-		}
-		ids.splice(targetIndex, 0, dragSrcId);
+		const ids = moveNextTo(
+			sectionItems.map((a) => a.id),
+			dragSrcId,
+			targetId,
+			overPos,
+		);
 
 		const nextOrder = orderedSections.flatMap((s) =>
 			s.label === sectionLabel ? ids : s.items.map((a) => a.id),
@@ -584,7 +452,7 @@
 		class="accounts"
 		use:scrollFade
 		use:overlayScrollbar={{ enabled: split }}
-		onscroll={hideHoverCard}
+		onscroll={hover.hide}
 	>
 		<div class="all-accounts section-head" class:active={isAllAccountsActive()}>
 			<button type="button" class="section-nav" onclick={() => go("/accounts")}>
@@ -701,7 +569,7 @@
 									onCancelRename={() => (editingAccountId = null)}
 									onContextMenu={(e) => openAccountMenu(e, account)}
 									onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
-									onRowMouseLeave={onAccountRowLeave}
+									onRowMouseLeave={(e) => hover.leave(e)}
 								/>
 							{/each}
 						</div>
@@ -726,7 +594,7 @@
 										onCancelRename={() => (editingAccountId = null)}
 										onContextMenu={(e) => openAccountMenu(e, account)}
 										onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
-										onRowMouseLeave={onAccountRowLeave}
+										onRowMouseLeave={(e) => hover.leave(e)}
 									/>
 								{/each}
 							</div>
@@ -784,7 +652,7 @@
 													onCancelRename={() => (editingAccountId = null)}
 													onContextMenu={(e) => openAccountMenu(e, account)}
 													onRowMouseEnter={(e) => onAccountRowEnter(e, account)}
-													onRowMouseLeave={onAccountRowLeave}
+													onRowMouseLeave={(e) => hover.leave(e)}
 												/>
 											{/each}
 										</div>
@@ -856,25 +724,25 @@
 	</div>
 {/if}
 
-{#if hoverAccount}
+{#if hover.shown}
 	<AccountHoverCard
-		account={hoverAccount}
-		top={hoverTop}
-		left={hoverLeft}
-		flip={hoverFlip}
-		onEnter={stopAiming}
-		onLeave={hideHoverCard}
+		account={hover.shown}
+		top={hover.top}
+		left={hover.left}
+		flip={hover.flip}
+		onEnter={hover.stopAiming}
+		onLeave={hover.hide}
 		onReviewNew={() => {
-			const id = hoverAccount?.id;
-			hideHoverCard();
+			const id = hover.shown?.id;
+			hover.hide();
 			if (id) {
 				openRecap(id);
 			}
 		}}
 		onReview={() => {
 			// Read before hiding: hiding clears the account the card was showing.
-			const id = hoverAccount?.id;
-			hideHoverCard();
+			const id = hover.shown?.id;
+			hover.hide();
 			// Actual's uncategorized list, narrowed to this account with a filter it shows and can clear.
 			if (id) {
 				go("/categories/uncategorized", {
