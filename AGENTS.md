@@ -6,7 +6,7 @@ A browser extension (WXT + Svelte 5) that layers optional tweaks onto Actual Bud
 
 What ABT is, and what every change should hold to.
 
-1. **Opt-in and reversible.** Each tweak is one `defineSetting()` the user turns on by itself. Turning it off leaves Actual as it was: the runtime clears its `css`, and `init` returns a cleanup for everything else. Core scripts (`type: "core"`) are the only always-on code, and they add infrastructure (hooks, panels, sync), not visible changes.
+1. **Opt-in and reversible.** Each tweak is one `defineSetting()` the user turns on by itself. Turning it off leaves Actual as it was: the runtime clears its `css`, and `init` returns a cleanup for everything else. Core scripts (`type: "core"`) are the only always-on code, and they add infrastructure (hooks, panels, sync), not visible changes, except fixes for something broken in Actual, such as unreadable scrollbars.
 2. **Actual stays in charge of the data.** ABT reads through the API bridge (`src/lib/utilities/actual-api.ts`) and writes to the budget only from an explicit user action. The one background write is ABT's own settings, synced through Actual's preferences (`src/features/settings-sync.ts`).
 3. **Survives Actual releases.** Anchor on things Actual keeps stable (test ids, roles, hrefs, structure under `[data-abt-content-grid]`, or a `data-abt-*` marker set in JS), never hashed `.css-xxxxx` classes. When an anchor is missing, the feature does nothing rather than throwing.
 4. **Feels native.** Colours come from Actual's theme variables (`--color-*`) so every theme works; corners follow the user's radius setting. ABT's own UI is built from the primitives and tokens in `src/lib/styles/ui.css`.

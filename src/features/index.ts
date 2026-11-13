@@ -3,7 +3,6 @@ import { modernAccountToolbar } from "./appearance/account-toolbar";
 import { categoryColorDots } from "./appearance/category-color-dots";
 import { categoryEmojiPicker } from "./appearance/category-emoji-picker";
 import { privacyStyle } from "./appearance/privacy-dots";
-import { themedScrollbars } from "./appearance/scrollbars";
 import { sidebarClosedAccounts } from "./appearance/sidebar-closed-accounts";
 import { sidebarDensity } from "./appearance/sidebar-density";
 import { sidebarGroupTotals } from "./appearance/sidebar-group-totals";
@@ -15,6 +14,7 @@ import { nativeHooks } from "./core/native-hooks";
 import { privacyMode } from "./core/privacy-mode";
 import { releaseNotification } from "./core/release-notification";
 import { scheduleHighlight } from "./core/schedule-highlight";
+import { scrollbars } from "./core/scrollbars";
 import { settingsTab } from "./core/settings-tab";
 import { sidePanel } from "./core/side-panel";
 import { tooltipStyling } from "./core/tooltip";
@@ -83,7 +83,6 @@ export const styleSettings: PageSetting[] = [
 	borderRadius,
 	backgroundPattern,
 	insetPanels,
-	themedScrollbars,
 	borders,
 	privacyStyle,
 ];
@@ -232,6 +231,7 @@ export const coreScripts = [
 	settingsTab,
 	scheduleHighlight,
 	tooltipStyling,
+	scrollbars,
 	releaseNotification,
 	privacyMode,
 	budgetViewOptions,
