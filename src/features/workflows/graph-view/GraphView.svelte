@@ -19,6 +19,8 @@
 	import { transactionInspector } from "@features/workflows/transaction-inspector";
 	import Inspector from "@features/workflows/transaction-inspector/Inspector.svelte";
 	import Icon from "@lib/components/Icon.svelte";
+	import { onOutsideClick } from "@lib/utilities/popover";
+	import { Check } from "@lucide/svelte";
 	import { getCategoryColor, loadCategoryColors } from "@lib/utilities/category-colors";
 	import { getValue } from "@lib/utilities/store";
 	import { loadCurrency } from "@lib/utilities/currency";
@@ -67,6 +69,13 @@
 	let sharedCount = $state(0);
 	let similarCount = $state(0);
 	let duplicateCount = $state(0);
+	let menuOpen = $state(false);
+	let menuWrap = $state<HTMLElement | null>(null);
+	$effect(() => {
+		if (menuOpen && menuWrap) {
+			return onOutsideClick(menuWrap, () => (menuOpen = false));
+		}
+	});
 	let unusualCount = $state(0);
 	type DrawLink = {
 		key: string;
@@ -333,7 +342,7 @@
 		{
 			kind: "mixed" as const,
 			count: mixedCount,
-			hint: "Payees whose transactions land in more than one category",
+			hint: "Payees spread over more than one category",
 		},
 		{
 			kind: "shared" as const,
@@ -343,12 +352,12 @@
 		{
 			kind: "similar" as const,
 			count: similarCount,
-			hint: "Payees that look like one place under different names",
+			hint: "One place under different payee names",
 		},
 		{
 			kind: "duplicates" as const,
 			count: duplicateCount,
-			hint: "Charges with the same account, payee and amount a couple of days apart",
+			hint: "The same charge entered twice",
 		},
 		{
 			kind: "unusual" as const,
@@ -420,14 +429,6 @@
 			note: "Categories paid from more than one account. Fine if planned, otherwise a card used by mistake.",
 			empty: "Every category is paid from one account.",
 		},
-	};
-	// Header labels for a narrow page, e.g. with the side panel open.
-	const SHORT = {
-		mixed: "Mixed",
-		shared: "Shared",
-		similar: "Similar",
-		duplicates: "Dupes",
-		unusual: "Price",
 	};
 	const TITLES = {
 		mixed: LISTS.mixed.title,
@@ -970,20 +971,71 @@
 			</div>
 		</div>
 		<div class="gv__right">
-			<div class="abt-seg abt-seg--sm" role="group" aria-label="Highlight">
-				{#each HIGHLIGHTS as h (h.kind)}
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div
+				class="gv__hl"
+				bind:this={menuWrap}
+				onkeydown={(e) => {
+					if (e.key === "Escape") {
+						menuOpen = false;
+					}
+				}}
+			>
+				<button
+					type="button"
+					class="abt-btn abt-btn--sm gv__hl-btn"
+					class:is-on={!!highlight}
+					aria-haspopup="menu"
+					aria-expanded={menuOpen}
+					onclick={() => (menuOpen = !menuOpen)}
+				>
+					<Icon name="filter" size={13} />
+					{#if highlight}
+						{TITLES[highlight]}
+						<span class="abt-num gv__count"
+							>{HIGHLIGHTS.find((h) => h.kind === highlight)?.count}</span
+						>
+					{:else}
+						Highlight
+					{/if}
+					<Icon name="chevronDown" size={12} />
+				</button>
+				{#if highlight}
 					<button
 						type="button"
-						aria-pressed={highlight === h.kind}
-						disabled={!h.count}
-						title={h.hint}
-						onclick={() => pickHighlight(h.kind)}
+						class="gv__hl-off"
+						aria-label="Turn off the highlight"
+						onclick={() => highlight && pickHighlight(highlight)}
 					>
-						<span class="gv__long">{TITLES[h.kind]}</span>
-						<span class="gv__short">{SHORT[h.kind]}</span>
-						<span class="abt-num gv__count">{h.count}</span>
+						<Icon name="close" size={12} />
 					</button>
-				{/each}
+				{/if}
+				{#if menuOpen}
+					<div class="gv__hl-menu abt-popover abt-menu" role="menu" aria-label="Highlight">
+						{#each HIGHLIGHTS as h (h.kind)}
+							<button
+								type="button"
+								class="abt-menu__item"
+								role="menuitemradio"
+								aria-checked={highlight === h.kind}
+								disabled={!h.count}
+								onclick={() => {
+									menuOpen = false;
+									pickHighlight(h.kind);
+								}}
+							>
+								<span class="gv__hl-tick">
+									{#if highlight === h.kind}<Check size={14} />{/if}
+								</span>
+								<span class="gv__hl-text">
+									<span>{TITLES[h.kind]}</span>
+									<span class="gv__hl-hint">{h.hint}</span>
+								</span>
+								<span class="abt-num gv__count">{h.count}</span>
+							</button>
+						{/each}
+					</div>
+				{/if}
 			</div>
 			<div class="abt-seg abt-seg--sm" role="group" aria-label="Range">
 				{#each RANGES as r (r.days)}
@@ -1352,6 +1404,71 @@
 	.gv__clear:hover {
 		background: var(--abt-fill-hover);
 		color: var(--color-pageText);
+	}
+
+	.gv__hl {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-1);
+	}
+
+	.gv__hl-btn {
+		gap: var(--abt-space-2);
+	}
+
+	.gv__hl-btn.is-on {
+		background: var(--abt-accent-2);
+		color: var(--abt-accent-text);
+	}
+
+	.gv__hl-off {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		padding: 0;
+		border: none;
+		border-radius: var(--abt-radius-sm);
+		background: none;
+		color: var(--abt-muted);
+		cursor: pointer;
+	}
+
+	.gv__hl-off:hover {
+		background: var(--abt-fill-hover);
+		color: var(--color-pageText);
+	}
+
+	.gv__hl-menu {
+		position: absolute;
+		top: calc(100% + var(--abt-space-2));
+		right: 0;
+		z-index: 3;
+		width: 300px;
+	}
+
+	.gv__hl-tick {
+		display: inline-flex;
+		flex-shrink: 0;
+		width: 14px;
+		padding-top: 2px; /* raw: lines the tick up with the name */
+		color: var(--abt-accent-text);
+	}
+
+	.gv__hl-text {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: 2px; /* raw: the hint sits tight under its name */
+		min-width: 0;
+		font-size: var(--abt-text-sm);
+	}
+
+	.gv__hl-hint {
+		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
 	}
 
 	.gv__count {
