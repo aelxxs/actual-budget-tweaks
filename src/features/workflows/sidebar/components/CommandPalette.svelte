@@ -18,12 +18,8 @@
 	} from "@features/theme/theme-apply";
 	import type { PageSetting } from "@features/index";
 	import { applySettingChange } from "@features/runtime";
-	import {
-		closeCalendar,
-		isCalendarOpen,
-		openCalendar,
-		spendingCalendar,
-	} from "@features/workflows/spending-calendar";
+	import { openCalendar, spendingCalendar } from "@features/workflows/spending-calendar";
+	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import {
 		currentAccountId,
 		modernReconcile,
@@ -539,8 +535,8 @@
 			closePalette();
 			return;
 		}
-		if (isCalendarOpen()) {
-			closeCalendar();
+		if (isOverlayOpen()) {
+			closeOverlayPage();
 		}
 		if (item.kind === "nav") {
 			navigate(pagePath(item.page));

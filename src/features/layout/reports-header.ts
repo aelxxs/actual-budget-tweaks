@@ -10,7 +10,7 @@ import { REPORTS_PAGE } from "@lib/actual-dom";
 // Only a dashboard gets this header (marked in native-hooks), not a single report.
 const DASHBOARD_ATTR = "data-abt-reports-dashboard";
 // Not the spending calendar, which mounts over this page as another child of it.
-const PAGE = `${REPORTS_PAGE}[${DASHBOARD_ATTR}] > div:not([data-abt-calendar])`;
+const PAGE = `${REPORTS_PAGE}[${DASHBOARD_ATTR}] > div:not([data-abt-overlay-page])`;
 const HEADER = `${PAGE} > div:first-of-type`;
 // Actual's "Reports:" ahead of the dashboard name, its own element.
 const TITLE = `${HEADER} > div:first-of-type`;

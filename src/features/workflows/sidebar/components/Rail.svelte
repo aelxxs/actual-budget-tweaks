@@ -3,11 +3,8 @@
 	import { getEmojiAssetUrl } from "@features/appearance/account-icon-picker";
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
-	import {
-		closeCalendar,
-		isCalendarOpen,
-		openCalendar,
-	} from "@features/workflows/spending-calendar";
+	import { openCalendar } from "@features/workflows/spending-calendar";
+	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
@@ -70,9 +67,9 @@
 	});
 
 	function go(page: Page) {
-		const covered = isCalendarOpen();
+		const covered = isOverlayOpen();
 		if (covered) {
-			closeCalendar();
+			closeOverlayPage();
 		}
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
 		if (covered && matchesPage(page)) {
@@ -291,8 +288,8 @@
 	}
 
 	function openAccount(id: string) {
-		if (isCalendarOpen()) {
-			closeCalendar();
+		if (isOverlayOpen()) {
+			closeOverlayPage();
 		}
 		navigate(`/accounts/${id}`);
 	}

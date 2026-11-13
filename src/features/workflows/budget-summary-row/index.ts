@@ -1,6 +1,6 @@
 import { markCellsStale } from "@features/readability/category-progress/cells";
 import { defineSetting, type Setting } from "@features/types";
-import { isCalendarOpen } from "@features/workflows/spending-calendar";
+import { isOverlayOpen } from "@features/core/overlay-page";
 import { iconMask } from "@lib/utilities/icons";
 import {
 	type BudgetTableChange,
@@ -298,7 +298,7 @@ function syncMetas(cards: HTMLElement[], multi: boolean): void {
 
 function sync(): void {
 	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
-	if (isCalendarOpen()) {
+	if (isOverlayOpen()) {
 		return;
 	}
 	if (!matchesPage(Page.Budget)) {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AccountIconData } from "@features/appearance/account-icon-picker";
-	import { closeCalendar, isCalendarOpen } from "@features/workflows/spending-calendar";
+	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import { dispatch, navigate } from "@lib/utilities/actual-api";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { openRecap } from "@features/workflows/sync-recap";
@@ -152,8 +152,8 @@
 	// See PrimaryNav.svelte for why any navigation elsewhere in this sidebar
 	// has to close the spending-calendar overlay itself, if open.
 	function go(path: string, options?: Record<string, unknown>) {
-		if (isCalendarOpen()) {
-			closeCalendar();
+		if (isOverlayOpen()) {
+			closeOverlayPage();
 		}
 		navigate(path, options);
 	}

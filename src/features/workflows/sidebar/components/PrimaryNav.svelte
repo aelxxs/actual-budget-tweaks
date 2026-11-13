@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { spendingCalendar } from "@features/workflows/spending-calendar";
-	import {
-		closeCalendar,
-		isCalendarOpen,
-		openCalendar,
-	} from "@features/workflows/spending-calendar";
+	import { openCalendar } from "@features/workflows/spending-calendar";
+	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import { navigate } from "@lib/utilities/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/utilities/pages";
 	import { getValue, setValue } from "@lib/utilities/store";
@@ -39,9 +36,9 @@
 	// world and isn't visible to that check, so anything in this nav that
 	// navigates elsewhere has to close the overlay itself first.
 	function go(page: Page) {
-		const covered = isCalendarOpen();
+		const covered = isOverlayOpen();
 		if (covered) {
-			closeCalendar();
+			closeOverlayPage();
 		}
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
 		if (covered && matchesPage(page)) {

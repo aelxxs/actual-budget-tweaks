@@ -9,7 +9,7 @@
 		setAccountIcon,
 	} from "@features/appearance/account-icon-picker";
 	import IconPickerModal from "@features/appearance/account-icon-picker/Modal.svelte";
-	import { closeCalendar, isCalendarOpen } from "@features/workflows/spending-calendar";
+	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
 	import { navigate } from "@lib/utilities/actual-api";
 	import { fmtMoney } from "@lib/utilities/currency";
 	import { Smile } from "@lucide/svelte";
@@ -82,8 +82,8 @@
 	});
 
 	function open() {
-		if (isCalendarOpen()) {
-			closeCalendar();
+		if (isOverlayOpen()) {
+			closeOverlayPage();
 		}
 		navigate(`/accounts/${account.id}`);
 	}

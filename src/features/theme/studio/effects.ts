@@ -27,10 +27,10 @@ export const SURFACES = `
 	[data-abt-tweaks-host] .settings-page,
 	.settings-toolbar,
 	/* Not the calendar's grid: it slides on a transform, which unfixes a fixed background. */
-	${MAIN}:not([data-abt-calendar] *),
+	${MAIN}:not([data-abt-overlay-page] *),
 	${REPORTS_PAGE},
-	${REPORTS_PAGE} > div:not([data-abt-calendar]),
-	${REPORTS_PAGE} > div:not([data-abt-calendar]) > div:first-of-type
+	${REPORTS_PAGE} > div:not([data-abt-overlay-page]),
+	${REPORTS_PAGE} > div:not([data-abt-overlay-page]) > div:first-of-type
 `;
 
 /** The accent and second colors of a theme without a generated palette, as its CSS has them. */

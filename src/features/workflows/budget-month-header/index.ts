@@ -1,5 +1,5 @@
 import { dockInsightsTrigger } from "@features/workflows/template-plan";
-import { isCalendarOpen } from "@features/workflows/spending-calendar";
+import { isOverlayOpen } from "@features/core/overlay-page";
 import { watchDom, watchElement } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { mount, unmount } from "svelte";
@@ -81,7 +81,7 @@ const sameMonths = (a: string[], b: string[]) =>
 
 function sync(): void {
 	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
-	if (isCalendarOpen()) {
+	if (isOverlayOpen()) {
 		return;
 	}
 	if (!matchesPage(Page.Budget)) {
