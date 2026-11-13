@@ -745,7 +745,7 @@
 		box-sizing: border-box;
 		padding: calc(var(--sb-row-pad-y, 5px) + 1px) 13px;
 		background: var(--abt-ink-1);
-		border: 1px solid var(--abt-ink-2);
+		border: 1px solid var(--sb-line, var(--abt-ink-2));
 		border-radius: 10px; /* raw: fixed, with the shortcut tiles beside it */
 		transition: border-color 0.12s ease;
 	}
@@ -790,7 +790,7 @@
 	.divider {
 		height: 1px;
 		width: 100%;
-		background: var(--abt-ink-3);
+		background: var(--sb-line, var(--abt-ink-2));
 		flex-shrink: 0;
 	}
 </style>

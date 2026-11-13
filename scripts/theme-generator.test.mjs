@@ -49,11 +49,23 @@ test("every color is a six-digit hex, in both modes and every sidebar", () => {
 	for (const mode of ["dark", "light"]) {
 		for (const sidebar of ["match", "deeper", "dark", "tinted"]) {
 			const g = generate({ ...base, mode, sidebar });
-			assert.equal(Object.keys(g.colors).length, 26);
+			assert.equal(Object.keys(g.colors).length, 27);
 			for (const value of [...Object.values(g.colors), ...Object.values(g.sidebar)]) {
 				assert.match(value, /^#[0-9a-f]{6}$/);
 			}
 		}
+	}
+});
+
+test("borders match surface0 until raised, reach 3:1 at full, and ignore contrast", () => {
+	for (const mode of ["dark", "light"]) {
+		const off = generate({ ...base, mode, contrast: 1 }).colors;
+		assert.equal(off.line, off.surface0);
+		const full = generate({ ...base, mode, borders: 1 }).colors;
+		assert.ok(
+			contrastRatio(full.line, full.base) >= 3,
+			`${mode}: ${contrastRatio(full.line, full.base)}`,
+		);
 	}
 });
 

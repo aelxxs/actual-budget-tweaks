@@ -139,7 +139,7 @@
 		/* 9px below centres the 26px controls on the rail's bottom icon (4px rail padding + half
 		   its 36px slot); the same above keeps it balanced. */
 		padding: 9px 0.65rem;
-		border-top: 1px solid var(--abt-ink-2);
+		border-top: 1px solid var(--sb-line, var(--abt-ink-2));
 		flex-shrink: 0;
 	}
 	/* Nothing on the right (split layout, no linked accounts): undo/redo takes its place. */
@@ -158,7 +158,7 @@
 	/* Undo and redo joined into one control, so they read as a pair. */
 	.undo-group {
 		display: inline-flex;
-		border: 1px solid var(--abt-ink-2);
+		border: 1px solid var(--sb-line, var(--abt-ink-2));
 		border-radius: var(--abt-radius);
 		background: var(--sb-surface);
 		overflow: hidden;
@@ -175,7 +175,7 @@
 			background 0.12s ease;
 	}
 	.undo-group button + button {
-		border-left: 1px solid var(--abt-ink-2);
+		border-left: 1px solid var(--sb-line, var(--abt-ink-2));
 	}
 	.undo-group button:hover {
 		color: var(--abt-ink);
@@ -192,7 +192,7 @@
 		gap: 6px;
 		height: 26px;
 		padding: 0 10px 0 9px;
-		border: 1px solid var(--abt-ink-2);
+		border: 1px solid var(--sb-line, var(--abt-ink-2));
 		border-radius: var(--abt-radius);
 		background: var(--sb-surface);
 		font-size: var(--abt-text-base);

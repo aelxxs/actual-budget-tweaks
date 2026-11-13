@@ -32,6 +32,8 @@ export type Recipe = {
 	budget: BudgetTone;
 	/** 0 soft to 1 crisp. */
 	contrast: number;
+	/** Border strength apart from contrast: 0 is surface0, as before; 1 reaches 3:1 on the page. */
+	borders?: number;
 	/** Shifts every background's lightness (OKLCH L) from the studio's default; see DEPTH_RANGE. */
 	depth?: number;
 	/** Shifts the accent's lightness from the one the mode and contrast give; see LIFT_RANGE. */
@@ -299,6 +301,9 @@ export function generate(r: Recipe): Generated {
 
 	let crustL: number;
 	let mantleL: number;
+	// Where surface0 sits and its chroma, for the border color drawn from it below.
+	let lineL: number;
+	let lineC: number;
 	const surfaces = () => [K.crust, K.mantle, K.base];
 	// Muted text: placeholders at 3:1, but overlay1 is also the budgeted figures, so 4.5:1.
 	const guardOverlays = (L: number, C: number, d: 1 | -1) => {
@@ -318,6 +323,8 @@ export function generate(r: Recipe): Generated {
 		put("mantle", mantleL, cs);
 		put("base", baseL, cs);
 		put("surface0", s0, cs * 0.95);
+		lineL = s0;
+		lineC = cs * 0.95;
 		put("surface1", s0 + 0.045, cs * 0.9);
 		put("surface2", s0 + 0.09, cs * 0.85);
 		guardOverlays(0.5, cs * 0.7, 1);
@@ -336,6 +343,8 @@ export function generate(r: Recipe): Generated {
 		put("mantle", mantleL, cs);
 		put("crust", crustL, cs * 1.1);
 		put("surface0", s0, cs * 1.1);
+		lineL = s0;
+		lineC = cs * 1.1;
 		put("surface1", s0 - 0.045, cs * 1.1);
 		put("surface2", s0 - 0.09, cs * 1.1);
 		guardOverlays(0.7, cs * 1.2, -1);
@@ -343,6 +352,15 @@ export function generate(r: Recipe): Generated {
 		put("subtext1", 0.46 - 0.08 * c + depth, ct);
 		K.text = readable(0.33 - 0.1 * c, ct, H, K.mantle, 7, -1);
 	}
+
+	// Borders: surface0 at 0, firming to 3:1 against the page (WCAG's level for the edges of
+	// controls) at 1. Their own control, so firmer borders don't restyle the rest of the theme.
+	const lineRatio = worstRatio(K.surface0, [K.base, K.mantle]);
+	const lineGoal = lineRatio + (Math.max(3, lineRatio) - lineRatio) * clamp(r.borders ?? 0, 0, 1);
+	K.line =
+		lineGoal > lineRatio
+			? readable(lineL, lineC, H, [K.base, K.mantle], lineGoal, dir)
+			: K.surface0;
 
 	const A = r.accentHue;
 	const AC = r.accentChroma;

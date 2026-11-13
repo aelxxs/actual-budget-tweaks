@@ -423,7 +423,7 @@
 		box-sizing: border-box;
 		padding: 0.75rem;
 		/* transparent border matches the expanded header exactly → no layout shift */
-		border-bottom: 1px solid var(--abt-ink-2);
+		border-bottom: 1px solid var(--sb-line, var(--abt-ink-2));
 		text-align: left;
 		transition:
 			background 0.12s ease,
@@ -432,7 +432,7 @@
 	.budget-select:hover,
 	.budget-select-icon:hover + .budget-select {
 		background: var(--sb-surface);
-		border-color: var(--abt-ink-2);
+		border-color: var(--sb-line, var(--abt-ink-2));
 	}
 	/* Over the space kept for it in the menu button, centred on the button's content. */
 	.budget-select-icon {
@@ -511,7 +511,7 @@
 		height: 3.75rem;
 		box-sizing: border-box;
 		padding: 0.75rem;
-		border-bottom: 1px solid var(--abt-ink-2);
+		border-bottom: 1px solid var(--sb-line, var(--abt-ink-2));
 	}
 	:global(.split-panel) .budget-select,
 	:global(.split-panel) .budget-header {
@@ -584,7 +584,7 @@
 		letter-spacing: 0.1px;
 		color: var(--abt-ink);
 		background: var(--sb-canvas);
-		border: 1px solid var(--abt-ink-2);
+		border: 1px solid var(--sb-line, var(--abt-ink-2));
 		border-radius: var(--abt-radius-sm);
 		padding: 3px 7px;
 		margin: -3px -7px;
@@ -626,7 +626,7 @@
 		box-sizing: border-box;
 		padding: 5px;
 		background: var(--sb-bg);
-		border: 1px solid var(--abt-ink-2);
+		border: 1px solid var(--sb-line, var(--abt-ink-2));
 		border-radius: 0px;
 		border-inline: 0px;
 
@@ -703,7 +703,7 @@
 	.budget-menu-divider {
 		height: 1px;
 		margin: 4px 6px;
-		background: var(--abt-ink-2);
+		background: var(--sb-line, var(--abt-ink-2));
 	}
 	.budget-exit {
 		display: flex;

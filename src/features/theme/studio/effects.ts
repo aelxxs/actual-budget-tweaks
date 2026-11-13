@@ -43,7 +43,23 @@ export function paletteKeys(g: Generated): Record<string, string> {
 
 /** What a recipe adds beyond its palette: the sidebar's own colors, glow and grain. */
 export function studioCSS(r: Recipe, g: Generated = generate(r)): string {
-	return sidebarCSS(r, g) + desktopOnly(effectsCSS(r, r.mode, g.colors));
+	return sidebarCSS(r, g) + bordersCSS(r, g) + desktopOnly(effectsCSS(r, r.mode, g.colors));
+}
+
+/** Raised borders reach ABT's own panels and cards too, which otherwise draw a faint ink tint. */
+function bordersCSS(r: Recipe, g: Generated): string {
+	if (!r.borders) {
+		return "";
+	}
+	return `
+		:root:root {
+			--abt-line: ${g.colors.line};
+			--abt-panel-border: var(--abt-line-secondary);
+			--color-sidebarBorder: var(--abt-line-secondary);
+		}
+		.sidebar.sidebar {
+			--sb-line: var(--abt-line-secondary);
+		}`;
 }
 
 /** Glow and grain on a theme that isn't a Studio one. */
@@ -61,7 +77,7 @@ function sidebarCSS(r: Recipe, g: Generated): string {
 		/* Doubled, to outrank the palette's own :root rule whichever style tag comes later. */
 		:root:root {
 			--color-sidebarBackground: ${s.bg};
-			--color-sidebarBorder: ${s.hover};
+			--color-sidebarBorder: ${r.borders ? "var(--abt-line-secondary)" : s.hover};
 			--color-sidebarBudgetName: ${s.text};
 			--color-sidebarHeaderText: ${s.text};
 			--color-sidebarItemText: ${s.text};

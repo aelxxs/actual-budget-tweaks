@@ -270,3 +270,33 @@ body {
 		border-top-left-radius: var(--border-radius);
 	}
 }
+
+/*
+ * The system's "Increase contrast" (macOS) or a contrast theme (Windows) firms up borders under
+ * any theme, Actual's own included. !important outranks themes that set these on the root inline.
+ */
+@media (prefers-contrast: more) {
+	:root {
+		/* Tables and controls firmest; containers and dividers a step below. */
+		--abt-contrast-line: color-mix(in srgb, var(--color-pageText) 45%, var(--color-pageBackground));
+		--abt-contrast-line-2: color-mix(
+			in srgb,
+			var(--color-pageText) 30%,
+			var(--color-pageBackground)
+		);
+		--color-tableBorder: var(--abt-contrast-line) !important;
+		--color-formInputBorder: var(--abt-contrast-line) !important;
+		--color-buttonNormalBorder: var(--abt-contrast-line) !important;
+		--color-buttonMenuBorder: var(--abt-contrast-line) !important;
+		--color-pillBorder: var(--abt-contrast-line) !important;
+		--abt-line: var(--abt-contrast-line) !important;
+		--color-menuBorder: var(--abt-contrast-line-2) !important;
+		--color-modalBorder: var(--abt-contrast-line-2) !important;
+		--color-tooltipBorder: var(--abt-contrast-line-2) !important;
+		--color-sidebarBorder: var(--abt-contrast-line-2) !important;
+		--abt-panel-border: var(--abt-contrast-line-2) !important;
+	}
+	.sidebar {
+		--sb-line: var(--abt-contrast-line-2) !important;
+	}
+}

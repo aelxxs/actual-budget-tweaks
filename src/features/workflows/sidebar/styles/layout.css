@@ -22,6 +22,8 @@
 	--sb-canvas: color-mix(in srgb, var(--abt-ink) 5%, var(--sb-bg));
 	--sb-surface: color-mix(in srgb, var(--abt-ink) 6%, var(--sb-bg));
 	--sb-surface-hover: color-mix(in srgb, var(--abt-ink) 10%, var(--sb-bg));
+	/* Edges and dividers; Theme Studio's Borders slider and the system's contrast setting raise it. */
+	--sb-line: var(--abt-ink-2);
 	--sb-success: var(--color-sidebarItemBackgroundPositive);
 	--sb-success-muted: color-mix(in srgb, var(--sb-success) 18%, transparent);
 	--sb-danger: var(--color-sidebarItemBackgroundFailed);
@@ -36,7 +38,7 @@
 	width: 340px;
 	height: 100vh;
 	background: var(--sb-bg);
-	border-right: 1px solid var(--abt-ink-2);
+	border-right: 1px solid var(--sb-line, var(--abt-ink-2));
 	/* explicit so the widget's row heights don't depend on the host page's
 		   inherited line-height */
 	line-height: 1.4 !important;
@@ -137,7 +139,7 @@
 	width: 4rem;
 	flex-shrink: 0;
 	height: 100%;
-	border-right: 1px solid var(--abt-ink-2);
+	border-right: 1px solid var(--sb-line, var(--abt-ink-2));
 	/* Darker than the accounts panel beside it, so the two read as separate. */
 	background-color: color-mix(in oklab, var(--sb-bg), black 10%);
 }

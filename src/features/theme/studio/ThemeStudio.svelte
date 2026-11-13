@@ -379,6 +379,18 @@
 						/>
 						<span class="aa crisp" title="Crisp">Aa</span>
 					</div>
+					<div class="contrast">
+						<span class="edge faint" title="Faint borders"></span>
+						<input
+							type="range"
+							min="0"
+							max="100"
+							value={Math.round((r.borders ?? 0) * 100)}
+							aria-label="Borders"
+							oninput={(e) => (studio.recipe.borders = Number(e.currentTarget.value) / 100)}
+						/>
+						<span class="edge firm" title="Firm borders"></span>
+					</div>
 					<!-- Only what needs attention: nothing to read while everything passes. -->
 					{#if !contrast.passes}
 						<ul class="checks">
@@ -785,6 +797,19 @@
 	}
 	.crisp {
 		color: var(--abt-ink);
+	}
+	/* The borders slider's ends: a box drawn faint, then firm. */
+	.edge {
+		box-sizing: border-box;
+		width: 22px;
+		height: 16px;
+		border-radius: var(--abt-radius-sm);
+	}
+	.edge.faint {
+		border: 1.5px solid var(--abt-ink-3);
+	}
+	.edge.firm {
+		border: 1.5px solid var(--abt-ink);
 	}
 	.ratio b {
 		color: var(--abt-ink);

@@ -1204,7 +1204,7 @@
 	.group-empty-hint {
 		margin: 2px 0 3px 14px;
 		padding: 8px 10px;
-		border: 1px dashed var(--abt-ink-2);
+		border: 1px dashed var(--sb-line, var(--abt-ink-2));
 		border-radius: var(--abt-radius);
 		font-size: var(--abt-text-base);
 		font-weight: 500;

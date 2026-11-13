@@ -1,4 +1,6 @@
+import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK, TOAST } from "@lib/actual-dom";
 import { getTheme, themes } from "@lib/design";
+import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 import { applyGlobalCSS } from "@lib/utilities/dom";
 import { watchElement } from "@lib/utilities/dom-watcher";
 import { editorState } from "./editor-state.svelte";
@@ -6,8 +8,6 @@ import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte
 import { STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
 import type { Mode } from "./studio/generator";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
-import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK, TOAST } from "@lib/actual-dom";
-import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 
 export type RemoteTheme = {
 	name: string;
@@ -21,6 +21,16 @@ export const NATIVE_THEME_KEY = "native";
 
 const originalRootProperties = new Map<string, { value: string; priority: string }>();
 
+/**
+ * Theme Studio's own border color: a palette without one falls back to surface0, so one left on
+ * the page by an earlier Studio theme is cleared first.
+ */
+function clearStudioLine(root: HTMLElement, keys: Record<string, string>) {
+	if (!("--ctp-line" in keys)) {
+		root.style.removeProperty("--ctp-line");
+	}
+}
+
 export function setRootProperty(root: HTMLElement, name: string, value: string) {
 	if (!originalRootProperties.has(name)) {
 		originalRootProperties.set(name, {
@@ -32,6 +42,9 @@ export function setRootProperty(root: HTMLElement, name: string, value: string) 
 }
 
 export const BUILTIN_CSS = `:root {
+	/* Theme Studio's borders: tables and controls take its border color in full; containers and
+	   dividers (menus, modals, panels) a step below. Without one, both are surface0. */
+	--abt-line-secondary: color-mix(in oklab, var(--ctp-line, var(--ctp-surface0)) 50%, var(--ctp-surface0));
 	/* Budget */
 	--color-budgetCurrentMonth: var(--ctp-mantle);
 	--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 30%);
@@ -54,7 +67,7 @@ export const BUILTIN_CSS = `:root {
 	/* Button – menu */
 	--color-buttonMenuBackground: transparent;
 	--color-buttonMenuBackgroundHover: rgba(205, 214, 244, 0.07);
-	--color-buttonMenuBorder: var(--ctp-surface0);
+	--color-buttonMenuBorder: var(--ctp-line, var(--ctp-surface0));
 	--color-buttonMenuSelectedBackground: var(--ctp-yellow);
 	--color-buttonMenuSelectedBackgroundHover: var(--ctp-peach);
 	--color-buttonMenuSelectedBorder: var(--ctp-yellow);
@@ -66,7 +79,7 @@ export const BUILTIN_CSS = `:root {
 	/* Button – normal */
 	--color-buttonNormalBackground: var(--ctp-mantle);
 	--color-buttonNormalBackgroundHover: var(--ctp-crust);
-	--color-buttonNormalBorder: var(--ctp-surface0);
+	--color-buttonNormalBorder: var(--ctp-line, var(--ctp-surface0));
 	--color-buttonNormalDisabledBackground: var(--ctp-surface0);
 	--color-buttonNormalDisabledBorder: var(--ctp-surface2);
 	--color-buttonNormalDisabledText: var(--ctp-overlay0);
@@ -127,7 +140,7 @@ export const BUILTIN_CSS = `:root {
 	--color-formInputBackground: var(--ctp-surface0);
 	--color-formInputBackgroundSelected: var(--ctp-surface1);
 	--color-formInputBackgroundSelection: var(--ctp-blue);
-	--color-formInputBorder: var(--ctp-surface0);
+	--color-formInputBorder: var(--ctp-line, var(--ctp-surface0));
 	--color-formInputBorderSelected: var(--ctp-blue);
 	--color-formInputShadowSelected: transparent;
 	--color-formInputText: var(--ctp-text);
@@ -157,7 +170,7 @@ export const BUILTIN_CSS = `:root {
 	--color-menuAutoCompleteTextHover: var(--ctp-blue);
 
 	--color-menuBackground: var(--ctp-mantle);
-	--color-menuBorder: var(--ctp-surface0);
+	--color-menuBorder: var(--abt-line-secondary);
 	--color-menuBorderHover: var(--ctp-blue);
 	--color-menuItemBackground: var(--ctp-surface0);
 	--color-menuItemBackgroundHover: var(--ctp-base);
@@ -183,7 +196,7 @@ export const BUILTIN_CSS = `:root {
 	--color-mobileViewTheme: var(--ctp-crust);
 
 	--color-modalBackground: var(--ctp-mantle);
-	--color-modalBorder: var(--ctp-surface0);
+	--color-modalBorder: var(--abt-line-secondary);
 
 	/* Notes */
 	--color-noteTagBackground: var(--ctp-mauve);
@@ -232,8 +245,8 @@ export const BUILTIN_CSS = `:root {
 	/* A tint, not solid mauve: Actual's rule stage buttons and multi-select chips paint this behind
 	   the page's own text without setting pillTextSelected. */
 	--color-pillBackgroundSelected: color-mix(in srgb, var(--ctp-mauve) 35%, transparent);
-	--color-pillBorder: var(--ctp-surface0);
-	--color-pillBorderDark: var(--ctp-surface0);
+	--color-pillBorder: var(--ctp-line, var(--ctp-surface0));
+	--color-pillBorderDark: var(--ctp-line, var(--ctp-surface0));
 	--color-pillBorderSelected: var(--ctp-lavender);
 	--color-pillText: var(--ctp-subtext1);
 	--color-pillTextHighlighted: var(--ctp-text);
@@ -264,7 +277,7 @@ export const BUILTIN_CSS = `:root {
 	/* Sidebar */
 	--color-sidebarBackground: var(--ctp-mantle);
 	--color-sidebarBackgroundFailedSubtle: color-mix(in srgb, var(--ctp-red) 16%, transparent);
-	--color-sidebarBorder: var(--ctp-surface0);
+	--color-sidebarBorder: var(--abt-line-secondary);
 	--color-sidebarBrand: var(--ctp-mauve);
 	--color-sidebarBudgetName: var(--ctp-text);
 	--color-sidebarControlBackground: var(--ctp-surface0);
@@ -285,7 +298,7 @@ export const BUILTIN_CSS = `:root {
 
 	/* Table */
 	--color-tableBackground: var(--ctp-mantle);
-	--color-tableBorder: var(--ctp-surface0);
+	--color-tableBorder: var(--ctp-line, var(--ctp-surface0));
 	--color-tableBorderHover: var(--ctp-mauve);
 	--color-tableBorderSelected: var(--ctp-mauve);
 	--color-tableBorderSeparator: var(--ctp-overlay0);
@@ -314,12 +327,12 @@ export const BUILTIN_CSS = `:root {
 
 	/* Tooltip */
 	--color-tooltipBackground: var(--ctp-mantle);
-	--color-tooltipBorder: var(--ctp-surface0);
+	--color-tooltipBorder: var(--abt-line-secondary);
 	--color-tooltipText: var(--ctp-text);
 
 	/* Upcoming */
 	--color-upcomingBackground: color-mix(in srgb, var(--ctp-mauve) 16%, var(--ctp-base));
-	--color-upcomingBorder: var(--ctp-surface0);
+	--color-upcomingBorder: var(--abt-line-secondary);
 	--color-upcomingText: var(--ctp-mauve);
 
 	/* Warning */
@@ -385,6 +398,7 @@ export function applyUserPaletteTheme(id: string, keys: Record<string, string>) 
 	if (!root) {
 		return;
 	}
+	clearStudioLine(root, keys);
 	for (const [varName, val] of Object.entries(keys)) {
 		setRootProperty(root, varName, val);
 	}
@@ -472,6 +486,7 @@ export function applyPalette(name: string) {
 	if (!root) {
 		return;
 	}
+	clearStudioLine(root, palette.keys);
 	for (const [varName, val] of Object.entries(palette.keys)) {
 		setRootProperty(root, varName, val);
 	}

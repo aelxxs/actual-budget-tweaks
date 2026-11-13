@@ -787,7 +787,7 @@
 		width: min(600px, calc(100vw - 48px));
 		max-height: min(440px, 68vh);
 		background: var(--sb-bg);
-		border: 1px solid var(--abt-ink-2) !important;
+		border: 1px solid var(--sb-line, var(--abt-ink-2)) !important;
 		border-radius: var(--abt-radius-lg);
 		box-shadow:
 			0 0 0 1px var(--sb-shadow-2),
