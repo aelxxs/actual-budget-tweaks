@@ -58,6 +58,11 @@ export function watchElement(selector: string, listener: Listener): () => void {
 	entry.listeners.add(listener);
 	elementObserver ??= new MutationObserver(() => runWatcher(scanElements));
 	elementObserver.observe(document.body, { childList: true, subtree: true });
+	// Already there counts as appearing: ABT can start on a page Actual has rendered (an address
+	// saved from the popup), where nothing would otherwise call it until the element changed.
+	if (entry.current) {
+		runWatcher(listener);
+	}
 	return () => {
 		entry!.listeners.delete(listener);
 		if (entry!.listeners.size === 0) {
