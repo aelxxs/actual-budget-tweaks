@@ -8,7 +8,7 @@ import { type Mounted, mountToNodeWithReturn } from "@lib/utilities/svelte";
 import { NATIVE_LOCK } from "./dom";
 import { closePanel, destroyPanel, openPanel, panelWasClosed } from "./panel";
 import ReconcileButton from "./ReconcileButton.svelte";
-import { cancel, collapseSidebar, reconcile } from "./state.svelte";
+import { cancel, reconcile } from "./state.svelte";
 
 /*
  * Replaces Actual's reconcile popover and banner with a side panel. Its lock button is found by
@@ -121,7 +121,6 @@ function sync() {
 	if (requested && mounted?.accountId === requested && mounted.node.isConnected) {
 		const accountId = requested;
 		requested = null;
-		collapseSidebar();
 		openPanel(accountId);
 	}
 }

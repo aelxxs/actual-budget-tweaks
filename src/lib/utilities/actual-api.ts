@@ -325,6 +325,11 @@ export function navigate(path: string | number, options?: Record<string, unknown
 	);
 }
 
+/** Has the open account view reload its transactions in place; false when there's none to reload. */
+export function refetchTransactions(): Promise<boolean> {
+	return request("abt:api:refetch-transactions", {});
+}
+
 /** Has Actual refetch the TanStack queries under `queryKey`, after a write it didn't make itself. */
 export function invalidateQueries(queryKey: string[]): void {
 	document.dispatchEvent(

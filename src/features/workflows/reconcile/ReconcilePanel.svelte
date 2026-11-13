@@ -5,12 +5,9 @@
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
-	import { confetti } from "@lib/utilities/confetti";
 	import { formatMoneyInput, fmtMoney, parseMoney } from "@lib/utilities/currency";
 	import { formatDayMonth, loadDatePrefs } from "@lib/utilities/date-format.svelte";
-	import { getValue } from "@lib/utilities/store";
 	import { onMount } from "svelte";
-	import { reconcileConfetti } from "./confetti";
 	import { closePanel } from "./panel";
 	import { reconciledOn } from "./relative-time";
 	import {
@@ -23,6 +20,7 @@
 		reconcile,
 		refreshTotals,
 		start,
+		undoFinish,
 	} from "./state.svelte";
 
 	const { accountId }: { accountId: string } = $props();
@@ -31,6 +29,7 @@
 	const RING_R = 20;
 	const RING_CIRC = 2 * Math.PI * RING_R;
 
+	const finished = $derived(reconcile.accountId === accountId ? reconcile.finished : null);
 	const started = $derived(reconcile.target != null && reconcile.accountId === accountId);
 	const diff = $derived((reconcile.target ?? 0) - reconcile.cleared);
 	const balanced = $derived(started && diff === 0);
@@ -90,19 +89,6 @@
 		}
 	}
 
-	async function done(e: MouseEvent) {
-		// Read first: finishing re-renders the panel without this button.
-		const origin = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		await finish();
-		if (reconcile.target == null) {
-			const { key, defaultValue } = reconcileConfetti.context;
-			if (await getValue(key, defaultValue)) {
-				confetti(origin);
-			}
-			closePanel();
-		}
-	}
-
 	function stop() {
 		cancel();
 		closePanel();
@@ -157,7 +143,33 @@
 
 <div class="rp">
 	<div class="rp__scroll">
-		{#if !started}
+		{#if finished}
+			<Section title="Done" collapsible={false}>
+				<div class="rp__hero is-balanced">
+					<div class="rp__ring rp__ring--done" aria-hidden="true">
+						<svg width="48" height="48" viewBox="0 0 48 48">
+							<circle
+								class="rp__ring-fill"
+								cx="24"
+								cy="24"
+								r={RING_R}
+								fill="none"
+								stroke-width="5"
+							/>
+						</svg>
+						<span class="rp__ring-label"><Icon name="checkCircle" size={18} /></span>
+					</div>
+					<div class="rp__hero-info">
+						<span class="rp__hero-label">Reconciled</span>
+						<span class="rp__hero-amount rp__hero-amount--done">Balanced</span>
+					</div>
+				</div>
+				<Callout tone="positive">
+					Locked {finished.locked}
+					{finished.locked === 1 ? "transaction" : "transactions"}.
+				</Callout>
+			</Section>
+		{:else if !started}
 			<Section title="Statement balance" collapsible={false}>
 				<form class="rp__start" onsubmit={begin}>
 					<input
@@ -371,7 +383,20 @@
 		{/if}
 	</div>
 
-	{#if started}
+	{#if finished}
+		<footer class="rp__footer">
+			<button
+				type="button"
+				class="abt-btn abt-btn--sm abt-btn--ghost"
+				disabled={reconcile.busy}
+				onclick={undoFinish}
+			>
+				<Icon name="rotateCcw" size={13} />
+				Undo
+			</button>
+			<button type="button" class="abt-btn abt-btn--sm rp__cancel" onclick={stop}>Close</button>
+		</footer>
+	{:else if started}
 		<footer class="rp__footer">
 			<button type="button" class="abt-btn abt-btn--sm abt-btn--ghost" onclick={goBack}>
 				<Icon name="pencil" size={13} />
@@ -385,7 +410,7 @@
 				class="abt-btn abt-btn--sm abt-tone-accent"
 				disabled={!balanced || reconcile.busy}
 				title={balanced ? undefined : "Finish once the difference is zero"}
-				onclick={done}
+				onclick={finish}
 			>
 				<Icon name="lock" size={13} />
 				Finish reconciling
@@ -505,6 +530,40 @@
 	@media (prefers-reduced-motion: reduce) {
 		.rp__ring-fill {
 			transition: none;
+		}
+	}
+
+	/* Finished: the ring closes and the check pops in. */
+	.rp__ring--done .rp__ring-fill {
+		stroke-dasharray: 126;
+		animation: rp-close 0.4s ease-out;
+	}
+
+	.rp__ring--done .rp__ring-label {
+		animation: rp-pop 0.35s ease-out 0.25s backwards;
+	}
+
+	@keyframes rp-close {
+		from {
+			stroke-dashoffset: 126;
+		}
+	}
+
+	@keyframes rp-pop {
+		from {
+			transform: scale(0.6);
+			opacity: 0;
+		}
+		60% {
+			transform: scale(1.15);
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rp__ring--done .rp__ring-fill,
+		.rp__ring--done .rp__ring-label {
+			animation: none;
 		}
 	}
 

@@ -3,7 +3,7 @@
 	import { calculate, send } from "@lib/utilities/actual-api";
 	import { openPanel } from "./panel";
 	import { compactAge, reconciledOn } from "./relative-time";
-	import { collapseSidebar, reconcile } from "./state.svelte";
+	import { reconcile } from "./state.svelte";
 
 	const { accountId }: { accountId: string } = $props();
 
@@ -59,7 +59,6 @@
 	class:is-overdue={overdue && !active}
 	{title}
 	onclick={() => {
-		collapseSidebar();
 		openPanel(accountId);
 	}}
 >

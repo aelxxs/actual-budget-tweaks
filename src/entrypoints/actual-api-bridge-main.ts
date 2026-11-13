@@ -275,6 +275,33 @@ export default defineUnlistedScript(async () => {
 		});
 	}
 
+	// Actual's account view only reloads its table after its own edits; this has it reload after ours.
+	// Answers false when the view isn't found, so the caller can fall back.
+	document.addEventListener("abt:api:refetch-transactions", (e) => {
+		const { id } = parseDetail(e);
+		if (!id || !accept(id)) {
+			return;
+		}
+		const table = document.querySelector(TRANSACTION_TABLE);
+		const view = table
+			? closestFiber(
+					table,
+					(f) =>
+						typeof (f.stateNode as { refetchTransactions?: unknown })?.refetchTransactions ===
+						"function",
+					150,
+				)?.stateNode
+			: null;
+		if (!view) {
+			respond(id, false, null);
+			return;
+		}
+		Promise.resolve(view.refetchTransactions()).then(
+			() => respond(id, true, null),
+			(err) => respond(id, null, String(err)),
+		);
+	});
+
 	// Marks the transaction rows Actual shows as new from a sync or import. That's its rows'
 	// `added` prop, which lives in React, out of content scripts' reach; its styling is a generated class.
 	document.addEventListener("abt:api:mark-new-rows", () => {

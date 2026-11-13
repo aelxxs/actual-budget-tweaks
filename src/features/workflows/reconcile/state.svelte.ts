@@ -1,5 +1,11 @@
-import { collapseLiveSidebar } from "@features/workflows/sidebar/lib/collapse";
-import { calculate, navigate, notify, query, send } from "@lib/utilities/actual-api";
+import {
+	calculate,
+	navigate,
+	notify,
+	query,
+	refetchTransactions,
+	send,
+} from "@lib/utilities/actual-api";
 import { whenLock } from "./dom";
 import { isPanelShowing, openPanel } from "./panel";
 
@@ -32,15 +38,20 @@ export const reconcile = $state({
 	/** Uncleared transactions, newest first; split parents stand for their children. */
 	unclearedRows: [] as UnclearedRow[],
 	busy: false,
+	/** Just finished: what was locked, and how to undo it. */
+	finished: null as { locked: number; steps: number; target: number } | null,
 	/** While the account view is being re-entered to show our changes. */
 	refreshing: false,
 });
 
 /**
  * Actual's account view only refetches after its own edits or a remote sync, so changes made here
- * don't show in the table. Leaving and coming back to the route makes it refetch.
+ * don't show in the table. It's asked to reload in place; failing that, leaving and coming back does it.
  */
 async function refreshAccountView(): Promise<void> {
+	if (await refetchTransactions().catch(() => false)) {
+		return;
+	}
 	const panelWasShowing = isPanelShowing();
 	reconcile.refreshing = true;
 	try {
@@ -52,7 +63,8 @@ async function refreshAccountView(): Promise<void> {
 	} finally {
 		reconcile.refreshing = false;
 		// The page change can take the panel with it; put back only what it took.
-		if (panelWasShowing && reconcile.target != null && reconcile.accountId && !isPanelShowing()) {
+		const inUse = reconcile.target != null || reconcile.finished != null;
+		if (panelWasShowing && inUse && reconcile.accountId && !isPanelShowing()) {
 			openPanel(reconcile.accountId);
 		}
 	}
@@ -66,6 +78,7 @@ export async function loadAccount(id: string): Promise<void> {
 	}
 	if (reconcile.accountId !== id) {
 		reconcile.target = null;
+		reconcile.finished = null;
 	}
 	reconcile.accountId = id;
 	reconcile.accountName = row.name;
@@ -118,21 +131,8 @@ export async function clearTransaction(id: string): Promise<void> {
 	await refreshTotals();
 }
 
-/** Resolves to how to put the sidebar back once reconciling ends; null when there's nothing to undo. */
-let sidebarRestore: Promise<(() => void) | null> | null = null;
-
-/** Room for the table beside the panel; put back when reconciling ends or the panel closes. */
-export function collapseSidebar(): void {
-	sidebarRestore ??= collapseLiveSidebar();
-}
-
-function restoreSidebar(): void {
-	const pending = sidebarRestore;
-	sidebarRestore = null;
-	void pending?.then((restore) => restore?.());
-}
-
 export function start(target: number): void {
+	reconcile.finished = null;
 	reconcile.target = target;
 	void refreshTotals();
 }
@@ -144,7 +144,7 @@ export function back(): void {
 
 export function cancel(): void {
 	reconcile.target = null;
-	restoreSidebar();
+	reconcile.finished = null;
 }
 
 /** Adds the transaction that closes the gap, cleared and run through rules, as Actual does. */
@@ -211,23 +211,34 @@ export async function finish(): Promise<void> {
 			last_reconciled: lastReconciled,
 		});
 		reconcile.lastReconciled = lastReconciled;
+		reconcile.finished = { locked: rows.length, steps, target: reconcile.target };
 		reconcile.target = null;
-		restoreSidebar();
 		await refreshAccountView();
-		const locked = rows.length === 1 ? "1 transaction" : `${rows.length} transactions`;
-		void notify(
-			{ message: `Reconciled ${reconcile.accountName}, locked ${locked}`, timeout: 12000 },
-			{
-				title: "Undo",
-				action: async () => {
-					for (let i = 0; i < steps; i++) {
-						await send("undo");
-					}
-				},
-			},
-		);
 	} catch (err) {
 		void notify({ type: "error", message: "Couldn't finish reconciling", pre: String(err) });
+	} finally {
+		reconcile.busy = false;
+	}
+}
+
+/** Unlocks what finishing locked and goes back to reconciling against the same balance. */
+export async function undoFinish(): Promise<void> {
+	const done = reconcile.finished;
+	const account = reconcile.accountId;
+	if (!done || !account || reconcile.busy) {
+		return;
+	}
+	reconcile.busy = true;
+	try {
+		for (let i = 0; i < done.steps; i++) {
+			await send("undo");
+		}
+		reconcile.finished = null;
+		reconcile.target = done.target;
+		// Undo reloads Actual's table itself.
+		await loadAccount(account);
+	} catch (err) {
+		void notify({ type: "error", message: "Couldn't undo the reconcile", pre: String(err) });
 	} finally {
 		reconcile.busy = false;
 	}

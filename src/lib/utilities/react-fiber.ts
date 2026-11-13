@@ -8,6 +8,8 @@ type Props = Record<string, unknown>;
 interface Fiber {
 	key: string | null;
 	memoizedProps: Props | null;
+	/** A class component's instance, or the DOM node for a host fiber. */
+	stateNode: unknown;
 	alternate: Fiber | null;
 	return: Fiber | null;
 	child: Fiber | null;
