@@ -38,6 +38,8 @@ export interface BaseSetting<C extends SettingContext> {
 	guide?: string;
 	/** What this tweak can change in the budget, and on which action. Marks it in settings and on the website. */
 	writes?: string;
+	/** A trial feature: marked Experimental in settings and on the website. */
+	experimental?: boolean;
 	context: C;
 	/** Static/derived CSS applied by the runtime on activate and cleared on deactivate. */
 	css?: (ctx: C & { value: unknown }) => string;

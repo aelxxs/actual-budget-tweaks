@@ -160,6 +160,7 @@ function extractSettingMeta(filePath, name) {
 		icon: stringLiteralValue(findProperty(found, "icon")) ?? null,
 		group: stringLiteralValue(findProperty(found, "group")) ?? null,
 		writes: stringLiteralValue(findProperty(found, "writes")) ?? null,
+		experimental: literalValue(findProperty(found, "experimental")) === true,
 	};
 }
 

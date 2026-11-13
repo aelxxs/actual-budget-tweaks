@@ -839,6 +839,9 @@
 	<header class="gv__head">
 		<div class="gv__left">
 			<h2 class="gv__title">Graph</h2>
+			<span class="gv__trial" title="Still a trial: it may change or be removed in a later release."
+				>Experimental</span
+			>
 			<span class="gv__sep" aria-hidden="true"></span>
 			<div class="gv__search">
 				<span class="gv__search-icon" aria-hidden="true"><Icon name="search" size={14} /></span>
@@ -1198,6 +1201,16 @@
 		margin: 0;
 		font-size: 20px; /* raw: matches Calendar's month title */
 		font-weight: 600;
+	}
+
+	.gv__trial {
+		padding: 1px var(--abt-space-3);
+		border-radius: var(--abt-radius-pill);
+		background: var(--color-warningBackground);
+		color: var(--color-warningText);
+		font-size: var(--abt-text-xs);
+		font-weight: 600;
+		cursor: help;
 	}
 
 	.gv__sep {

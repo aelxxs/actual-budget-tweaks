@@ -649,6 +649,22 @@ select.abt-select-arrow {
 	color: var(--color-pageTextSubdued);
 }
 
+/* A trial feature's mark, louder than the writes mark so it isn't missed. */
+.abt-setting__experimental {
+	display: inline-flex;
+	align-items: center;
+	margin-left: var(--abt-space-3);
+	padding: 1px var(--abt-space-3);
+	border-radius: var(--abt-radius-pill);
+	background: var(--color-warningBackground);
+	color: var(--color-warningText);
+	font-size: var(--abt-text-xs);
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+	cursor: help;
+}
+
 /* Beside the label of a setting that can change the budget. */
 .abt-setting__writes {
 	display: inline-flex;

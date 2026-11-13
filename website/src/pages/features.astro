@@ -8,6 +8,7 @@ interface FeatureItem {
 	icon: string | null;
 	group: string | null;
 	writes: string | null;
+	experimental?: boolean;
 }
 
 interface FeatureSection {
@@ -85,6 +86,14 @@ function groupItems(items: FeatureItem[]): { label: string | null; items: Featur
 										<li class="settings-list__item">
 											<span class="settings-list__label">
 												{item.label}
+												{item.experimental && (
+													<span
+														class="experimental-mark"
+														title="Still a trial: it may change or be removed in a later release."
+													>
+														Experimental
+													</span>
+												)}
 												{item.writes && (
 													<span class="writes-mark" title={item.writes}>✎ Edits budget</span>
 												)}
@@ -239,6 +248,18 @@ function groupItems(items: FeatureItem[]): { label: string | null; items: Featur
 		font-weight: 500;
 		vertical-align: 0.1em;
 		white-space: nowrap;
+		cursor: help;
+	}
+
+	.experimental-mark {
+		display: inline-block;
+		margin-inline-start: 0.4em;
+		padding: 0.05em 0.55em;
+		border-radius: 999px;
+		background: color-mix(in srgb, #f59e0b 18%, transparent);
+		color: #d97706;
+		font-size: 0.72rem;
+		font-weight: 600;
 		cursor: help;
 	}
 

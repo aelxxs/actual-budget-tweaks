@@ -12,7 +12,8 @@
 				"description": "Shows the month's summary, templates and plan in a side panel.",
 				"icon": "panelRight",
 				"group": null,
-				"writes": "Applies the month's budget templates when you click Apply."
+				"writes": "Applies the month's budget templates when you click Apply.",
+				"experimental": false
 			},
 			{
 				"key": "spending-calendar-enabled",
@@ -23,7 +24,8 @@
 				"description": "A page showing daily spending on a calendar, opened from the sidebar.",
 				"icon": "calendar",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "modern-reconcile",
@@ -34,7 +36,8 @@
 				"description": "Reconciles in a side panel that tracks the difference as you clear transactions.",
 				"icon": "shield",
 				"group": null,
-				"writes": "Clears transactions you tick, adds an adjustment if you ask, and locks them when you finish."
+				"writes": "Clears transactions you tick, adds an adjustment if you ask, and locks them when you finish.",
+				"experimental": false
 			},
 			{
 				"key": "sync-recap",
@@ -45,7 +48,8 @@
 				"description": "Lists what each bank sync or import added, for you to review.",
 				"icon": "download",
 				"group": null,
-				"writes": "Sets a transaction's category when you pick one in the recap."
+				"writes": "Sets a transaction's category when you pick one in the recap.",
+				"experimental": false
 			},
 			{
 				"key": "transaction-inspector",
@@ -56,7 +60,8 @@
 				"description": "Shows the selected transaction's payee history, rules and schedule in a side panel.",
 				"icon": "eye",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "income-breakdown",
@@ -67,7 +72,8 @@
 				"description": "Adds an income breakdown chart to the reports' widget menu.",
 				"icon": "trendingUp",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "graph-view",
@@ -75,10 +81,11 @@
 				"defaultValue": false,
 				"platform": "desktop",
 				"label": "Graph view",
-				"description": "Experimental: a page showing how your accounts, payees and categories connect. May change or be removed.",
+				"description": "A page showing how your accounts, payees and categories connect, opened from the sidebar.",
 				"icon": "network",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": true
 			}
 		]
 	},
@@ -95,7 +102,8 @@
 				"description": "Sets how round cards and buttons are.",
 				"icon": null,
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "background-pattern",
@@ -106,7 +114,8 @@
 				"description": "Adds a pattern behind the page.",
 				"icon": null,
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "inset-panels",
@@ -117,7 +126,8 @@
 				"description": "Shows the sidebar and page as rounded panels on a frame.",
 				"icon": "panelsTopLeft",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "borders",
@@ -128,7 +138,8 @@
 				"description": "Adds borders under the top bar and around the budget and report cards.",
 				"icon": "square",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},
@@ -145,7 +156,8 @@
 				"description": "Restyles the top bar and adds a theme menu.",
 				"icon": "panelTop",
 				"group": "Components",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "budget-month-header",
@@ -156,7 +168,8 @@
 				"description": "Restyles the Budget and Reports page headers.",
 				"icon": "heading",
 				"group": "Components",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "budget-category-filter",
@@ -167,7 +180,8 @@
 				"description": "Filters the budget to categories that need attention or are on track.",
 				"icon": "filter",
 				"group": "Components",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "modern-account-toolbar",
@@ -178,7 +192,8 @@
 				"description": "Restyles the account page's buttons and search.",
 				"icon": "rectangleEllipsis",
 				"group": "Components",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "modern-toasts",
@@ -189,7 +204,8 @@
 				"description": "Restyles notifications as compact cards.",
 				"icon": "messageSquare",
 				"group": "Components",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "color-amounts",
@@ -200,7 +216,8 @@
 				"description": "Colors amounts by sign in transactions, balances and budget groups.",
 				"icon": "circleDollarSign",
 				"group": "Amounts",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "privacy-style",
@@ -211,7 +228,8 @@
 				"description": "How amounts look while privacy mode hides them.",
 				"icon": "eyeOff",
 				"group": "Amounts",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},
@@ -228,7 +246,8 @@
 				"description": "Replaces Actual's sidebar with one that has live balances, account groups and shortcuts.",
 				"icon": null,
 				"group": null,
-				"writes": "Renames an account, runs its bank sync, or edits account groups when you do so from the sidebar."
+				"writes": "Renames an account, runs its bank sync, or edits account groups when you do so from the sidebar.",
+				"experimental": false
 			},
 			{
 				"key": "customize-sidebar-entry",
@@ -239,7 +258,8 @@
 				"description": "Opens the sidebar's layout, density, search and shortcut settings.",
 				"icon": "sliders",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},
@@ -256,7 +276,8 @@
 				"description": "A standard sidebar, or an icon bar with a separate accounts panel.",
 				"icon": null,
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "actual-sidebar-account-spacing",
@@ -267,7 +288,8 @@
 				"description": "Sets the spacing in the live sidebar.",
 				"icon": null,
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "sidebar-search-enabled",
@@ -278,7 +300,8 @@
 				"description": "Filters accounts, categories and pages.",
 				"icon": "search",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "sidebar-shortcuts-enabled",
@@ -289,7 +312,8 @@
 				"description": "Pins links and tools to the sidebar.",
 				"icon": "star",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "account-icon-picker",
@@ -300,7 +324,8 @@
 				"description": "Adds an emoji or website icon to each account.",
 				"icon": "image",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "sidebar-group-totals",
@@ -311,7 +336,8 @@
 				"description": "Shows each group's combined balance beside its name.",
 				"icon": "sigma",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "sidebar-show-closed",
@@ -322,7 +348,8 @@
 				"description": "Lists closed accounts in their own section at the bottom.",
 				"icon": "archive",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},
@@ -339,7 +366,8 @@
 				"description": "Sets how tall each budget row is.",
 				"icon": null,
 				"group": "Layout",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "budget-summary-row",
@@ -350,7 +378,8 @@
 				"description": "The cards above your budget.",
 				"icon": "layoutDashboard",
 				"group": "Layout",
-				"writes": "Full runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget."
+				"writes": "Full runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget.",
+				"experimental": false
 			},
 			{
 				"key": "category-progress-indicators",
@@ -361,7 +390,8 @@
 				"description": "Adds a progress ring beside each balance. Hover it for spending details.",
 				"icon": "progressRing",
 				"group": "Readability",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "balance-status-pills",
@@ -372,7 +402,8 @@
 				"description": "Adds an icon to each balance's status, so it doesn't rely on color alone.",
 				"icon": "checkCircle",
 				"group": "Readability",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "actual-category-template-insights",
@@ -383,7 +414,8 @@
 				"description": "Shows how funded each category's template is.",
 				"icon": "interest",
 				"group": "Readability",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "group-overspent",
@@ -394,7 +426,8 @@
 				"description": "Shows how many categories are overspent beside each group's name.",
 				"icon": "badgeAlert",
 				"group": "Readability",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "category-color-dots",
@@ -405,7 +438,8 @@
 				"description": "Gives each category a colored dot in the budget and transactions.",
 				"icon": "palette",
 				"group": "Categories",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "category-emoji-picker",
@@ -416,7 +450,8 @@
 				"description": "Adds an emoji or image to each category.",
 				"icon": "faceGrinning",
 				"group": "Categories",
-				"writes": "Adds the emoji you pick to the category's name."
+				"writes": "Adds the emoji you pick to the category's name.",
+				"experimental": false
 			},
 			{
 				"key": "quiet-category-icons",
@@ -427,7 +462,8 @@
 				"description": "Hides the template and notes icons until you hover. Notes icons stay where there are notes.",
 				"icon": "note",
 				"group": "Categories",
-				"writes": null
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},
@@ -444,7 +480,8 @@
 				"description": "Shades every other row in the transaction table.",
 				"icon": "rows",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "row-status",
@@ -455,7 +492,8 @@
 				"description": "Marks new, uncategorized and reconciled transactions.",
 				"icon": "flag",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "tag-styling",
@@ -466,7 +504,8 @@
 				"description": "Shows #tags as colored pills.",
 				"icon": "hash",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "resizable-transaction-columns",
@@ -477,7 +516,8 @@
 				"description": "Drag a column's edge in the transaction table to resize it.",
 				"icon": "columns3",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "actual-daily",
@@ -488,7 +528,8 @@
 				"description": "Shows how much an account can spend per day for the rest of the month.",
 				"icon": "calculator",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},
@@ -505,7 +546,8 @@
 				"description": "Gives page headers a native look.",
 				"icon": "appWindow",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-tab-bar",
@@ -516,7 +558,8 @@
 				"description": "Replaces the slide-up menu with a tab bar, and puts the other pages under More.",
 				"icon": "smartphone",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-cards",
@@ -527,7 +570,8 @@
 				"description": "Shows budget groups, accounts and reports as rounded cards or flush sections.",
 				"icon": "layers",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-accounts",
@@ -538,7 +582,8 @@
 				"description": "Lists accounts in your sidebar groups, with their icons and group totals.",
 				"icon": "wallet",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-budget-banners",
@@ -549,7 +594,8 @@
 				"description": "Restyles the overspent and uncategorized banners as cards.",
 				"icon": "alert",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-modal-sheets",
@@ -560,7 +606,8 @@
 				"description": "Opens pop-ups as sheets from the bottom that you swipe down to close.",
 				"icon": "panelBottom",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-transaction-list",
@@ -571,7 +618,8 @@
 				"description": "Shows transactions as a native list with date headings.",
 				"icon": "list",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-toasts",
@@ -582,7 +630,8 @@
 				"description": "Shows notifications as snackbars above the tab bar.",
 				"icon": "bell",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			},
 			{
 				"key": "mobile-page-transitions",
@@ -593,7 +642,8 @@
 				"description": "How each page appears as you move between them.",
 				"icon": "sparkles",
 				"group": null,
-				"writes": null
+				"writes": null,
+				"experimental": false
 			}
 		]
 	}

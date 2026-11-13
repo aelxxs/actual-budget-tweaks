@@ -14,8 +14,9 @@ export const graphView = defineSetting({
 	type: "checkbox",
 	label: "Graph view",
 	description:
-		"Experimental: a page showing how your accounts, payees and categories connect. May change or be removed.",
+		"A page showing how your accounts, payees and categories connect, opened from the sidebar.",
 	icon: "network",
+	experimental: true,
 	context: {
 		key: "graph-view",
 		defaultValue: false,
