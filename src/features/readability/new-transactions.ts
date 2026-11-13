@@ -1,4 +1,3 @@
-import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { Page, matchesPage } from "@lib/utilities/pages";
 import { byTestId } from "@lib/actual-dom";
@@ -15,32 +14,22 @@ function markRows(): void {
 	}
 }
 
-export const newTransactionStyle = defineSetting({
-	type: "checkbox",
-	label: "Quiet New Transactions",
-	description: "Mark newly imported transactions with an accent bar instead of bold colored text.",
-	group: "Transactions",
-	icon: "sparkles",
-	context: {
-		key: "new-transaction-style",
-		defaultValue: true,
-	},
-	css: () => `
-		[${NEW_ATTR}] :is(${VALUE_CELLS}) {
-			font-weight: inherit !important;
-			color: inherit !important;
-		}
-		[${NEW_ATTR}] {
-			box-shadow: inset 3px 0 0 var(--abt-accent);
-		}
-	`,
-	init: () => {
-		const unwatch = watchDom(markRows);
-		document.addEventListener("abt:api:new-rows-changed", markRows);
-		return () => {
-			unwatch();
-			document.removeEventListener("abt:api:new-rows-changed", markRows);
-			document.querySelectorAll(`[${NEW_ATTR}]`).forEach((el) => el.removeAttribute(NEW_ATTR));
-		};
-	},
-});
+export const NEW_TRANSACTION_CSS = `
+	[${NEW_ATTR}] :is(${VALUE_CELLS}) {
+		font-weight: inherit !important;
+		color: inherit !important;
+	}
+	[${NEW_ATTR}] {
+		box-shadow: inset 3px 0 0 var(--abt-accent);
+	}
+`;
+
+export function startNewTransactions(): () => void {
+	const unwatch = watchDom(markRows);
+	document.addEventListener("abt:api:new-rows-changed", markRows);
+	return () => {
+		unwatch();
+		document.removeEventListener("abt:api:new-rows-changed", markRows);
+		document.querySelectorAll(`[${NEW_ATTR}]`).forEach((el) => el.removeAttribute(NEW_ATTR));
+	};
+}

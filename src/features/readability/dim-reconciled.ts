@@ -1,6 +1,4 @@
-import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/utilities/dom-watcher";
-import DimReconciledPreview from "./previews/DimReconciled.svelte";
 import { CLEARED_CELL, ROW, byTestId } from "@lib/actual-dom";
 
 // Marked in JS: as `row:has(<lock>)`, every test id Actual rewrote anywhere restyled the page.
@@ -29,29 +27,18 @@ function markRows() {
 	}
 }
 
-export const dimReconciled = defineSetting({
-	type: "checkbox",
-	label: "Dim Reconciled Transactions",
-	description: "Fade reconciled rows in the transaction table.",
-	group: "Transactions",
-	icon: "eyeOff",
-	preview: DimReconciledPreview,
-	context: {
-		key: "dim-reconciled",
-		defaultValue: true,
-	},
-	css: () => `
-		${DIMMED_CELLS} {
-			opacity: 0.45;
+export const DIM_RECONCILED_CSS = `
+	${DIMMED_CELLS} {
+		opacity: 0.45;
+	}
+`;
+
+export function startDimReconciled(): () => void {
+	const unwatch = watchDom(markRows);
+	return () => {
+		unwatch();
+		for (const row of document.querySelectorAll(`[${RECONCILED_ATTR}]`)) {
+			row.removeAttribute(RECONCILED_ATTR);
 		}
-	`,
-	init: () => {
-		const unwatch = watchDom(markRows);
-		return () => {
-			unwatch();
-			for (const row of document.querySelectorAll(`[${RECONCILED_ATTR}]`)) {
-				row.removeAttribute(RECONCILED_ATTR);
-			}
-		};
-	},
-});
+	};
+}

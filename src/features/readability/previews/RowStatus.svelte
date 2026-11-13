@@ -5,6 +5,6 @@
 
 <PreviewPair>
 	{#snippet sample(on)}
-		<MockTransactions dim={on} />
+		<MockTransactions dim={on} highlight={on} />
 	{/snippet}
 </PreviewPair>

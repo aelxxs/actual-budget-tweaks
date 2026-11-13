@@ -39,10 +39,8 @@ import { balancePills } from "./readability/balance-pills";
 import { categoryProgress } from "./readability/category-progress";
 import { colorNegativeBalances } from "./readability/color-negative-balances";
 import { colorTransactions } from "./readability/color-transactions";
-import { dimReconciled } from "./readability/dim-reconciled";
 import { groupOverspent } from "./readability/group-overspent";
-import { highlightUncategorized } from "./readability/highlight-uncategorized";
-import { newTransactionStyle } from "./readability/new-transactions";
+import { rowStatus } from "./readability/row-status";
 import { quietCategoryIcons } from "./readability/quiet-category-icons";
 import { showDailyAvailable } from "./readability/show-daily-available";
 import { tagStyling } from "./readability/tag-styling";
@@ -55,7 +53,6 @@ import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { incomeBreakdown } from "./workflows/income-breakdown";
 import { modernReconcile } from "./workflows/reconcile";
-import { reconcileConfetti } from "./workflows/reconcile/confetti";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
@@ -103,7 +100,13 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: "Components",
-				items: [modernTitlebar, modernHeaders, budgetCategoryFilter, modernToasts],
+				items: [
+					modernTitlebar,
+					modernHeaders,
+					budgetCategoryFilter,
+					modernAccountToolbar,
+					modernToasts,
+				],
 			},
 		],
 	},
@@ -160,23 +163,14 @@ export const scriptSections: SettingsSection[] = [
 				items: [
 					alternatingTransactionRows,
 					colorTransactions,
-					dimReconciled,
-					highlightUncategorized,
-					newTransactionStyle,
+					rowStatus,
 					tagStyling,
 					resizableTransactionColumns,
 				],
 			},
 			{
 				label: "Accounts",
-				items: [
-					modernAccountToolbar,
-					showDailyAvailable,
-					modernReconcile,
-					reconcileConfetti,
-					syncRecap,
-					transactionInspector,
-				],
+				items: [showDailyAvailable, modernReconcile, syncRecap, transactionInspector],
 			},
 		],
 	},
@@ -220,7 +214,6 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[sidebarGroupTotals, experimentalSidebar],
 	[sidebarClosedAccounts, experimentalSidebar],
 	[accountIconPicker, experimentalSidebar],
-	[reconcileConfetti, modernReconcile],
 	[budgetCategoryFilter, modernHeaders],
 ]);
 

@@ -1,9 +1,7 @@
-import { defineSetting } from "@features/types";
-import HighlightUncategorizedPreview from "./previews/HighlightUncategorized.svelte";
 import { watchDom } from "@lib/utilities/dom-watcher";
 import { CATEGORY_CELL, ROW } from "@lib/actual-dom";
 
-const CSS = `
+export const UNCATEGORIZED_CSS = `
 	${ROW}.abt-uncategorized {
 		background: color-mix(in srgb, var(--color-warningText) 12%, transparent) !important;
 	}
@@ -28,24 +26,10 @@ function cleanup() {
 	}
 }
 
-export const highlightUncategorized = defineSetting({
-	type: "checkbox",
-	label: "Highlight Uncategorized Transactions",
-	description: "Flag transactions that are missing a category.",
-	group: "Transactions",
-	icon: "star",
-	preview: HighlightUncategorizedPreview,
-	context: {
-		key: "highlight-uncategorized",
-		defaultValue: true,
-	},
-	css: () => CSS,
-	init: () => {
-		const unwatch = watchDom(markRows);
-
-		return () => {
-			unwatch();
-			cleanup();
-		};
-	},
-});
+export function startHighlightUncategorized(): () => void {
+	const unwatch = watchDom(markRows);
+	return () => {
+		unwatch();
+		cleanup();
+	};
+}
