@@ -1,3 +1,4 @@
+import type { BaseFilters } from "@features/workflows/filters/types";
 import { typicalInterval } from "@features/workflows/transaction-inspector/data";
 import { query } from "@lib/utilities/actual-api";
 
@@ -351,9 +352,26 @@ const TX_FIELDS = [
  * time. Off-budget accounts can't carry categories, so they'd only pile onto Uncategorized, but
  * their transfers stay to show where money left the budget for.
  */
-export async function loadGraphData(days: number): Promise<GraphData> {
+export interface FilterLists {
+	accounts: { id: string; name: string; offbudget: boolean; closed: boolean }[];
+	categories: { id: string; name: string; group: string }[];
+	categoryGroups: { id: string; name: string }[];
+}
+
+/** A range as loaded, before the filters narrow it. */
+export interface RawGraphData {
+	rows: TxRow[];
+	/** The year before the range, for each payee's usual charge. */
+	before: TxRow[];
+	transfers: (TxRow & { to: string })[];
+	names: Map<string, string>;
+	offBudget: Set<string>;
+	lists: FilterLists;
+}
+
+export async function loadGraphData(days: number): Promise<RawGraphData> {
 	const inRange = days > 0 ? [{ date: { $gte: isoDaysAgo(days) } }] : [];
-	const [all, sent, accounts, payees, categories, before] = await Promise.all([
+	const [all, sent, accounts, payees, categories, categoryGroups, before] = await Promise.all([
 		query<TxRow[]>("transactions", {
 			filter: { $and: [...inRange, { transfer_id: null }] },
 			select: TX_FIELDS,
@@ -365,13 +383,14 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 			select: TX_FIELDS,
 			options: { splits: "inline" },
 		}),
-		query<{ id: string; name: string; offbudget: boolean }[]>("accounts", {
-			select: ["id", "name", "offbudget"],
+		query<FilterLists["accounts"]>("accounts", {
+			select: ["id", "name", "offbudget", "closed"],
 		}),
 		query<{ id: string; name: string; transfer_acct: string | null }[]>("payees", {
 			select: ["id", "name", "transfer_acct"],
 		}),
-		query<{ id: string; name: string }[]>("categories", { select: ["id", "name"] }),
+		query<FilterLists["categories"]>("categories", { select: ["id", "name", "group"] }),
+		query<FilterLists["categoryGroups"]>("category_groups", { select: ["id", "name"] }),
 		// The year before the range, for each payee's usual charge; all time already has it.
 		days > 0
 			? query<TxRow[]>("transactions", {
@@ -382,7 +401,7 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 							{ transfer_id: null },
 						],
 					},
-					select: ["id", "date", "account", "payee", "amount"],
+					select: ["id", "date", "account", "payee", "category", "amount"],
 					options: { splits: "inline" },
 				})
 			: Promise.resolve([] as TxRow[]),
@@ -402,12 +421,40 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 			names.set(p.id, names.get(p.transfer_acct) ?? "Transfer");
 		}
 	}
-	const onBudget = new Set(accounts.filter((a) => !a.offbudget).map((a) => a.id));
-	const rows = all.filter((r) => r.account && onBudget.has(r.account));
-	const transfers = sent.flatMap((r) => {
-		const to = r.payee ? transferTo.get(r.payee) : undefined;
-		return r.account && accountIds.has(r.account) && to && to !== r.account ? [{ ...r, to }] : [];
-	});
+	const offBudget = new Set(accounts.filter((a) => a.offbudget).map((a) => a.id));
+	const onBudget = (r: TxRow) =>
+		!!r.account && accountIds.has(r.account) && !offBudget.has(r.account);
+	return {
+		rows: all.filter(onBudget),
+		before: before.filter(onBudget),
+		transfers: sent.flatMap((r) => {
+			const to = r.payee ? transferTo.get(r.payee) : undefined;
+			return r.account && accountIds.has(r.account) && to && to !== r.account ? [{ ...r, to }] : [];
+		}),
+		names,
+		offBudget,
+		lists: { accounts, categories, categoryGroups },
+	};
+}
+
+export type GraphFilters = BaseFilters;
+
+/**
+ * The range narrowed by the filters, with every highlight worked out from what's left. Transfers
+ * aren't spending or income, so the flow leaves them be.
+ */
+export function filterGraphData(raw: RawGraphData, f: GraphFilters): GraphData {
+	const hiddenAccounts = new Set(f.hiddenAccounts);
+	const hiddenCategories = new Set(f.hiddenCategories);
+	const keep = (r: TxRow) =>
+		!hiddenAccounts.has(r.account!) &&
+		!hiddenCategories.has(categoryOf(r)) &&
+		(f.flow === "all" || (f.flow === "spending" ? r.amount < 0 : r.amount > 0));
+	const rows = raw.rows.filter(keep);
+	const shown = (id: string) =>
+		!hiddenAccounts.has(id) && !(f.hideOffBudget && raw.offBudget.has(id));
+	const transfers = raw.transfers.filter((t) => shown(t.account!) && shown(t.to));
+	const names = raw.names;
 	return {
 		rows,
 		names,
@@ -419,10 +466,7 @@ export async function loadGraphData(days: number): Promise<GraphData> {
 		),
 		similar: similarPayees(rows, names),
 		duplicates: duplicates(rows),
-		unusual: unusualCharges(rows, [
-			...before.filter((r) => r.account && onBudget.has(r.account)),
-			...rows,
-		]),
+		unusual: unusualCharges(rows, [...raw.before.filter(keep), ...rows]),
 		payeeTotals: rows.reduce(
 			(totals, r) =>
 				r.payee ? totals.set(r.payee, (totals.get(r.payee) ?? 0) + Math.abs(r.amount)) : totals,

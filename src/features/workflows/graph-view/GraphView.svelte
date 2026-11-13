@@ -28,7 +28,11 @@
 	import {
 		buildGraph,
 		HIGHLIGHT_LIMIT,
+		filterGraphData,
 		loadGraphData,
+		type FilterLists,
+		type GraphFilters,
+		type RawGraphData,
 		rowsFor,
 		transfersFor,
 		searchable,
@@ -46,6 +50,9 @@
 	import SimilarPayees from "./SimilarPayees.svelte";
 	import { dispatch, send } from "@lib/utilities/actual-api";
 	import NodeDetail from "./NodeDetail.svelte";
+	import FilterPopover from "@features/workflows/filters/FilterPopover.svelte";
+	import FilterToggle from "@features/workflows/filters/FilterToggle.svelte";
+	import { CLEARED, loadFilters, saveFilters } from "./filters";
 
 	const PANEL_KEY = "graph-node";
 	const RANGES = [
@@ -138,6 +145,11 @@
 	let icons = $state.raw(new Map<string, { href: string; emoji: boolean }>());
 
 	let data: GraphData | null = null;
+	// The range as loaded; the filters narrow it into `data` without loading again.
+	let raw: RawGraphData | null = null;
+	let filters = $state<GraphFilters>(CLEARED);
+	let filtersOpen = $state(false);
+	let lists = $state.raw<FilterLists>({ accounts: [], categories: [], categoryGroups: [] });
 	let query = $state("");
 	let candidates = $state.raw<Searchable[]>([]);
 	let active = $state(0);
@@ -175,8 +187,24 @@
 	/** Loads the range; what you had open (search, selection, expanded nodes, highlight) carries over where it still exists. */
 	async function load() {
 		loading = true;
+		raw = await loadGraphData(days);
+		lists = raw.lists;
+		refilter();
+	}
+
+	function setFilters(patch: Partial<GraphFilters>) {
+		filters = { ...filters, ...patch };
+		void saveFilters($state.snapshot(filters));
+		refilter();
+	}
+
+	/** Narrows the loaded range by the filters and draws it again. */
+	function refilter() {
+		if (!raw) {
+			return;
+		}
 		const focused = following ?? selected;
-		data = await loadGraphData(days);
+		data = filterGraphData(raw, filters);
 		candidates = searchable(data);
 		const present = new Set(candidates.map((c) => c.id));
 		expanded = new Set([...expanded].filter((id) => present.has(id)));
@@ -759,6 +787,7 @@
 					}
 				},
 			),
+			loadFilters().then((saved) => (filters = saved)),
 		]).then(load);
 		// Closing the panel from its own button clears the selection.
 		const stop = sidepanel.onTopChange((key) => {
@@ -997,6 +1026,23 @@
 			</div>
 		</div>
 		<div class="gv__right">
+			<FilterPopover
+				bind:open={filtersOpen}
+				{filters}
+				{...lists}
+				onChange={setFilters}
+				onClear={() => setFilters(CLEARED)}
+				extraActive={filters.hideOffBudget}
+			>
+				{#snippet toggles()}
+					<FilterToggle
+						label="Off-budget accounts"
+						title="Transfers to and from them"
+						checked={!filters.hideOffBudget}
+						onCheckedChange={(checked) => setFilters({ hideOffBudget: !checked })}
+					/>
+				{/snippet}
+			</FilterPopover>
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				class="gv__hl"
@@ -1015,7 +1061,7 @@
 					aria-expanded={menuOpen}
 					onclick={() => (menuOpen = !menuOpen)}
 				>
-					<Icon name="filter" size={13} />
+					<Icon name="flag" size={13} />
 					{#if highlight}
 						{TITLES[highlight]}
 						<span class="abt-num gv__count"
@@ -1050,9 +1096,12 @@
 									pickHighlight(h.kind);
 								}}
 							>
-								<span class="gv__hl-tick">
-									{#if highlight === h.kind}<Check size={14} />{/if}
-								</span>
+								<!-- Room for the tick only while one is on, so the rows don't sit indented. -->
+								{#if highlight}
+									<span class="gv__hl-tick">
+										{#if highlight === h.kind}<Check size={14} />{/if}
+									</span>
+								{/if}
 								<span class="gv__hl-text">
 									<span>{TITLES[h.kind]}</span>
 									<span class="gv__hl-hint">{h.hint}</span>
@@ -1063,7 +1112,7 @@
 					</div>
 				{/if}
 			</div>
-			<div class="abt-seg abt-seg--sm" role="group" aria-label="Range">
+			<div class="abt-seg abt-seg--sm gv__range" role="group" aria-label="Range">
 				{#each RANGES as r (r.days)}
 					<button type="button" aria-pressed={days === r.days} onclick={() => pickRange(r.days)}>
 						<span class="gv__long">{r.label}</span>
@@ -1430,6 +1479,11 @@
 	.gv__clear:hover {
 		background: var(--abt-fill-hover);
 		color: var(--color-pageText);
+	}
+
+	/* The same height as the buttons beside it. */
+	.gv__range {
+		--abt-btn-h: var(--abt-control-h-sm);
 	}
 
 	.gv__hl {

@@ -1,15 +1,11 @@
+import type { BaseFilters } from "@features/workflows/filters/types";
 import { getValue, setValue } from "@lib/utilities/store";
 
-export type Flow = "all" | "spending" | "income";
+export type { Flow } from "@features/workflows/filters/types";
 
-export interface CalendarFilters {
-	flow: Flow;
+export interface CalendarFilters extends BaseFilters {
 	showScheduled: boolean;
-	hideOffBudget: boolean;
 	showBalance: boolean;
-	/** Hidden rather than shown ids, so accounts and categories added later show by default. */
-	hiddenAccounts: string[];
-	hiddenCategories: string[];
 }
 
 /** What "Clear all" restores; off-budget accounts and balances stay as chosen, since they're view preferences. */
