@@ -1,4 +1,4 @@
-import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK, TOAST } from "@lib/actual-dom";
+import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
 import { getTheme, themes } from "@lib/design";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 import { applyGlobalCSS } from "@lib/utilities/dom";
@@ -239,7 +239,8 @@ export const BUILTIN_CSS = `:root {
 	--color-noticeBackgroundDark: var(--ctp-teal);
 	--color-noticeBackgroundLight: color-mix(in srgb, var(--ctp-green) 16%, var(--ctp-base));
 	--color-noticeBorder: var(--ctp-green);
-	--color-noticeText: var(--ctp-base);
+	/* Actual mostly sets plain green text with this; solid notice pills use noticeTextDark. */
+	--color-noticeText: var(--ctp-green);
 	--color-noticeTextDark: var(--ctp-base);
 	--color-noticeTextLight: var(--ctp-green);
 	--color-noticeTextMenu: var(--ctp-teal);
@@ -395,12 +396,6 @@ ${ACCOUNTS_LINKS} {
    here that's the page colour. Configured cards are the ones with a menu button. */
 ${BANK_SYNC_PROVIDER}:has(> div:first-child > button) > div:first-child > div:first-child > span {
 	color: var(--color-noticeTextLight) !important;
-}
-
-/* noticeText is the base colour, for text on solid notice badges; a success toast colours itself
-   with it, so it keeps the green there. */
-${TOAST} {
-	--color-noticeText: var(--color-noticeTextLight);
 }`;
 
 export function isCommunityTheme(value: string): boolean {
