@@ -137,6 +137,11 @@ async function loadBudgetIcons(): Promise<Record<string, BudgetIcon>> {
 	return iconCache;
 }
 
+/** The icon from the map already in memory, so a header or rail mounting again shows it at once. */
+export function cachedBudgetIcon(budgetId: string | undefined): BudgetIcon | undefined {
+	return budgetId ? iconCache?.[budgetId] : undefined;
+}
+
 export async function loadBudgetIcon(budgetId: string): Promise<BudgetIcon | undefined> {
 	const icons = await loadBudgetIcons();
 	return icons[budgetId];

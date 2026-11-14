@@ -24,7 +24,13 @@
 	import { scrollFade } from "../actions/scroll-fade";
 	import { tooltip } from "../actions/tooltip.svelte";
 	import type { BudgetIcon } from "../lib/budgets";
-	import { loadBudgetIcon, watchBudgetIcon, removeBudgetIcon, setBudgetIcon } from "../lib/budgets";
+	import {
+		cachedBudgetIcon,
+		loadBudgetIcon,
+		watchBudgetIcon,
+		removeBudgetIcon,
+		setBudgetIcon,
+	} from "../lib/budgets";
 	import type { SidebarAccount } from "../lib/data";
 	import {
 		type GroupState,
@@ -130,14 +136,13 @@
 
 	// In split mode the panel's BudgetHeader hides its own icon, so this
 	// avatar is where the icon is edited; the collapsed rail's just expands.
-	let budgetIcon = $state<BudgetIcon | undefined>(undefined);
+	let budgetIcon = $derived<BudgetIcon | undefined>(cachedBudgetIcon(budgetId));
 	let avatarEl = $state<HTMLButtonElement | undefined>();
 	let iconPickerOpen = $state(false);
 	let iconAnchorRect = $state<DOMRect | undefined>(undefined);
 
 	$effect(() => {
 		if (!budgetId) {
-			budgetIcon = undefined;
 			return;
 		}
 		loadBudgetIcon(budgetId).then((icon) => (budgetIcon = icon));

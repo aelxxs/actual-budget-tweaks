@@ -562,6 +562,7 @@
 		<div class="split-panel" style:display={isCollapsed ? "none" : null}>
 			<BudgetHeader
 				name={budgetName}
+				{budgetId}
 				showBudgetIcon={false}
 				onBudgetChange={refreshBudgetContext}
 			/>
@@ -605,7 +606,7 @@
 			{groupAccounts}
 		/>
 	{:else}
-		<BudgetHeader name={budgetName} onBudgetChange={refreshBudgetContext} />
+		<BudgetHeader name={budgetName} {budgetId} onBudgetChange={refreshBudgetContext} />
 		<div class="body">
 			{@render top(true)}
 			<div class="divider"></div>

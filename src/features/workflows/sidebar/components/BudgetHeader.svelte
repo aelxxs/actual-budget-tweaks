@@ -21,6 +21,7 @@
 	import {
 		closeToFileList,
 		loadBudgetFiles,
+		cachedBudgetIcon,
 		loadBudgetIcon,
 		watchBudgetIcon,
 		removeBudgetIcon,
@@ -35,9 +36,15 @@
 
 	const {
 		name,
+		budgetId,
 		showBudgetIcon = true,
 		onBudgetChange,
-	}: { name: string; showBudgetIcon?: boolean; onBudgetChange?: () => void } = $props();
+	}: {
+		name: string;
+		budgetId?: string;
+		showBudgetIcon?: boolean;
+		onBudgetChange?: () => void;
+	} = $props();
 
 	// Writable $derived: re-syncs to `name` whenever the prop changes, but the
 	// rename handler below can still assign it locally in the meantime.
@@ -50,7 +57,7 @@
 	let currentId = $state<string | undefined>(undefined);
 	let filesLoaded = $state(false);
 
-	let icon = $state<BudgetIcon | undefined>(undefined);
+	let icon = $derived<BudgetIcon | undefined>(cachedBudgetIcon(budgetId));
 	let iconBtnEl = $state<HTMLButtonElement | undefined>(undefined);
 	let rootEl = $state<HTMLElement | undefined>(undefined);
 	let iconPickerOpen = $state(false);
