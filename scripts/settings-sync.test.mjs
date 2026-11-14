@@ -6,7 +6,7 @@ import { createContext, SourceTextModule, SyntheticModule } from "node:vm";
 
 const source = await readFile(new URL("../src/features/settings-sync.ts", import.meta.url), "utf8");
 
-async function setup(initial, budgets, userId = null) {
+async function setup(initial, budgets, userId = null, onStart = async () => {}) {
 	const stored = new Map(Object.entries(initial));
 	const saves = [];
 	const applied = [];
@@ -86,6 +86,8 @@ async function setup(initial, budgets, userId = null) {
 		},
 	];
 	const stop = module.namespace.startSettingsSync(settings);
+	// What a feature does as it starts, before the budget's settings are read.
+	await onStart(exports.setValue);
 	const settle = () => new Promise(setImmediate);
 	await settle();
 	return {
@@ -183,4 +185,16 @@ test("a synced key a custom setting reads reapplies that setting instead of aski
 	);
 	assert.equal(JSON.stringify(fixture.stored.get("user-themes")), '{"user:1":{"name":"Mine"}}');
 	assert.ok(fixture.applied.some(([key, value]) => key === "theme" && value === "light"));
+});
+
+test("a feature's write before the first pull doesn't overwrite the user's synced value", async () => {
+	const fixture = await setup({}, { a: { "abt:me:density": '"compact"' } }, "me", (setValue) =>
+		setValue("density", "normal"),
+	);
+	assert.equal(
+		fixture.saves.some(({ id }) => id === "abt:me:density"),
+		false,
+	);
+	assert.equal(fixture.stored.get("density"), "compact");
+	fixture.stop();
 });

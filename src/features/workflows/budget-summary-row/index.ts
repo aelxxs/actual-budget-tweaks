@@ -693,6 +693,10 @@ async function migratedMode(key: string, value: unknown): Promise<Mode | null> {
 	if (value === true) {
 		return "full";
 	}
+	// Nothing to migrate on a fresh browser; writing the default would sync over the user's choice.
+	if (!(await hasValue("budget-card-styling"))) {
+		return null;
+	}
 	const flowBar = await getValue("budget-card-styling", true);
 	await removeValue("budget-card-styling");
 	return flowBar ? "light" : "off";

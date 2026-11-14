@@ -20,6 +20,10 @@ async function migrateRetiredSwitches(key: string) {
 	if (await hasValue(key)) {
 		return;
 	}
+	const stored = await Promise.all(RETIRED_KEYS.map((k) => hasValue(k)));
+	if (!stored.some(Boolean)) {
+		return;
+	}
 	const values = await Promise.all(RETIRED_KEYS.map((k) => getValue(k, true)));
 	await setValue(key, values.every(Boolean));
 	await Promise.all(RETIRED_KEYS.map(removeValue));

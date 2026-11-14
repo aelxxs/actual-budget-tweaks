@@ -178,8 +178,11 @@ export function startSettingsSync(settings: Setting[]): () => void {
 		}
 	}
 
+	// Writes before the budget's settings are read (a feature starting up) would overwrite them.
+	let pulled = false;
+
 	onSetValue((key, value) => {
-		if (applying || !isBudgetLoaded()) {
+		if (applying || !pulled || !isBudgetLoaded()) {
 			return;
 		}
 		if (synced.has(key)) {
@@ -280,6 +283,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 				}
 			}
 		}
+		pulled = true;
 		if (needsReload.length) {
 			log.info("synced settings that need a reload", needsReload);
 			await notify(
@@ -321,6 +325,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 		if (!now) {
 			budgetId = undefined;
 			user = null;
+			pulled = false;
 		}
 		if (now && !loaded) {
 			schedulePull();
