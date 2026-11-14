@@ -1,20 +1,5 @@
 <script lang="ts">
-	import { onOutsideClick } from "@lib/dom/popover";
-	import { takeTweaksSearch } from "@lib/actual/settings-page";
-	import {
-		ArrowUpRight,
-		Bug,
-		Power,
-		RotateCcw,
-		Coffee,
-		Download,
-		Ellipsis,
-		Heart,
-		Sparkles,
-		Star,
-		Upload,
-	} from "@lucide/svelte";
-	import { onMount, tick } from "svelte";
+	import { showReleaseNotes } from "@features/core/release-notification";
 	import {
 		FEATURES_TITLE,
 		scriptSections,
@@ -22,19 +7,37 @@
 		settingRequires,
 		type PageSetting,
 	} from "@features/index";
-	import { exportSettings, pickSettingsFile, resetToDefaults } from "./backup";
-	import Icon from "@lib/components/Icon.svelte";
-	import BugReportDialog from "./BugReportDialog.svelte";
-	import { showReleaseNotes } from "@features/core/release-notification";
-	import Dialog from "@lib/components/Dialog.svelte";
-	import SettingRow from "./SettingRow.svelte";
-	import Switch from "@lib/components/Switch.svelte";
-	import WritesMark from "@lib/components/WritesMark.svelte";
 	import { applySettingChange } from "@features/runtime";
 	import { setAbtEnabled } from "@lib/abt-enabled";
-	import { watchDom } from "@lib/dom/dom-watcher";
 	import { DESKTOP_QUERY } from "@lib/actual/pages";
-	import { TWEAKS_SECTIONS_ATTR, takeTweaksSection } from "@lib/actual/settings-page";
+	import {
+		TWEAKS_SECTIONS_ATTR,
+		takeTweaksSearch,
+		takeTweaksSection,
+	} from "@lib/actual/settings-page";
+	import Dialog from "@lib/components/Dialog.svelte";
+	import Icon from "@lib/components/Icon.svelte";
+	import Switch from "@lib/components/Switch.svelte";
+	import WritesMark from "@lib/components/WritesMark.svelte";
+	import { watchDom } from "@lib/dom/dom-watcher";
+	import { onOutsideClick } from "@lib/dom/popover";
+	import {
+		ArrowUpRight,
+		Bug,
+		Coffee,
+		Download,
+		Ellipsis,
+		Heart,
+		Power,
+		RotateCcw,
+		Sparkles,
+		Star,
+		Upload,
+	} from "@lucide/svelte";
+	import { onMount, tick } from "svelte";
+	import { exportSettings, pickSettingsFile, resetToDefaults } from "./backup";
+	import BugReportDialog from "./BugReportDialog.svelte";
+	import SettingRow from "./SettingRow.svelte";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
 	const SPONSOR_URL = "https://github.com/sponsors/aelxxs";
@@ -437,7 +440,7 @@
 			<p class="support-pop__lead">ABT is free and always will be</p>
 		</div>
 		<p class="support-pop__text">
-			If it's made budgeting a little nicer, here are a few ways to help. Thanks for using it.
+			If it's made budgeting a little nicer, here are a few ways to help. Thanks for using it —
 			<span class="support-pop__sign">Alexis</span>
 		</p>
 		<div class="support-pop__tiles">
@@ -955,8 +958,8 @@
 		gap: var(--abt-space-3);
 	}
 	.support-pop__logo {
-		width: 32px;
-		height: 32px;
+		width: 24px;
+		height: 24px;
 		border-radius: var(--abt-radius);
 	}
 	.support-pop__lead {
