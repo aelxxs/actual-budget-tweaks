@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Runs against Actual with ABT injected by the sidecar (docker/server.js); see .github/workflows/smoke.yml.
+// Runs against Actual with ABT injected by the sidecar (docker/server.ts); see .github/workflows/smoke.yml.
 export default defineConfig({
 	testDir: "tests/smoke",
 	timeout: 90_000,

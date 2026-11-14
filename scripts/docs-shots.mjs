@@ -248,7 +248,7 @@ async function startStack() {
 	execSync(`docker run -d --rm --name ${CONTAINER} -p ${ACTUAL_PORT}:5006 ${IMAGE}`, {
 		stdio: "ignore",
 	});
-	const sidecar = spawn("node", ["docker/server.js"], {
+	const sidecar = spawn(process.execPath, ["docker/server.ts"], {
 		cwd: ROOT,
 		stdio: "ignore",
 		env: {

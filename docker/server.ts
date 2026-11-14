@@ -1,18 +1,22 @@
-// Sidecar: reverse-proxies to Actual, injecting the ABT bundle into the
-// served HTML. No dependencies beyond Node's stdlib.
+// Sidecar: reverse-proxies to Actual, injecting the ABT bundle into the served HTML. No dependencies
+// beyond Node's stdlib; Node runs this file directly, stripping its types.
 import { createHash } from "node:crypto";
 import fs from "node:fs";
-import http from "node:http";
+import http, {
+	type IncomingHttpHeaders,
+	type IncomingMessage,
+	type OutgoingHttpHeaders,
+	type ServerResponse,
+} from "node:http";
+import https from "node:https";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = Number(process.env.PORT || 3005);
 const ACTUAL_ORIGIN = process.env.ACTUAL_ORIGIN || "http://actual:5006";
 const ASSETS_DIR = process.env.ASSETS_DIR || "/assets";
 const PACKAGE_JSON_PATH = process.env.PACKAGE_JSON_PATH || "/app/package.json";
 const actualUrl = new URL(ACTUAL_ORIGIN);
+const upstream = actualUrl.protocol === "https:" ? https : http;
 
 // Read once at startup rather than per-request.
 let ABT_VERSION = process.env.ABT_VERSION || "unknown";
@@ -20,10 +24,14 @@ if (!process.env.ABT_VERSION) {
 	try {
 		ABT_VERSION = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf8")).version || ABT_VERSION;
 	} catch (err) {
-		console.warn(`[abt-sidecar] couldn't read version from ${PACKAGE_JSON_PATH}:`, err.message);
+		console.warn(
+			`[abt-sidecar] couldn't read version from ${PACKAGE_JSON_PATH}:`,
+			(err as Error).message,
+		);
 	}
 }
 
+const SHIM = "browser-shim.js";
 const YAHOO_CHART_PREFIX = "/abt-api/yahoo-chart/";
 const SYMBOL_RE = /^[A-Za-z0-9.\-^=]{1,20}$/;
 // Only what ABT's stock widgets send; anything else is dropped, not relayed.
@@ -42,7 +50,7 @@ const HOP_BY_HOP_HEADERS = [
 	"upgrade",
 ];
 
-const CONTENT_TYPES = {
+const CONTENT_TYPES: Record<string, string> = {
 	".js": "application/javascript; charset=utf-8",
 	".css": "text/css; charset=utf-8",
 	".svg": "image/svg+xml",
@@ -51,7 +59,7 @@ const CONTENT_TYPES = {
 };
 
 const INJECTION = `
-		<script src="/abt/browser-shim.js"></script>
+		<script src="/abt/${SHIM}"></script>
 		<script src="/abt/content-scripts/overlay-preload.js"></script>
 		<link rel="stylesheet" href="/abt/css/base.css">
 		<link rel="stylesheet" href="/abt/content-scripts/content.css">
@@ -81,16 +89,11 @@ const CSP = [
 const SHELL_HASH = createHash("sha1").update(INJECTION).update(CSP).digest("hex").slice(0, 8);
 const SW_SHELL_RE = /(\{url:["']\/?index\.html["'],revision:["'])([^"']+)(["']\})/;
 
-function serveStatic(req, res, urlPath) {
+function serveStatic(res: ServerResponse, urlPath: string): void {
 	const rel = urlPath.slice("/abt/".length);
-	const filePath =
-		rel === "browser-shim.js"
-			? path.join(__dirname, "browser-shim.js")
-			: path.join(ASSETS_DIR, rel);
-
-	const base = rel === "browser-shim.js" ? __dirname : ASSETS_DIR;
+	const filePath = path.join(ASSETS_DIR, rel);
 	// Trailing separator so a sibling like /assets-other can't pass the prefix check.
-	if (!filePath.startsWith(base + path.sep)) {
+	if (!filePath.startsWith(ASSETS_DIR + path.sep)) {
 		res.writeHead(400).end("bad path");
 		return;
 	}
@@ -100,23 +103,23 @@ function serveStatic(req, res, urlPath) {
 			res.writeHead(404).end("not found");
 			return;
 		}
-		const ext = path.extname(filePath);
 		// Fixed URLs, unlike Actual's own content-hashed asset filenames — a
 		// cached copy here has no reason to ever be re-requested otherwise.
 		res.writeHead(200, {
-			"Content-Type": CONTENT_TYPES[ext] || "application/octet-stream",
+			"Content-Type": CONTENT_TYPES[path.extname(filePath)] || "application/octet-stream",
 			"Cache-Control": "no-store",
 			"X-Content-Type-Options": "nosniff",
 		});
-		if (rel === "browser-shim.js") {
-			res.end(data.toString("utf8").replace("__ABT_VERSION__", ABT_VERSION));
-			return;
-		}
-		res.end(data);
+		res.end(rel === SHIM ? data.toString("utf8").replace("__ABT_VERSION__", ABT_VERSION) : data);
 	});
 }
 
-async function handleYahooChart(req, res, urlPath, search) {
+async function handleYahooChart(
+	req: IncomingMessage,
+	res: ServerResponse,
+	urlPath: string,
+	search: string,
+): Promise<void> {
 	// No auth of its own — require same-origin. GETs often omit Origin, so
 	// fall back to Referer.
 	const expectedOrigin = `${req.headers["x-forwarded-proto"] || "http"}://${req.headers.host}`;
@@ -143,31 +146,27 @@ async function handleYahooChart(req, res, urlPath, search) {
 	}
 
 	try {
-		const upstream = await fetch(target, { signal: AbortSignal.timeout(YAHOO_TIMEOUT_MS) });
-		const body = Buffer.from(await upstream.arrayBuffer());
-		res.writeHead(upstream.status, {
-			"Content-Type": upstream.headers.get("content-type") || "application/json",
+		const reply = await fetch(target, { signal: AbortSignal.timeout(YAHOO_TIMEOUT_MS) });
+		const body = Buffer.from(await reply.arrayBuffer());
+		res.writeHead(reply.status, {
+			"Content-Type": reply.headers.get("content-type") || "application/json",
 			"X-Content-Type-Options": "nosniff",
 		});
 		res.end(body);
 	} catch (err) {
-		console.warn(`[abt-sidecar] yahoo relay failed for ${symbol}:`, err.message);
+		console.warn(`[abt-sidecar] yahoo relay failed for ${symbol}:`, (err as Error).message);
 		res.writeHead(502).end();
 	}
 }
 
-function proxyToActual(req, res) {
-	// Actual never compresses responses, so no accept-encoding dance needed.
-	// Conditional-GET is stripped for everything (not just guessed "HTML"
-	// requests) since guessing from the Accept header broke injection outright.
-	const outHeaders = { ...req.headers, host: actualUrl.host };
-	delete outHeaders["if-none-match"];
-	delete outHeaders["if-modified-since"];
+/** The request's headers as Actual should get them: no hop-by-hop ones, and who it came from. */
+function forwardedHeaders(req: IncomingMessage): OutgoingHttpHeaders {
+	const headers: OutgoingHttpHeaders = { ...req.headers, host: actualUrl.host };
 	const connectionTokens = String(req.headers.connection || "")
 		.split(",")
 		.map((t) => t.trim().toLowerCase());
 	for (const name of [...HOP_BY_HOP_HEADERS, ...connectionTokens]) {
-		delete outHeaders[name];
+		delete headers[name];
 	}
 	// Actual trusts X-Forwarded-For from private peers (this container), and keys
 	// its login rate limit on it. Appending the real peer makes a client-supplied
@@ -175,63 +174,79 @@ function proxyToActual(req, res) {
 	const peer = req.socket.remoteAddress;
 	if (peer) {
 		const prior = req.headers["x-forwarded-for"];
-		outHeaders["x-forwarded-for"] = prior ? `${prior}, ${peer}` : peer;
+		headers["x-forwarded-for"] = prior ? `${prior}, ${peer}` : peer;
 	}
+	// Kept from a TLS proxy in front, so Actual builds its redirects and cookies for the
+	// address the browser used rather than this hop.
+	headers["x-forwarded-proto"] ??= "http";
+	headers["x-forwarded-host"] ??= req.headers.host;
+	return headers;
+}
 
-	const upstreamReqOpts = {
-		protocol: actualUrl.protocol,
+function upstreamOptions(req: IncomingMessage, headers: OutgoingHttpHeaders) {
+	return {
 		hostname: actualUrl.hostname,
 		port: actualUrl.port,
 		method: req.method,
 		path: req.url,
-		headers: outHeaders,
+		headers,
 	};
-	const upstreamReq = http.request(upstreamReqOpts, (upstreamRes) => {
+}
+
+/** Buffers a response body, for the two responses that are rewritten on the way through. */
+function readBody(res: IncomingMessage, done: (body: string) => void): void {
+	const chunks: Buffer[] = [];
+	res.on("data", (c: Buffer) => chunks.push(c));
+	res.on("end", () => done(Buffer.concat(chunks).toString("utf8")));
+}
+
+function withoutValidators(headers: IncomingHttpHeaders): IncomingHttpHeaders {
+	const out = { ...headers };
+	delete out["content-length"];
+	delete out["etag"];
+	delete out["last-modified"];
+	return out;
+}
+
+function proxyToActual(req: IncomingMessage, res: ServerResponse): void {
+	// Actual never compresses responses, so no accept-encoding dance needed.
+	// Conditional-GET is stripped for everything (not just guessed "HTML"
+	// requests) since guessing from the Accept header broke injection outright.
+	const headers = forwardedHeaders(req);
+	delete headers["if-none-match"];
+	delete headers["if-modified-since"];
+
+	const upstreamReq = upstream.request(upstreamOptions(req, headers), (upstreamRes) => {
+		const status = upstreamRes.statusCode ?? 502;
 		const contentType = upstreamRes.headers["content-type"] || "";
 		// Actual's service worker precaches index.html; a new revision makes it refetch the
 		// shell through here, so a cache from before the sidecar (or an older injection) clears.
-		if (req.url.split("?")[0] === "/sw.js" && contentType.includes("javascript")) {
-			const chunks = [];
-			upstreamRes.on("data", (c) => chunks.push(c));
-			upstreamRes.on("end", () => {
-				const source = Buffer.concat(chunks).toString("utf8");
-				const body = source.replace(
-					SW_SHELL_RE,
-					(_, before, revision, after) => `${before}${revision}-abt-${SHELL_HASH}${after}`,
+		if (req.url?.split("?")[0] === "/sw.js" && contentType.includes("javascript")) {
+			readBody(upstreamRes, (source) => {
+				res.writeHead(status, withoutValidators(upstreamRes.headers));
+				res.end(
+					source.replace(
+						SW_SHELL_RE,
+						(_, before, revision, after) => `${before}${revision}-abt-${SHELL_HASH}${after}`,
+					),
 				);
-				const headers = { ...upstreamRes.headers };
-				delete headers["content-length"];
-				delete headers["etag"];
-				delete headers["last-modified"];
-				res.writeHead(upstreamRes.statusCode, headers);
-				res.end(body);
 			});
 			return;
 		}
 		if (!contentType.includes("text/html")) {
-			const headers = { ...upstreamRes.headers };
-			res.writeHead(upstreamRes.statusCode, headers);
+			res.writeHead(status, upstreamRes.headers);
 			upstreamRes.pipe(res);
 			return;
 		}
 
 		// Buffer just the HTML shell so we can inject before </body>.
-		const chunks = [];
-		upstreamRes.on("data", (c) => chunks.push(c));
-		upstreamRes.on("end", () => {
-			const html = Buffer.concat(chunks).toString("utf8");
-			const injected = html.includes("</body>")
-				? html.replace("</body>", INJECTION)
-				: html + INJECTION;
-			const headers = { ...upstreamRes.headers };
-			delete headers["content-length"];
-			delete headers["content-security-policy-report-only"];
-			delete headers["etag"];
-			delete headers["last-modified"];
-			headers["content-security-policy"] = CSP;
-			headers["cache-control"] = "no-store";
-			res.writeHead(upstreamRes.statusCode, headers);
-			res.end(injected);
+		readBody(upstreamRes, (html) => {
+			const out = withoutValidators(upstreamRes.headers);
+			delete out["content-security-policy-report-only"];
+			out["content-security-policy"] = CSP;
+			out["cache-control"] = "no-store";
+			res.writeHead(status, out);
+			res.end(html.includes("</body>") ? html.replace("</body>", INJECTION) : html + INJECTION);
 		});
 	});
 
@@ -246,14 +261,16 @@ function proxyToActual(req, res) {
 }
 
 const server = http.createServer((req, res) => {
-	const [urlPath, search = ""] = req.url.split("?");
+	const [urlPath, search = ""] = (req.url ?? "/").split("?");
 	if (urlPath.startsWith("/abt/")) {
-		return serveStatic(req, res, urlPath);
+		serveStatic(res, urlPath);
+		return;
 	}
 	if (urlPath.startsWith(YAHOO_CHART_PREFIX) && req.method === "GET") {
-		return handleYahooChart(req, res, urlPath, search ? `?${search}` : "");
+		void handleYahooChart(req, res, urlPath, search ? `?${search}` : "");
+		return;
 	}
-	return proxyToActual(req, res);
+	proxyToActual(req, res);
 });
 
 server.listen(PORT, () => {

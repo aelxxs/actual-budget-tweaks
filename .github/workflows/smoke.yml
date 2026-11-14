@@ -48,7 +48,7 @@ jobs:
       - name: Start the sidecar
         run: |
           PORT=3005 ACTUAL_ORIGIN=http://localhost:5006 ASSETS_DIR=$PWD/.output/chrome-mv3 \
-            PACKAGE_JSON_PATH=$PWD/package.json node docker/server.js &
+            PACKAGE_JSON_PATH=$PWD/package.json node docker/server.ts &
           for i in $(seq 1 60); do
             curl -sf http://localhost:3005/ > /dev/null && exit 0
             sleep 1

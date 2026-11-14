@@ -36,6 +36,7 @@
 		"@tsconfig/svelte": "^5.0.8",
 		"@types/d3": "^7.4.3",
 		"@types/d3-force": "3.0.10",
+		"@types/node": "^22.20.5",
 		"@wxt-dev/module-svelte": "^2.0.5",
 		"eslint": "^10.12.0",
 		"eslint-config-prettier": "^10.1.8",
