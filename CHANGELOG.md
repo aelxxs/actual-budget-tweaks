@@ -1,6 +1,53 @@
 # Changelog
 
 
+## v0.1.108
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.107...v0.1.108)
+
+### 🚀 Enhancements
+
+- Show custom category icons wherever ABT lists categories ([ebf976f](https://github.com/aelxxs/actual-budget-tweaks/commit/ebf976f))
+- Apply settings synced from another device without a reload ([15a2c5c](https://github.com/aelxxs/actual-budget-tweaks/commit/15a2c5c))
+- Give inset cards a frame in the sidebar's colour when the sidebar contrasts with the page ([6d851fd](https://github.com/aelxxs/actual-budget-tweaks/commit/6d851fd))
+- Run app-wide side panels full height, as their own card with inset panels ([bea6b8e](https://github.com/aelxxs/actual-budget-tweaks/commit/bea6b8e))
+
+### 🩹 Fixes
+
+- Keep notice text green so plain notices stay readable ([3a82929](https://github.com/aelxxs/actual-budget-tweaks/commit/3a82929))
+- Style Actual's page when ABT starts after it has rendered ([f47271c](https://github.com/aelxxs/actual-budget-tweaks/commit/f47271c))
+- Keep synced settings when a feature saves one as it starts ([20d94b9](https://github.com/aelxxs/actual-budget-tweaks/commit/20d94b9))
+- Open and leave the calendar and graph without the page underneath showing ([997fb5a](https://github.com/aelxxs/actual-budget-tweaks/commit/997fb5a))
+- Let Vibrance tint the Studio's tinted sidebar across its whole range ([74623c1](https://github.com/aelxxs/actual-budget-tweaks/commit/74623c1))
+- Carry glow and grain across the floating frame without a ring around the sidebar ([9f720b6](https://github.com/aelxxs/actual-budget-tweaks/commit/9f720b6))
+
+### 💅 Refactors
+
+- One table for graph highlights, shared payee stats ([e58df4d](https://github.com/aelxxs/actual-budget-tweaks/commit/e58df4d))
+- Shared dialog, outside-click and hover card; split large components ([3ada2d2](https://github.com/aelxxs/actual-budget-tweaks/commit/3ada2d2))
+- Split lib by what it touches and keep it free of feature imports ([70f46fd](https://github.com/aelxxs/actual-budget-tweaks/commit/70f46fd))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.107 ([f619e0e](https://github.com/aelxxs/actual-budget-tweaks/commit/f619e0e))
+- Regenerate guide, home and README screenshots for the current UI ([37e1550](https://github.com/aelxxs/actual-budget-tweaks/commit/37e1550))
+
+### 🎨 Styles
+
+- Close the side panel without an animation ([b6efdf8](https://github.com/aelxxs/actual-budget-tweaks/commit/b6efdf8))
+- Drop the sidebar's collapse animation ([620edb9](https://github.com/aelxxs/actual-budget-tweaks/commit/620edb9))
+- Drop decorative entrance animations ([a96dc14](https://github.com/aelxxs/actual-budget-tweaks/commit/a96dc14))
+- Mark only months that need attention in the month picker ([a5e70f5](https://github.com/aelxxs/actual-budget-tweaks/commit/a5e70f5))
+- Finish the styling migration onto shared tokens ([9c07762](https://github.com/aelxxs/actual-budget-tweaks/commit/9c07762))
+- Keep the calendar's top row border from being clipped ([d45dba8](https://github.com/aelxxs/actual-budget-tweaks/commit/d45dba8))
+- Stronger panel borders on light themes ([181c529](https://github.com/aelxxs/actual-budget-tweaks/commit/181c529))
+- Show the side panel's resize grip on hover, matching the sidebar's ([2aaa642](https://github.com/aelxxs/actual-budget-tweaks/commit/2aaa642))
+- Drop the tile behind an image budget icon ([77dd589](https://github.com/aelxxs/actual-budget-tweaks/commit/77dd589))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.107
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.106...v0.1.107)
