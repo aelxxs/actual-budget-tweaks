@@ -327,6 +327,9 @@
 							</button>
 						{/each}
 					</div>
+					{#if values[LIVE_SIDEBAR] === false && values[INSET] !== "off"}
+						<p class="note">The layout you picked needs the live sidebar.</p>
+					{/if}
 					{#if values[LIVE_SIDEBAR] === true}
 						<div class="layout">
 							<span class="abt-label">Layout</span>
@@ -657,6 +660,11 @@
 		border-radius: var(--abt-radius-pill);
 		background: var(--abt-accent);
 		color: var(--color-buttonPrimaryText, #fff); /* raw: text on the accent fill */
+	}
+	.note {
+		margin: var(--abt-space-3) 0 0;
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
 	}
 	.layout {
 		display: flex;

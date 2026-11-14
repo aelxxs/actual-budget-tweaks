@@ -33,6 +33,16 @@
 		}),
 	);
 
+	// Matches the live sidebar's default, which `getValue` falls back to the same way.
+	let liveSidebar = $state(true);
+	$effect(() => {
+		if (!setting.liveSidebarOnly) {
+			return;
+		}
+		void getValue("experimental-sidebar", true).then((v) => (liveSidebar = v !== false));
+		return watchValue("experimental-sidebar", (v) => (liveSidebar = v !== false));
+	});
+
 	async function pick(next: string) {
 		await applySettingChange(setting, next);
 		value = next;
@@ -61,6 +71,11 @@
 			>
 			{#if description}
 				<span class="abt-setting__desc">{description}</span>
+			{/if}
+			{#if setting.liveSidebarOnly && !liveSidebar}
+				<span class="abt-setting__desc"
+					>Live sidebar only: off while Actual's sidebar is in use.</span
+				>
 			{/if}
 		</span>
 	</span>

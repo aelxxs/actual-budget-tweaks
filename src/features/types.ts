@@ -49,6 +49,8 @@ export interface BaseSetting<C extends SettingContext> {
 	platform?: Platform;
 	/** Built on To Budget and its envelope cells, so it stands down on tracking budgets. */
 	envelopeOnly?: boolean;
+	/** Built around the live sidebar's markup, so it does nothing with Actual's own sidebar. */
+	liveSidebarOnly?: boolean;
 	/** Runs when the setting is activated; return a cleanup for teardown on deactivate. Omit if `css` alone covers the feature. */
 	init?: (ctx: C & { value: unknown }) => Cleanup | Promise<Cleanup>;
 }

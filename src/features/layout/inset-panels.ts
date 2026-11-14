@@ -2,6 +2,7 @@ import { syncWindowColor } from "@features/theme/theme-apply";
 import { defineSetting } from "@features/types";
 import { desktopOnly } from "@lib/actual/pages";
 import { setValue } from "@lib/store";
+import { LIVE_SIDEBAR_ATTR } from "@features/workflows/sidebar/lib/collapse";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 
 // 5.5px between the panels, 6px around them.
@@ -143,7 +144,7 @@ export const FLOATING_ATTR = "data-abt-inset-floating";
 
 // The sidebar takes the frame's place: one colour, no border, so only the page stands out.
 const FLOATING = `
-	:root {
+	& {
 		--abt-window-color: var(--color-sidebarBackground);
 	}
 	[data-abt-shell] {
@@ -160,16 +161,16 @@ const FLOATING = `
 const CONTRAST_ATTR = "data-abt-inset-contrast";
 const FRAME = "color-mix(in srgb, var(--color-sidebarBackground), black 22%)";
 const CONTRAST = `
-	:root[${CONTRAST_ATTR}] {
+	&[${CONTRAST_ATTR}] {
 		--abt-window-color: ${FRAME};
 	}
-	:root[${CONTRAST_ATTR}] [data-abt-shell] {
+	&[${CONTRAST_ATTR}] [data-abt-shell] {
 		background: ${FRAME} !important;
 	}
-	:root[${CONTRAST_ATTR}] :is([data-abt-sidebar-root], [data-abt-sidebar-slot] .sidebar) {
+	&[${CONTRAST_ATTR}] :is([data-abt-sidebar-root], [data-abt-sidebar-slot] .sidebar) {
 		border-color: color-mix(in srgb, var(--color-sidebarBackground), white 10%);
 	}
-	:root[${CONTRAST_ATTR}] [data-abt-page-card] {
+	&[${CONTRAST_ATTR}] [data-abt-page-card] {
 		border-color: transparent;
 	}
 `;
@@ -211,6 +212,7 @@ export const insetPanels = defineSetting({
 	group: "General",
 	icon: "panelsTopLeft",
 	platform: "desktop",
+	liveSidebarOnly: true,
 	context: {
 		key: "inset-panels",
 		defaultValue: "off",
@@ -251,6 +253,9 @@ export const insetPanels = defineSetting({
 		const mode = modeOf(value);
 		return mode === "off"
 			? ""
-			: desktopOnly(CSS + SIDE_PANEL + (mode === "floating" ? FLOATING : CONTRAST));
+			: // Not with Actual's own sidebar, whose markup the panels aren't built around.
+				desktopOnly(
+					`:root[${LIVE_SIDEBAR_ATTR}] { ${CSS + SIDE_PANEL + (mode === "floating" ? FLOATING : CONTRAST)} }`,
+				);
 	},
 });

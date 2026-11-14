@@ -1,6 +1,8 @@
 import { getValue, removeValue } from "@lib/store";
 
 export const SIDEBAR_MOUNT_ATTR = "data-abt-live-sidebar";
+// On the root while the live sidebar is on; inset panels only apply under it.
+export const LIVE_SIDEBAR_ATTR = "data-abt-sidebar-live";
 // In the page's own storage, like Actual's sidebar width: it reads synchronously, so the first
 // frame is already the right size. Per browser, as it was in the extension's storage.
 const COLLAPSED_KEY = "abt-sidebar-collapsed";

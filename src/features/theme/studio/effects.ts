@@ -1,6 +1,7 @@
 import { MAIN, PAGE_COLUMN, REPORTS_PAGE } from "@lib/actual-dom";
 import { desktopOnly } from "@lib/actual/pages";
 import { FLOATING_ATTR } from "@features/layout/inset-panels";
+import { LIVE_SIDEBAR_ATTR } from "@features/workflows/sidebar/lib/collapse";
 import {
 	type Effects,
 	type Generated,
@@ -133,7 +134,7 @@ function effectsCSS(e: Effects, mode: Mode, colors: Record<string, string>): str
 	return `
 		${SURFACES} { ${paint("var(--color-pageBackground)")} }
 		.sidebar,
-		:root[${FLOATING_ATTR}] [data-abt-shell] { ${paint("var(--color-sidebarBackground)")} }
+		:root[${FLOATING_ATTR}][${LIVE_SIDEBAR_ATTR}] [data-abt-shell] { ${paint("var(--color-sidebarBackground)")} }
 		.sidebar .activity-bar { background-color: color-mix(in srgb, black 10%, transparent) !important; }
 	`;
 }

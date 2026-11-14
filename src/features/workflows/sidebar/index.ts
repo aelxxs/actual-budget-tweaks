@@ -2,7 +2,8 @@ import { defineSetting } from "@features/types";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import LayoutPicker from "./LayoutPicker.svelte";
-import { SIDEBAR_MOUNT_ATTR as MOUNT_ATTR } from "./lib/collapse";
+import { syncWindowColor } from "@features/theme/theme-apply";
+import { LIVE_SIDEBAR_ATTR, SIDEBAR_MOUNT_ATTR as MOUNT_ATTR } from "./lib/collapse";
 import { NATIVE_ROOT_ATTR } from "./lib/data";
 import { LAYOUT_KEY } from "./lib/layout";
 import { NATIVE_ICON_ATTR, NAV_ICON_ATTR, swapSettingsNavIcons } from "./lib/settings-nav-icons";
@@ -51,6 +52,8 @@ export const experimentalSidebar = defineSetting({
 	css: () => CSS,
 	init: () => {
 		let sidebar: Mounted | null = null;
+		document.documentElement.setAttribute(LIVE_SIDEBAR_ATTR, "");
+		syncWindowColor();
 
 		const sync = () => {
 			const native = findNativeSidebarRoot();
@@ -79,6 +82,8 @@ export const experimentalSidebar = defineSetting({
 			document.querySelector(`[${WRAP_ATTR}]`)?.removeAttribute(WRAP_ATTR);
 			sidebar?.destroy();
 			sidebar = null;
+			document.documentElement.removeAttribute(LIVE_SIDEBAR_ATTR);
+			syncWindowColor();
 		};
 	},
 });
