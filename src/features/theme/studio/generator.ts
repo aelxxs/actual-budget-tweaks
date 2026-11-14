@@ -407,6 +407,11 @@ function sidebarColors(
 	return { ...s, pos: tone(150, 0.15), warn: tone(85, 0.14) };
 }
 
+/** The Vibrance slider's position, 0 to 1: how near the accent is to the most its hue can hold. */
+function vibrance(r: Recipe): number {
+	return Math.min(1, r.accentChroma / rimChroma(r.mode, r.accentHue));
+}
+
 function sidebarBase(
 	r: Recipe,
 	K: Record<string, string>,
@@ -456,7 +461,7 @@ function sidebarBase(
 	if (!dark) {
 		// A pale accent wash reads as pastel, so a light theme's tinted sidebar is a deep accent.
 		const l = 0.34 - 0.04 * r.contrast;
-		const chroma = Math.min(0.1, Math.max(0.05, r.accentChroma * 0.6));
+		const chroma = 0.025 + 0.075 * vibrance(r);
 		const bg = oklchToHex(l, chroma, r.accentHue);
 		return {
 			bg,
@@ -468,7 +473,7 @@ function sidebarBase(
 		};
 	}
 	const l = mantleL + 0.01;
-	const chroma = Math.min(0.11, Math.max(0.035, r.accentChroma * 0.35));
+	const chroma = 0.015 + 0.09 * vibrance(r);
 	const bg = oklchToHex(l, chroma, r.accentHue);
 	return {
 		bg,
