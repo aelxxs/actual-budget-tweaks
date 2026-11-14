@@ -2,6 +2,7 @@ import { defineSetting } from "@features/types";
 import { desktopOnly } from "@lib/actual/pages";
 import { setValue } from "@lib/store";
 import { syncWindowColor } from "@features/theme/theme-apply";
+import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 
 // 5.5px between the panels, 6px around them.
 const GAP = "calc(var(--abt-space-2) + var(--abt-space-1) * 0.75)";
@@ -103,6 +104,49 @@ const FLOATING = `
 	}
 `;
 
+// Cards with a sidebar unlike the page (a dark one on a light theme): the frame takes the sidebar's
+// colour, a step deeper, so the sidebar card sits on its own shade instead of on the page's.
+const CONTRAST_ATTR = "data-abt-inset-contrast";
+const FRAME = "color-mix(in srgb, var(--color-sidebarBackground), black 22%)";
+const CONTRAST = `
+	:root[${CONTRAST_ATTR}] {
+		--abt-window-color: ${FRAME};
+	}
+	:root[${CONTRAST_ATTR}] [data-abt-shell] {
+		background: ${FRAME} !important;
+	}
+	:root[${CONTRAST_ATTR}] :is([data-abt-sidebar-root], [data-abt-sidebar-slot] .sidebar) {
+		border-color: color-mix(in srgb, var(--color-sidebarBackground), white 10%);
+	}
+	:root[${CONTRAST_ATTR}] [data-abt-page-card] {
+		border-color: transparent;
+	}
+`;
+
+function luminance(color: string): number {
+	const [r, g, b] = (color.match(/[\d.]+/g) ?? []).map(Number);
+	return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+function resolve(variable: string): string {
+	const probe = document.createElement("div");
+	probe.style.color = `var(${variable})`;
+	document.body.append(probe);
+	const color = getComputedStyle(probe).color;
+	probe.remove();
+	return color;
+}
+
+function markContrast(): void {
+	const apart =
+		Math.abs(
+			luminance(resolve("--color-sidebarBackground")) -
+				luminance(resolve("--color-pageBackground")),
+		) > 0.3;
+	document.documentElement.toggleAttribute(CONTRAST_ATTR, apart);
+	syncWindowColor();
+}
+
 type Mode = "off" | "cards" | "floating";
 
 // A switch before it had a third option.
@@ -135,10 +179,19 @@ export const insetPanels = defineSetting({
 		}
 		// The window's title bar follows the frame; it runs after the CSS is in and after it's gone.
 		syncWindowColor();
-		return () => syncWindowColor();
+		if (modeOf(value) !== "cards") {
+			return () => syncWindowColor();
+		}
+		markContrast();
+		document.addEventListener(THEME_APPLIED_EVENT, markContrast);
+		return () => {
+			document.removeEventListener(THEME_APPLIED_EVENT, markContrast);
+			document.documentElement.removeAttribute(CONTRAST_ATTR);
+			syncWindowColor();
+		};
 	},
 	css: ({ value }) => {
 		const mode = modeOf(value);
-		return mode === "off" ? "" : desktopOnly(mode === "floating" ? CSS + FLOATING : CSS);
+		return mode === "off" ? "" : desktopOnly(mode === "floating" ? CSS + FLOATING : CSS + CONTRAST);
 	},
 });

@@ -9,8 +9,9 @@ const PREVIEW_ID = "studio:preview";
 
 /** Paints a recipe on the page: palette, sidebar, glow and grain. */
 export function previewRecipe(r: Recipe, g: Generated): void {
-	applyUserPaletteTheme(PREVIEW_ID, paletteKeys(g));
+	// First: applying the palette tells listeners the theme changed, and they read the sidebar's colours.
 	applyGlobalCSS(studioCSS(r, g), STUDIO_STYLE_ID);
+	applyUserPaletteTheme(PREVIEW_ID, paletteKeys(g));
 }
 
 /** Puts the saved theme back, as the theme setting's init chooses it. */
