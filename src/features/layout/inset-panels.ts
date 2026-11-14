@@ -137,6 +137,8 @@ const SIDE_PANEL = `
 	}
 `;
 
+export const FLOATING_ATTR = "data-abt-inset-floating";
+
 // The sidebar takes the frame's place: one colour, no border, so only the page stands out.
 const FLOATING = `
 	:root {
@@ -226,8 +228,14 @@ export const insetPanels = defineSetting({
 		}
 		// The window's title bar follows the frame; it runs after the CSS is in and after it's gone.
 		syncWindowColor();
-		if (modeOf(value) !== "cards") {
-			return () => syncWindowColor();
+		const mode = modeOf(value);
+		if (mode !== "cards") {
+			// For the theme's glow and grain to cover the frame the sidebar blends into.
+			document.documentElement.toggleAttribute(FLOATING_ATTR, mode === "floating");
+			return () => {
+				document.documentElement.removeAttribute(FLOATING_ATTR);
+				syncWindowColor();
+			};
 		}
 		markContrast();
 		document.addEventListener(THEME_APPLIED_EVENT, markContrast);
