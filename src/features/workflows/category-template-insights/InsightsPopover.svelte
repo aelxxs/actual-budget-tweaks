@@ -187,9 +187,10 @@
 									<span class="abt-privacy-number">{fmtMoney(Math.round(d.limit * 100))}</span>{/if}
 							{:else if d.type === "limit"}
 								<span class="abt-privacy-number">
-									Limit of {fmtMoney(Math.round(d.amount * 100))} per {periodUnit(
-										d.period,
-									)}{#if d.hold}, holding the rest{/if}
+									Balance capped at {fmtMoney(
+										Math.round(d.amount * 100),
+									)}{#if d.period !== "monthly"}
+										a {periodUnit(d.period)}{/if}{#if d.hold}, keeping anything above it{/if}
 								</span>
 							{:else if d.type === "refill"}
 								Refill to the limit each period
