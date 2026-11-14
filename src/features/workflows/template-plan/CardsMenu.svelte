@@ -14,6 +14,7 @@
 		type LucideIcon,
 		Sparkles,
 		Target,
+		Flag,
 	} from "@lucide/svelte";
 	import { onMount, tick } from "svelte";
 	import { backOut } from "svelte/easing";
@@ -30,6 +31,7 @@
 		moves: ArrowLeftRight,
 		"next-month": CalendarClock,
 		goals: Target,
+		"long-goals": Flag,
 		trend: ChartColumn,
 		"coming-up": Clock,
 	};

@@ -4,12 +4,12 @@
 	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import { fmtMoney } from "@lib/format/currency";
-	import { monthOf } from "@lib/format/months";
+	import { addMonths, monthOf, parseMonth } from "@lib/format/months";
 	import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
 	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import { onMount } from "svelte";
 	import { cardsInRow } from "@features/workflows/budget-summary-row/state.svelte";
-	import { templatePlanState } from "./state.svelte";
+	import { type LongGoalRow, templatePlanState } from "./state.svelte";
 	import { flip } from "svelte/animate";
 	import { fade, slide } from "svelte/transition";
 	import { type CardId, TEMPLATES_BAR, cardLabel } from "./cards";
@@ -68,6 +68,22 @@
 	}
 
 	/** Actual's notes write the day as "November 08"; anything else is shown as written. */
+	const goalMonth = new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" });
+
+	/** The month the goal is reached at this month's pace. */
+	function goalOutlook(g: LongGoalRow): string | null {
+		if (g.balance >= g.goal) {
+			return "Reached";
+		}
+		if (!data || g.monthly <= 0) {
+			return "Nothing added this month";
+		}
+		const { year, month } = parseMonth(
+			addMonths(data.monthKey, Math.ceil((g.goal - g.balance) / g.monthly)),
+		);
+		return `by ${goalMonth.format(new Date(year, month))}`;
+	}
+
 	const shortDay = (day: string) => day.replace(/^([A-Za-z]{3})[A-Za-z]* 0?(\d{1,2})$/, "$1 $2");
 
 	onMount(() => {
@@ -276,6 +292,27 @@
 		{/if}
 	{/snippet}
 
+	{#snippet longGoalsCard()}
+		{@const reached = data.longGoals.filter((g) => g.balance >= g.goal).length}
+		<Section title="Long-term Goals" count={`${reached}/${data.longGoals.length}`}>
+			{#each data.longGoals as g (g.id)}
+				<Row
+					name={g.name}
+					meta={goalOutlook(g)}
+					value={`${fmtMoney(Math.max(0, g.balance))} / ${fmtMoney(g.goal)}`}
+				>
+					<div class="abt-tab-overview-mini-bar-wrap">
+						<div
+							class="abt-tab-overview-mini-bar"
+							style="width:{Math.min(100, Math.max(0, (g.balance / g.goal) * 100))}%"
+							data-status={g.balance >= g.goal ? "ok" : "goal"}
+						></div>
+					</div>
+				</Row>
+			{/each}
+		</Section>
+	{/snippet}
+
 	{#snippet trendCard()}
 		{#if data.trend.length > 0}
 			<Section title="Over / Under Budget">
@@ -413,6 +450,7 @@
 	{@const hasContent = (id: CardId) =>
 		(id !== "next-month" || !inRow.includes("runway")) &&
 		(id !== "goals" || data.underfundedGoals.length > 0) &&
+		(id !== "long-goals" || data.longGoals.length > 0) &&
 		(id !== "trend" || data.trend.length > 0)}
 	<!-- While the card menu is open, cards with nothing to show stand in, so moving them shows. -->
 	{@const availableCards =
@@ -428,9 +466,11 @@
 					? "Months ahead is in the summary row above the budget"
 					: id === "trend"
 						? "Shows once there's a month of history"
-						: data.totalGoalCount > 0
-							? "Every goal is funded, so it's hidden for now"
-							: "Shows when a category has a goal to fund"}
+						: id === "long-goals"
+							? "Shows when a category has a long-term goal"
+							: data.totalGoalCount > 0
+								? "Every goal is funded, so it's hidden for now"
+								: "Shows when a category has a goal to fund"}
 			</div>
 		</Section>
 	{/snippet}
@@ -452,6 +492,8 @@
 				{@render nextMonthCard()}
 			{:else if id === "goals"}
 				{@render goalsCard()}
+			{:else if id === "long-goals"}
+				{@render longGoalsCard()}
 			{:else if id === "trend"}
 				{@render trendCard()}
 			{:else if id === "coming-up"}

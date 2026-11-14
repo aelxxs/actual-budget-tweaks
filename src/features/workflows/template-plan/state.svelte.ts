@@ -28,6 +28,17 @@ export interface OverviewCategoryRow {
 	goal?: number;
 }
 
+/** A category with a long-term goal (#goal): met by its balance, not one month's budget. */
+export interface LongGoalRow {
+	id: string;
+	name: string;
+	groupName: string;
+	balance: number;
+	goal: number;
+	/** What this month put in. */
+	monthly: number;
+}
+
 export interface OverviewSchedule {
 	id: string;
 	name: string;
@@ -52,6 +63,7 @@ export interface OverviewData {
 	bufferedSelected: number;
 	overspentCategories: OverviewCategoryRow[];
 	underfundedGoals: OverviewCategoryRow[];
+	longGoals: LongGoalRow[];
 	fullyFundedGoalCount: number;
 	totalGoalCount: number;
 	upcomingSchedules: OverviewSchedule[];

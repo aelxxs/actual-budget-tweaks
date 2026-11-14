@@ -3,6 +3,7 @@ import { addMonths, isoDate } from "@lib/format/months";
 import type { Category } from "@lib/actual/templates/priority-plan";
 import type { BudgetMove } from "@lib/actual/budget-moves";
 import type {
+	LongGoalRow,
 	MonthTrend,
 	OverviewCategoryRow,
 	OverviewIncome,
@@ -59,6 +60,7 @@ function spentIn(cats: Category[], cells: Cells): number {
 export function summarizeCategories(cats: Category[], cells: Cells) {
 	const overspentCategories: OverviewCategoryRow[] = [];
 	const underfundedGoals: OverviewCategoryRow[] = [];
+	const longGoals: LongGoalRow[] = [];
 	let fullyFundedGoalCount = 0;
 	let totalGoalCount = 0;
 
@@ -72,27 +74,34 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 			overspentCategories.push({ ...row, leftover });
 		}
 
-		// Actual's rule, as the summary row's Targets funded: a #goal by the balance, a template by
-		// this month's budget (a carried balance doesn't fund next month's rent).
-		const progress = cells.get(`long-goal-${cat.id}`) === 1 ? leftover : budgeted;
+		// A template is met by this month's budget: a carried balance doesn't fund next month's rent.
 		if (goal <= 0) {
 			continue;
 		}
+		// A #goal is met over many months by the balance, so it isn't this month's to fund.
+		if (cells.get(`long-goal-${cat.id}`) === 1) {
+			longGoals.push({ ...row, balance: leftover, goal, monthly: budgeted });
+			continue;
+		}
 		totalGoalCount++;
-		if (progress >= goal) {
+		if (budgeted >= goal) {
 			fullyFundedGoalCount++;
 		} else {
-			underfundedGoals.push({ ...row, leftover: progress, goal });
+			underfundedGoals.push({ ...row, leftover: budgeted, goal });
 		}
 	}
 
 	overspentCategories.sort((a, b) => a.leftover - b.leftover);
+	// Closest to done first; reached ones last.
+	const share = (g: LongGoalRow) => (g.balance >= g.goal ? -1 : g.balance / g.goal);
+	longGoals.sort((a, b) => share(b) - share(a));
 	underfundedGoals.sort((a, b) => a.leftover - (a.goal ?? 0) - (b.leftover - (b.goal ?? 0)));
 
 	return {
 		totalSpent: spentIn(cats, cells),
 		overspentCategories,
 		underfundedGoals,
+		longGoals,
 		fullyFundedGoalCount,
 		totalGoalCount,
 	};
