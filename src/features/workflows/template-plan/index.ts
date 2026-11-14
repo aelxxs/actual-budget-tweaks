@@ -1,8 +1,6 @@
-import { loadMonthMoves } from "@lib/actual/budget-moves";
 import { isPanelPersistedOpen, sidepanel, wasPanelPersistedOpen } from "@features/core/side-panel";
 import { defineSetting } from "@features/types";
-import { icon } from "@lib/icons";
-import type { Schedule } from "@lib/types/actual-schema";
+import { BUDGET_LINK, BUDGET_TABLE } from "@lib/actual-dom";
 import { loadCurrentBudgetId, notify, onListChange, query, send } from "@lib/actual/actual-api";
 import {
 	type BudgetTableChange,
@@ -10,15 +8,10 @@ import {
 	readCells,
 	watchBudgetTable,
 } from "@lib/actual/budget-cells";
-import { loadCurrency } from "@lib/format/currency";
+import { loadMonthMoves } from "@lib/actual/budget-moves";
 import { isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
-import { watchDom } from "@lib/dom/dom-watcher";
-import { addMonths, monthToSheet, sheetToMonth } from "@lib/format/months";
-import { Page, matchesPage } from "@lib/actual/pages";
-import { getValue, removeValue, setValue } from "@lib/store";
 import { followBudgetValue } from "@lib/actual/budget-value";
-import { CARDS_KEY, toLayout } from "./cards";
-import { type Mounted, mountToPanelBody } from "@lib/dom/svelte";
+import { matchesPage, Page } from "@lib/actual/pages";
 import {
 	diffSnapshots,
 	finishSnapshots,
@@ -28,9 +21,9 @@ import {
 	loadCategories,
 	loadTemplatesByCategoryId,
 	sheetToMonthLabel,
+	type SnapshotDescriptor,
 	startSnapshotAllVisible,
 	waitForQuiescence,
-	type SnapshotDescriptor,
 } from "@lib/actual/templates/actual-data";
 import {
 	previewMonthTemplates,
@@ -38,6 +31,15 @@ import {
 } from "@lib/actual/templates/next-month-coverage";
 import { type Category, createPriorityPlanner } from "@lib/actual/templates/priority-plan";
 import type { TemplateEntry } from "@lib/actual/templates/templates";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { type Mounted, mountToPanelBody } from "@lib/dom/svelte";
+import { loadCurrency } from "@lib/format/currency";
+import { addMonths, currentMonth, monthToSheet, sheetToMonth } from "@lib/format/months";
+import { icon } from "@lib/icons";
+import { createLogger } from "@lib/logger";
+import { getValue, removeValue, setValue } from "@lib/store";
+import type { Schedule } from "@lib/types/actual-schema";
+import { CARDS_KEY, toLayout } from "./cards";
 import {
 	BREAKDOWN_STORAGE_KEY,
 	PRIO_COLLAPSE_STORAGE_KEY,
@@ -51,26 +53,24 @@ import {
 	monthCellNames,
 	nextMonthGoalNeed,
 	recentAverageSpending,
-	summarizeCategories,
 	spendingSplit,
+	summarizeCategories,
 	summarizeIncome,
-	withGoalPlans,
 	trendCellNames,
 	trendMonths,
 	upcomingSchedules,
+	withGoalPlans,
 } from "./overview";
 import {
-	INSIGHTS_TABS,
-	templatePlanState,
 	type BreakdownDiff,
-	type InsightsTab,
 	type BreakdownState,
+	INSIGHTS_TABS,
+	type InsightsTab,
 	type OverviewData,
+	templatePlanState,
 	type TrackedAction,
 } from "./state.svelte";
 import TemplatePlanPanel from "./TemplatePlanPanel.svelte";
-import { createLogger } from "@lib/logger";
-import { BUDGET_LINK, BUDGET_TABLE } from "@lib/actual-dom";
 
 const log = createLogger("template-plan");
 
@@ -203,7 +203,9 @@ function openPanel(): void {
 	});
 	if (templatePlanState.activeTab === "overview" && !templatePlanState.overviewLoading) {
 		// Kept numbers may be stale: schedules or transactions changed on another page.
-		refreshOverview({ quiet: !!templatePlanState.overviewData });
+		const kept = !!templatePlanState.overviewData;
+		showSnapshot();
+		refreshOverview({ quiet: kept });
 	} else if (
 		templatePlanState.activeTab === "priority" &&
 		!templatePlanState.priorityLoading &&
@@ -333,6 +335,69 @@ const unverified = new Set<string>();
 const AHEAD_STORE = "abt-insights-ahead";
 const AHEAD_STORED = 60;
 let cacheBudget: string | undefined;
+// The running month's overview as last shown, so a reload has it on screen (dimmed) at once.
+const SNAPSHOT_STORE = "abt-insights-snapshot";
+
+interface Snapshot {
+	/** The build that wrote it: another build's overview may not have the same shape. */
+	version: string;
+	budget: string;
+	data: OverviewData;
+}
+
+function readSnapshot(): Snapshot | null {
+	try {
+		const snap = JSON.parse(localStorage.getItem(SNAPSHOT_STORE) ?? "null") as Snapshot | null;
+		return snap?.version === browser.runtime.getManifest().version && snap.data ? snap : null;
+	} catch {
+		return null;
+	}
+}
+
+/** The snapshot on screen until the budget is known, and which budget it was for. */
+let shownSnapshot: Snapshot | null = null;
+
+/**
+ * Puts last session's copy of the running month up, dimmed as a refresh, when there's nothing
+ * else to show. It's checked against the open budget once that's known.
+ */
+function showSnapshot(): void {
+	if (templatePlanState.overviewData) {
+		return;
+	}
+	const snap = readSnapshot();
+	const sheet = getCurrentSheet() ?? monthToSheet(currentMonth());
+	if (!snap || snap.data.sheet !== sheet || (cacheBudget && snap.budget !== cacheBudget)) {
+		return;
+	}
+	shownSnapshot = snap;
+	templatePlanState.overviewData = snap.data;
+	templatePlanState.overviewLoading = true;
+}
+
+function forgetSnapshot(): void {
+	try {
+		localStorage.removeItem(SNAPSHOT_STORE);
+	} catch {
+		// Nothing was kept.
+	}
+}
+
+function writeSnapshot(d: OverviewData): void {
+	if (!cacheBudget || d.sheet !== monthToSheet(currentMonth())) {
+		return;
+	}
+	try {
+		const snap: Snapshot = {
+			version: browser.runtime.getManifest().version,
+			budget: cacheBudget,
+			data: d,
+		};
+		localStorage.setItem(SNAPSHOT_STORE, JSON.stringify(snap));
+	} catch {
+		// The next reload shows the skeleton instead.
+	}
+}
 
 /** Overviews of the months either side of the one shown, worked out ahead so stepping draws at once. */
 const overviewCache = new Map<string, OverviewData>();
@@ -436,6 +501,7 @@ async function resolveAhead(
 }
 
 function keepOverview(d: OverviewData): void {
+	writeSnapshot(d);
 	overviewCache.delete(d.sheet);
 	overviewCache.set(d.sheet, d);
 	if (overviewCache.size > OVERVIEWS_KEPT) {
@@ -565,11 +631,21 @@ async function refreshOverview({ quiet = false }: { quiet?: boolean } = {}): Pro
 	if (kept) {
 		templatePlanState.overviewData = kept;
 	} else if (!quiet) {
+		showSnapshot();
 		templatePlanState.overviewLoading = true;
 	}
 	if (await useBudgetCache()) {
 		kept = null;
 	}
+	if (shownSnapshot && templatePlanState.overviewData === shownSnapshot.data) {
+		// Another budget's numbers: back to the skeleton. This one's: they stand in until the real ones.
+		if (shownSnapshot.budget !== cacheBudget) {
+			templatePlanState.overviewData = null;
+		} else {
+			kept = shownSnapshot.data;
+		}
+	}
+	shownSnapshot = null;
 	// Quiet refreshes follow edits.
 	if (quiet) {
 		forgetAhead();
@@ -840,6 +916,7 @@ function checkSheetChange(): void {
 	// The last month's numbers stay up, dimmed, until the new ones replace them; the
 	// skeleton is only for a tab with nothing to show yet.
 	if (drawerOpen && templatePlanState.activeTab === "overview") {
+		showSnapshot();
 		templatePlanState.overviewLoading = true;
 	} else if (drawerOpen && templatePlanState.activeTab === "priority") {
 		templatePlanState.priorityLoading = true;
@@ -1089,6 +1166,7 @@ export const templatePlan = defineSetting({
 			templatePlanState.loadOverview = null;
 			templatePlanState.peekOverview = null;
 			templatePlanState.overviewData = null;
+			forgetSnapshot();
 			templatePlanState.breakdownLoading = false;
 			lastSheetKey = null;
 			drawerOpen = false;
