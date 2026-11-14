@@ -537,6 +537,8 @@
 		flex: 1;
 		grid-auto-rows: 1fr;
 		overflow-y: auto;
+		/* The cells' -0.5px margin lifts the top row's border into the scroll clip. */
+		padding-top: 1px;
 		padding-bottom: var(--abt-page-gutter);
 	}
 
