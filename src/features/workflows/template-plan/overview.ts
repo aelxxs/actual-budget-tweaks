@@ -1,5 +1,7 @@
-import type { Schedule } from "@lib/types/actual-schema";
-import { addMonths, isoDate } from "@lib/format/months";
+import type { GoalDefEntry, Schedule } from "@lib/types/actual-schema";
+import { addMonths, currentMonth, isoDate, parseMonth } from "@lib/format/months";
+import { amountToCents } from "@lib/format/currency";
+import type { TemplateEntry } from "@lib/actual/templates/templates";
 import type { Category } from "@lib/actual/templates/priority-plan";
 import type { BudgetMove } from "@lib/actual/budget-moves";
 import type {
@@ -80,7 +82,7 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 		}
 		// A #goal is met over many months by the balance, so it isn't this month's to fund.
 		if (cells.get(`long-goal-${cat.id}`) === 1) {
-			longGoals.push({ ...row, balance: leftover, goal, monthly: budgeted });
+			longGoals.push({ ...row, balance: leftover, goal, monthly: budgeted, plan: null });
 			continue;
 		}
 		totalGoalCount++;
@@ -105,6 +107,76 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 		fullyFundedGoalCount,
 		totalGoalCount,
 	};
+}
+
+/**
+ * This month's budget and spending meant for spending: long-term goals are savings, held rather
+ * than spent. `flex` also leaves out fixed bills, paid in one go (rent on the 1st), which would make
+ * any month look fast against an even pace; a category covering a schedule counts as a bill.
+ */
+export function spendingSplit(
+	cats: Category[],
+	cells: Cells,
+	templates: Map<string, TemplateEntry[]>,
+): { spendBudgeted: number; spendSpent: number; flexBudgeted: number; flexSpent: number } {
+	const out = { spendBudgeted: 0, spendSpent: 0, flexBudgeted: 0, flexSpent: 0 };
+	for (const cat of cats) {
+		if (cat.is_income || cells.get(`long-goal-${cat.id}`) === 1) {
+			continue;
+		}
+		const budgeted = cells.get(`budget-${cat.id}`) ?? 0;
+		const spent = Math.max(0, -(cells.get(`sum-amount-${cat.id}`) ?? 0));
+		out.spendBudgeted += budgeted;
+		out.spendSpent += spent;
+		if (!templates.get(cat.id)?.some((t) => t.kind === "schedule")) {
+			out.flexBudgeted += budgeted;
+			out.flexSpent += spent;
+		}
+	}
+	return out;
+}
+
+/** Whether the month is still running, so its result is only so far. */
+export const isRunning = (key: string): boolean => key === currentMonth();
+
+/** Budgeted less spent: positive is money left, negative is spending over the budget. */
+export const trendGap = (t: MonthTrend): number => t.budgeted - t.spent;
+
+const monthsBetween = (from: string, to: string): number => {
+	const a = parseMonth(from);
+	const b = parseMonth(to);
+	return (b.year - a.year) * 12 + (b.month - a.month);
+};
+
+/**
+ * The pace each long-term goal's own templates set: a dated "save by" spreads what's left before
+ * this month over the months to its deadline; a monthly amount is the pace as written.
+ */
+export function withGoalPlans(
+	goals: LongGoalRow[],
+	templates: Map<string, TemplateEntry[]>,
+	monthKey: string,
+): LongGoalRow[] {
+	return goals.map((g) => {
+		let perMonth = 0;
+		let deadline: string | null = null;
+		for (const t of templates.get(g.id) ?? []) {
+			const d = t.engineTemplate as GoalDefEntry | undefined;
+			if (d?.type === "by") {
+				const months = Math.max(1, monthsBetween(monthKey, d.month) + 1);
+				const before = g.balance - g.monthly;
+				perMonth = Math.ceil(Math.max(0, amountToCents(d.amount) - before) / months);
+				deadline = d.month;
+				break;
+			}
+			if (d?.type === "simple" && d.monthly != null) {
+				perMonth += amountToCents(d.monthly);
+			} else if (d?.type === "periodic" && d.period.period === "month" && d.period.amount === 1) {
+				perMonth += amountToCents(d.amount);
+			}
+		}
+		return { ...g, plan: perMonth > 0 ? { perMonth, deadline } : null };
+	});
 }
 
 /** The average assigned in months that had anything assigned. */
@@ -211,6 +283,8 @@ export interface MoveRow {
 	key: string;
 	from: string;
 	to: string;
+	fromId: string | null;
+	toId: string | null;
 	amount: number;
 	/** How many moves between the two it stands for. */
 	count: number;
@@ -221,6 +295,7 @@ export interface MoveDay {
 	day: string;
 	/** Set when every row moved money out of this one category; its rows then name only `to`. */
 	from?: string;
+	fromId?: string | null;
 	rows: MoveRow[];
 }
 
@@ -237,7 +312,15 @@ export function groupMoves(moves: BudgetMove[]): MoveDay[] {
 			days.set(move.day, rows);
 		}
 		const key = `${move.from}\u0000${move.to}`;
-		const row = rows.get(key) ?? { key, from: move.from, to: move.to, amount: 0, count: 0 };
+		const row = rows.get(key) ?? {
+			key,
+			from: move.from,
+			to: move.to,
+			fromId: move.fromId,
+			toId: move.toId,
+			amount: 0,
+			count: 0,
+		};
 		row.amount += move.amount;
 		row.count += 1;
 		// Re-added so the day's rows run by their latest move.
@@ -254,7 +337,13 @@ export function groupMoves(moves: BudgetMove[]): MoveDay[] {
 		const loose: MoveRow[] = [];
 		for (const [from, sourced] of bySource) {
 			if (sourced.length > 1) {
-				groups.push({ key: `${day}\u0000${from}`, day, from, rows: sourced });
+				groups.push({
+					key: `${day}\u0000${from}`,
+					day,
+					from,
+					fromId: sourced[0].fromId,
+					rows: sourced,
+				});
 			} else {
 				loose.push(...sourced);
 			}

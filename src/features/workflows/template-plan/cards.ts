@@ -3,7 +3,7 @@ export const OVERVIEW_CARDS = [
 	{ id: "this-month", label: "This Month" },
 	{ id: "income", label: "Income" },
 	{ id: "next-month", label: "Next Month" },
-	{ id: "goals", label: "Goals to Fund" },
+	{ id: "goals", label: "Targets to Fund" },
 	{ id: "long-goals", label: "Long-term Goals" },
 	{ id: "trend", label: "Over / Under Budget" },
 	{ id: "moves", label: "Reassigned" },

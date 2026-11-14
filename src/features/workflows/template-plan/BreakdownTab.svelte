@@ -1,5 +1,4 @@
 <script lang="ts">
-	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import Badge from "@lib/components/panel/Badge.svelte";
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
@@ -76,9 +75,8 @@
 						indent
 						value={formatAllocatedVsRequested(row.allocatedCents, row.requestedCents)}
 						tone={statusTone(row.status)}
-					>
-						{#snippet leading()}<CategoryIcon id={row.catId} />{/snippet}
-					</Row>
+						categoryId={row.catId}
+					/>
 				{/each}
 			{/each}
 		</Section>
@@ -98,9 +96,8 @@
 						dim={r.delta === 0}
 						value={r.delta === 0 ? fmtMoney(r.after) : fmtMoney(r.delta, { sign: true })}
 						tone={r.delta > 0 ? "positive" : r.delta < 0 ? "negative" : "muted"}
-					>
-						{#snippet leading()}<CategoryIcon id={r.id} />{/snippet}
-					</Row>
+						categoryId={r.id}
+					/>
 				{/each}
 			</Section>
 		{/each}

@@ -93,7 +93,7 @@
 		</div>
 		<div class="ends">
 			{#if covered}
-				<span class="abt-privacy-number">{fmtMoney(held)}</span> held ·
+				<span class="abt-privacy-number">{fmtMoney(held)}</span> spare ·
 				<span class="abt-privacy-number">{fmtMoney(need)}</span> for {monthName(monthKey, "short")}
 			{:else}
 				<span class="abt-privacy-number">{fmtMoney(Math.max(0, held))}</span> of

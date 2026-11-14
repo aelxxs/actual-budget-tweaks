@@ -37,6 +37,8 @@ export interface LongGoalRow {
 	goal: number;
 	/** What this month put in. */
 	monthly: number;
+	/** What the category's own template asks for each month, and by when if it's dated; null without one. */
+	plan: { perMonth: number; deadline: string | null } | null;
 }
 
 export interface OverviewSchedule {
@@ -55,6 +57,12 @@ export interface OverviewData {
 	toBudget: number;
 	totalBudgeted: number;
 	totalSpent: number;
+	/** Budgeted and spent outside long-term goals, which are savings: what's meant to be spent. */
+	spendBudgeted: number;
+	spendSpent: number;
+	/** The same, also without fixed bills (categories covering a schedule), for pace. */
+	flexBudgeted: number;
+	flexSpent: number;
 	incomeBudgeted: number;
 	spentBudgeted: number;
 	saved: number;

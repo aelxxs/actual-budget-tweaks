@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { scaleBand, scaleLinear } from "d3";
 	import { fmtMoney } from "@lib/format/currency";
-	import { currentMonth } from "@lib/format/months";
+	import { isRunning, trendGap } from "./overview";
 	import type { MonthTrend } from "./state.svelte";
 
 	interface Props {
@@ -23,20 +23,7 @@
 	let w = $state(0);
 	let hovered = $state<number | null>(null);
 
-	/** How much of the running month has passed; the rest are whole months. */
-	function elapsed(key: string): number {
-		if (key !== currentMonth()) {
-			return 1;
-		}
-		const today = new Date();
-		return today.getDate() / new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-	}
-
-	/**
-	 * Budgeted less spent: above the line is money left, below is overspending. The running month
-	 * counts only the budget due so far, or it would always tower over the finished ones.
-	 */
-	const diffs = $derived(trend.map((t) => t.budgeted * elapsed(t.monthKey) - t.spent));
+	const diffs = $derived(trend.map(trendGap));
 
 	const xScale = $derived.by(() => {
 		if (w <= 0) {
@@ -107,7 +94,7 @@
 					d={bar(x, bw, diff)}
 					fill={diff < 0 ? OVER : UNDER}
 					opacity={(hovered !== null && hovered !== i ? 0.45 : 1) *
-						(elapsed(point.monthKey) < 1 ? 0.55 : 1)}
+						(isRunning(point.monthKey) ? 0.55 : 1)}
 					style="transition:opacity 0.1s"
 				/>
 				<rect
@@ -159,7 +146,7 @@
 						font-size="9"
 						font-family="inherit"
 						fill="rgba(255,255,255,0.45)"
-						>{longMonth(point.monthKey)}{elapsed(point.monthKey) < 1 ? " · on pace" : ""}</text
+						>{longMonth(point.monthKey)}{isRunning(point.monthKey) ? " · so far" : ""}</text
 					>
 					<text
 						y={25}
@@ -169,7 +156,8 @@
 						font-family="inherit"
 						style="font-variant-numeric:tabular-nums"
 						fill={diff < 0 ? OVER : "white"}
-						>{fmtMoney(Math.abs(diff))} {diff < 0 ? "over" : "under"}</text
+						>{fmtMoney(Math.abs(diff))}
+						{diff < 0 ? "over" : isRunning(point.monthKey) ? "left" : "under"}</text
 					>
 					<text
 						y={39}

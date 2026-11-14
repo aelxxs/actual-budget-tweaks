@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 
 	let {
 		name,
@@ -12,6 +13,8 @@
 		dim = false,
 		sensitive = false,
 		leading,
+		categoryId,
+		label,
 		children,
 	}: {
 		name: string;
@@ -26,6 +29,10 @@
 		/** Blurs the name in privacy mode too, e.g. payees. */
 		sensitive?: boolean;
 		leading?: Snippet;
+		/** Shows the category's image icon, if it has one, where an emoji in its name would sit. */
+		categoryId?: string | null;
+		/** Replaces the name's text, e.g. to put icons inside it; `name` still sets nothing else. */
+		label?: Snippet;
 		/** Extra content under the line, e.g. a progress bar. */
 		children?: Snippet;
 	} = $props();
@@ -35,7 +42,9 @@
 	<div class="line">
 		{@render leading?.()}
 		<span class="name" class:abt-privacy-number={sensitive}>
-			{name}{#if meta}<span class="meta">{meta}</span>{/if}
+			{#if label}{@render label()}{:else}{#if categoryId}<CategoryIcon
+						id={categoryId}
+					/>{/if}{name}{/if}{#if meta}<span class="meta">{meta}</span>{/if}
 		</span>
 		{#if count && count > 1}
 			<span class="abt-count">×{count}</span>
@@ -67,6 +76,13 @@
 		gap: var(--abt-space-3);
 	}
 
+	/* Sized and spaced as an emoji and the space after it. */
+	.name :global(.category-icon) {
+		width: 1.2em !important;
+		height: 1.2em !important;
+		margin-right: 0.15em;
+		vertical-align: -0.2em;
+	}
 	.name {
 		flex: 1;
 		min-width: 0;
