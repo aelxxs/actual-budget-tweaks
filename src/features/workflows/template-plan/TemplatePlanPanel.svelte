@@ -2,7 +2,7 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import Tabs from "@lib/components/Tabs.svelte";
 	import { fmtMoney } from "@lib/format/currency";
-	import { monthLabelForHeader } from "@lib/actual/templates/actual-data";
+	import { getVisibleSheets, monthLabelForHeader } from "@lib/actual/templates/actual-data";
 	import { setValue } from "@lib/store";
 	import BreakdownTab from "./BreakdownTab.svelte";
 	import CardsMenu from "./CardsMenu.svelte";
@@ -39,7 +39,9 @@
 			(templatePlanState.activeTab === "overview" && templatePlanState.overviewData?.monthKey) ||
 			templatePlanState.priorityData?.month ||
 			null;
-		const monthLabel = monthLabelForHeader(rawMonthLabel ?? null);
+		// The budget's own header names the month; only with several on screen does it need saying.
+		const monthLabel =
+			getVisibleSheets().length > 1 ? monthLabelForHeader(rawMonthLabel ?? null) : null;
 		const run = templatePlanState.breakdownState;
 		if (templatePlanState.activeTab === "breakdown" && run) {
 			return monthLabel
