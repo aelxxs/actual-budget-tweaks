@@ -1,7 +1,7 @@
+import { syncWindowColor } from "@features/theme/theme-apply";
 import { defineSetting } from "@features/types";
 import { desktopOnly } from "@lib/actual/pages";
 import { setValue } from "@lib/store";
-import { syncWindowColor } from "@features/theme/theme-apply";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 
 // 5.5px between the panels, 6px around them.
@@ -94,8 +94,9 @@ const CSS = `
 // page card's frame moves onto the titlebar and page column. Page panels stay inside the page card.
 const OPEN = "[data-abt-page-card] > [data-abt-panel-open][data-abt-panel-app]";
 const SIDE_PANEL = `
+	/* No border at all, not a transparent one: the titlebar's and page's own borders take its place. */
 	[data-abt-page-card]:has(> [data-abt-panel-open][data-abt-panel-app]) {
-		border-color: transparent;
+		border-width: 0;
 		border-radius: 0;
 		background: transparent !important;
 		overflow: visible;
@@ -117,7 +118,8 @@ const SIDE_PANEL = `
 	}
 	${OPEN} > [data-abt-side-drawer-sidebar] {
 		${CARD}
-		background: var(--abt-panel-surface, var(--color-pageBackground));
+		/* The page card's surface, so the same border reads the same on both. */
+		background: var(--color-pageBackground);
 	}
 	/* Centred on the gap, as the sidebar's is (its offset starts inside the panel's border). */
 	${OPEN} .abt-side-drawer-resize-handle {
