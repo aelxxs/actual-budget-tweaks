@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { type AccountIconData } from "@lib/account-icons";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
 	import { leaveOverlay } from "@features/core/overlay-page";
 	import { openRecap } from "@features/workflows/sync-recap";
-	import RollingNumber from "@lib/components/RollingNumber.svelte";
+	import { type AccountIconData } from "@lib/account-icons";
 	import { dispatch, navigate } from "@lib/actual/actual-api";
+	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { lastShown, rememberShown } from "@lib/last-shown";
 	import { getValue, setValue, watchValue } from "@lib/store";
 	import { ChevronDown, List, ListTree, Plus } from "@lucide/svelte";
@@ -811,6 +811,8 @@
 		width: 100%;
 		box-sizing: border-box;
 		height: 32px;
+		/* Sits as close to the first section as split's does. */
+		margin-bottom: calc(-1 * (var(--abt-space-3) + var(--abt-space-1)));
 		padding: 6px;
 		padding-inline: var(--abt-space-3);
 		border-radius: var(--abt-radius);

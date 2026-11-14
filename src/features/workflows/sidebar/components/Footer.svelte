@@ -149,6 +149,7 @@
 	/* In the single-panel layout the body's own bottom padding would add to the footer's. */
 	:global(.sidebar > .body) > .footer {
 		margin-bottom: -0.75rem;
+		padding-inline: 0;
 	}
 	.footer-actions {
 		display: flex;

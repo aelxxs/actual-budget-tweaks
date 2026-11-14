@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { spendingCalendar } from "@features/workflows/spending-calendar";
-	import { graphView, openGraphView } from "@features/workflows/graph-view";
-	import { openCalendar } from "@features/workflows/spending-calendar";
 	import { isOverlayOpen, leaveOverlay } from "@features/core/overlay-page";
+	import { graphView, openGraphView } from "@features/workflows/graph-view";
+	import { openCalendar, spendingCalendar } from "@features/workflows/spending-calendar";
 	import { navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
 	import { getValue, setValue, watchValue } from "@lib/store";
 	import { CalendarDays, ChevronDown, Network } from "@lucide/svelte";
-	import { settingsItem, settingsMenu } from "../lib/nav";
 	import { mainItems, settingsItems, trackSidebarMenu } from "../lib/menu.svelte";
+	import { settingsItem, settingsMenu } from "../lib/nav";
 	import { route, trackRoute } from "../lib/route.svelte";
 
 	let calendarFeatureEnabled = $state(false);
@@ -181,7 +180,7 @@
 	.nav-link {
 		display: flex;
 		align-items: center;
-		gap: 13px;
+		gap: var(--abt-space-3);
 		width: 100%;
 		padding: calc(var(--sb-row-pad-y, 5px) + 2px) 8px;
 		border-radius: var(--abt-radius);
