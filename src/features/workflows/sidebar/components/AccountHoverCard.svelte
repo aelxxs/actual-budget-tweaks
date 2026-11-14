@@ -11,6 +11,8 @@
 	import type { SidebarAccount } from "../lib/data";
 	import StatusIcon from "./StatusIcon.svelte";
 	import { reviewState } from "@features/workflows/sync-recap/queue-state.svelte";
+	import { reconciledOn } from "@features/workflows/reconcile/relative-time";
+	import { send } from "@lib/actual/actual-api";
 
 	const {
 		account,
@@ -55,6 +57,26 @@
 				}
 			},
 			(err) => log.warn("Couldn't load the account card:", err),
+		);
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	// Read on every hover rather than cached with the rest: finishing a reconcile changes it but
+	// nothing else the card shows. Undefined until loaded; null if never reconciled.
+	let reconciled = $state<string | null | undefined>(undefined);
+	$effect(() => {
+		let cancelled = false;
+		reconciled = undefined;
+		send<{ id: string; last_reconciled: string | null }[]>("accounts-get").then(
+			(rows) => {
+				if (!cancelled) {
+					const at = rows.find((r) => r.id === account.id)?.last_reconciled;
+					reconciled = at ? reconciledOn(Number(at)) : null;
+				}
+			},
+			(err) => log.warn("Couldn't load the last reconcile date:", err),
 		);
 		return () => {
 			cancelled = true;
@@ -149,6 +171,12 @@
 				<span>No activity</span>
 			{/if}
 		</div>
+		{#if reconciled !== undefined}
+			<div class="line quiet">
+				<span>Reconciled</span>
+				<span>{reconciled ?? "Never"}</span>
+			</div>
+		{/if}
 
 		{#if d.unclearedAmount !== 0 || account.uncategorized > 0 || toReview > 0}
 			<div class="divider"></div>
