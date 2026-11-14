@@ -90,6 +90,53 @@ const CSS = `
 	}
 `;
 
+// An app-wide side panel (the theme studio) is a full-height card of its own beside the page's: the
+// page card's frame moves onto the titlebar and page column. Page panels stay inside the page card.
+const OPEN = "[data-abt-page-card] > [data-abt-panel-open][data-abt-panel-app]";
+const SIDE_PANEL = `
+	[data-abt-page-card]:has(> [data-abt-panel-open][data-abt-panel-app]) {
+		border-color: transparent;
+		border-radius: 0;
+		background: transparent !important;
+		overflow: visible;
+	}
+	${OPEN} {
+		column-gap: ${GAP};
+		background: transparent !important;
+	}
+	/* Not the bottom: that's the titlebar's own divider. */
+	${OPEN} > div:nth-child(1) {
+		border-top: 1px solid var(--abt-inset-border);
+		border-inline: 1px solid var(--abt-inset-border);
+		border-radius: ${RADIUS} ${RADIUS} 0 0;
+	}
+	${OPEN} > div:nth-child(n + 4):not([data-abt-side-drawer-sidebar]) {
+		border: 1px solid var(--abt-inset-border);
+		border-top: none;
+		border-radius: 0 0 ${RADIUS} ${RADIUS};
+	}
+	${OPEN} > [data-abt-side-drawer-sidebar] {
+		${CARD}
+		background: var(--abt-panel-surface, var(--color-pageBackground));
+	}
+	/* Centred on the gap, as the sidebar's is (its offset starts inside the panel's border). */
+	${OPEN} .abt-side-drawer-resize-handle {
+		left: calc(-1 * ${MID} - 5.5px);
+	}
+	${OPEN} .abt-side-drawer-resize-handle::before {
+		width: calc(${GAP} - 2px);
+		left: calc(50% - (${GAP} - 2px) / 2);
+		top: ${RADIUS};
+		bottom: auto;
+		height: calc(100% - 2 * ${RADIUS});
+		border-radius: var(--abt-radius-pill);
+	}
+	${OPEN} > [data-abt-side-drawer-sidebar] > * {
+		border-radius: ${INNER};
+		overflow: hidden;
+	}
+`;
+
 // The sidebar takes the frame's place: one colour, no border, so only the page stands out.
 const FLOATING = `
 	:root {
@@ -192,6 +239,8 @@ export const insetPanels = defineSetting({
 	},
 	css: ({ value }) => {
 		const mode = modeOf(value);
-		return mode === "off" ? "" : desktopOnly(mode === "floating" ? CSS + FLOATING : CSS + CONTRAST);
+		return mode === "off"
+			? ""
+			: desktopOnly(CSS + SIDE_PANEL + (mode === "floating" ? FLOATING : CONTRAST));
 	},
 });

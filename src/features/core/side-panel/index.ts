@@ -41,6 +41,8 @@ function isDomNodeLike(value: unknown): value is Node {
 const GRID_ATTR = "data-abt-content-grid";
 // Set in JS: as `:has([drawer])` on the grid, every change in the page restyled the whole page.
 const OPEN_ATTR = "data-abt-panel-open";
+/** An app-wide panel (the theme studio) shows: it runs full height, beside the titlebar too. */
+const APP_ATTR = "data-abt-panel-app";
 
 /**
  * Marked once found: CONTENT_GRID only matches once a page's content has rendered, and the
@@ -90,6 +92,22 @@ const CSS = `
 		grid-template-rows: auto 1fr;
 		grid-template-columns: 1fr ${DEFAULT_SIDEBAR_WIDTH}px;
 		grid-template-areas: "header header" "body sidebar";
+	}
+	/* Page panels continue the page under its titlebar; app panels stand beside it, like the nav. */
+	[${GRID_ATTR}][${OPEN_ATTR}][${APP_ATTR}] {
+		grid-template-areas: "header sidebar" "body sidebar";
+	}
+	/* Actual's titlebar sits at 1000; beside the panel, it would cover the resize handle reaching over it. */
+	[${GRID_ATTR}][${OPEN_ATTR}][${APP_ATTR}] > div:nth-child(1) {
+		z-index: 299;
+	}
+	/* The titlebar and the panel's header both at the sidebar's budget header height, so their
+	   dividers line up across the window. */
+	[${GRID_ATTR}][${OPEN_ATTR}][${APP_ATTR}] > div:nth-child(1),
+	[${GRID_ATTR}][${APP_ATTR}] .abt-side-drawer-header {
+		box-sizing: border-box;
+		min-height: 0;
+		height: var(--abt-titlebar-height);
 	}
 	[${GRID_ATTR}][${OPEN_ATTR}] > div:nth-child(1) {
 		grid-area: header;
@@ -192,11 +210,13 @@ export const sidePanel = {
 			panelState.bodies = stack
 				.filter((e) => e.bodyNode)
 				.map((e) => ({ key: e.key, node: e.bodyNode as Node }));
+			markOpen();
 		};
 
 		const markOpen = () => {
 			const grid = document.querySelector(`[${GRID_ATTR}]`);
 			grid?.toggleAttribute(OPEN_ATTR, !!grid.querySelector(`:scope > [${SIDEBAR_ATTR}]`));
+			grid?.toggleAttribute(APP_ATTR, stack.at(-1)?.scope === "app");
 		};
 
 		/** A new page: its own page panels and every app panel stay; the rest close. */
@@ -380,7 +400,9 @@ export const sidePanel = {
 
 		return () => {
 			unwatch();
-			document.querySelector(`[${GRID_ATTR}]`)?.removeAttribute(OPEN_ATTR);
+			const grid = document.querySelector(`[${GRID_ATTR}]`);
+			grid?.removeAttribute(OPEN_ATTR);
+			grid?.removeAttribute(APP_ATTR);
 		};
 	},
 };

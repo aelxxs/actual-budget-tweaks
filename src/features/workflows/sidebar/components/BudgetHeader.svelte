@@ -425,7 +425,7 @@
 		align-items: center;
 		gap: 10px;
 		width: 100%;
-		height: 3.75rem;
+		height: var(--abt-titlebar-height);
 		box-sizing: border-box;
 		padding: 0.75rem;
 		/* transparent border matches the expanded header exactly → no layout shift */
@@ -514,7 +514,7 @@
 		align-items: center;
 		gap: 10px;
 		width: 100%;
-		height: 3.75rem;
+		height: var(--abt-titlebar-height);
 		box-sizing: border-box;
 		padding: 0.75rem;
 		border-bottom: 1px solid var(--sb-line, var(--abt-ink-2));
