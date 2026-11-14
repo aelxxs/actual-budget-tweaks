@@ -34,7 +34,8 @@ export function holdPage(): void {
 
 /** The hold on a reload, before Actual renders; only where an ABT page was left open. */
 export function holdPageOnLoad(): void {
-	if (lastShown(OPEN_KEY, false)) {
+	// The hash first: on any other site, that's all this reads.
+	if (addressedOverlay() && lastShown(OPEN_KEY, false)) {
 		holdPage();
 	}
 }
