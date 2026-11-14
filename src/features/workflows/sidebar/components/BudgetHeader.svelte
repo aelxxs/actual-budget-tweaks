@@ -272,6 +272,7 @@
 		type="button"
 		class="budget-icon-btn budget-icon-btn--lg"
 		class:has-icon={!!icon}
+		class:has-image={!!icon && icon.type !== "emoji"}
 		bind:this={iconBtnEl}
 		aria-label="Change budget icon"
 		use:tooltip={"Change budget icon"}
@@ -552,6 +553,10 @@
 	.budget-icon-btn.has-icon {
 		background: var(--abt-ink-3);
 		color: var(--abt-ink);
+	}
+	/* An image brings its own shape; a round or transparent one would show the tile behind it. */
+	.budget-icon-btn.has-image {
+		background: none;
 	}
 	.budget-icon-btn--lg {
 		width: 32px;

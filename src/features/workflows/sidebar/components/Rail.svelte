@@ -354,6 +354,7 @@
 	type="button"
 	class="rail-avatar"
 	class:has-icon={!!budgetIcon}
+	class:has-image={!!budgetIcon && budgetIcon.type !== "emoji"}
 	bind:this={avatarEl}
 	onclick={onAvatarClick}
 	aria-label={avatarLabel}
@@ -591,6 +592,10 @@
 	.rail-avatar.has-icon {
 		background: var(--abt-ink-3);
 		color: var(--abt-ink);
+	}
+	/* An image brings its own shape; a round or transparent one would show the tile behind it. */
+	.rail-avatar.has-image {
+		background: none;
 	}
 	.rail-avatar .budget-icon-emoji {
 		font-size: 20px;
