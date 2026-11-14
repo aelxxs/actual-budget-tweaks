@@ -186,7 +186,7 @@
 </div>
 
 <style>
-	/* Centred on the panel's border; the grip and a full-height accent line show what it does. */
+	/* Centred on the panel's border; on hover, the grip and a full-height accent line show what it does. */
 	.abt-side-drawer-resize-handle {
 		position: absolute;
 		top: 0;
@@ -209,26 +209,29 @@
 
 	/* A pill with a column of dots, the usual "drag me" mark. */
 	.abt-side-drawer-grip {
-		--grip-dot: var(--abt-muted);
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		box-sizing: border-box;
 		width: 9px;
 		height: 26px;
-		border: 1px solid var(--abt-panel-border);
+		border: 1px solid var(--abt-accent-4);
 		border-radius: var(--abt-radius-pill);
 		/* Three dots placed by proportion, so they spread apart as the pill grows. */
 		background:
-			radial-gradient(circle, var(--grip-dot) 1.2px, transparent 1.7px) 50% 18% / 6px 6px no-repeat,
-			radial-gradient(circle, var(--grip-dot) 1.2px, transparent 1.7px) 50% 50% / 6px 6px no-repeat,
-			radial-gradient(circle, var(--grip-dot) 1.2px, transparent 1.7px) 50% 82% / 6px 6px no-repeat,
+			radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 18% / 6px 6px
+				no-repeat,
+			radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 50% / 6px 6px
+				no-repeat,
+			radial-gradient(circle, var(--abt-accent) 1.2px, transparent 1.7px) 50% 82% / 6px 6px
+				no-repeat,
 			var(--color-pageBackground);
 		transform: translate(-50%, -50%);
+		opacity: 0;
 		/* Above the hover line. */
 		z-index: 1;
 		transition:
-			border-color 0.15s,
+			opacity 0.15s,
 			height 0.15s;
 	}
 
@@ -239,9 +242,8 @@
 
 	.abt-side-drawer-resize-handle:hover .abt-side-drawer-grip,
 	.abt-side-drawer-resize-handle.is-dragging .abt-side-drawer-grip {
-		--grip-dot: var(--abt-accent);
 		height: 32px;
-		border-color: var(--abt-accent-4);
+		opacity: 1;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
