@@ -1,6 +1,50 @@
 # Changelog
 
 
+## v0.1.109
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.108...v0.1.109)
+
+### 🚀 Enhancements
+
+- Add a settings footer with what's new and a support popover, and tidy the settings menu ([a0425ca](https://github.com/aelxxs/actual-budget-tweaks/commit/a0425ca))
+- Show when an account was last reconciled in its hover card ([9660c97](https://github.com/aelxxs/actual-budget-tweaks/commit/9660c97))
+- Welcome new installs with a short setup card ([d7c1de5](https://github.com/aelxxs/actual-budget-tweaks/commit/d7c1de5))
+- Show long-term goals and their progress in Insights ([9230306](https://github.com/aelxxs/actual-budget-tweaks/commit/9230306))
+- Clearer Insights overview cards ([449f83b](https://github.com/aelxxs/actual-budget-tweaks/commit/449f83b))
+
+### 🩹 Fixes
+
+- Leave other sites' storage alone in the overlay preload ([2629fad](https://github.com/aelxxs/actual-budget-tweaks/commit/2629fad))
+- Keep the page card's size and border colour when an app panel opens beside it ([b1da693](https://github.com/aelxxs/actual-budget-tweaks/commit/b1da693))
+- Turn inset panels off while Actual's own sidebar is in use ([bdc0389](https://github.com/aelxxs/actual-budget-tweaks/commit/bdc0389))
+- Keep the live sidebar docked when Actual's sidebar is unpinned ([f400acf](https://github.com/aelxxs/actual-budget-tweaks/commit/f400acf))
+- Keep the budget icon in place when the sidebar collapses or expands ([d8d8b05](https://github.com/aelxxs/actual-budget-tweaks/commit/d8d8b05))
+- Describe a balance cap as a cap in the template hover card ([d57b2b2](https://github.com/aelxxs/actual-budget-tweaks/commit/d57b2b2))
+- Don't count long-term goals as targets due this month ([b5cca78](https://github.com/aelxxs/actual-budget-tweaks/commit/b5cca78))
+
+### 💅 Refactors
+
+- Move the sidecar server and browser shim to TypeScript ([c5a0b6d](https://github.com/aelxxs/actual-budget-tweaks/commit/c5a0b6d))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.108 ([7f7061b](https://github.com/aelxxs/actual-budget-tweaks/commit/7f7061b))
+- Tidy wording across the README, app and website, and correct the privacy and self-hosting pages ([49c1ff9](https://github.com/aelxxs/actual-budget-tweaks/commit/49c1ff9))
+
+### 🎨 Styles
+
+- Lift popovers a step above the page they open over ([64c0053](https://github.com/aelxxs/actual-budget-tweaks/commit/64c0053))
+- Ease popovers in as they open, and simplify the support popover ([b03eb46](https://github.com/aelxxs/actual-budget-tweaks/commit/b03eb46))
+- Smaller logo and a dashed sign-off in the support popover ([30c8c6c](https://github.com/aelxxs/actual-budget-tweaks/commit/30c8c6c))
+- Show each feature's icon in the welcome card's summary ([adbc106](https://github.com/aelxxs/actual-budget-tweaks/commit/adbc106))
+- Tighten the standard sidebar's padding and spacing ([1671509](https://github.com/aelxxs/actual-budget-tweaks/commit/1671509))
+- Title the Insights panel Insights unless several months are shown ([03b2693](https://github.com/aelxxs/actual-budget-tweaks/commit/03b2693))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.108
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.107...v0.1.108)
