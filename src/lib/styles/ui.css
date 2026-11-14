@@ -209,7 +209,12 @@
 .abt-popover {
 	/* Its own ink: a popover opened from the sidebar sits on the tooltip background, not the sidebar's. */
 	--abt-ink: var(--color-tooltipText, var(--color-pageText));
-	--abt-popover-bg: var(--color-tooltipBackground, var(--color-pageBackground));
+	/* A step lighter than the page it opens over, so it reads as raised. */
+	--abt-popover-bg: color-mix(
+		in srgb,
+		var(--abt-ink) 3%,
+		var(--color-tooltipBackground, var(--color-pageBackground))
+	);
 	border: 1px solid var(--color-tableBorder);
 	border-radius: var(--abt-radius);
 	background: var(--abt-popover-bg);
