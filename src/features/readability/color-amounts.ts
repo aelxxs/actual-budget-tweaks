@@ -91,7 +91,7 @@ export const colorAmounts = defineSetting({
 			label: "Negatives",
 			description: "Money out and negative balances in red.",
 		},
-		{ value: "all", label: "All", description: "Money out in red and money in in green." },
+		{ value: "all", label: "All", description: "Red for money out, green for money in." },
 	],
 	segmented: true,
 	css: ({ value }) =>

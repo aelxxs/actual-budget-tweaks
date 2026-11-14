@@ -86,7 +86,7 @@ const compose = `services:
 						<tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
 					</thead>
 					<tbody>
-						<tr><td><code>ACTUAL_ORIGIN</code></td><td><code>http://actual:5006</code></td><td>Where the sidecar reaches your Actual server</td></tr>
+						<tr><td><code>ACTUAL_ORIGIN</code></td><td><code>http://actual:5006</code></td><td>Where the sidecar reaches your Actual server, over <code>http://</code> or <code>https://</code></td></tr>
 						<tr><td><code>PORT</code></td><td><code>3005</code></td><td>Port the sidecar listens on inside the container</td></tr>
 					</tbody>
 				</table>
@@ -122,7 +122,7 @@ const compose = `services:
 			<h2>Security</h2>
 			<p>The sidecar:</p>
 			<ul>
-				<li>Adds the Tweaks scripts and styles to Actual's page. Every other request and response passes through unchanged.</li>
+				<li>Adds the Tweaks scripts and styles to Actual's page, and tells Actual the address and scheme the browser used (<code>X-Forwarded-Host</code>, <code>X-Forwarded-Proto</code>). Every other request and response passes through unchanged.</li>
 				<li>
 					Sends a Content-Security-Policy that only runs scripts from your own server, and only allows
 					connections to the services Tweaks uses: Yahoo Finance (stock widgets), GitHub (community

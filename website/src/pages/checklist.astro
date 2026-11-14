@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 
 const sections = [
   {
-    title: "Critical — Hashed CSS Selectors",
+    title: "Critical: hashed CSS selectors",
     description: "Target CSS-in-JS class names that change whenever Actual rebuilds styles. Most likely to break.",
     risk: "critical",
     items: [
@@ -13,7 +13,7 @@ const sections = [
     ],
   },
   {
-    title: "High — Complex DOM Structure",
+    title: "High: complex DOM structure",
     description: "Rely on specific DOM hierarchy, nth-child positioning, or parent/sibling traversal.",
     risk: "high",
     items: [
@@ -26,8 +26,8 @@ const sections = [
     ],
   },
   {
-    title: "Medium — Data-testid Patterns",
-    description: "Use Actual's data-testid attributes — generally stable but can change in refactors.",
+    title: "Medium: data-testid patterns",
+    description: "Use Actual's data-testid attributes. They're mostly stable but can change in refactors.",
     risk: "medium",
     items: [
       { feature: "Category Template Insights", file: "src/features/workflows/category-template-insights/", selectors: ["data-testid^=\"budget2\"", "[draggable=\"true\"]"], checks: ["Progress bars render on budget categories", "Hover popover shows template details"] },
@@ -40,8 +40,8 @@ const sections = [
     ],
   },
   {
-    title: "Low — Href / Navigation Selectors",
-    description: "Target URL-based navigation links — rarely change.",
+    title: "Low: href and navigation selectors",
+    description: "Target URL-based navigation links, which rarely change.",
     risk: "low",
     items: [
       { feature: "Sidebar Search", file: "src/features/appearance/sidebar-search.ts", selectors: ["a[href=\"/budget\"]", "a[href=\"/reports\"]"], checks: ["Search bar renders", "Filters accounts"] },
@@ -50,7 +50,7 @@ const sections = [
     ],
   },
   {
-    title: "Stable — Theme / CSS Variables",
+    title: "Stable: theme and CSS variables",
     description: "Only use :root and CSS custom properties. Unlikely to break.",
     risk: "stable",
     items: [
@@ -63,7 +63,7 @@ const sections = [
 ---
 
 <Base
-  title="Update Checklist — Actual Budget Tweaks"
+  title="Update checklist · Actual Budget Tweaks"
   description="Interactive compatibility checklist for verifying extension features after Actual Budget updates."
 >
   <main class="checklist center">
@@ -71,7 +71,7 @@ const sections = [
       <a href="/" class="checklist__back">Back to home</a>
       <h1>Monthly Update Checklist</h1>
       <p class="checklist__subtitle">
-        Verify extension features after an Actual Budget release. Ordered by fragility — check critical items first.
+        Verify extension features after an Actual Budget release. Ordered by fragility, so check critical items first.
       </p>
       <div class="checklist__meta cluster">
         <label class="checklist__field">
@@ -137,7 +137,7 @@ const sections = [
           <span class="check-section__badge check-section__badge--smoke">5 min</span>
           <h2>Quick Smoke Test</h2>
         </div>
-        <p>Short on time? Check these — they cover the highest-risk selectors.</p>
+        <p>Short on time? These cover the highest-risk selectors.</p>
       </div>
       <div class="check-section__items">
         <div class="check-item">

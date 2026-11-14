@@ -172,7 +172,7 @@
 		}
 	}
 
-	const avatarLabel = $derived(split ? "Change budget icon" : `${budgetName} — expand`);
+	const avatarLabel = $derived(split ? "Change budget icon" : `Expand ${budgetName}`);
 
 	// The rail only has room to spare when it isn't also listing accounts;
 	// otherwise the extra pages fold into a "More" menu.

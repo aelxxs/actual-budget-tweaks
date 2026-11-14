@@ -18,7 +18,7 @@
   <h3 align="center">Actual Budget Tweaks</h3>
 
   <p align="center">
-     A community-built collection of 30+ tweaks for Actual Budget — themes, layout, readability, and workflow improvements you turn on individually.
+     A community-built collection of 30+ tweaks for Actual Budget: themes, layout, readability and workflow tools you turn on one at a time.
     <br />
     <a href="https://abt.alexis.lol"><strong>Website</strong></a>
     ·
@@ -38,9 +38,9 @@
 
 <!-- TABLE OF CONTENTS -->
 <details>
-  <summary>Table of Contents</summary>
+  <summary>Table of contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#about-the-project">About the project</a></li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -49,9 +49,9 @@
 
 <!-- ABOUT THE PROJECT -->
 
-## About The Project
+## About the project
 
-Adds user-configurable interface options to Actual Budget — dynamic themes, layout adjustments, readability tweaks, and workflow additions — without altering core app behavior.
+Adds optional themes, layout controls and workflow tools to Actual Budget. Each one is a setting you turn on, and Actual works as before with it off.
 
 - **Themes:** browse community themes, or build your own in the palette editor, with separate light and dark picks.
 - **Live sidebar:** live balances, account groups, search and pinned shortcuts, as a standard sidebar or an icon bar.

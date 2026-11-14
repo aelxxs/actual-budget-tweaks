@@ -34,7 +34,7 @@
 			return `Overspent by ${fmtMoney(-balance)}`;
 		}
 		if (overBudget) {
-			return "Over budget — covered by carryover";
+			return "Over budget, covered by carryover";
 		}
 		if (fullySpent) {
 			return "Budget fully spent";
