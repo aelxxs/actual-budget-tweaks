@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.110
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.109...v0.1.110)
+
+### 🚀 Enhancements
+
+- Show the last Insights overview at once on reload while it refreshes ([02bf213](https://github.com/aelxxs/actual-budget-tweaks/commit/02bf213))
+
+### 🩹 Fixes
+
+- Use a long-term goal's current target, not the month's last applied one ([0f07d03](https://github.com/aelxxs/actual-budget-tweaks/commit/0f07d03))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.109 ([eea1d7b](https://github.com/aelxxs/actual-budget-tweaks/commit/eea1d7b))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.109
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.108...v0.1.109)
