@@ -156,6 +156,19 @@ export async function pushStoredSettings(): Promise<void> {
  * budget's data (groups, colours, icons) is everyone's. Browser storage stays the cache that
  * every page paints from.
  */
+const pulledListeners = new Set<() => void>();
+// The open budget's settings have been read; mirrors `pulled` for code outside the sync.
+let pulledNow = false;
+
+/** Calls back each time a budget's settings have been read, after which changes sync to it. */
+export function onSettingsPulled(listener: () => void): () => void {
+	if (pulledNow) {
+		queueMicrotask(listener);
+	}
+	pulledListeners.add(listener);
+	return () => pulledListeners.delete(listener);
+}
+
 export function startSettingsSync(settings: Setting[]): () => void {
 	const live = new Map<string, Setting>();
 	// Extra keys a custom setting reads, which reapply it when they change.
@@ -284,6 +297,10 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			}
 		}
 		pulled = true;
+		pulledNow = true;
+		for (const listener of pulledListeners) {
+			listener();
+		}
 		if (needsReload.length) {
 			log.info("synced settings that need a reload", needsReload);
 			await notify(
@@ -326,6 +343,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 			budgetId = undefined;
 			user = null;
 			pulled = false;
+			pulledNow = false;
 		}
 		if (now && !loaded) {
 			schedulePull();

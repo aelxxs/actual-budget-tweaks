@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { openOnboarding } from "@features/core/onboarding";
 	import { showReleaseNotes } from "@features/core/release-notification";
 	import {
 		FEATURES_TITLE,
@@ -25,6 +26,7 @@
 		ArrowUpRight,
 		Bug,
 		Coffee,
+		Compass,
 		Download,
 		Ellipsis,
 		Heart,
@@ -500,6 +502,7 @@
 				{#if hasNotes}
 					{@render menuItem(Sparkles, "What's new", () => void showReleaseNotes(version))}
 				{/if}
+				{@render menuItem(Compass, "Getting started", () => void openOnboarding())}
 				{@render menuItem(Bug, "Report a bug", () => (showBugModal = true))}
 				{@render menuItem(Heart, "Support ABT", () => (supportOpen = "header"))}
 				<div class="abt-menu__sep"></div>

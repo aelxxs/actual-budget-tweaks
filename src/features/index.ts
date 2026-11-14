@@ -1,3 +1,4 @@
+import { onboarding } from "./core/onboarding";
 import { provideTweaksSections } from "@lib/actual/settings-page";
 import { accountIconPicker } from "./appearance/account-icon-picker";
 import { modernAccountToolbar } from "./appearance/account-toolbar";
@@ -242,6 +243,7 @@ export const coreScripts = [
 	privacyMode,
 	budgetViewOptions,
 	liveSidebarNotice,
+	onboarding,
 ];
 
 // Bootstrap-only settings with no settings-page row (no `group`), still activated.
