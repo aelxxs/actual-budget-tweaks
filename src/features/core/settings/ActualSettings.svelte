@@ -1,7 +1,19 @@
 <script lang="ts">
 	import { onOutsideClick } from "@lib/dom/popover";
 	import { takeTweaksSearch } from "@lib/actual/settings-page";
-	import { Ellipsis } from "@lucide/svelte";
+	import {
+		ArrowUpRight,
+		Bug,
+		Power,
+		RotateCcw,
+		Coffee,
+		Download,
+		Ellipsis,
+		Heart,
+		Sparkles,
+		Star,
+		Upload,
+	} from "@lucide/svelte";
 	import { onMount, tick } from "svelte";
 	import {
 		FEATURES_TITLE,
@@ -13,6 +25,7 @@
 	import { exportSettings, pickSettingsFile, resetToDefaults } from "./backup";
 	import Icon from "@lib/components/Icon.svelte";
 	import BugReportDialog from "./BugReportDialog.svelte";
+	import { showReleaseNotes } from "@features/core/release-notification";
 	import Dialog from "@lib/components/Dialog.svelte";
 	import SettingRow from "./SettingRow.svelte";
 	import Switch from "@lib/components/Switch.svelte";
@@ -24,7 +37,12 @@
 	import { TWEAKS_SECTIONS_ATTR, takeTweaksSection } from "@lib/actual/settings-page";
 
 	const REPO_URL = "https://github.com/aelxxs/actual-budget-tweaks";
+	const SPONSOR_URL = "https://github.com/sponsors/aelxxs";
+	const KOFI_URL = "https://ko-fi.com/aelxxs";
+	const ACTUAL_SUPPORT_URL = "https://opencollective.com/actual";
 	const version = browser.runtime.getManifest().version;
+	// Nightly edge builds (1.2.3-edge.sha) have no release notes.
+	const hasNotes = !version.includes("-");
 	const logoUrl = browser.runtime.getURL("/icon.svg");
 
 	let query = $state(takeTweaksSearch());
@@ -38,12 +56,33 @@
 	let showOffDialog = $state(false);
 	let moreOpen = $state(false);
 	let moreActionsEl: HTMLDivElement;
+	/** Where the support popover is open from: the header's menu or the footer link. */
+	let supportOpen = $state<"header" | "footer" | null>(null);
+	let supportEl: HTMLDivElement;
 	let turningOff = $state(false);
 
 	$effect(() => {
 		if (moreOpen) {
 			return onOutsideClick(moreActionsEl, () => (moreOpen = false));
 		}
+	});
+
+	$effect(() => {
+		if (!supportOpen) {
+			return;
+		}
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				supportOpen = null;
+			}
+		};
+		document.addEventListener("keydown", onKey);
+		const anchor = supportOpen === "header" ? moreActionsEl : supportEl;
+		const stop = onOutsideClick(anchor, () => (supportOpen = null));
+		return () => {
+			document.removeEventListener("keydown", onKey);
+			stop();
+		};
 	});
 
 	async function turnOff() {
@@ -142,6 +181,14 @@
 	const totalVisibleSettings = $derived(
 		filteredSections.reduce((count, section) => count + sectionItems(section).length, 0),
 	);
+	// Every setting a search can reach on this device, and how many differ from their default.
+	const onThisDevice = $derived(
+		scriptSections.flatMap(sectionItems).filter((item) => {
+			const platform = item.platform ?? "desktop";
+			return platform === "all" || (platform === "desktop") === isDesktop;
+		}),
+	);
+	const changedCount = $derived(onThisDevice.filter(isChanged).length);
 
 	function toggleSection(title: string) {
 		collapsed[title] = !collapsed[title];
@@ -363,30 +410,70 @@
 	}}
 />
 
+{#snippet menuItem(IconComponent: typeof Upload, label: string, action: () => void, danger = false)}
+	<button
+		type="button"
+		class="abt-menu__item"
+		class:more-menu__danger={danger}
+		role="menuitem"
+		onclick={() => {
+			moreOpen = false;
+			action();
+		}}
+	>
+		<IconComponent size={14} strokeWidth={1.5} />
+		{label}
+	</button>
+{/snippet}
+
+{#snippet supportPopover(direction: "up" | "down")}
+	<div
+		class="abt-popover support-pop support-pop--{direction}"
+		role="dialog"
+		aria-label="Support ABT"
+	>
+		<div class="support-pop__head">
+			<img class="support-pop__logo" src={logoUrl} alt="" />
+			<p class="support-pop__lead">ABT is free and always will be</p>
+		</div>
+		<p class="support-pop__text">
+			If it's made budgeting a little nicer, here are a few ways to help. Thanks for using it.
+			<span class="support-pop__sign">Alexis</span>
+		</p>
+		<div class="support-pop__tiles">
+			{@render supportTile(SPONSOR_URL, Heart, "Sponsor", "GitHub", "sponsor")}
+			{@render supportTile(KOFI_URL, Coffee, "Tip", "Ko-fi", "tip")}
+			{@render supportTile(REPO_URL, Star, "Star", "Free", "star")}
+		</div>
+		<div class="support-pop__actual">
+			<span>Built on Actual</span>
+			<a href={ACTUAL_SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+				Support Actual <ArrowUpRight size={13} />
+			</a>
+		</div>
+	</div>
+{/snippet}
+
+{#snippet supportTile(
+	href: string,
+	IconComponent: typeof Upload,
+	label: string,
+	where: string,
+	tone: string,
+)}
+	<a class="support-tile support-tile--{tone}" {href} target="_blank" rel="noopener noreferrer">
+		<IconComponent size={20} strokeWidth={1.75} />
+		<span class="support-tile__label">{label}</span>
+		<span class="support-tile__where">{where}</span>
+	</a>
+{/snippet}
+
 {#snippet headerActions()}
 	{#if importStatus === "success"}
 		<span class="import-status import-status--ok">Imported, reloading…</span>
 	{:else if importStatus === "error"}
 		<span class="import-status import-status--err">Invalid settings file</span>
 	{/if}
-	<button
-		type="button"
-		class="abt-btn abt-btn--icon abt-btn--sm"
-		onclick={() => void exportSettings()}
-		title="Export settings"
-		aria-label="Export settings"
-	>
-		<Icon name="upload" size={14} strokeWidth={1.5} />
-	</button>
-	<button
-		type="button"
-		class="abt-btn abt-btn--icon abt-btn--sm"
-		onclick={importSettings}
-		title="Import settings"
-		aria-label="Import settings"
-	>
-		<Icon name="download" size={14} strokeWidth={1.5} />
-	</button>
 	<div class="more-actions" bind:this={moreActionsEl}>
 		<button
 			type="button"
@@ -395,47 +482,30 @@
 			aria-expanded={moreOpen}
 			aria-label="More settings actions"
 			title="More settings actions"
-			onclick={() => (moreOpen = !moreOpen)}
+			onclick={() => {
+				supportOpen = null;
+				moreOpen = !moreOpen;
+			}}
 		>
 			<Ellipsis size={15} />
 		</button>
 		{#if moreOpen}
 			<div class="abt-popover abt-menu more-menu" role="menu" aria-label="More settings actions">
-				<button
-					type="button"
-					class="abt-menu__item"
-					role="menuitem"
-					onclick={() => {
-						moreOpen = false;
-						showResetDialog = true;
-					}}
-				>
-					<Icon name="rotateCcw" size={14} strokeWidth={1.5} /> Reset to defaults
-				</button>
-				<button
-					type="button"
-					class="abt-menu__item"
-					role="menuitem"
-					onclick={() => {
-						moreOpen = false;
-						showOffDialog = true;
-					}}
-				>
-					<Icon name="power" size={14} strokeWidth={1.5} /> Turn off ABT
-				</button>
+				{@render menuItem(Upload, "Export settings…", () => void exportSettings())}
+				{@render menuItem(Download, "Import settings…", importSettings)}
 				<div class="abt-menu__sep"></div>
-				<button
-					type="button"
-					class="abt-menu__item"
-					role="menuitem"
-					onclick={() => {
-						moreOpen = false;
-						showBugModal = true;
-					}}
-				>
-					<Icon name="bug" size={14} /> Report a bug
-				</button>
+				{#if hasNotes}
+					{@render menuItem(Sparkles, "What's new", () => void showReleaseNotes(version))}
+				{/if}
+				{@render menuItem(Bug, "Report a bug", () => (showBugModal = true))}
+				{@render menuItem(Heart, "Support ABT", () => (supportOpen = "header"))}
+				<div class="abt-menu__sep"></div>
+				{@render menuItem(RotateCcw, "Reset to defaults…", () => (showResetDialog = true))}
+				{@render menuItem(Power, "Turn off ABT", () => (showOffDialog = true), true)}
 			</div>
+		{/if}
+		{#if supportOpen === "header"}
+			{@render supportPopover("down")}
 		{/if}
 	</div>
 {/snippet}
@@ -455,16 +525,29 @@
 		aria-pressed={changedOnly}
 		onclick={() => (changedOnly = !changedOnly)}
 	>
-		Changed
+		Changed · {changedCount}
 	</button>
-	<span class="search-meta">{totalVisibleSettings} visible</span>
+	{#if normalizedQuery}
+		<span class="search-meta">{totalVisibleSettings} of {onThisDevice.length}</span>
+	{/if}
 {/snippet}
 
 {#snippet pageTitle()}
 	<div class="page-title">
 		<img class="title-logo" src={logoUrl} alt="" />
 		<h2>Actual Budget Tweaks</h2>
-		<span class="version-tag">v{version}</span>
+		{#if hasNotes}
+			<button
+				type="button"
+				class="version-tag"
+				title="See what's new"
+				onclick={() => void showReleaseNotes(version)}
+			>
+				v{version}
+			</button>
+		{:else}
+			<span class="version-tag">v{version}</span>
+		{/if}
 	</div>
 {/snippet}
 
@@ -611,6 +694,35 @@
 			</section>
 		{/each}
 	{/if}
+	<footer class="page-footer">
+		<span class="version-chip">
+			v{version}
+			{#if hasNotes}
+				<span aria-hidden="true">·</span>
+				<button type="button" class="whats-new" onclick={() => showReleaseNotes(version)}>
+					See what's new
+				</button>
+			{/if}
+		</span>
+		<nav class="footer-links" aria-label="About ABT">
+			<a href={REPO_URL} target="_blank" rel="noopener noreferrer">GitHub</a>
+			<button type="button" onclick={() => (showBugModal = true)}>Report a bug</button>
+			<div class="support-wrap" bind:this={supportEl}>
+				<button
+					type="button"
+					class="support"
+					aria-haspopup="dialog"
+					aria-expanded={supportOpen === "footer"}
+					onclick={() => (supportOpen = supportOpen === "footer" ? null : "footer")}
+				>
+					♡ Support
+				</button>
+				{#if supportOpen === "footer"}
+					{@render supportPopover("up")}
+				{/if}
+			</div>
+		</nav>
+	</footer>
 </div>
 
 {#if showResetDialog}
@@ -748,6 +860,13 @@
 		border-radius: var(--abt-radius-sm);
 	}
 
+	button.version-tag {
+		font-family: inherit;
+		cursor: pointer;
+	}
+	button.version-tag:hover {
+		background: var(--abt-accent-3);
+	}
 	.version-tag {
 		padding: 1px var(--abt-space-2);
 		border: 1px solid var(--abt-accent-3);
@@ -756,6 +875,209 @@
 		color: var(--abt-accent);
 		font-size: var(--abt-text-xs);
 		font-weight: 600;
+	}
+
+	.page-footer {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--abt-space-3);
+		padding: var(--abt-space-6) var(--abt-space-4);
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	/* Only the footer's own links, not those in the support popover it opens. */
+	.footer-links > :is(a, button),
+	.support-wrap > button,
+	.version-chip button {
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		color: inherit;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.footer-links > :is(a, button):hover,
+	.version-chip button:hover {
+		color: var(--abt-ink);
+	}
+	.version-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--abt-space-2);
+		padding: var(--abt-space-1) var(--abt-space-3);
+		border: 1px solid var(--abt-line);
+		border-radius: var(--abt-radius-pill);
+		font-variant-numeric: tabular-nums;
+	}
+	.page-footer .whats-new {
+		color: var(--color-pageTextLink);
+	}
+	.page-footer .whats-new:hover {
+		color: var(--color-pageTextLink);
+		text-decoration: underline;
+	}
+	.footer-links {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-5);
+	}
+	.support-wrap {
+		position: relative;
+	}
+	.support-pop {
+		position: absolute;
+		right: 0;
+		z-index: 5;
+		width: 340px;
+		/* Visible for the caret; it never needs to scroll. */
+		overflow: visible;
+		padding: var(--abt-space-5);
+		border-radius: calc(var(--abt-radius) + 4px);
+		box-shadow: var(--abt-shadow-lg);
+		color: var(--abt-ink);
+		text-align: left;
+	}
+	/* A caret pointing at what opened it: the popover's corner, turned, under its own edge. */
+	.support-pop::after {
+		content: "";
+		position: absolute;
+		width: 8px;
+		height: 8px;
+		background: var(--abt-popover-bg);
+		border: 1px solid var(--color-tableBorder);
+		rotate: 45deg;
+	}
+	/* From the footer it opens upward, as the footer sits at the bottom of the page. */
+	.support-pop--up {
+		bottom: calc(100% + var(--abt-space-3));
+	}
+	.support-pop--up::after {
+		bottom: -5px;
+		border-bottom-right-radius: 2px;
+		right: var(--abt-space-6);
+		border-top-color: transparent;
+		border-left-color: transparent;
+	}
+	/* Past the ⋯ button's edge, so the caret clears the rounded corner and still points at it. */
+	.support-pop--down {
+		top: calc(100% + var(--abt-space-3));
+		right: calc(-1 * var(--abt-space-3));
+	}
+	.support-pop--down::after {
+		top: -5px;
+		border-top-left-radius: 2px;
+		right: var(--abt-space-5);
+		border-bottom-color: transparent;
+		border-right-color: transparent;
+	}
+	.support-pop p {
+		margin: 0;
+	}
+	.support-pop__head {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-3);
+	}
+	.support-pop__logo {
+		width: 32px;
+		height: 32px;
+		border-radius: var(--abt-radius);
+	}
+	.support-pop__lead {
+		font-size: var(--abt-text-lg);
+		font-weight: 600;
+	}
+	.support-pop__text {
+		margin-top: var(--abt-space-4) !important;
+		color: var(--abt-muted);
+		line-height: 1.5;
+	}
+	.support-pop__sign {
+		color: var(--abt-ink);
+		font-weight: 500;
+	}
+	.support-pop__tiles {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--abt-space-3);
+		margin: var(--abt-space-5) 0 var(--abt-space-4);
+	}
+	.support-tile {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px; /* raw: label hugs its subtitle */
+		padding: var(--abt-space-4);
+		border: 1px solid var(--abt-line);
+		border-radius: var(--abt-radius);
+		background: var(--abt-ink-1);
+		color: var(--abt-ink);
+		text-decoration: none;
+		transition:
+			background 0.12s,
+			border-color 0.12s,
+			translate 0.12s;
+	}
+	.support-tile:hover {
+		background: var(--abt-ink-2);
+		border-color: var(--abt-ink-4);
+		translate: 0 -1px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.support-tile:hover {
+			translate: none;
+		}
+	}
+	.support-tile :global(svg) {
+		margin-bottom: var(--abt-space-3);
+	}
+	.support-tile__label {
+		font-size: var(--abt-text-base);
+		font-weight: 600;
+	}
+	.support-tile__where {
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	/* The one that keeps ABT going, so it carries its colour into the subtitle too. */
+	.support-tile--sponsor :global(svg),
+	.support-tile--sponsor .support-tile__where {
+		color: var(--color-errorText);
+	}
+	/* Between the theme's warning and error colours: an orange in any theme. */
+	.support-tile--tip :global(svg) {
+		color: color-mix(in srgb, var(--color-warningText) 60%, var(--color-errorText));
+	}
+	.support-tile--star :global(svg) {
+		color: var(--color-warningText);
+	}
+	.support-pop__actual {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-top: var(--abt-space-4);
+		border-top: 1px solid var(--abt-line);
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	.support-pop__actual a {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--abt-space-1);
+		color: var(--abt-muted);
+		text-decoration: none;
+	}
+	.support-pop__actual a:hover {
+		color: var(--abt-ink);
+	}
+
+	/* Only colour sets it apart from the other links. */
+	.page-footer .support,
+	.page-footer .support:hover {
+		color: var(--abt-accent-text);
 	}
 
 	.header-actions {
@@ -779,6 +1101,9 @@
 
 	.more-menu .abt-menu__item {
 		align-items: center;
+	}
+	.more-menu .more-menu__danger {
+		color: var(--color-errorText);
 	}
 
 	.import-status {

@@ -45,22 +45,32 @@ export const releaseNotification = {
 			return;
 		}
 
-		const sections = await fetchReleaseNotes(version);
-
-		let toast: Mounted | null = null;
-		toast = mountToNodeWithReturn(ReleaseNotification, {
-			version,
-			sections,
-			releaseUrl: `${RELEASES_BASE_URL}/v${version}`,
-			onClose: async (dontShowAgain: boolean) => {
-				await setValue(PENDING_KEY, null);
-				if (dontShowAgain) {
-					await setValue(OPT_OUT_KEY, true);
-				}
-				toast?.destroy();
-			},
-		});
-		toast.node.className = WRAP_CLASS;
-		document.body.appendChild(toast.node);
+		await showReleaseNotes(version);
 	},
 };
+
+let shown: Mounted | null = null;
+
+/** Shows a release's notes in the corner toast: after an update, or when asked for from settings. */
+export async function showReleaseNotes(version: string): Promise<void> {
+	shown?.destroy();
+	const sections = await fetchReleaseNotes(version);
+	const toast = mountToNodeWithReturn(ReleaseNotification, {
+		version,
+		sections,
+		releaseUrl: `${RELEASES_BASE_URL}/v${version}`,
+		onClose: async (dontShowAgain: boolean) => {
+			await setValue(PENDING_KEY, null);
+			if (dontShowAgain) {
+				await setValue(OPT_OUT_KEY, true);
+			}
+			toast.destroy();
+			if (shown === toast) {
+				shown = null;
+			}
+		},
+	});
+	shown = toast;
+	toast.node.className = WRAP_CLASS;
+	document.body.appendChild(toast.node);
+}
