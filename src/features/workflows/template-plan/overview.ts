@@ -59,7 +59,12 @@ function spentIn(cats: Category[], cells: Cells): number {
 	return spent;
 }
 
-export function summarizeCategories(cats: Category[], cells: Cells) {
+/** `goals`: each long-term goal's current target, which wins over a month's possibly older cell. */
+export function summarizeCategories(
+	cats: Category[],
+	cells: Cells,
+	goals: Map<string, number> = new Map(),
+) {
 	const overspentCategories: OverviewCategoryRow[] = [];
 	const underfundedGoals: OverviewCategoryRow[] = [];
 	const longGoals: LongGoalRow[] = [];
@@ -69,7 +74,8 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 	for (const cat of cats) {
 		const leftover = cells.get(`leftover-${cat.id}`) ?? 0;
 		const budgeted = cells.get(`budget-${cat.id}`) ?? 0;
-		const goal = cells.get(`goal-${cat.id}`) ?? 0;
+		const longTarget = goals.get(cat.id);
+		const goal = longTarget ?? cells.get(`goal-${cat.id}`) ?? 0;
 		const row = { id: cat.id, name: cat.name, groupName: cat.group_name };
 
 		if (leftover < 0) {
@@ -81,7 +87,7 @@ export function summarizeCategories(cats: Category[], cells: Cells) {
 			continue;
 		}
 		// A #goal is met over many months by the balance, so it isn't this month's to fund.
-		if (cells.get(`long-goal-${cat.id}`) === 1) {
+		if (longTarget !== undefined || cells.get(`long-goal-${cat.id}`) === 1) {
 			longGoals.push({ ...row, balance: leftover, goal, monthly: budgeted, plan: null });
 			continue;
 		}

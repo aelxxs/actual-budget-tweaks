@@ -349,6 +349,29 @@ function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
 	}
 }
 
+/**
+ * Each category's long-term goal (#goal) target, in cents, as its templates say now. The month's
+ * goal cell only changes when templates are applied, so it can still hold an older target.
+ */
+export async function loadGoalAmounts(): Promise<Map<string, number>> {
+	const goals = new Map<string, number>();
+	try {
+		const cats =
+			await query<{ id: string; tombstone: boolean; goal_def: string | null }[]>("categories");
+		for (const c of cats) {
+			const goal = c.tombstone
+				? undefined
+				: parseGoalDef(c.goal_def).find((d) => d.type === "goal");
+			if (goal) {
+				goals.set(c.id, Math.round(goal.amount * 100));
+			}
+		}
+	} catch (e) {
+		log.warn("categories query failed", e);
+	}
+	return goals;
+}
+
 export async function loadTemplatesByCategoryId(
 	throwOnError = false,
 ): Promise<Map<string, TemplateEntry[]>> {

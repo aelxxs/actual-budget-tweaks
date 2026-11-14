@@ -18,6 +18,7 @@ import {
 	getCurrentSheet,
 	invalidateCategoriesCache,
 	isBudgetPage,
+	loadGoalAmounts,
 	loadCategories,
 	loadTemplatesByCategoryId,
 	sheetToMonthLabel,
@@ -530,6 +531,7 @@ async function loadOverview(sheet: string): Promise<{
 		templatePreview,
 		templates,
 		moves,
+		goals,
 	] = await Promise.all([
 		readCells(sheet, monthCellNames(cats, tracking)),
 		query<Schedule[]>("schedules", { filter: { tombstone: false, completed: false } }),
@@ -545,12 +547,13 @@ async function loadOverview(sheet: string): Promise<{
 		previewMonthTemplates(monthKey, cats),
 		loadTemplatesByCategoryId(),
 		loadMonthMoves(monthKey).catch(() => []),
+		loadGoalAmounts(),
 	]);
 
 	const toBudget = cells.get("to-budget") ?? 0;
 	const totalBudgeted = Math.abs(cells.get("total-budgeted") ?? 0);
 	const trend = buildTrend(months, [...pastCells, cells], cats, tracking);
-	const categorySummary = summarizeCategories(cats, cells);
+	const categorySummary = summarizeCategories(cats, cells, goals);
 
 	const data: OverviewData = {
 		sheet,

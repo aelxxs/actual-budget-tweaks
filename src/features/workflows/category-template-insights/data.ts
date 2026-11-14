@@ -311,6 +311,16 @@ export function progressFor(
 	values: MonthValues | null,
 ): ProgressInfo {
 	const cell = values?.cells.get(entry.id);
+	// A #goal's target as its templates say now; the month's cell keeps the one last applied.
+	const longGoal = entry.directives.find((d) => d.type === "goal");
+	if (longGoal && cell) {
+		const balance = cell.balance;
+		return {
+			numerator: balance == null ? null : Math.max(0, balance),
+			denominator: Math.round(longGoal.amount * 100),
+			isLongGoal: true,
+		};
+	}
 	if (!cell || cell.goal == null || cell.goal <= 0) {
 		return { numerator: null, denominator: null, isLongGoal: cell?.isLongGoal ?? false };
 	}
