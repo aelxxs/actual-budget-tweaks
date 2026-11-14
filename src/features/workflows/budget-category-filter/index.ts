@@ -82,13 +82,15 @@ async function loadStatuses(table: HTMLElement): Promise<Map<string, Status>> {
 	await Promise.all(
 		[...ids].map(async (id) => {
 			const months = await Promise.all(sheets.map((s) => fetchCells(s, id)));
+			// A long-term goal still saving up isn't behind: only this month's targets count.
+			const monthly = (c: (typeof months)[number]) => c.hasGoal && !c.longGoal;
 			const attention = months.some(
-				(c, i) => c.balance < 0 || c.goalShortfall > (moved[i].get(id) ?? 0),
+				(c, i) => c.balance < 0 || (monthly(c) && c.goalShortfall > (moved[i].get(id) ?? 0)),
 			);
 			const funded =
 				!attention &&
 				months.some((c, i) =>
-					c.hasGoal ? c.goalShortfall <= (moved[i].get(id) ?? 0) : c.balance > 0,
+					monthly(c) ? c.goalShortfall <= (moved[i].get(id) ?? 0) : c.balance > 0,
 				);
 			statuses.set(id, { attention, funded });
 		}),

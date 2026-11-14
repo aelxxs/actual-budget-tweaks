@@ -11,6 +11,8 @@ export interface CatCells {
 	spent: number; // positive cents
 	balance: number;
 	hasGoal: boolean;
+	/** A #goal, met over many months by the balance rather than by one month's budget. */
+	longGoal: boolean;
 	/** Cents still needed for this month's goal; 0 when there's no goal or it's met. */
 	goalShortfall: number;
 	fetchedAt: number;
@@ -62,6 +64,7 @@ export function fetchCells(sheet: string, catId: string, force?: boolean): Promi
 			spent: Math.max(0, -sumAmount),
 			balance,
 			hasGoal: goal > 0,
+			longGoal: longGoal === 1,
 			goalShortfall: goal > 0 ? Math.max(0, goal - funded) : 0,
 			// When it was requested, so a change during the request still counts as newer.
 			fetchedAt: startedAt,

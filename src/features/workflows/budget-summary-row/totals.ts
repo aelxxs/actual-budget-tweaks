@@ -84,7 +84,8 @@ async function categoryStats(sheet: string): Promise<CategoryStats> {
 			id: ids[i],
 		}),
 	);
-	const withGoal = cats.filter((c) => c.hasGoal);
+	// Long-term goals aren't this month's to fund; Insights lists them on their own.
+	const withGoal = cats.filter((c) => c.hasGoal && !c.longGoal);
 	const over = cats.filter((c) => c.balance < 0);
 	const short = withGoal
 		.filter((c) => c.goalShortfall > 0)

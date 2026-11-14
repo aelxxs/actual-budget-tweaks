@@ -238,7 +238,7 @@
 					</span>
 				{:else}
 					<span class="sr__value abt-num sr__none">None</span>
-					<span class="sr__sub">No category has a target</span>
+					<span class="sr__sub">No targets due this month</span>
 				{/if}
 			{:else if id === "runway"}
 				{#if tracking}
