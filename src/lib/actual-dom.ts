@@ -60,6 +60,8 @@ export const NOTIFICATIONS_BUTTON = byTestId("notifications-button");
 export const NOTIFICATIONS_COUNT = byTestId("notifications-unseen-count");
 /** Actual's hover tooltips (react-aria's Tooltip), e.g. on the titlebar's icon buttons. Only on hover. */
 export const ACTUAL_TOOLTIP = '.react-aria-Tooltip[role="tooltip"]';
+/** The titlebar's button that slides out Actual's sidebar; only there while the sidebar is unpinned. */
+export const SIDEBAR_MENU = 'button:has(> svg.menu)';
 /** Actual's v2 calendar icon: the budget titlebar's month-count selector and its Today link. */
 export const MONTH_ICON = 'svg:has(> path[d^="M21.5 3h-2.75"])';
 export const SIDEBAR_NAV = byTestId("sidebar-primary-buttons");

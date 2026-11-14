@@ -9,6 +9,7 @@ import { LAYOUT_KEY } from "./lib/layout";
 import { NATIVE_ICON_ATTR, NAV_ICON_ATTR, swapSettingsNavIcons } from "./lib/settings-nav-icons";
 import Sidebar from "./Sidebar.svelte";
 import { findNativeSidebarRoot } from "@lib/actual/native-ui";
+import { SIDEBAR_MENU } from "@lib/actual-dom";
 
 const WRAP_ATTR = "data-abt-live-sidebar-wrap";
 
@@ -28,6 +29,19 @@ const CSS = `
 	   Its own z-index (above the titlebar) already keeps the grip over the page. */
 	[${WRAP_ATTR}] {
 		overflow: visible !important;
+	}
+	/* With Actual's sidebar unpinned its wrapper slides off-screen, and its pin is in the hidden
+	   native sidebar; the live sidebar collapses on its own, so the wrapper stays docked. */
+	[${WRAP_ATTR}] {
+		position: relative !important;
+		inset: auto !important;
+		transform: none !important;
+		box-shadow: none !important;
+		border-radius: 0 !important;
+		transition: none !important;
+	}
+	${SIDEBAR_MENU} {
+		display: none !important;
 	}
 	[${NATIVE_ICON_ATTR}] {
 		display: none !important;
