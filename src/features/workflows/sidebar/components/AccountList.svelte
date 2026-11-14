@@ -2,7 +2,7 @@
 	import { type AccountIconData } from "@lib/account-icons";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
-	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
+	import { leaveOverlay } from "@features/core/overlay-page";
 	import { openRecap } from "@features/workflows/sync-recap";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { dispatch, navigate } from "@lib/actual/actual-api";
@@ -156,12 +156,9 @@
 
 	$effect(() => trackRoute());
 
-	// See PrimaryNav.svelte for why any navigation elsewhere in this sidebar
-	// has to close the spending-calendar overlay itself, if open.
+	// See PrimaryNav.svelte for why navigating from this sidebar leaves an open ABT page itself.
 	function go(path: string, options?: Record<string, unknown>) {
-		if (isOverlayOpen()) {
-			closeOverlayPage();
-		}
+		leaveOverlay(path);
 		navigate(path, options);
 	}
 

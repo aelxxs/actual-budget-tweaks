@@ -3,12 +3,14 @@ import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 import { CONTENT_GRID, SCHEDULES_LINK } from "@lib/actual-dom";
 import {
 	Page,
+	addressedOverlay,
 	clearOverlayPage,
 	matchesPage,
 	overlayHash,
 	setOverlayPage,
 } from "@lib/actual/pages";
-import { watchDom } from "@lib/dom/dom-watcher";
+import { OVERLAY_ATTR, holdPage, releasePage, rememberOverlayOpen } from "@lib/actual/overlay-hold";
+import { pauseWatchersIn, watchDom } from "@lib/dom/dom-watcher";
 import { watchRoute } from "@lib/dom/route-watcher";
 import { type Component, mount, unmount } from "svelte";
 
@@ -16,7 +18,7 @@ import { type Component, mount, unmount } from "svelte";
  * A page ABT draws over Actual's own (the calendar, the graph). It covers the page column rather
  * than routing, since Actual's router would redirect an address it doesn't know.
  */
-export const OVERLAY_ATTR = "data-abt-overlay-page";
+export { OVERLAY_ATTR };
 const CLOSE_ATTR = "data-abt-overlay-close";
 
 let current: {
@@ -25,6 +27,9 @@ let current: {
 	container: HTMLElement;
 	hidden: { el: HTMLElement; style: string }[];
 	scrollLock: { el: HTMLElement; overflow: string } | null;
+	resume: () => void;
+	/** The address of the page under it. */
+	path: string;
 } | null = null;
 
 const changeListeners = new Set<() => void>();
@@ -74,19 +79,23 @@ export function openOverlayPage(page: Page, component: Component): void {
 	}
 
 	// Hidden in place rather than display: none, which makes Actual drop the budget table and
-	// rebuild it (blank for a moment) on the way back. The page covers the column instead.
-	// Widths are held from before the side panel goes, so its return doesn't reflow the page.
+	// rebuild it (blank for a moment) on the way back. content-visibility skips laying it out and
+	// painting it while covered; the size it's held at keeps Actual's measurements unchanged.
+	// Sizes are taken before the side panel goes, so its return doesn't reflow the page.
 	const children = [...lastChild.children] as HTMLElement[];
-	const widths = children.map((child) => child.getBoundingClientRect().width);
+	const sizes = children.map((child) => child.getBoundingClientRect());
 	// Dismissed, not closed, so a panel left open on the page comes back with it.
 	sidepanel.dismiss();
 	const hidden: { el: HTMLElement; style: string }[] = [];
 	children.forEach((child, i) => {
 		hidden.push({ el: child, style: child.getAttribute("style") ?? "" });
+		const { width, height } = sizes[i];
 		Object.assign(child.style, {
 			visibility: "hidden",
+			contentVisibility: "hidden",
+			containIntrinsicSize: `${width}px ${height}px`,
 			boxSizing: "border-box",
-			width: `${widths[i]}px`,
+			width: `${width}px`,
 		});
 	});
 	// Also hide siblings of the page column (e.g. the Plan button), but not the nav header.
@@ -118,7 +127,12 @@ export function openOverlayPage(page: Page, component: Component): void {
 		container,
 		hidden,
 		scrollLock,
+		// Actual keeps rendering the page underneath; ABT's watchers needn't follow it.
+		resume: pauseWatchersIn(children),
+		path: location.pathname,
 	};
+	releasePage();
+	rememberOverlayOpen(true);
 	changed();
 }
 
@@ -126,8 +140,9 @@ export function closeOverlayPage(): void {
 	if (!current) {
 		return;
 	}
-	const { instance, container, hidden, scrollLock } = current;
+	const { instance, container, hidden, scrollLock, resume } = current;
 	current = null;
+	leaving?.();
 
 	sidepanel.dismiss();
 	unmount(instance);
@@ -140,9 +155,73 @@ export function closeOverlayPage(): void {
 	if (scrollLock) {
 		scrollLock.el.style.overflowY = scrollLock.overflow;
 	}
+	resume();
 	clearOverlayPage();
 	setHash(null);
+	rememberOverlayOpen(false);
 	changed();
+}
+
+// Longest a page left for another waits for Actual to draw it before closing anyway.
+const LEAVE_TIMEOUT = 1500;
+let leaving: (() => void) | null = null;
+
+/**
+ * Closes the ABT page for a navigation to `path` about to happen: at once when `path` is the page
+ * under it, otherwise only once Actual has drawn the new page, so the old one never shows between.
+ */
+export function leaveOverlay(path: string): void {
+	if (!current) {
+		return;
+	}
+	if (path === location.pathname) {
+		closeOverlayPage();
+		return;
+	}
+	closeOnArrival(location.pathname);
+}
+
+/** Closes the ABT page once Actual has drawn the page that replaces the one at `from`. */
+function closeOnArrival(from: string): void {
+	if (!current || leaving) {
+		return;
+	}
+	const grid = document.querySelector(CONTENT_GRID);
+	// The new page has arrived when Actual replaces the page under the overlay, or redraws it in
+	// place (one account to another); the sidebar marking its new link isn't enough.
+	const { container } = current;
+	if (!container.isConnected) {
+		closeOverlayPage();
+		return;
+	}
+	const page = container.parentElement;
+	const arrived = (records: MutationRecord[]) =>
+		!container.isConnected ||
+		records.some((r) => page?.contains(r.target) && !container.contains(r.target));
+	let frame = 0;
+	const finish = () => {
+		observer.disconnect();
+		clearTimeout(timer);
+		cancelAnimationFrame(frame);
+		leaving = null;
+	};
+	// Before the next paint, so the new page and the overlay's going show in the same frame.
+	const observer = new MutationObserver((records) => {
+		if (location.pathname !== from && !frame && arrived(records)) {
+			frame = requestAnimationFrame(() => {
+				finish();
+				closeOverlayPage();
+			});
+		}
+	});
+	if (grid) {
+		observer.observe(grid, { childList: true, subtree: true });
+	}
+	const timer = setTimeout(() => {
+		finish();
+		closeOverlayPage();
+	}, LEAVE_TIMEOUT);
+	leaving = finish;
 }
 
 /** Any of Actual's own links leaves the page; its route changes aren't visible to content scripts. */
@@ -151,7 +230,7 @@ function attachCloseListeners(): void {
 		link.setAttribute(CLOSE_ATTR, "");
 		link.addEventListener("click", () => {
 			if (current && !link.hasAttribute("data-abt-overlay-link")) {
-				closeOverlayPage();
+				leaveOverlay(new URL((link as HTMLAnchorElement).href).pathname);
 			}
 		});
 	}
@@ -165,9 +244,21 @@ export function followOverlayPage(page: Page, open: () => void): () => void {
 	const hash = overlayHash(page);
 	const sync = () => {
 		attachCloseListeners();
-		// Actual changed the route without telling this world (a shortcut, say).
+		// Actual changed the route without telling this world (a link, a shortcut).
 		if (current?.page === page && !matchesPage(page)) {
+			closeOnArrival(current.path);
+		}
+		// Actual replaced the page under it while it finished loading (Reports renders in stages),
+		// taking the overlay with it: put it back over the new one.
+		if (
+			current?.page === page &&
+			!current.container.isConnected &&
+			location.hash === hash &&
+			!leaving
+		) {
 			closeOverlayPage();
+			setHash(page);
+			holdPage();
 		}
 		// Reloaded (or returned) with the page open, once the page under it has rendered.
 		if (
@@ -180,6 +271,10 @@ export function followOverlayPage(page: Page, open: () => void): () => void {
 	};
 	const unwatch = watchDom(sync);
 	const stopRoute = watchRoute(() => {
+		// Left before the ABT page reopened: the page now showing mustn't wait out the hold.
+		if (!addressedOverlay()) {
+			releasePage();
+		}
 		if (current?.page === page && location.hash !== hash) {
 			closeOverlayPage();
 		}
@@ -188,6 +283,7 @@ export function followOverlayPage(page: Page, open: () => void): () => void {
 	return () => {
 		unwatch();
 		stopRoute();
+		releasePage();
 		if (current?.page === page) {
 			closeOverlayPage();
 		}

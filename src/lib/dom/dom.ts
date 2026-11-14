@@ -80,10 +80,12 @@ export function applyGlobalCSS(cssText: string, styleId = "global-css"): void {
 export function createDebouncedObserver(
 	callback: () => void,
 	options: MutationObserverInit = { childList: true, subtree: true },
+	/** Whether a batch is worth a call; every batch is without it. */
+	accept?: (records: MutationRecord[]) => boolean,
 ): { observe: (target: Node) => void; disconnect: () => void } {
 	let scheduled = false;
-	const observer = new MutationObserver(() => {
-		if (!scheduled) {
+	const observer = new MutationObserver((records) => {
+		if (!scheduled && (!accept || accept(records))) {
 			scheduled = true;
 			requestAnimationFrame(() => {
 				scheduled = false;

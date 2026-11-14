@@ -1211,6 +1211,10 @@
 			<span class="gv__meta">{loading ? "Loading…" : summary}</span>
 		</div>
 
+		{#if loading && !nodes.length}
+			<p class="gv__loading" role="status">Loading transactions…</p>
+		{/if}
+
 		{#if expanded.size}
 			<button type="button" class="gv__collapse abt-btn abt-btn--sm" onclick={collapseAll}>
 				<Icon name="rotateCcw" size={13} />
@@ -1398,6 +1402,19 @@
 		align-items: center;
 		gap: var(--abt-space-4);
 		font-size: var(--abt-text-xs);
+		color: var(--abt-muted);
+		pointer-events: none;
+	}
+
+	/* The page shows at once; the graph fills in once its transactions arrive. */
+	.gv__loading {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 		pointer-events: none;
 	}

@@ -52,6 +52,7 @@ const CONTENT_TYPES = {
 
 const INJECTION = `
 		<script src="/abt/browser-shim.js"></script>
+		<script src="/abt/content-scripts/overlay-preload.js"></script>
 		<link rel="stylesheet" href="/abt/css/base.css">
 		<link rel="stylesheet" href="/abt/content-scripts/content.css">
 		<script src="/abt/content-scripts/actual-api-bridge.js"></script>

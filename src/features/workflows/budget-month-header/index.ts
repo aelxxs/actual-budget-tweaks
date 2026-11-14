@@ -79,9 +79,18 @@ function settleDisplayMax(value: number): void {
 const sameMonths = (a: string[], b: string[]) =>
 	a.length === b.length && a.every((m, i) => m === b[i]);
 
+function markCountSelector(): void {
+	if (!fellBack && !countSelector?.isConnected) {
+		countSelector = findMonthCountSelector();
+		countSelector?.setAttribute(NATIVE_COUNT_ATTR, "");
+	}
+}
+
 function sync(): void {
 	// The budget page stays mounted, hidden, under the calendar; ABT's parts stay with it.
+	// The selector sits in the titlebar, which the calendar leaves showing, e.g. after a reload.
 	if (isOverlayOpen()) {
+		markCountSelector();
 		return;
 	}
 	if (!matchesPage(Page.Budget)) {
@@ -94,10 +103,7 @@ function sync(): void {
 		return;
 	}
 	// Before the table check: Actual re-renders the titlebar while the table is still missing.
-	if (!countSelector?.isConnected) {
-		countSelector = findMonthCountSelector();
-		countSelector?.setAttribute(NATIVE_COUNT_ATTR, "");
-	}
+	markCountSelector();
 	const table = document.querySelector<HTMLElement>(BUDGET_TABLE);
 	const parent = table?.parentElement;
 	if (!table || !parent) {

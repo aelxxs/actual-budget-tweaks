@@ -36,7 +36,7 @@ export const overlayHash = (page: Page) => `#${page}`;
 const OVERLAY_PAGES: readonly Page[] = [Page.Calendar, Page.Graph];
 
 /** The overlay the address names; on a reload it counts before it has mounted, so the page under it stays untouched. */
-function addressedOverlay(): Page | undefined {
+export function addressedOverlay(): Page | undefined {
 	return OVERLAY_PAGES.find((page) => location.hash === overlayHash(page));
 }
 

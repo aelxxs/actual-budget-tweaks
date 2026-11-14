@@ -5,7 +5,7 @@
 	import { type AccountIconData } from "@lib/account-icons";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { openCalendar } from "@features/workflows/spending-calendar";
-	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
+	import { isOverlayOpen, leaveOverlay } from "@features/core/overlay-page";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 	import { dispatch, navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
@@ -89,9 +89,7 @@
 
 	function go(page: Page) {
 		const covered = isOverlayOpen();
-		if (covered) {
-			closeOverlayPage();
-		}
+		leaveOverlay(pagePath(page));
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
 		if (covered && matchesPage(page)) {
 			return;
@@ -310,9 +308,7 @@
 	}
 
 	function openAccount(id: string) {
-		if (isOverlayOpen()) {
-			closeOverlayPage();
-		}
+		leaveOverlay(`/accounts/${id}`);
 		navigate(`/accounts/${id}`);
 	}
 

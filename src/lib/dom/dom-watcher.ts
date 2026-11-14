@@ -10,6 +10,29 @@ interface Entry {
 
 const bodyEntry: Entry = { observer: null, listeners: new Set() };
 
+// Parts of the page hidden under an ABT page: what changes inside them wakes no watcher.
+const paused = new Set<Element>();
+
+const outsidePaused = (records: MutationRecord[]) =>
+	!paused.size || records.some((r) => ![...paused].some((el) => el.contains(r.target)));
+
+/**
+ * Stops changes inside `els` waking the shared watchers, while an ABT page covers them. Resuming
+ * runs every watcher once, to catch up on what changed meanwhile.
+ */
+export function pauseWatchersIn(els: Element[]): () => void {
+	for (const el of els) {
+		paused.add(el);
+	}
+	return () => {
+		for (const el of els) {
+			paused.delete(el);
+		}
+		dispatch(bodyEntry);
+		runWatcher(scanElements);
+	};
+}
+
 function dispatch(entry: Entry) {
 	for (const listener of entry.listeners) {
 		runWatcher(listener);
@@ -21,7 +44,11 @@ function subscribe(entry: Entry, target: Node, listener: Listener, options?: Mut
 	runWatcher(listener);
 	entry.listeners.add(listener);
 	if (!entry.observer) {
-		entry.observer = createDebouncedObserver(() => dispatch(entry), options);
+		entry.observer = createDebouncedObserver(
+			() => dispatch(entry),
+			options,
+			entry === bodyEntry ? outsidePaused : undefined,
+		);
 		entry.observer.observe(target);
 	}
 }
@@ -56,7 +83,11 @@ export function watchElement(selector: string, listener: Listener): () => void {
 	}
 	nameWatcher(listener);
 	entry.listeners.add(listener);
-	elementObserver ??= new MutationObserver(() => runWatcher(scanElements));
+	elementObserver ??= new MutationObserver((records) => {
+		if (outsidePaused(records)) {
+			runWatcher(scanElements);
+		}
+	});
 	elementObserver.observe(document.body, { childList: true, subtree: true });
 	// Already there counts as appearing: ABT can start on a page Actual has rendered (an address
 	// saved from the popup), where nothing would otherwise call it until the element changed.

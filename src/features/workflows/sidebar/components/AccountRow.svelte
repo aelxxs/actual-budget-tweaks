@@ -5,7 +5,7 @@
 	import { type AccountIconData } from "@lib/account-icons";
 	import { getEmojiAssetUrl, removeAccountIcon, setAccountIcon } from "@lib/account-icons";
 	import IconPickerModal from "@features/appearance/account-icon-picker/Modal.svelte";
-	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
+	import { leaveOverlay } from "@features/core/overlay-page";
 	import { navigate } from "@lib/actual/actual-api";
 	import { fmtMoney } from "@lib/format/currency";
 	import { Smile } from "@lucide/svelte";
@@ -78,9 +78,7 @@
 	});
 
 	function open() {
-		if (isOverlayOpen()) {
-			closeOverlayPage();
-		}
+		leaveOverlay(`/accounts/${account.id}`);
 		navigate(`/accounts/${account.id}`);
 	}
 

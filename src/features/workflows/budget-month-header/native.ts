@@ -3,14 +3,11 @@ import { dispatch, send, setLocalPref } from "@lib/actual/actual-api";
 import { readCell } from "@lib/actual/budget-cells";
 import { createLogger } from "@lib/logger";
 import { addMonths, currentMonth, monthKey, monthToSheet, parseMonth } from "@lib/format/months";
-import { SHOWN_MONTH } from "@lib/actual-dom";
+import { MONTH_ICON, SHOWN_MONTH } from "@lib/actual-dom";
 
 const log = createLogger("month-header");
 
 const SETTLE_MS = 1000;
-
-/** Actual's v2 calendar icon, used by its titlebar month-count selector. */
-const CALENDAR_ICON = 'svg:has(> path[d^="M21.5 3h-2.75"])';
 
 export { addMonths, currentMonth, monthKey, parseMonth };
 
@@ -61,7 +58,7 @@ export function readShownMonths(nativeHeader: Element): string[] {
 export function findMonthCountSelector(): HTMLElement | null {
 	let best: HTMLElement | null = null;
 	let bestCount = 0;
-	for (const svg of document.querySelectorAll(CALENDAR_ICON)) {
+	for (const svg of document.querySelectorAll(MONTH_ICON)) {
 		// The month picker's own Today link uses the same icon.
 		if (svg.closest("button, a")) {
 			continue;
@@ -80,7 +77,7 @@ export function findMonthCountSelector(): HTMLElement | null {
 }
 
 export function countMonthIcons(selector: Element): number {
-	return selector.querySelectorAll(`:scope > ${CALENDAR_ICON}`).length;
+	return selector.querySelectorAll(`:scope > ${MONTH_ICON}`).length;
 }
 
 let fallbackHandler: (() => void) | null = null;

@@ -2,7 +2,7 @@
 	import { spendingCalendar } from "@features/workflows/spending-calendar";
 	import { graphView, openGraphView } from "@features/workflows/graph-view";
 	import { openCalendar } from "@features/workflows/spending-calendar";
-	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
+	import { isOverlayOpen, leaveOverlay } from "@features/core/overlay-page";
 	import { navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
 	import { getValue, setValue, watchValue } from "@lib/store";
@@ -46,17 +46,11 @@
 		openCalendar();
 	}
 
-	// Mirrors spending-calendar's own attachCloseListeners(): its overlay only
-	// auto-closes on route changes it can detect itself (real browser
-	// back/forward) — a real Actual navigation
-	// triggered through the bridge's window.__navigate happens in the main
-	// world and isn't visible to that check, so anything in this nav that
-	// navigates elsewhere has to close the overlay itself first.
+	// A navigation through the bridge happens in the main world, out of the overlay's sight, so
+	// this nav leaves an open ABT page itself; it closes once Actual has drawn the new page.
 	function go(page: Page) {
 		const covered = isOverlayOpen();
-		if (covered) {
-			closeOverlayPage();
-		}
+		leaveOverlay(pagePath(page));
 		// The page under the calendar is already showing; navigating again makes Actual remount it.
 		if (covered && matchesPage(page)) {
 			return;

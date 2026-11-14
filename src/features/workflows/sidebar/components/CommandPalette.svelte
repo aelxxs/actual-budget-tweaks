@@ -19,7 +19,7 @@
 	import type { PageSetting } from "@features/index";
 	import { applySettingChange } from "@features/runtime";
 	import { openCalendar, spendingCalendar } from "@features/workflows/spending-calendar";
-	import { closeOverlayPage, isOverlayOpen } from "@features/core/overlay-page";
+	import { closeOverlayPage, leaveOverlay } from "@features/core/overlay-page";
 	import {
 		currentAccountId,
 		modernReconcile,
@@ -535,7 +535,17 @@
 			closePalette();
 			return;
 		}
-		if (isOverlayOpen()) {
+		const path =
+			item.kind === "nav"
+				? pagePath(item.page)
+				: item.kind === "account" || item.kind === "reconcile"
+					? `/accounts/${item.account.id}`
+					: item.kind === "report"
+						? `/reports/custom/${item.report.id}`
+						: null;
+		if (path) {
+			leaveOverlay(path);
+		} else {
 			closeOverlayPage();
 		}
 		if (item.kind === "nav") {
