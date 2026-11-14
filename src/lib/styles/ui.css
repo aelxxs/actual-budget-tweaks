@@ -220,6 +220,23 @@
 	background: var(--abt-popover-bg);
 	box-shadow: var(--abt-shadow);
 	color: var(--abt-ink);
+	/* Opening eases in from the trigger's side; closing is instant, as nobody waits on a menu leaving.
+	   `translate`, not `transform`, so it adds to a popover's own positioning (a dialog's centring). */
+	animation: abt-popover-in 140ms ease-out;
+}
+
+@keyframes abt-popover-in {
+	from {
+		opacity: 0;
+		/* Popovers that open upward set it to 4px. */
+		translate: 0 var(--abt-popover-from, -4px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.abt-popover {
+		animation: none;
+	}
 }
 
 /* How many times something repeats, e.g. "×3" after a payee the calendar folded together. */

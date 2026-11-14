@@ -932,46 +932,19 @@
 		right: 0;
 		z-index: 5;
 		width: 340px;
-		/* Visible for the caret; it never needs to scroll. */
-		overflow: visible;
 		padding: var(--abt-space-5);
 		border-radius: calc(var(--abt-radius) + 4px);
 		box-shadow: var(--abt-shadow-lg);
 		color: var(--abt-ink);
 		text-align: left;
 	}
-	/* A caret pointing at what opened it: the popover's corner, turned, under its own edge. */
-	.support-pop::after {
-		content: "";
-		position: absolute;
-		width: 8px;
-		height: 8px;
-		background: var(--abt-popover-bg);
-		border: 1px solid var(--color-tableBorder);
-		rotate: 45deg;
-	}
 	/* From the footer it opens upward, as the footer sits at the bottom of the page. */
 	.support-pop--up {
-		bottom: calc(100% + var(--abt-space-3));
+		--abt-popover-from: 4px;
+		bottom: calc(100% + var(--abt-space-2));
 	}
-	.support-pop--up::after {
-		bottom: -5px;
-		border-bottom-right-radius: 2px;
-		right: var(--abt-space-6);
-		border-top-color: transparent;
-		border-left-color: transparent;
-	}
-	/* Past the ⋯ button's edge, so the caret clears the rounded corner and still points at it. */
 	.support-pop--down {
-		top: calc(100% + var(--abt-space-3));
-		right: calc(-1 * var(--abt-space-3));
-	}
-	.support-pop--down::after {
-		top: -5px;
-		border-top-left-radius: 2px;
-		right: var(--abt-space-5);
-		border-bottom-color: transparent;
-		border-right-color: transparent;
+		top: calc(100% + var(--abt-space-2));
 	}
 	.support-pop p {
 		margin: 0;
@@ -1010,7 +983,7 @@
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 2px; /* raw: label hugs its subtitle */
-		padding: var(--abt-space-4);
+		padding: var(--abt-space-3) var(--abt-space-4);
 		border: 1px solid var(--abt-line);
 		border-radius: var(--abt-radius);
 		background: var(--abt-ink-1);
@@ -1032,7 +1005,7 @@
 		}
 	}
 	.support-tile :global(svg) {
-		margin-bottom: var(--abt-space-3);
+		margin-bottom: var(--abt-space-2);
 	}
 	.support-tile__label {
 		font-size: var(--abt-text-base);
@@ -1042,10 +1015,17 @@
 		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 	}
-	/* The one that keeps ABT going, so it carries its colour into the subtitle too. */
-	.support-tile--sponsor :global(svg),
-	.support-tile--sponsor .support-tile__where {
+	.support-tile--sponsor :global(svg) {
 		color: var(--color-errorText);
+	}
+	/* The one that keeps ABT going, picked out with a faint wash of its heart's colour. */
+	.support-tile--sponsor {
+		border-color: var(--abt-danger-3);
+		background: var(--abt-danger-1);
+	}
+	.support-tile--sponsor:hover {
+		border-color: var(--abt-danger-4);
+		background: var(--abt-danger-2);
 	}
 	/* Between the theme's warning and error colours: an orange in any theme. */
 	.support-tile--tip :global(svg) {
