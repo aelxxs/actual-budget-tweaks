@@ -156,6 +156,11 @@
 
 	const turnedOn = $derived(FEATURES.filter(isOn));
 
+	function iconOf(key: string): IconName | undefined {
+		const setting = settings.get(key);
+		return setting && "icon" in setting ? (setting.icon as IconName | undefined) : undefined;
+	}
+
 	function labelOf(key: string): string {
 		const setting = settings.get(key);
 		return setting && setting.type !== "core" ? setting.label : "";
@@ -341,9 +346,15 @@
 						<p class="step__text">Where to find what you turned on:</p>
 						<ul class="where">
 							{#each turnedOn as t (t.key)}
+								{@const icon = iconOf(t.key)}
 								<li>
-									<span class="where__name">{labelOf(t.key)}</span>
-									<span class="where__place">{t.where}</span>
+									<span class="row__icon">
+										{#if icon}<Icon name={icon} size={16} strokeWidth={1.6} />{/if}
+									</span>
+									<span class="where__text">
+										<span class="where__name">{labelOf(t.key)}</span>
+										<span class="where__place">{t.where}</span>
+									</span>
 								</li>
 							{/each}
 						</ul>
@@ -708,10 +719,16 @@
 	}
 	.where li {
 		display: flex;
-		flex-direction: column;
+		align-items: center;
+		gap: var(--abt-space-3);
 		padding: var(--abt-space-2) var(--abt-space-3);
 		border-radius: var(--abt-radius);
 		background: var(--abt-ink-1);
+	}
+	.where__text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
 	}
 	.where__name {
 		font-weight: 500;
