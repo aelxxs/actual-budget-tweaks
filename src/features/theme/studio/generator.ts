@@ -234,6 +234,28 @@ export function familyChroma(r: Pick<Recipe, "accentChroma" | "family">): number
 	return vivid ? Math.max(0.11, r.accentChroma * 0.85) : r.accentChroma * 0.85;
 }
 
+/** Inverts the selected background surface's chroma and lightness scales. */
+export function backgroundFromHex(
+	mode: Mode,
+	contrast: number,
+	hex: string,
+	surface: "mantle" | "crust" = "mantle",
+): { baseHue: number | null; tint: number; depth: number } {
+	const o = hexToOklch(hex);
+	const dark = mode === "dark";
+	const chroma = !dark && surface === "crust" ? o.C / 1.1 : o.C;
+	const tint = clamp(dark ? (chroma - 0.004) / 0.03 : (chroma - 0.003) / 0.02, 0, 1);
+	const mantleL = o.L + (surface === "crust" ? 0.022 + (dark ? 0.008 : 0.01) * contrast : 0);
+	const depth = dark
+		? mantleL - 0.187 + 0.022 * contrast
+		: mantleL + 0.02 + 0.01 * contrast - (0.985 - 0.012 * tint);
+	return {
+		baseHue: o.C < 0.004 ? null : o.h,
+		tint,
+		depth: clamp(depth, ...DEPTH_RANGE[mode]),
+	};
+}
+
 /**
  * A starting recipe for a palette made elsewhere: the background's hue, tint and lightness, the
  * accent's hue and vibrance, and the links' hue, read back through the generator's own scales.
@@ -246,27 +268,24 @@ export function recipeFromPalette(keys: Record<string, string>, name: string): R
 	const link = at("blue");
 	const mode: Mode = mantle.L < 0.5 ? "dark" : "light";
 	const dark = mode === "dark";
-	const tint = clamp(dark ? (mantle.C - 0.004) / 0.03 : (mantle.C - 0.003) / 0.02, 0, 1);
 	// Contrast from how far apart the page and the cards sit, then the shift that puts them there.
 	const gap = mantle.L - crust.L;
 	const contrast = clamp(dark ? (gap - 0.022) / 0.008 : (gap - 0.022) / 0.01, 0, 1);
-	const depth = dark
-		? crust.L - (0.165 - 0.03 * contrast)
-		: mantle.L + 0.02 + 0.01 * contrast - (0.985 - 0.012 * tint);
+	const background = backgroundFromHex(mode, contrast, keys["--ctp-mantle"] ?? "#808080");
 	const lift = accent.L - accentLightness(mode, contrast);
 	return {
 		name,
 		mode,
 		// A near-grey background's hue is noise, so it follows the accent instead.
-		baseHue: mantle.C < 0.004 ? accent.h : mantle.h,
-		tint,
+		baseHue: background.baseHue ?? accent.h,
+		tint: background.tint,
 		accentHue: accent.h,
 		accentChroma: Math.max(0.02, Math.min(accent.C, rimChroma(mode, accent.h))),
 		family: "custom",
 		linkHue: link.h,
 		budget: "vivid",
 		contrast,
-		depth: clamp(depth, ...DEPTH_RANGE[mode]),
+		depth: background.depth,
 		accentLift: clamp(lift, ...LIFT_RANGE),
 		sidebar: "match",
 		backgroundLink: null,

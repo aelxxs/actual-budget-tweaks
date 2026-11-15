@@ -15,6 +15,8 @@ await module.link(() => {
 await module.evaluate();
 const {
 	generate,
+	backgroundFromHex,
+	DEPTH_RANGE,
 	contrastReport,
 	contrastRatio,
 	hexToOklch,
@@ -153,6 +155,39 @@ test("a palette reads back to the recipe that made it", () => {
 				Math.abs(back.accentLift - made.accentLift) < 0.03,
 				`${where}: lift ${back.accentLift}`,
 			);
+		}
+	}
+});
+
+test("background hex conversion reproduces both surfaces in either mode", () => {
+	for (const mode of ["dark", "light"]) {
+		for (const surface of ["mantle", "crust"]) {
+			for (const contrast of [0, 0.5, 1]) {
+				const recipe = { ...base, mode, contrast, depth: mode === "dark" ? 0.05 : -0.05 };
+				const hex = generate(recipe).colors[surface];
+				const back = backgroundFromHex(mode, contrast, hex, surface);
+				const regenerated = generate({ ...recipe, ...back }).colors[surface];
+				const channels = (value) => [1, 3, 5].map((i) => parseInt(value.slice(i, i + 2), 16));
+				assert.ok(channels(hex).every((v, i) => Math.abs(v - channels(regenerated)[i]) <= 1));
+			}
+		}
+	}
+});
+
+test("background hex conversion preserves grey hue and clamps extreme colours", () => {
+	for (const mode of ["dark", "light"]) {
+		for (const surface of ["mantle", "crust"]) {
+			for (const hex of ["#000000", "#ffffff", "#ff0000"]) {
+				const back = backgroundFromHex(mode, 0.5, hex, surface);
+				assert.ok(back.tint >= 0 && back.tint <= 1);
+				assert.ok(back.depth >= DEPTH_RANGE[mode][0] && back.depth <= DEPTH_RANGE[mode][1]);
+				if (hex === "#ff0000") {
+					assert.equal(back.tint, 1);
+				} else {
+					assert.equal(back.baseHue, null);
+					assert.equal(back.depth, DEPTH_RANGE[mode][hex === "#000000" ? 0 : 1]);
+				}
+			}
 		}
 	}
 });

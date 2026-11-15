@@ -5,6 +5,7 @@
 	import { Dices, Lock, LockOpen, Moon, Shuffle, Sun } from "@lucide/svelte";
 	import { onMount } from "svelte";
 	import AccentHex from "./AccentHex.svelte";
+	import BaseHex from "./BaseHex.svelte";
 	import { previewRecipe } from "./apply";
 	import ColorWheel from "./ColorWheel.svelte";
 	import {
@@ -304,6 +305,10 @@
 					>
 						<Moon size={14} strokeWidth={2} /> Dark
 					</button>
+				</div>
+				<div class="abt-repel">
+					<span class="field-label">Background</span>
+					<BaseHex hex={g.colors.crust} />
 				</div>
 				<ColorWheel {g} />
 				<div class="field-row">
