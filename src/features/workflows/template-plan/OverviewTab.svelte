@@ -16,9 +16,11 @@
 	import { fade, slide } from "svelte/transition";
 	import { type CardId, TEMPLATES_BAR, cardLabel } from "./cards";
 	import {
-		firstMoveRows,
 		groupMoves,
 		heldForNextMonth,
+		TO_BUDGET,
+		netMoves,
+		touchesToBudget,
 		nextMonthGoalNeed,
 		trendGap,
 		usesGoalTemplates,
@@ -42,8 +44,9 @@
 	const motion = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220;
 	// Cards only move while being arranged; a month change swaps them in place.
 	const cardMotion = $derived(templatePlanState.customizingCards ? motion : 0);
-	// The Reassigned card lists the latest few; the rest open on request.
+	// The Reassigned card shows the biggest few changes; the rest, and the moves, open on request.
 	const MOVES_SHOWN = 5;
+	const TOP_UP_FLAG = 3;
 	let allMoves = $state(false);
 	// Most needed first, so the few shown are the ones that matter on a fresh month.
 	const TARGETS_SHOWN = 4;
@@ -475,39 +478,110 @@
 
 	{#snippet movesCard()}
 		{@const moves = data.moves}
-		{@const days = groupMoves(moves)}
-		{@const rowCount = days.reduce((n, d) => n + d.rows.length, 0)}
-		<Section title="Reassigned" count={moves.length || undefined}>
+		{@const between = moves.filter((m) => !touchesToBudget(m))}
+		{@const nets = netMoves(between)}
+		{@const top = [...nets].sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).slice(0, MOVES_SHOWN)}
+		{@const shown = allMoves ? nets : nets.filter((n) => top.includes(n))}
+		{@const widest = Math.max(...nets.map((n) => Math.abs(n.net)), 1)}
+		{@const total = between.reduce((sum, m) => sum + m.amount, 0)}
+		{@const covered = moves
+			.filter((m) => m.fromId === null && m.from === TO_BUDGET)
+			.reduce((sum, m) => sum + m.amount, 0)}
+		{@const returned = moves
+			.filter((m) => m.toId === null && m.to === TO_BUDGET)
+			.reduce((sum, m) => sum + m.amount, 0)}
+		{@const funded = between.length
+			? []
+			: netMoves(moves)
+					.filter((n) => n.id !== null || n.name !== TO_BUDGET)
+					.sort((a, b) => Math.abs(b.net) - Math.abs(a.net))}
+		{@const refilled = nets
+			.filter((n) => n.id && n.topUps >= TOP_UP_FLAG)
+			.sort((a, b) => b.topUps - a.topUps)[0]}
+		<Section title="Reassigned">
 			{#if moves.length}
-				{#each allMoves ? days : firstMoveRows(days, MOVES_SHOWN) as group (group.key)}
-					<div class="abt-tab-overview-move-group">
-						<div class="abt-tab-overview-day">
-							{shortDay(group.day)}{#if group.from}&nbsp;· from {@render mark(
-									group.fromId,
-								)}{group.from}{/if}
-						</div>
-						{#each group.rows as row (row.key)}
-							<Row
-								name={group.from ? row.to : `${row.from} → ${row.to}`}
-								count={row.count}
-								value={fmtMoney(row.amount)}
-							>
-								{#snippet label()}
-									{#if !group.from}{@render mark(row.fromId)}{`${row.from} → `}{/if}{@render mark(
-										row.toId,
-									)}{row.to}
-								{/snippet}
-							</Row>
+				{#if between.length}
+					<p class="abt-moves-head">
+						<strong class="abt-privacy-number">{fmtMoney(total)}</strong>
+						moved in {between.length}
+						{between.length === 1 ? "move" : "moves"}
+					</p>
+				{:else}
+					<p class="abt-moves-head abt-privacy-number">
+						{#if covered}<strong>{fmtMoney(covered)}</strong> covered from To Budget{/if}
+						{#if returned}{covered ? " · " : ""}<strong>{fmtMoney(returned)}</strong> returned to To Budget{/if}
+					</p>
+					{#each allMoves ? funded : funded.slice(0, MOVES_SHOWN) as n (n.key)}
+						<Row name={n.name} categoryId={n.id} value={fmtMoney(n.net, { sign: returned > 0 })} />
+					{/each}
+				{/if}
+				<div class="abt-moves-net">
+					{#each shown as n (n.key)}
+						<span class="abt-moves-name">{@render mark(n.id)}{n.name}</span>
+						<span class="abt-moves-bar" aria-hidden="true">
+							<span>
+								{#if n.net < 0}<i style:width="{(-n.net / widest) * 100}%"></i>{/if}
+							</span>
+							<span>
+								{#if n.net > 0}<i style:width="{(n.net / widest) * 100}%"></i>{/if}
+							</span>
+						</span>
+						<span class="abt-moves-value abt-privacy-number">{fmtMoney(n.net, { sign: true })}</span
+						>
+					{/each}
+				</div>
+				{#if refilled}
+					<p class="abt-tab-overview-note">
+						{refilled.name} was topped up {refilled.topUps} times. Its budget may be too low.
+					</p>
+				{/if}
+				{#if between.length && (covered || returned)}
+					<p class="abt-tab-overview-note abt-privacy-number">
+						{[
+							covered && `${fmtMoney(covered)} covered from To Budget`,
+							returned && `${fmtMoney(returned)} returned to To Budget`,
+						]
+							.filter(Boolean)
+							.join(" · ")}
+					</p>
+				{/if}
+				{#if allMoves && between.length}
+					<div class="abt-moves-log">
+						{#each groupMoves(moves) as group (group.key)}
+							<div class="abt-tab-overview-move-group">
+								<div class="abt-tab-overview-day">
+									{shortDay(group.day)}{#if group.from}&nbsp;· from {@render mark(
+											group.fromId,
+										)}{group.from}{/if}
+								</div>
+								{#each group.rows as row (row.key)}
+									<Row
+										name={group.from ? row.to : `${row.from} → ${row.to}`}
+										count={row.count}
+										value={fmtMoney(row.amount)}
+									>
+										{#snippet label()}
+											{#if !group.from}{@render mark(
+													row.fromId,
+												)}{`${row.from} → `}{/if}{@render mark(row.toId)}{row.to}
+										{/snippet}
+									</Row>
+								{/each}
+							</div>
 						{/each}
 					</div>
-				{/each}
-				{#if rowCount > MOVES_SHOWN}
+				{/if}
+				{#if between.length ? moves.length > 1 : funded.length > MOVES_SHOWN}
 					<button
 						type="button"
 						class="abt-tab-overview-more"
 						onclick={() => (allMoves = !allMoves)}
 					>
-						{allMoves ? "Show fewer" : `Show all ${rowCount}`}
+						{allMoves
+							? "Show fewer"
+							: between.length
+								? `See all ${moves.length} moves`
+								: `Show all ${funded.length}`}
 					</button>
 				{/if}
 			{:else}
@@ -721,6 +795,68 @@
 		margin-top: var(--abt-space-2);
 		padding-top: var(--abt-space-2);
 		border-top: 1px solid var(--abt-panel-border);
+	}
+
+	/* The Reassigned card: each category's net change as a bar either side of a centre line. */
+	.abt-moves-head {
+		margin: 0 0 var(--abt-space-4);
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	.abt-moves-head strong {
+		margin-right: var(--abt-space-1);
+		font-size: var(--abt-text-lg);
+		font-weight: 600;
+		color: var(--abt-ink);
+	}
+	.abt-moves-net {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 36% auto;
+		align-items: center;
+		gap: var(--abt-space-3);
+		font-size: var(--abt-text-sm);
+		font-variant-numeric: tabular-nums;
+	}
+	.abt-moves-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.abt-moves-name :global(.category-icon) {
+		width: 1.2em !important;
+		height: 1.2em !important;
+		margin-right: 0.15em;
+		vertical-align: -0.2em;
+	}
+	.abt-moves-bar {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		height: 8px;
+	}
+	.abt-moves-bar > span {
+		display: flex;
+	}
+	.abt-moves-bar > span:first-child {
+		justify-content: flex-end;
+		border-right: 1px solid var(--abt-ink-5);
+	}
+	.abt-moves-bar i {
+		min-width: 2px;
+		background: var(--abt-accent-4);
+	}
+	.abt-moves-bar > span:first-child i {
+		border-radius: var(--abt-radius-pill) 0 0 var(--abt-radius-pill);
+	}
+	.abt-moves-bar > span:last-child i {
+		border-radius: 0 var(--abt-radius-pill) var(--abt-radius-pill) 0;
+	}
+	.abt-moves-value {
+		text-align: right;
+	}
+	.abt-moves-log {
+		margin-top: var(--abt-space-4);
+		padding-top: var(--abt-space-3);
+		border-top: 1px solid var(--abt-ink-2);
 	}
 
 	/* The Reassigned card's date headings, one per day. */

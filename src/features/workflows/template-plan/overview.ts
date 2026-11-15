@@ -361,18 +361,41 @@ export function groupMoves(moves: BudgetMove[]): MoveDay[] {
 	});
 }
 
-/** The first `limit` rows across the days, keeping their headings. */
-export function firstMoveRows(days: MoveDay[], limit: number): MoveDay[] {
-	const out: MoveDay[] = [];
-	let left = limit;
-	for (const group of days) {
-		if (left <= 0) {
-			break;
+/** How Actual's notes name To Budget, whose covers and returns are budgeting, not reassigning. */
+export const TO_BUDGET = "To Budget";
+
+export const touchesToBudget = (m: BudgetMove) =>
+	(m.fromId === null && m.from === TO_BUDGET) || (m.toId === null && m.to === TO_BUDGET);
+
+export interface MoveNet {
+	key: string;
+	name: string;
+	id: string | null;
+	/** What it got less what it gave. */
+	net: number;
+	/** How many moves put money into it. */
+	topUps: number;
+}
+
+/** Each category's net change from the month's moves, most gained first; even ones left out. */
+export function netMoves(moves: BudgetMove[]): MoveNet[] {
+	const byKey = new Map<string, MoveNet>();
+	const entry = (name: string, id: string | null) => {
+		const key = id ?? name;
+		let row = byKey.get(key);
+		if (!row) {
+			row = { key, name, id, net: 0, topUps: 0 };
+			byKey.set(key, row);
 		}
-		out.push({ ...group, rows: group.rows.slice(0, left) });
-		left -= group.rows.length;
+		return row;
+	};
+	for (const move of moves) {
+		entry(move.from, move.fromId).net -= move.amount;
+		const to = entry(move.to, move.toId);
+		to.net += move.amount;
+		to.topUps += 1;
 	}
-	return out;
+	return [...byKey.values()].filter((r) => r.net !== 0).sort((a, b) => b.net - a.net);
 }
 
 export interface RunwayMonth {
