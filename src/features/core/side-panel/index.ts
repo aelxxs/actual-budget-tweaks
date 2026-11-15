@@ -183,6 +183,8 @@ export const sidePanel = {
 		// doesn't lay out full width and then reflow when the panel's feature fills it.
 		let reserved = persistedRoute === here();
 		let lastPath = pagePath();
+		/** The page being left, still mounted for a few frames after the path changes. */
+		let leaving: Element | null = null;
 
 		let sidebarWidth = clamp(Math.round(storedWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
 
@@ -226,6 +228,10 @@ export const sidePanel = {
 				return;
 			}
 			lastPath = path;
+			leaving =
+				[...(getBodyElement()?.children ?? [])]
+					.slice(3)
+					.find((el) => !el.hasAttribute(SIDEBAR_ATTR)) ?? null;
 			const kept = stack.filter((e) => e.scope === "app" || e.path === path);
 			if (kept.length !== stack.length) {
 				stack = kept;
@@ -265,6 +271,12 @@ export const sidePanel = {
 			if (!body) {
 				return;
 			}
+
+			// A reserved drawer waits for the old page to go, or it squeezes that page meanwhile.
+			if (!sidebar && !stack.length && leaving?.isConnected) {
+				return;
+			}
+			leaving = null;
 
 			if (sidebar) {
 				// React appends a remounted page after it; base.css finds the page as the 4th child.
