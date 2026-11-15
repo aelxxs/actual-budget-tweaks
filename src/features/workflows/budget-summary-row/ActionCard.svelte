@@ -171,6 +171,19 @@
 				run: () => openToBudgetMenu(root?.closest(BUDGET_SUMMARY)?.lastElementChild),
 			};
 		}
+		// Before covering and funding: Apply skips categories that already have a budget, and
+		// Fund targets only tops up goals, which can be stale until templates run.
+		if (toApply > 0 && toBudget > 0) {
+			return {
+				tone: "primary",
+				icon: "target",
+				title: "Apply templates",
+				short: "Apply",
+				amount: Math.min(toApply, toBudget),
+				sub: "from To Budget",
+				run: () => perform(() => tracked("apply", () => runTemplate(sheet, "apply-goal-template"))),
+			};
+		}
 		if (coverable > 0) {
 			return {
 				...overspentText(),
@@ -190,18 +203,6 @@
 						});
 					}
 				},
-			};
-		}
-		// Apply first: Fund targets only tops up goals, which can be stale until templates run.
-		if (toApply > 0 && toBudget > 0) {
-			return {
-				tone: "primary",
-				icon: "target",
-				title: "Apply templates",
-				short: "Apply",
-				amount: Math.min(toApply, toBudget),
-				sub: "from To Budget",
-				run: () => perform(() => tracked("apply", () => runTemplate(sheet, "apply-goal-template"))),
 			};
 		}
 		if (fundable > 0) {
