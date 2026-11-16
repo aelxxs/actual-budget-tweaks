@@ -260,7 +260,13 @@ function proxyToActual(req: IncomingMessage, res: ServerResponse): void {
 	req.pipe(upstreamReq);
 }
 
+let shuttingDown = false;
+
 const server = http.createServer((req, res) => {
+	if (shuttingDown) {
+		res.writeHead(503, { Connection: "close" }).end("Server shutting down");
+		return;
+	}
 	const [urlPath, search = ""] = (req.url ?? "/").split("?");
 	if (urlPath.startsWith("/abt/")) {
 		serveStatic(res, urlPath);
@@ -276,3 +282,28 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
 	console.log(`[abt-sidecar] listening on :${PORT}, proxying ${ACTUAL_ORIGIN}`);
 });
+
+function shutdown(signal: NodeJS.Signals): void {
+	if (shuttingDown) {
+		return;
+	}
+	shuttingDown = true;
+	console.log(`[abt-sidecar] received ${signal}, draining requests`);
+
+	// Leave room before Docker's default ten-second stop deadline.
+	const deadline = setTimeout(() => {
+		console.warn("[abt-sidecar] shutdown timed out, forcing exit");
+		server.closeAllConnections();
+		process.exit(1);
+	}, 8_000);
+	deadline.unref();
+
+	server.close(() => {
+		clearTimeout(deadline);
+		console.log("[abt-sidecar] shutdown complete");
+		process.exit(0);
+	});
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
