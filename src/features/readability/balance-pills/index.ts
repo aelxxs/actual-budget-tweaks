@@ -1,19 +1,22 @@
-import { defineSetting } from "@features/types";
-import BalancePillsPreview from "../previews/BalancePills.svelte";
 import {
 	BALANCE_CELL_RE,
 	fetchCells,
 	markCellsStale,
 	type CatCells,
 } from "@features/readability/category-progress/cells";
-import { type BudgetTableChange, watchBudgetTable } from "@lib/actual/budget-cells";
-import { watchDom } from "@lib/dom/dom-watcher";
-import { Page, matchesPage } from "@lib/actual/pages";
+import { defineSetting } from "@features/types";
 import { BALANCE_CELL, CELL, GOAL_RING } from "@lib/actual-dom";
+import { watchBudgetTable, type BudgetTableChange } from "@lib/actual/budget-cells";
+import { Page, matchesPage } from "@lib/actual/pages";
+import { watchDom } from "@lib/dom/dom-watcher";
+import { THEME_APPLIED_EVENT } from "@lib/theme-events";
+import { pageMode } from "@features/theme/theme-apply";
+import BalancePillsPreview from "../previews/BalancePills.svelte";
 
 const STATUS_ATTR = "data-abt-balance-status";
 // On the balance's button instead of its amount when Actual's goal ring is there, so the pill holds the ring.
 export const RING_ATTR = "data-abt-balance-ring";
+const LIGHT_ATTR = "data-abt-balance-light";
 
 type Status = "funded" | "underfunded" | "overspent" | "available";
 // Goal statuses carry an icon; a plain positive balance doesn't.
@@ -34,7 +37,7 @@ const TONES: Record<Status, string> = {
 	funded: "var(--color-noticeTextLight)",
 	underfunded: "var(--color-warningText)",
 	overspent: "var(--color-errorText)",
-	available: "var(--color-pageTextSubdued)",
+	available: "color-mix(in srgb, var(--color-pageTextSubdued) 60%, var(--color-tableText))",
 };
 
 const CSS = (Object.keys(TONES) as Status[])
@@ -56,8 +59,10 @@ const CSS = (Object.keys(TONES) as Status[])
 		gap: var(--abt-space-2);
 		padding: 1px 8px 1px 6px;
 		border-radius: var(--abt-radius-pill);
-		background: color-mix(in srgb, var(--abt-pill-tone) 18%, transparent);
-		color: color-mix(in srgb, var(--abt-pill-tone) 80%, var(--color-pageText)) !important;
+		--abt-pill-bg: color-mix(in srgb, var(--abt-pill-tone) 16%, transparent);
+		background: var(--abt-pill-bg);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--abt-pill-tone) 4%, transparent);
+		color: var(--abt-pill-tone) !important;
 		font-variant-numeric: tabular-nums;
 		line-height: 1.5;
 	}
@@ -72,7 +77,8 @@ const CSS = (Object.keys(TONES) as Status[])
 	}
 	[${STATUS_ATTR}="available"] {
 		padding-inline: var(--abt-space-3);
-		color: var(--color-tableText) !important;
+		--abt-pill-bg: var(--abt-ink-3);
+		box-shadow: none;
 	}
 	[${STATUS_ATTR}="available"]::before {
 		display: none;
@@ -82,7 +88,7 @@ const CSS = (Object.keys(TONES) as Status[])
 		width: auto !important;
 		margin-left: auto;
 		padding: 1px 8px 1px 6px !important;
-		background: color-mix(in srgb, var(--abt-pill-tone) 18%, transparent) !important;
+		background: var(--abt-pill-bg) !important;
 	}
 	[${RING_ATTR}]::before {
 		display: none;
@@ -93,18 +99,32 @@ const CSS = (Object.keys(TONES) as Status[])
 	[${RING_ATTR}] ${CELL} {
 		color: inherit !important;
 	}
+
+	/* Light pages: an opaque pastel fill, and text pulled toward the table ink to stay readable. */
+	[${LIGHT_ATTR}] [${STATUS_ATTR}]:not([${STATUS_ATTR}="available"]) {
+		--abt-pill-bg: oklch(from var(--abt-pill-tone) 0.93 calc(c * 0.35) h);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--abt-pill-tone) 7%, transparent);
+		color: color-mix(in srgb, var(--abt-pill-tone), var(--color-tableText) 30%) !important;
+	}
+	/* Yellow turns beige when this pale, so it keeps more of its colour. */
+	[${LIGHT_ATTR}] [${STATUS_ATTR}="underfunded"] {
+		--abt-pill-bg: oklch(from var(--abt-pill-tone) 0.93 calc(c * 0.5) h);
+	}
 `);
 
 // Goal states match Actual's own goal colouring. Without a goal, overspent still shows, and a
-// positive balance gets a plain pill; zero stays bare, so unused categories stay quiet.
-function statusFor(data: CatCells): Status | null {
+// non-negative balance gets a plain pill, including zero balances.
+function statusFor(data: CatCells): Status {
+	if (data.balance === 0) {
+		return "available";
+	}
 	if (data.balance < 0) {
 		return "overspent";
 	}
 	if (data.hasGoal) {
 		return data.goalShortfall > 0 ? "underfunded" : "funded";
 	}
-	return data.balance > 0 ? "available" : null;
+	return "available";
 }
 
 // One scan a frame, reading again only the categories whose cells changed (see category-progress).
@@ -180,6 +200,10 @@ export const balancePills = defineSetting({
 	},
 	css: () => CSS,
 	init: () => {
+		const root = document.documentElement;
+		const updateMode = () => root.toggleAttribute(LIGHT_ATTR, pageMode() === "light");
+		updateMode();
+		document.addEventListener(THEME_APPLIED_EVENT, updateMode);
 		// Balances only change inside the budget table; leaving the page clears the marks.
 		const unwatchTable = watchBudgetTable(onTableChange);
 		const unwatchPage = watchDom(() => {
@@ -188,6 +212,8 @@ export const balancePills = defineSetting({
 			}
 		});
 		return () => {
+			document.removeEventListener(THEME_APPLIED_EVENT, updateMode);
+			root.removeAttribute(LIGHT_ATTR);
 			unwatchTable();
 			unwatchPage();
 			cancelAnimationFrame(scanFrame);
