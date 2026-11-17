@@ -274,7 +274,7 @@
 		min-height: var(--abt-panel-header-height);
 		padding: 0 var(--abt-space-4);
 		border-bottom: 1px solid var(--abt-panel-border);
-		background: var(--color-pageBackground);
+		background: var(--abt-panel-bg);
 	}
 
 	.abt-side-drawer-heading {
@@ -360,7 +360,8 @@
 		flex-direction: column;
 		min-height: 0;
 		overflow-y: auto;
-		background-color: var(--color-pageBackground);
+		background-color: var(--abt-panel-bg);
+		--abt-tabs-bg: var(--abt-panel-bg);
 	}
 
 	.abt-side-drawer-close-button {

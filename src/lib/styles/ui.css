@@ -67,6 +67,10 @@
 	/* The sidebar's budget header, which a full-height panel's header and the titlebar beside it match. */
 	--abt-titlebar-height: 3.75rem;
 	--abt-panel-surface: var(--color-budgetCurrentMonth, var(--color-tableBackground));
+	/* A step below the page: 5% darker when dark, under 2% when light, where more turns grey. */
+	--abt-panel-bg: oklch(
+		from var(--color-pageBackground) calc(l * (0.95 + 0.0325 * clamp(0, (l - 0.5) * 100, 1))) c h
+	);
 }
 
 /* The live sidebar has its own ink and accent (themes can give it a different background).
