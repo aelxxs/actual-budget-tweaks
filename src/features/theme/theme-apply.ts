@@ -1,8 +1,8 @@
 import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom";
 import { getTheme, themes } from "@lib/design";
-import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 import { applyGlobalCSS } from "@lib/dom/dom";
 import { watchElement } from "@lib/dom/dom-watcher";
+import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 import { editorState } from "./editor-state.svelte";
 import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte";
 import { STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
@@ -77,8 +77,8 @@ export const BUILTIN_CSS = `:root {
 	--abt-line-secondary: color-mix(in oklab, var(--ctp-line, var(--ctp-surface0)) 50%, var(--ctp-surface0));
 	/* Budget */
 	--color-budgetCurrentMonth: var(--ctp-mantle);
-	--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 30%);
-	--color-budgetHeaderOtherMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 30%);
+	--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
+	--color-budgetHeaderOtherMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
 	--color-budgetOtherMonth: color-mix(in srgb, var(--ctp-crust), var(--ctp-mantle) 40%);
 	--color-budgetNumberNegative: var(--ctp-red);
 	--color-budgetNumberNeutral: var(--ctp-overlay1);
@@ -398,11 +398,20 @@ ${BANK_SYNC_PROVIDER}:has(> div:first-child > button) > div:first-child > div:fi
 	color: var(--color-noticeTextLight) !important;
 }`;
 
+function budgetSurfaceCSS(mode: Mode): string {
+	return mode === "light"
+		? `:root {
+	--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 55%);
+	--color-budgetHeaderCurrentMonth: color-mix(in oklab, var(--ctp-base), var(--ctp-surface0) 50%);
+}\n`
+		: "";
+}
+
 export function isCommunityTheme(value: string): boolean {
 	return value.includes("/");
 }
 
-export function applyUserPaletteTheme(id: string, keys: Record<string, string>) {
+export function applyUserPaletteTheme(id: string, keys: Record<string, string>, mode: Mode) {
 	const root = document.querySelector<HTMLElement>(":root");
 	if (!root) {
 		return;
@@ -411,7 +420,7 @@ export function applyUserPaletteTheme(id: string, keys: Record<string, string>) 
 	for (const [varName, val] of Object.entries(keys)) {
 		setRootProperty(root, varName, val);
 	}
-	applyGlobalCSS(BUILTIN_CSS + chartCSS(keys), TOKENS_STYLE_ID);
+	applyGlobalCSS(BUILTIN_CSS + budgetSurfaceCSS(mode) + chartCSS(keys), TOKENS_STYLE_ID);
 	editorState.activeTheme = id;
 	applyOverrides(id);
 }
@@ -499,7 +508,10 @@ export function applyPalette(name: string) {
 	for (const [varName, val] of Object.entries(palette.keys)) {
 		setRootProperty(root, varName, val);
 	}
-	applyGlobalCSS(BUILTIN_CSS + chartCSS(palette.keys) + (palette.css ?? ""), TOKENS_STYLE_ID);
+	applyGlobalCSS(
+		BUILTIN_CSS + budgetSurfaceCSS(palette.mode) + chartCSS(palette.keys) + (palette.css ?? ""),
+		TOKENS_STYLE_ID,
+	);
 	editorState.activeTheme = name;
 	applyOverrides(name);
 }
@@ -664,7 +676,7 @@ export async function applyThemeByKey(key: string, fallback: string) {
 		const userTheme = userThemeState.themes[key];
 		if (userTheme) {
 			if (userTheme.type === "palette" && userTheme.keys) {
-				applyUserPaletteTheme(key, userTheme.keys);
+				applyUserPaletteTheme(key, userTheme.keys, userTheme.mode);
 			} else if (userTheme.type === "css" && userTheme.css) {
 				applyUserCSSTheme(key, userTheme.css);
 			}

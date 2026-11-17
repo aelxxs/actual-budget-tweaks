@@ -11,7 +11,7 @@ const PREVIEW_ID = "studio:preview";
 export function previewRecipe(r: Recipe, g: Generated): void {
 	// First: applying the palette tells listeners the theme changed, and they read the sidebar's colours.
 	applyGlobalCSS(studioCSS(r, g), STUDIO_STYLE_ID);
-	applyUserPaletteTheme(PREVIEW_ID, paletteKeys(g));
+	applyUserPaletteTheme(PREVIEW_ID, paletteKeys(g), r.mode);
 }
 
 /** Puts the saved theme back, as the theme setting's init chooses it. */
