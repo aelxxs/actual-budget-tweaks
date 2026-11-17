@@ -59,7 +59,7 @@
 {:else if !data.ok}
 	<div class="abt-tab-empty">{data.reason || "Unavailable"}</div>
 {:else}
-	<Section title="Plan Summary">
+	<Section title="Plan summary">
 		<Row name="Template demand" value={fmtMoney(data.totalRequestedCents ?? 0)} />
 		<Row
 			name="Will allocate"

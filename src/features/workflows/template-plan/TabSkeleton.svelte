@@ -15,20 +15,20 @@
 <!-- Laid out like the tab it stands in for, so the content arrives without a jump. -->
 <div class="sk" role="status" aria-busy="true" aria-label={label}>
 	{#if tab === "overview"}
-		<Section title="This Month" collapsible={false}>
+		<Section title="This month" collapsible={false}>
 			{@render rows(4)}
 		</Section>
-		<Section title="Next Month" collapsible={false}>
+		<Section title="Next month" collapsible={false}>
 			{@render rows(4)}
 		</Section>
-		<Section title="Over / Under Budget" collapsible={false}>
+		<Section title="Over / under budget" collapsible={false}>
 			<span class="abt-skeleton" style:width="100%" style:height="96px"></span>
 		</Section>
-		<Section title="Coming Up" collapsible={false}>
+		<Section title="Coming up" collapsible={false}>
 			{@render rows(3)}
 		</Section>
 	{:else}
-		<Section title={tab === "priority" ? "Plan Summary" : "Priority Movement"} collapsible={false}>
+		<Section title={tab === "priority" ? "Plan summary" : "Priority movement"} collapsible={false}>
 			{@render rows(tab === "priority" ? 4 : 3)}
 		</Section>
 		<!-- Named per priority tier or category group, so their titles are placeholders too. -->

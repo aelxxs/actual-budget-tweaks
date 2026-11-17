@@ -1,13 +1,13 @@
 /** Overview's cards that can be moved and hidden; Overspent stays first, as an alert. */
 export const OVERVIEW_CARDS = [
-	{ id: "this-month", label: "This Month" },
+	{ id: "this-month", label: "This month" },
 	{ id: "income", label: "Income" },
-	{ id: "next-month", label: "Next Month" },
-	{ id: "goals", label: "Targets to Fund" },
-	{ id: "long-goals", label: "Long-term Goals" },
-	{ id: "trend", label: "Over / Under Budget" },
+	{ id: "next-month", label: "Next month" },
+	{ id: "goals", label: "Targets to fund" },
+	{ id: "long-goals", label: "Long-term goals" },
+	{ id: "trend", label: "Over / under budget" },
 	{ id: "moves", label: "Reassigned" },
-	{ id: "coming-up", label: "Coming Up" },
+	{ id: "coming-up", label: "Coming up" },
 ] as const;
 
 export type CardId = (typeof OVERVIEW_CARDS)[number]["id"];

@@ -125,7 +125,7 @@
 	}
 
 	.strong .name {
-		font-weight: 600;
+		font-weight: 500;
 	}
 	.indent .line {
 		padding-left: 14px;

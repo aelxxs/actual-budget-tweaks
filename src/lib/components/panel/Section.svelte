@@ -30,7 +30,7 @@
 		privateTrailing?: boolean;
 		/** A quieter title, for panels made of many sections. */
 		muted?: boolean;
-		/** Off for a list of settings rows, where a capitalised label on every row reads loud. */
+		/** Off for a list of settings rows, where a bold accent label on every row reads loud. */
 		caps?: boolean;
 		onToggle?: (open: boolean) => void;
 		children: Snippet;
@@ -116,7 +116,7 @@
 		background: transparent;
 		border: none;
 		font: inherit;
-		color: var(--abt-accent);
+		color: var(--abt-ink);
 		text-align: left;
 	}
 	button.head {
@@ -124,7 +124,7 @@
 		transition: background 0.1s;
 	}
 	button.head:hover {
-		background: var(--abt-accent-1);
+		background: var(--abt-ink-1);
 	}
 	.head[data-muted="true"] {
 		color: var(--abt-soft);
@@ -140,16 +140,12 @@
 	.title {
 		flex: 1;
 		min-width: 0;
-		font-size: var(--abt-text-sm);
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.7px;
+		font-size: var(--abt-text-base);
+		font-weight: 500;
 	}
 	.head[data-caps="false"] .title {
 		font-size: var(--abt-text-base);
 		font-weight: 500;
-		text-transform: none;
-		letter-spacing: normal;
 		color: var(--abt-ink);
 	}
 	/* The value is the quieter half of a settings row. */

@@ -194,7 +194,7 @@
 	{/if}
 
 	{#snippet thisMonthCard()}
-		<Section title="This Month">
+		<Section title="This month">
 			{#snippet badges()}
 				{#if data.spendBudgeted > 0 && !isFutureMonth && !inRow.includes("spent")}
 					<Badge
@@ -367,7 +367,7 @@
 
 	{#snippet longGoalsCard()}
 		{@const reached = data.longGoals.filter((g) => g.balance >= g.goal).length}
-		<Section title="Long-term Goals" count={`${reached} of ${data.longGoals.length} reached`}>
+		<Section title="Long-term goals" count={`${reached} of ${data.longGoals.length} reached`}>
 			{#each data.longGoals as g (g.id)}
 				{@const done = g.balance >= g.goal}
 				{@const share = Math.min(100, Math.max(0, (g.balance / g.goal) * 100))}
@@ -403,7 +403,7 @@
 
 	{#snippet trendCard()}
 		{#if data.trend.length > 0}
-			<Section title="Over / Under Budget">
+			<Section title="Over / under budget">
 				<div class="abt-tab-overview-legend" aria-hidden="true">
 					<span><i data-tone="under"></i>Under</span>
 					<span><i style="background:var(--color-errorText)"></i>Over</span>
@@ -594,7 +594,7 @@
 
 	{#snippet comingUpCard()}
 		<Section
-			title="Coming Up"
+			title="Coming up"
 			count={data.upcomingSchedules.length > 0
 				? `${data.upcomingSchedules.length} upcoming`
 				: undefined}

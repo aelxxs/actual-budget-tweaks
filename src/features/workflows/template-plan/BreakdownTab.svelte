@@ -54,7 +54,7 @@
 
 	{#if summaryHasTiers(breakdownState.ctx.priorityBreakdown)}
 		{@const summary = breakdownState.ctx.priorityBreakdown}
-		<Section title="Priority Movement">
+		<Section title="Priority movement">
 			{#snippet trailing()}{fmtMoney(summary.totalAllocatedCents, { sign: true })}{/snippet}
 			{#each summary.tiers as tier (priorityKey(tier.priority))}
 				{@const badge = statusBadge(tier.status)}

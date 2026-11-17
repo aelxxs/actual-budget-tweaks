@@ -45,7 +45,7 @@
 	const pct = $derived(need && need > 0 ? Math.round((Math.max(0, held) / need) * 100) : 0);
 </script>
 
-<Section title="Next Month">
+<Section title="Next month">
 	{#if loading}
 		<!-- Shaped like the answer below, so it arrives without a jump. -->
 		<div class="answer" aria-busy="true" aria-label="Working out the months ahead">
