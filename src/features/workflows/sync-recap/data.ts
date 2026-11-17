@@ -107,6 +107,6 @@ export async function loadCategoryGroups(): Promise<RecapGroup[]> {
 		.filter((g) => g.categories.length > 0);
 }
 
-export async function setCategory(id: string, category: string): Promise<void> {
+export async function setCategory(id: string, category: string | null): Promise<void> {
 	await send("transactions-batch-update", { updated: [{ id, category }] });
 }

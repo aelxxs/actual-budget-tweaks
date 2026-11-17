@@ -21,6 +21,7 @@
 		placeholder = "Choose a category",
 		disabled = false,
 		attention = false,
+		clearLabel,
 		onPick,
 	}: {
 		groups: PickerGroup[];
@@ -31,7 +32,9 @@
 		disabled?: boolean;
 		/** Marks the trigger, e.g. while the transaction still needs a category. */
 		attention?: boolean;
-		onPick: (id: string) => void;
+		/** Offers clearing the category, under this name, ahead of the groups. */
+		clearLabel?: string;
+		onPick: (id: string | null) => void;
 	} = $props();
 
 	let open = $state(false);
@@ -59,13 +62,21 @@
 			}))
 			.filter((g) => g.categories.length > 0);
 	});
-	const flat = $derived(shown.flatMap((g) => g.categories));
+	// The clear choice's id; null is what it picks.
+	const CLEAR = "";
+	const clearShown = $derived(
+		!!clearLabel && clearLabel.toLowerCase().includes(query.trim().toLowerCase()),
+	);
+	const flat = $derived([
+		...(clearShown ? [{ id: CLEAR, name: clearLabel ?? "" }] : []),
+		...shown.flatMap((g) => g.categories),
+	]);
 
 	async function show() {
 		query = "";
 		open = true;
 		await tick();
-		const current = flat.findIndex((c) => c.id === value);
+		const current = flat.findIndex((c) => c.id === (value ?? CLEAR));
 		active = Math.max(0, current);
 		search?.focus();
 		scrollToActive();
@@ -80,8 +91,9 @@
 
 	function pick(id: string) {
 		close();
-		if (id !== value) {
-			onPick(id);
+		const next = id === CLEAR ? null : id;
+		if (next !== value) {
+			onPick(next);
 		}
 	}
 
@@ -158,6 +170,22 @@
 			/>
 		</span>
 		<div class="list" id="abt-category-list" role="listbox" aria-label={label} bind:this={list}>
+			{#if clearShown}
+				<button
+					type="button"
+					role="option"
+					class="option clear"
+					class:active={active === 0}
+					aria-selected={!value}
+					data-index={0}
+					tabindex="-1"
+					onpointermove={() => (active = 0)}
+					onclick={() => pick(CLEAR)}
+				>
+					<span class="name">{clearLabel}</span>
+					{#if !value}<Check size={14} class="check" />{/if}
+				</button>
+			{/if}
 			{#each shown as group (group.id)}
 				<div class="group" role="presentation">{group.name}</div>
 				{#each group.categories as cat (cat.id)}
@@ -179,7 +207,9 @@
 					</button>
 				{/each}
 			{:else}
-				<p class="none">No categories match "{query}".</p>
+				{#if !clearShown}
+					<p class="none">No categories match "{query}".</p>
+				{/if}
 			{/each}
 		</div>
 	</div>
@@ -266,6 +296,9 @@
 		font-size: var(--abt-text-md);
 		text-align: left;
 		cursor: pointer;
+	}
+	.option.clear {
+		color: var(--abt-muted);
 	}
 	.option.active {
 		background: var(--abt-fill);

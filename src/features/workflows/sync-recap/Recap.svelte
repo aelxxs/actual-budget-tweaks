@@ -107,7 +107,7 @@
 
 	const shortDate = (iso: string) => formatDayMonth(iso);
 
-	async function choose(tx: RecapTransaction, category: string) {
+	async function choose(tx: RecapTransaction, category: string | null) {
 		const before = tx.category;
 		byId[tx.id] = { ...tx, category };
 		saving[tx.id] = true;
@@ -202,6 +202,7 @@
 										{groups}
 										value={tx.category}
 										label="Category for {tx.payee}"
+										clearLabel="Uncategorized"
 										attention={!tx.category}
 										disabled={saving[tx.id]}
 										onPick={(id) => choose(tx, id)}
