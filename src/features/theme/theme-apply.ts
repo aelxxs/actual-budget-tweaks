@@ -5,8 +5,8 @@ import { watchElement } from "@lib/dom/dom-watcher";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
 import { editorState } from "./editor-state.svelte";
 import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte";
-import { STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
-import { hexToOklch, type Mode, oklchToHex } from "./studio/generator";
+import { paletteKeys, STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
+import { generate, hexToOklch, type Mode, oklchToHex } from "./studio/generator";
 import { isUserTheme, userThemeState } from "./user-themes.svelte";
 
 export type RemoteTheme = {
@@ -675,8 +675,9 @@ export async function applyThemeByKey(key: string, fallback: string) {
 	} else if (isUserTheme(key)) {
 		const userTheme = userThemeState.themes[key];
 		if (userTheme) {
-			if (userTheme.type === "palette" && userTheme.keys) {
-				applyUserPaletteTheme(key, userTheme.keys, userTheme.mode);
+			if (userTheme.type === "palette" && (recipe || userTheme.keys)) {
+				const keys = recipe ? paletteKeys(generate(recipe)) : userTheme.keys!;
+				applyUserPaletteTheme(key, keys, userTheme.mode);
 			} else if (userTheme.type === "css" && userTheme.css) {
 				applyUserCSSTheme(key, userTheme.css);
 			}
