@@ -90,16 +90,6 @@
 		overflow: hidden;
 	}
 
-	.toast::before {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 3px;
-		background: linear-gradient(90deg, var(--abt-accent), var(--abt-accent-3));
-	}
-
 	.toast__header {
 		display: flex;
 		align-items: center;
@@ -122,10 +112,7 @@
 	}
 
 	.toast__eyebrow {
-		font-size: var(--abt-text-2xs);
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-size: var(--abt-text-xs);
 		color: var(--abt-muted);
 	}
 
@@ -147,11 +134,8 @@
 	}
 
 	.toast__section-heading {
-		font-size: var(--abt-text-xs);
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--abt-accent);
+		font-size: var(--abt-text-base);
+		font-weight: 600;
 		margin: 12px 0 6px;
 	}
 
