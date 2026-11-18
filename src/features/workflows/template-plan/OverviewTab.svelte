@@ -51,6 +51,9 @@
 	// Most needed first, so the few shown are the ones that matter on a fresh month.
 	const TARGETS_SHOWN = 4;
 	let allTargets = $state(false);
+	// Biggest first, so the cut keeps the ones worth covering.
+	const OVERSPENT_SHOWN = 5;
+	let allOverspent = $state(false);
 
 	// While the card menu points at a card, it's outlined.
 	const spot = (id: string) => ({
@@ -181,7 +184,7 @@
 
 	{#if data.overspentCategories.length > 0}
 		<Section title="Overspent" tone="error" count={data.overspentCategories.length}>
-			{#each data.overspentCategories as cat (cat.id)}
+			{#each allOverspent ? data.overspentCategories : data.overspentCategories.slice(0, OVERSPENT_SHOWN) as cat (cat.id)}
 				<Row
 					name={cat.name}
 					meta={cat.groupName}
@@ -190,6 +193,15 @@
 					categoryId={cat.id}
 				/>
 			{/each}
+			{#if data.overspentCategories.length > OVERSPENT_SHOWN}
+				<button
+					type="button"
+					class="abt-tab-overview-more"
+					onclick={() => (allOverspent = !allOverspent)}
+				>
+					{allOverspent ? "Show fewer" : `Show all ${data.overspentCategories.length}`}
+				</button>
+			{/if}
 		</Section>
 	{/if}
 
