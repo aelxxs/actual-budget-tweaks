@@ -151,10 +151,11 @@
 		transition: opacity 0.15s;
 	}
 
-	/* Delayed past a typical refresh (a month change is ~250ms), so only slow ones dim. */
+	/* Only a slow refresh dims: a month change that lands just past a short delay dimmed and
+	   came straight back, which read as a flicker. */
 	.abt-tab-body[data-updating] {
 		opacity: 0.55;
-		transition: opacity 0.2s 0.4s;
+		transition: opacity 0.25s 0.8s;
 	}
 
 	.abt-tab-body :global(.abt-tab-empty) {
