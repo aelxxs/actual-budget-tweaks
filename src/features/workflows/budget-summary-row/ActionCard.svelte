@@ -55,7 +55,7 @@
 	} = $props();
 
 	type Suggestion = {
-		/** Alert: a problem to fix, on a plain card; danger washes the card for a serious one. */
+		/** Alert: overspending, plain like a quiet card; danger washes the card for over-assigning. */
 		tone: "danger" | "alert" | "primary" | "quiet";
 		icon: "alert" | "shield" | "target" | "sparkles";
 		title: string;
@@ -565,12 +565,8 @@
 		color: var(--abt-accent);
 	}
 
-	.ac:is(.is-danger, .is-alert) .ac__title {
+	.ac.is-danger .ac__title {
 		color: var(--color-errorText);
-	}
-
-	.ac.is-alert {
-		border-left: 2px solid var(--color-errorText);
 	}
 
 	/* Says the card runs its suggestion, nudging along on hover. */
