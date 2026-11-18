@@ -131,7 +131,7 @@
 					name={payeeOf(tx)}
 					sensitive
 					value={fmtMoney(tx.amount)}
-					tone={tx.amount < 0 ? "negative" : tx.amount > 0 ? "positive" : undefined}
+					tone={tx.amount > 0 ? "positive" : undefined}
 				>
 					{#snippet leading()}
 						<span class="dd__tx-lead">
@@ -161,7 +161,7 @@
 	{#if upcomingTxs.length > 0}
 		<Section title="Upcoming" count={upcomingTxs.length}>
 			{#each upcomingTxs as tx, i (i)}
-				<Row name={payeeOf(tx)} sensitive dim value={fmtMoney(tx.amount)} tone="negative">
+				<Row name={payeeOf(tx)} sensitive dim value={fmtMoney(tx.amount)}>
 					{@render txDetails(tx, false)}
 				</Row>
 			{/each}

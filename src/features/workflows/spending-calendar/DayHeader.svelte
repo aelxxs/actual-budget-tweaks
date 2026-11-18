@@ -10,7 +10,7 @@
 <div class="dh">
 	<div class="dh__top">
 		<span class="dh__date">{dateStr}</span>
-		<span class="dh__total abt-privacy-number" class:is-neg={total < 0} class:is-pos={total > 0}>
+		<span class="dh__total abt-privacy-number" class:is-pos={total > 0}>
 			{fmtMoney(total)}
 		</span>
 	</div>
@@ -44,9 +44,6 @@
 		flex-shrink: 0;
 	}
 
-	.dh__total.is-neg {
-		color: var(--color-errorText);
-	}
 	.dh__total.is-pos {
 		color: var(--color-noticeTextLight);
 	}
