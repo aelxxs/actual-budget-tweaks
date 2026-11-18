@@ -99,7 +99,7 @@
 					></span>
 					<span class="cal-tx__payee abt-privacy-number">{tx.payee}</span>
 					{#if tx.count > 1}
-						<span class="abt-count">×{tx.count}</span>
+						<span class="cal-tx__count">×{tx.count}</span>
 					{/if}
 				</div>
 			{/each}
@@ -301,15 +301,18 @@
 		opacity: 0.8;
 	}
 
+	/* In line with the payees: past the dot and its gap. */
 	.cal-more {
-		margin-left: 9px;
-		padding: 0 6px;
-		border-radius: var(--abt-radius-pill);
-		background: var(--abt-ink-2);
+		margin-left: calc(5px + var(--abt-space-2)); /* raw: the dot's width */
 		color: var(--abt-muted);
-		font-size: var(--abt-text-2xs);
-		font-weight: 600;
-		line-height: 1.6;
+		font-size: var(--abt-text-xs);
+	}
+
+	.cal-tx__count {
+		flex-shrink: 0;
+		color: var(--abt-muted);
+		font-size: var(--abt-text-xs);
+		font-variant-numeric: tabular-nums;
 	}
 
 	.cal-tx.is-upcoming {
