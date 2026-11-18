@@ -11,8 +11,8 @@
 		ChartColumn,
 		Clock,
 		GripVertical,
+		ListChecks,
 		type LucideIcon,
-		Sparkles,
 		Target,
 		Flag,
 	} from "@lucide/svelte";
@@ -340,7 +340,7 @@
 			onpointerenter={spotlight(TEMPLATES_BAR)}
 			onpointerleave={spotlight(null)}
 		>
-			<span class="tile" data-off={!barShown || undefined}><Sparkles size={14} /></span>
+			<span class="tile" data-off={!barShown || undefined}><ListChecks size={14} /></span>
 			<label class="toggle">
 				<span class="name">Templates bar</span>
 				<Switch checked={barShown} onCheckedChange={(on) => setShown(TEMPLATES_BAR, on)} />

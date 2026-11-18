@@ -36,7 +36,7 @@
 			disabled={!data}
 			onclick={() => templatePlanState.applyTemplates?.()}
 		>
-			<Icon name="sparkles" size={13} />
+			<Icon name="target" size={13} />
 			Apply
 		</button>
 	</div>

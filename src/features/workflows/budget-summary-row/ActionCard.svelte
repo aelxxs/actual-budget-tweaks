@@ -57,7 +57,7 @@
 	type Suggestion = {
 		/** Alert: overspending, plain like a quiet card; danger washes the card for over-assigning. */
 		tone: "danger" | "alert" | "primary" | "quiet";
-		icon: "alert" | "shield" | "target" | "sparkles";
+		icon: "alert" | "shield" | "target" | "wallet";
 		title: string;
 		short: string;
 		/** Before the amount, e.g. the overspent category's name. */
@@ -153,7 +153,7 @@
 			}
 			return {
 				tone: "quiet",
-				icon: "sparkles",
+				icon: "wallet",
 				title: "Budget actions",
 				short: "Actions",
 				sub: "Apply, overwrite, or reset templates",
@@ -218,7 +218,7 @@
 		}
 		return {
 			tone: "quiet",
-			icon: "sparkles",
+			icon: "wallet",
 			title: "Auto-assign",
 			short: "Actions",
 			sub: "Copy, average, or reset",

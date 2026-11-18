@@ -54,12 +54,12 @@
 		Network,
 		Paintbrush,
 		Palette,
+		PanelLeft,
 		Percent,
 		Plus,
 		RefreshCw,
 		Search,
 		Settings,
-		Sparkles,
 		SlidersHorizontal,
 		Tag,
 		ToggleRight,
@@ -346,7 +346,7 @@
 				? [{ label: "Spending Calendar", icon: CalendarDays, run: openCalendar }]
 				: []),
 			...(enabled[templatePlan.context.key]
-				? [{ label: "Insights", icon: Sparkles, run: showInsights }]
+				? [{ label: "Insights", icon: PanelLeft, run: showInsights }]
 				: []),
 			...(enabled[graphView.context.key]
 				? [{ label: "Graph", icon: Network, run: openGraphView }]
