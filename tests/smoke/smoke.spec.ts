@@ -239,7 +239,7 @@ test("ABT on every page", async ({ page }) => {
 					.toBeChecked();
 			}
 		}
-		await page.getByRole("button", { name: "Close side drawer" }).click();
+		await page.locator(".abt-side-drawer-close-button").click();
 
 		await page.locator("[data-abt-customize-trigger]").click();
 		const customizePanel = page.getByRole("dialog", { name: "Customize sidebar" });

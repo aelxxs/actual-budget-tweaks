@@ -206,7 +206,7 @@ export const sidePanel = {
 				document.dispatchEvent(new CustomEvent(PANEL_TOP_EVENT, { detail: key }));
 			}
 			panelState.title = top?.title ?? panelState.title;
-			panelState.backTitle = stack.length > 1 ? (stack.at(-2)?.title ?? null) : null;
+			panelState.stacked = stack.length > 1;
 			panelState.bodyNode = top?.bodyNode ?? null;
 			panelState.headerNode = top?.headerNode ?? null;
 			panelState.bodies = stack
@@ -304,17 +304,11 @@ export const sidePanel = {
 			content = mount(SidePanelContent, {
 				target: container,
 				props: {
-					onBack: () => {
-						forget(stack.pop());
-						show();
-						sync();
-					},
 					onClose: () => {
-						for (const entry of stack) {
-							forget(entry);
+						forget(stack.pop());
+						if (!stack.length) {
+							reserved = false;
 						}
-						stack = [];
-						reserved = false;
 						show();
 						sync();
 					},
@@ -402,9 +396,6 @@ export const sidePanel = {
 			base.title = getSafeTitle(title, base.title);
 			if (base === stack.at(-1)) {
 				panelState.title = base.title;
-			}
-			if (base === stack.at(-2)) {
-				panelState.backTitle = base.title;
 			}
 		});
 
