@@ -117,6 +117,8 @@
 			},
 		};
 	}
+
+	let titleClipped = $state(false);
 </script>
 
 <div
@@ -144,7 +146,15 @@
 	<div class="abt-side-drawer-header">
 		<div class="abt-side-drawer-header-slot" bind:this={headerSlotEl}></div>
 		{#if !panelState.headerNode}
-			<h2 class="abt-side-drawer-title" title={panelState.title}>{panelState.title}</h2>
+			<!-- The full title on hover only when it's cut short. -->
+			<h2
+				class="abt-side-drawer-title"
+				title={titleClipped ? panelState.title : undefined}
+				onpointerenter={(e) =>
+					(titleClipped = e.currentTarget.scrollWidth > e.currentTarget.clientWidth)}
+			>
+				{panelState.title}
+			</h2>
 		{/if}
 		<button
 			class="abt-side-drawer-close-button abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
