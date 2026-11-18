@@ -3,9 +3,23 @@ import { REMAINDER_PRIORITY } from "./constants";
 
 export type TemplatePriority = number | null | undefined;
 
+/** ABT's grouping of Actual's template directives; "upto" is a simple template with only a limit. */
+export type TemplateKind =
+	| "simple"
+	| "upto"
+	| "schedule"
+	| "average"
+	| "periodic"
+	| "by"
+	| "spend"
+	| "percentage"
+	| "copy"
+	| "remainder"
+	| "unknown";
+
 export interface TemplateEntry {
 	priority: TemplatePriority;
-	kind?: string;
+	kind?: TemplateKind;
 	amount?: number;
 	cap?: number;
 	weight?: number;
@@ -82,10 +96,6 @@ export function templateEntriesFromGoalDef(entries: GoalDefEntry[]): TemplateEnt
 		}
 	}
 	return out;
-}
-
-export function isBudgetTemplate(t: TemplateEntry): boolean {
-	return !!t && t.kind !== "goal";
 }
 
 export function isRemainderTemplate(t: TemplateEntry): boolean {

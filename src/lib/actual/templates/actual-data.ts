@@ -1,6 +1,6 @@
 import { query, send } from "@lib/actual/actual-api";
-import type { GoalDefEntry } from "@lib/types/actual-schema";
-import { sheetToMonth } from "@lib/format/months";
+import type { BudgetSheetName, GoalDefEntry } from "@lib/types/actual-schema";
+import { monthToSheet, sheetToMonth } from "@lib/format/months";
 import { Page, matchesPage } from "@lib/actual/pages";
 import type { Category } from "./priority-plan";
 import { templateEntriesFromGoalDef } from "./templates";
@@ -11,7 +11,7 @@ import { BUDGET_LINK, BUDGET_TABLE, SHOWN_MONTH } from "@lib/actual-dom";
 const log = createLogger("template-plan");
 
 export interface SnapshotDescriptor {
-	sheet: string;
+	sheet: BudgetSheetName;
 	ids: string[];
 	promises: Promise<{ value: number } | null>[];
 }
@@ -106,7 +106,7 @@ export function invalidateCategoriesCache(): void {
 // with the in-flight promises. Must be callable from a click capture
 // handler so the worker queues these reads BEFORE React's bubble-phase
 // onClick posts the apply-template message.
-function startSnapshotMonth(sheet: string, cats: Category[]): SnapshotDescriptor {
+function startSnapshotMonth(sheet: BudgetSheetName, cats: Category[]): SnapshotDescriptor {
 	const ids = cats.filter((c) => !c.hidden).map((c) => c.id);
 	const promises = [
 		send("get-cell", { sheetName: sheet, name: "available-funds" }),
@@ -127,12 +127,12 @@ async function awaitSnapshotMonth(start: SnapshotDescriptor): Promise<SnapshotRe
 	return { sheet: start.sheet, availableFunds, toBudget, budgets };
 }
 
-export function getVisibleSheets(): string[] {
+export function getVisibleSheets(): BudgetSheetName[] {
 	try {
 		const sheets = Array.from(document.querySelectorAll<HTMLElement>(SHOWN_MONTH))
 			.map((cell) => cell.dataset.month)
 			.filter((month): month is string => !!month)
-			.map((month) => `budget${month.replace("-", "")}`);
+			.map(monthToSheet);
 		return [...new Set(sheets)];
 	} catch {
 		return [];

@@ -8,7 +8,7 @@ import {
 	priorityKey,
 } from "./constants";
 import type { TemplateEntry, TemplatePriority } from "./templates";
-import { isBudgetTemplate, isRemainderTemplate } from "./templates";
+import { isRemainderTemplate } from "./templates";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -371,7 +371,7 @@ export function createPriorityPlanner({
 		);
 
 		await mapWithConcurrency(positiveRows, 6, async (row) => {
-			const templates = (templatesByCat.get(row.id) || []).filter(isBudgetTemplate);
+			const templates = templatesByCat.get(row.id) || [];
 			if (templates.length === 0) {
 				return;
 			}
@@ -784,11 +784,10 @@ export function createPriorityPlanner({
 					if (!cat || cat.hidden) {
 						continue;
 					}
-					const budgetTpls = tpls.filter(isBudgetTemplate);
-					if (budgetTpls.length === 0) {
+					if (tpls.length === 0) {
 						continue;
 					}
-					eligibleCats.push({ cat, templates: budgetTpls });
+					eligibleCats.push({ cat, templates: tpls });
 				}
 
 				const cellNames: string[] = ["available-funds", "to-budget"];

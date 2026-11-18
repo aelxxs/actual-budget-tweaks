@@ -1,3 +1,5 @@
+import type { BudgetSheetName } from "@lib/types/actual-schema";
+
 /*
  * Budget months as Actual names them: "2026-10" for a month, `budget202610` for its sheet.
  * Everything is local time; toISOString() would give tomorrow's date in the evening west of UTC.
@@ -23,7 +25,7 @@ export function addMonths(key: string, n: number): string {
 	return monthKey(year, month + n);
 }
 
-export const monthToSheet = (key: string): string => `budget${key.replace("-", "")}`;
+export const monthToSheet = (key: string): BudgetSheetName => `budget${key.replace("-", "")}`;
 
 export function sheetToMonth(sheet: string): string | null {
 	const m = sheet.match(/^budget(\d{4})(\d{2})/);

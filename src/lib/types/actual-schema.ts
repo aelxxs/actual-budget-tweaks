@@ -294,6 +294,9 @@ export type BudgetCellName =
 	| `goal-${UUID}` // Goal amount for a specific category
 	| `sum-amount-${UUID}`; // Total spent for a specific category
 
+/** A budget month's sheet, e.g. `budget202506`. */
+export type BudgetSheetName = `budget${string}`;
+
 /** Response shape from send("get-cell", { sheetName, name }) */
 export interface CellValue {
 	value: AmountInCents;
@@ -307,7 +310,7 @@ export interface CellValue {
  */
 export interface SendMethodMap {
 	"get-cell": {
-		args: { sheetName: string; name: BudgetCellName | string };
+		args: { sheetName: BudgetSheetName; name: BudgetCellName | string };
 		result: CellValue;
 	};
 	"budget/dry-run-category-template": {
