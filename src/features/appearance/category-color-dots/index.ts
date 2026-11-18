@@ -186,7 +186,7 @@ export const categoryColorDots = defineSetting({
 	icon: "palette",
 	context: {
 		key: STORAGE_KEY,
-		defaultValue: true,
+		defaultValue: false,
 	},
 	css: () => CSS,
 	init: async () => {
