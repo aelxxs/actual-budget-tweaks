@@ -8,6 +8,7 @@ import { privacyStyle } from "./appearance/privacy-dots";
 import { sidebarClosedAccounts } from "./appearance/sidebar-closed-accounts";
 import { sidebarDensity } from "./appearance/sidebar-density";
 import { sidebarGroupTotals } from "./appearance/sidebar-group-totals";
+import { sidebarSyncStatus } from "./appearance/sidebar-sync-status";
 import { sidebarSearch } from "./appearance/sidebar-search";
 import { sidebarShortcuts, sidebarShortcutsAddTile } from "./appearance/sidebar-shortcuts";
 import { modernTitlebar } from "./appearance/titlebar";
@@ -145,6 +146,7 @@ export const scriptSections: SettingsSection[] = [
 					sidebarShortcuts,
 					accountIconPicker,
 					sidebarGroupTotals,
+					sidebarSyncStatus,
 					sidebarClosedAccounts,
 				],
 			},
@@ -223,6 +225,7 @@ export const settingRequires = new Map<PageSetting, PageSetting>([
 	[sidebarSearch, experimentalSidebar],
 	[sidebarShortcuts, experimentalSidebar],
 	[sidebarGroupTotals, experimentalSidebar],
+	[sidebarSyncStatus, experimentalSidebar],
 	[sidebarClosedAccounts, experimentalSidebar],
 	[accountIconPicker, experimentalSidebar],
 	[budgetCategoryFilter, modernHeaders],

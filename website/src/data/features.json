@@ -340,6 +340,18 @@
 				"experimental": false
 			},
 			{
+				"key": "sidebar-sync-status",
+				"type": "checkbox",
+				"defaultValue": true,
+				"platform": "desktop",
+				"label": "Sync status",
+				"description": "Shows each account's bank sync status beside its name.",
+				"icon": "refreshCw",
+				"group": null,
+				"writes": null,
+				"experimental": false
+			},
+			{
 				"key": "sidebar-show-closed",
 				"type": "checkbox",
 				"defaultValue": true,

@@ -3,6 +3,7 @@
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { sidebarDensity } from "@features/appearance/sidebar-density";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
+	import { sidebarSyncStatus } from "@features/appearance/sidebar-sync-status";
 	import { sidebarSearch } from "@features/appearance/sidebar-search";
 	import {
 		sidebarShortcuts,
@@ -29,6 +30,7 @@
 		LayoutGrid,
 		type LucideIcon,
 		Plus,
+		RefreshCw,
 		Search,
 	} from "@lucide/svelte";
 	import { onMount } from "svelte";
@@ -49,6 +51,7 @@
 	];
 	const ACCOUNTS: Toggle[] = [
 		{ setting: sidebarGroupTotals, name: "Group totals", icon: Calculator },
+		{ setting: sidebarSyncStatus, name: "Sync status", icon: RefreshCw },
 		{ setting: accountIconPicker, name: "Account icons", icon: Image },
 	];
 	const LAYOUTS: { value: SidebarLayout; label: string }[] = [

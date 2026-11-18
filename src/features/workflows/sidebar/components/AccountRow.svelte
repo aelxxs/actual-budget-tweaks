@@ -22,6 +22,7 @@
 		account,
 		icon,
 		iconPicker = true,
+		syncStatus = true,
 		dragging = false,
 		dropPos = null,
 		editing = false,
@@ -39,6 +40,7 @@
 		account: SidebarAccount;
 		icon: AccountIconData | undefined;
 		iconPicker?: boolean;
+		syncStatus?: boolean;
 		dragging?: boolean;
 		dropPos?: "before" | "after" | null;
 		editing?: boolean;
@@ -125,7 +127,11 @@
 
 {#if editing}
 	<div class="account editing">
-		<StatusIcon status={account.status} />
+		{#if syncStatus}
+			<StatusIcon status={account.status} />
+		{:else}
+			<span class="status-slot"></span>
+		{/if}
 		{#if effectiveIcon}
 			<span class="acct-icon">
 				{#if effectiveIcon.type === "emoji"}
@@ -170,7 +176,11 @@
 		onmouseleave={onRowMouseLeave}
 	>
 		{#if !iconPicker}
-			<StatusIcon status={account.status} />
+			{#if syncStatus}
+				<StatusIcon status={account.status} />
+			{:else}
+				<span class="status-slot"></span>
+			{/if}
 		{:else}
 			<span
 				class="acct-glyph"
@@ -191,7 +201,12 @@
 					}
 				}}
 			>
-				<StatusIcon status={account.status} />
+				{#if syncStatus}
+					<StatusIcon status={account.status} />
+				{:else if !effectiveIcon}
+					<!-- Keeps the dot's place, for the add-icon affordance. -->
+					<span class="status-slot"></span>
+				{/if}
 				{#if effectiveIcon}
 					<span class="acct-icon">
 						{#if effectiveIcon.type === "emoji"}
@@ -352,6 +367,12 @@
 		flex-shrink: 0;
 		cursor: pointer;
 		outline: none;
+	}
+	/* The hidden dot's place, so names keep lining up with their group's label. */
+	.status-slot {
+		width: 17px;
+		height: 17px;
+		flex-shrink: 0;
 	}
 	/* the edit affordance sits over the status-dot slot only (never over the icon) */
 	.acct-glyph-edit {

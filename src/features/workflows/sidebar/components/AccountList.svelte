@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
 	import { sidebarGroupTotals } from "@features/appearance/sidebar-group-totals";
+	import { sidebarSyncStatus } from "@features/appearance/sidebar-sync-status";
 	import { leaveOverlay } from "@features/core/overlay-page";
 	import { openRecap } from "@features/workflows/sync-recap";
 	import { type AccountIconData } from "@lib/account-icons";
@@ -100,6 +101,7 @@
 	const groupTotals = storedValue<boolean>(() => sidebarGroupTotals.context);
 	const showGroupTotals = $derived(groupTotals.current);
 	const closed = storedValue<boolean>(() => sidebarClosedAccounts.context);
+	const syncStatus = storedValue<boolean>(() => sidebarSyncStatus.context);
 	const showClosed = $derived(closed.current);
 	$effect(() => {
 		loadCollapsedGroups().then((stored) => (collapsedGroups = stored));
@@ -547,6 +549,7 @@
 									{account}
 									icon={icons[account.id]}
 									{iconPicker}
+									syncStatus={syncStatus.current}
 									dragging={dragSrcId === account.id}
 									dropPos={overId === account.id ? overPos : null}
 									editing={editingAccountId === account.id}
@@ -572,6 +575,7 @@
 										{account}
 										icon={icons[account.id]}
 										{iconPicker}
+										syncStatus={syncStatus.current}
 										dragging={dragSrcId === account.id}
 										dropPos={overId === account.id ? overPos : null}
 										editing={editingAccountId === account.id}
@@ -629,6 +633,7 @@
 													{account}
 													icon={icons[account.id]}
 													{iconPicker}
+													syncStatus={syncStatus.current}
 													dragging={dragSrcId === account.id}
 													dropPos={overId === account.id ? overPos : null}
 													editing={editingAccountId === account.id}
