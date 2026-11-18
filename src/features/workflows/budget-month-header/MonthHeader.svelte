@@ -2,6 +2,7 @@
 	import { panelState } from "@features/core/side-panel/panel-state.svelte";
 	import { openInsights } from "@features/workflows/template-plan";
 	import { templatePlanState } from "@features/workflows/template-plan/state.svelte";
+	import MonthNav from "@lib/components/MonthNav.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Icon from "@lib/components/Icon.svelte";
 	import { onListChange, send } from "@lib/actual/actual-api";
@@ -133,40 +134,14 @@
 <div class="bmh abt-repel abt-controls-quiet" {@attach fitOneLine}>
 	<div class="abt-cluster abt-gap-4">
 		{#if parsed}
-			<button
-				type="button"
-				class="bmh__today abt-btn abt-btn--pill"
-				title="Today"
-				aria-label="Today"
-				disabled={start === currentMonth()}
-				onclick={() => go(currentMonth())}
-				><span class="bmh__text">Today</span><span class="bmh__icon"
-					><Icon name="calendar" size={16} /></span
-				></button
-			>
-			<!-- Arrows sit together ahead of the title so its changing width never moves them. -->
-			<div class="abt-btn-group">
-				<button
-					type="button"
-					class="abt-btn abt-btn--icon"
-					title="Previous month"
-					aria-label="Previous month"
-					disabled={!base || validStart(addMonths(base, -1), span, bounds) === base}
-					onclick={() => base && go(addMonths(base, -1))}
-				>
-					<Icon name="chevronLeft" size={16} />
-				</button>
-				<button
-					type="button"
-					class="abt-btn abt-btn--icon"
-					title="Next month"
-					aria-label="Next month"
-					disabled={!base || validStart(addMonths(base, 1), span, bounds) === base}
-					onclick={() => base && go(addMonths(base, 1))}
-				>
-					<Icon name="chevronRight" size={16} />
-				</button>
-			</div>
+			<MonthNav
+				atToday={start === currentMonth()}
+				prevDisabled={!base || validStart(addMonths(base, -1), span, bounds) === base}
+				nextDisabled={!base || validStart(addMonths(base, 1), span, bounds) === base}
+				onToday={() => go(currentMonth())}
+				onPrev={() => base && go(addMonths(base, -1))}
+				onNext={() => base && go(addMonths(base, 1))}
+			/>
 			<MonthPicker
 				year={parsed.year}
 				month={parsed.month}
@@ -250,9 +225,6 @@
 		margin-left: auto;
 	}
 
-	.bmh__icon {
-		display: none;
-	}
 	/* Your pick, held back for room: dashed in the accent, unlike a count you never chose. */
 	.abt-seg button.bmh__waiting {
 		outline: 1px dashed var(--abt-accent-4);
@@ -262,21 +234,13 @@
 	.bmh:global(.bmh--squeeze-1) .abt-seg__label {
 		display: none;
 	}
-	.bmh:global(.bmh--squeeze-4) .bmh__text {
+	.bmh:global(.bmh--squeeze-4) :global(.month-nav__text) {
 		display: none;
 	}
-	.bmh:global(.bmh--squeeze-4) .bmh__icon {
+	.bmh:global(.bmh--squeeze-4) :global(.month-nav__icon) {
 		display: inline-flex;
 	}
 	.bmh:global(.bmh--squeeze-5) .bmh__insights {
 		display: none;
-	}
-
-	/* Already on this month: plain text, so it doesn't read as a live button. */
-	.bmh__today:disabled {
-		opacity: 1;
-		border-color: transparent;
-		background: none;
-		color: var(--abt-muted);
 	}
 </style>
