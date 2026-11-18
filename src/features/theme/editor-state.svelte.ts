@@ -1,15 +1,9 @@
 import { DEFAULT_THEME } from "./defaults";
 
-export type ThemeOverrides = Record<string, Record<string, string>>;
+export const CSS_OVERRIDES_KEY = "theme-css-overrides";
 
 export const editorState = $state({
-	isSaving: false,
-	isDirty: false,
 	activeTheme: DEFAULT_THEME,
-	overrides: {} as ThemeOverrides,
+	/** Each theme's CSS override, keyed by theme, applied on top of it. */
+	cssOverrides: {} as Record<string, string>,
 });
-
-export let resetFn = () => {};
-export function setResetFn(fn: () => void) {
-	resetFn = fn;
-}

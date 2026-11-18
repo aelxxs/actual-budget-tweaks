@@ -9,7 +9,7 @@
 	import { type Component, onDestroy, onMount, untrack } from "svelte";
 	import { sidepanel } from "../core/side-panel";
 	import { DEFAULT_THEME } from "./defaults";
-	import { editorState, resetFn, setResetFn } from "./editor-state.svelte";
+	import { editorState } from "./editor-state.svelte";
 	import {
 		applyThemeByKey,
 		applyUserCSSTheme,
@@ -18,11 +18,10 @@
 		isCommunityTheme,
 		NATIVE_THEME_KEY,
 		type RemoteTheme,
+		saveCssOverride,
 	} from "./theme-apply";
-	import ThemeColorEditor from "./editor/ThemeColorEditor.svelte";
 	import CssThemeEditor from "./editor/CssThemeEditor.svelte";
 	import CssThemeHeader from "./editor/CssThemeHeader.svelte";
-	import ThemeEditorHeader from "./editor/ThemeEditorHeader.svelte";
 	import {
 		deleteUserTheme,
 		isUserTheme,
@@ -82,7 +81,7 @@
 	mql.addEventListener("change", onSchemeChange);
 	onDestroy(() => mql.removeEventListener("change", onSchemeChange));
 	onDestroy(() => {
-		for (const mounted of [editor, editorHeader, creator, creatorHeader]) {
+		for (const mounted of [overrideEditor, creator, creatorHeader]) {
 			mounted?.destroy();
 		}
 	});
@@ -221,41 +220,19 @@
 		}
 	}
 
-	let editor: Mounted | null = null;
-	let editorHeader: Mounted | null = null;
+	let overrideEditor: Mounted | null = null;
 
-	let exportFn: (() => string) | null = null;
-
-	const openColorEditor = () => {
-		if (!editor) {
-			editor = mountToPanelBody(ThemeColorEditor, {
-				onReady: ({ reset, getExportCSS }: { reset: () => void; getExportCSS: () => string }) => {
-					setResetFn(reset);
-					exportFn = getExportCSS;
-				},
-			});
-			editorHeader = mountHeader(ThemeEditorHeader, {
-				onReset: () => resetFn(),
-				onExport: () => exportFn?.() ?? "",
-			});
-		}
-		sidepanel.open({
-			title: "Color Editor",
-			bodyNode: editor.node,
-			headerNode: editorHeader!.node,
-			key: "color-editor",
-		});
-	};
-
-	async function editTheme(key: string) {
+	async function editCssOverride(key: string) {
 		if (activeThemeKey !== key) {
-			if (isUserTheme(key)) {
-				await selectUserTheme(key);
-			} else {
-				await selectTheme(key);
-			}
+			await selectTheme(key);
 		}
-		openColorEditor();
+		overrideEditor?.destroy();
+		overrideEditor = mountToPanelBody(CssThemeEditor, {
+			initialCss: editorState.cssOverrides[key] ?? "",
+			placeholder: `:root {\n  --color-pageBackground: #1e1e2e;\n}`,
+			onCssApply: (css: string) => void saveCssOverride(key, css),
+		});
+		sidepanel.open({ title: "CSS override", bodyNode: overrideEditor.node, key: "css-override" });
 	}
 
 	async function selectTheme(key: string) {
@@ -279,14 +256,6 @@
 
 	function getRepoOwner(repo: string): string {
 		return repo.split("/")[0] ?? repo;
-	}
-
-	function formatToken(key: string): string {
-		return key
-			.replace(/^--color-/, "")
-			.replace(/([A-Z])/g, " $1")
-			.replace(/^(.)/, (c) => c.toUpperCase())
-			.trim();
 	}
 
 	const q = $derived(searchQuery.trim().toLowerCase());
@@ -391,24 +360,21 @@
 	}
 
 	// ── Actions ──
-	/** The one way into editing a theme: the studio where it can go, else the color editor. */
+	/** The one way into editing a theme: the studio where it can go, else its CSS override. */
 	function customize(key: string) {
 		if (isUserTheme(key)) {
 			editUserTheme(key);
 		} else if (themes[key]) {
 			openPaletteInStudio(themes[key].keys, themes[key].name);
 		} else {
-			void editTheme(key);
+			void editCssOverride(key);
 		}
-	}
-	function editedTokens(key: string): string[] {
-		return Object.keys(editorState.overrides[key] ?? {}).map(formatToken);
 	}
 	function actionsFor(key: string): CardAction[] {
 		const list: CardAction[] = [{ label: "Customize", onselect: () => customize(key) }];
-		// Studio and palette themes get the studio from Customize; token overrides stay one step away.
+		// Studio and palette themes get the studio from Customize; the override stays one step away.
 		if (isUserTheme(key) || themes[key]) {
-			list.push({ label: "Edit individual colors", onselect: () => void editTheme(key) });
+			list.push({ label: "Edit CSS override", onselect: () => void editCssOverride(key) });
 		}
 		if (isCommunityTheme(key)) {
 			list.push({ label: "View on GitHub", href: `https://github.com/${key}` });
@@ -438,6 +404,9 @@
 		creator = mountToPanelBody(CssThemeEditor, {
 			initialCss: creatorCss,
 			onCssApply: (css: string) => {
+				if (!css) {
+					return;
+				}
 				creatorCss = css;
 				applyUserCSSTheme(creatorThemeId, css);
 			},
@@ -669,7 +638,7 @@
 								thumb={thumbFor(theme.id)}
 								mode={theme.mode}
 								active={selectedKey === theme.id}
-								edited={editedTokens(theme.id)}
+								edited={!!editorState.cssOverrides[theme.id]}
 								actions={actionsFor(theme.id)}
 								onselect={() => selectUserTheme(theme.id)}
 							/>
@@ -689,11 +658,11 @@
 									name="Actual default"
 									thumb={thumbFor(NATIVE_THEME_KEY)}
 									active={selectedKey === NATIVE_THEME_KEY}
-									edited={editedTokens(NATIVE_THEME_KEY)}
+									edited={!!editorState.cssOverrides[NATIVE_THEME_KEY]}
 									actions={[
 										{
-											label: "Edit individual colors",
-											onselect: () => void editTheme(NATIVE_THEME_KEY),
+											label: "Edit CSS override",
+											onselect: () => void editCssOverride(NATIVE_THEME_KEY),
 										},
 									]}
 									onselect={() => selectTheme(NATIVE_THEME_KEY)}
@@ -704,7 +673,7 @@
 									thumb={thumbFor(key)}
 									mode={themes[key].mode}
 									active={selectedKey === key}
-									edited={editedTokens(key)}
+									edited={!!editorState.cssOverrides[key]}
 									actions={actionsFor(key)}
 									onselect={() => selectTheme(key)}
 								/>
@@ -744,7 +713,7 @@
 										active={selectedKey === theme.repo}
 										loading={applyingTheme === theme.repo}
 										disabled={applyingTheme !== null}
-										edited={editedTokens(theme.repo)}
+										edited={!!editorState.cssOverrides[theme.repo]}
 										actions={actionsFor(theme.repo)}
 										onselect={() => selectTheme(theme.repo)}
 									/>

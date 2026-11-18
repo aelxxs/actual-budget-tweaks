@@ -2,8 +2,9 @@ import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER, BUDGET_LINK } from "@lib/actual-dom
 import { getTheme, themes } from "@lib/design";
 import { applyGlobalCSS } from "@lib/dom/dom";
 import { watchElement } from "@lib/dom/dom-watcher";
+import { setValue } from "@lib/store";
 import { THEME_APPLIED_EVENT } from "@lib/theme-events";
-import { editorState } from "./editor-state.svelte";
+import { CSS_OVERRIDES_KEY, editorState } from "./editor-state.svelte";
 import { effectsFor, loadThemeEffects, NO_EFFECTS } from "./effects-store.svelte";
 import { paletteKeys, STUDIO_STYLE_ID, studioCSS, themeEffectsCSS } from "./studio/effects";
 import { generate, hexToOklch, type Mode, oklchToHex } from "./studio/generator";
@@ -17,6 +18,16 @@ export type RemoteTheme = {
 };
 
 export const TOKENS_STYLE_ID = "color-tokens";
+const CSS_OVERRIDE_STYLE_ID = "theme-css-override";
+
+export async function saveCssOverride(key: string, css: string): Promise<void> {
+	const { [key]: _, ...rest } = editorState.cssOverrides;
+	editorState.cssOverrides = css ? { ...rest, [key]: css } : rest;
+	await setValue(CSS_OVERRIDES_KEY, editorState.cssOverrides);
+	if (editorState.activeTheme === key) {
+		applyOverrides(key);
+	}
+}
 export const NATIVE_THEME_KEY = "native";
 
 const originalRootProperties = new Map<string, { value: string; priority: string }>();
@@ -61,7 +72,7 @@ function chartCSS(keys: Record<string, string>): string {
 	return lines.length ? `:root {\n\t${lines.join("\n\t")}\n}\n` : "";
 }
 
-export function setRootProperty(root: HTMLElement, name: string, value: string) {
+function setRootProperty(root: HTMLElement, name: string, value: string) {
 	if (!originalRootProperties.has(name)) {
 		originalRootProperties.set(name, {
 			value: root.style.getPropertyValue(name),
@@ -440,13 +451,9 @@ export function applyUserCSSTheme(id: string, css: string) {
 }
 
 export function applyOverrides(key: string) {
-	const overrides = editorState.overrides[key] ?? {};
-	const root = document.querySelector<HTMLElement>(":root");
-	if (root) {
-		for (const [prop, val] of Object.entries(overrides)) {
-			setRootProperty(root, prop, val);
-		}
-	}
+	// Re-added so it comes after the theme's own tag, which may have just been recreated.
+	applyGlobalCSS("", CSS_OVERRIDE_STYLE_ID);
+	applyGlobalCSS(editorState.cssOverrides[key] ?? "", CSS_OVERRIDE_STYLE_ID);
 	syncWindowColor();
 	// Every way of putting a theme on ends here.
 	document.dispatchEvent(new CustomEvent(THEME_APPLIED_EVENT));

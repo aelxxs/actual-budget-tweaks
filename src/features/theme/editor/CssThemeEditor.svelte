@@ -1,25 +1,23 @@
 <script lang="ts">
-	let { initialCss, onCssApply }: { initialCss: string; onCssApply: (css: string) => void } =
-		$props();
+	let {
+		initialCss,
+		placeholder = `:root {\n  --color-pageBackground: #1e1e2e;\n  --color-pageText: #cdd6f4;\n  /* ... all color tokens */\n}`,
+		onCssApply,
+	}: { initialCss: string; placeholder?: string; onCssApply: (css: string) => void } = $props();
 
 	let cssInput = $derived(initialCss);
-
-	function applyCss() {
-		const trimmed = cssInput.trim();
-		if (trimmed) {
-			onCssApply(trimmed);
-		}
-	}
 </script>
 
 <div class="creator">
 	<div class="creator__css">
 		<textarea
 			class="creator__css-input"
-			placeholder={`:root {\n  --color-pageBackground: #1e1e2e;\n  --color-pageText: #cdd6f4;\n  /* ... all color tokens */\n}`}
+			{placeholder}
+			spellcheck="false"
 			bind:value={cssInput}
 			rows="16"></textarea>
-		<button class="creator__css-apply" onclick={applyCss}>Apply CSS</button>
+		<button class="creator__css-apply" onclick={() => onCssApply(cssInput.trim())}>Apply CSS</button
+		>
 	</div>
 </div>
 

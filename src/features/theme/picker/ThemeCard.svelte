@@ -19,7 +19,7 @@
 		active = false,
 		loading = false,
 		disabled = false,
-		edited = [],
+		edited = false,
 		actions = [],
 		onselect,
 	}: {
@@ -31,8 +31,8 @@
 		active?: boolean;
 		loading?: boolean;
 		disabled?: boolean;
-		/** Color tokens the person has overridden on this theme. */
-		edited?: string[];
+		/** Has a CSS override of its own. */
+		edited?: boolean;
 		actions?: CardAction[];
 		onselect: () => void;
 	} = $props();
@@ -87,13 +87,11 @@
 			</button>
 		{/if}
 	</div>
-	{#if creator || edited.length}
+	{#if creator || edited}
 		<span class="meta">
 			{#if creator}{creator}{/if}
-			{#if edited.length}
-				<span class="edited" title="Edited: {edited.join(', ')}"
-					>{creator ? " · " : ""}{edited.length} edited</span
-				>
+			{#if edited}
+				<span class="edited" title="Has a CSS override">{creator ? " · " : ""}Edited</span>
 			{/if}
 		</span>
 	{/if}
