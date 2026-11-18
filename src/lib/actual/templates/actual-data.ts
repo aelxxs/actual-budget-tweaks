@@ -1,9 +1,9 @@
 import { query, send } from "@lib/actual/actual-api";
-import type { BudgetSheetName, GoalDefEntry } from "@lib/types/actual-schema";
+import type { BudgetSheetName } from "@lib/types/actual-schema";
 import { monthToSheet, sheetToMonth } from "@lib/format/months";
 import { Page, matchesPage } from "@lib/actual/pages";
 import type { Category } from "./priority-plan";
-import { templateEntriesFromGoalDef } from "./templates";
+import { parseGoalDef, templateEntriesFromGoalDef } from "./templates";
 import type { TemplateEntry } from "./templates";
 import { createLogger } from "@lib/logger";
 import { BUDGET_LINK, BUDGET_TABLE, SHOWN_MONTH } from "@lib/actual-dom";
@@ -330,23 +330,6 @@ export function diffSnapshots(
 		toBudgetBefore: before.toBudget,
 		toBudgetAfter: after.toBudget,
 	};
-}
-
-function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
-	if (!goalDef) {
-		return [];
-	}
-	try {
-		const parsed = JSON.parse(goalDef);
-		if (!Array.isArray(parsed)) {
-			return [];
-		}
-		return parsed.filter(
-			(d): d is GoalDefEntry => d && (d.directive === "template" || d.directive === "goal"),
-		);
-	} catch {
-		return [];
-	}
 }
 
 /**

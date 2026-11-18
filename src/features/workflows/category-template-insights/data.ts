@@ -1,7 +1,7 @@
 import { query } from "@lib/actual/actual-api";
 import { readCell } from "@lib/actual/budget-cells";
+import { parseGoalDef } from "@lib/actual/templates/templates";
 import { isoDate } from "@lib/format/months";
-import type { GoalDefEntry } from "@lib/types/actual-schema";
 import type {
 	CategoryInsight,
 	LinkedSchedule,
@@ -36,61 +36,6 @@ export function getAccountName(id: string): string | null {
 export function resetData() {
 	insights = null;
 	loading = null;
-}
-
-/**
- * `goal_def` is the structured form of a category's template/goal directives —
- * the same data Actual itself parses from notes today, and the only source
- * once Actual's template UI migration drops note-based authoring entirely.
- */
-function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
-	if (!goalDef) {
-		return [];
-	}
-	try {
-		const parsed = JSON.parse(goalDef);
-		if (!Array.isArray(parsed)) {
-			return [];
-		}
-		return parsed.filter(
-			(d): d is GoalDefEntry => d && (d.directive === "template" || d.directive === "goal"),
-		);
-	} catch {
-		return [];
-	}
-}
-
-function parseScheduleAmount(schedule: RawSchedule): number | null {
-	const raw = schedule._amount;
-	if (raw == null) {
-		return null;
-	}
-	if (typeof raw === "number") {
-		return raw;
-	}
-	if (typeof raw === "string") {
-		try {
-			const parsed = JSON.parse(raw);
-			if (typeof parsed === "number") {
-				return parsed;
-			}
-			if (parsed && typeof parsed.num === "number") {
-				return parsed.num;
-			}
-		} catch {
-			const n = parseFloat(raw);
-			if (Number.isFinite(n)) {
-				return Math.round(n * 100);
-			}
-		}
-	}
-	if (typeof raw === "object" && raw !== null) {
-		const obj = raw as Record<string, unknown>;
-		if (typeof obj.num === "number") {
-			return obj.num;
-		}
-	}
-	return null;
 }
 
 function computeUpcomingThreshold(todayStr: string, pref: string): string {
@@ -325,8 +270,6 @@ export function progressFor(
 		isLongGoal: cell.isLongGoal,
 	};
 }
-
-export { parseScheduleAmount };
 
 type ProgressState = "under" | "near" | "full" | "paid";
 

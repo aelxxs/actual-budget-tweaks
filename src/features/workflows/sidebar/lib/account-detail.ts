@@ -1,3 +1,4 @@
+import { scheduleAmount } from "@lib/actual/schedules";
 import type { Account, Payee, Schedule, Transaction } from "@lib/types/actual-schema";
 import { calculate, query } from "@lib/actual/actual-api";
 import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
@@ -49,16 +50,6 @@ function relTime(iso: string | null | undefined): string {
 
 const TREND_DAYS = 30;
 const TREND_WINDOW_DAYS = TREND_DAYS + 3; // small buffer, doesn't affect the 30 points returned
-
-function scheduleAmount(amount: Schedule["_amount"]): number {
-	if (typeof amount === "number") {
-		return amount;
-	}
-	if (amount && typeof amount === "object") {
-		return amount.num1;
-	}
-	return 0;
-}
 
 // Keyed by account id, so re-hovering the same account after the first
 // (real, multi-query) load is instant.
@@ -157,7 +148,7 @@ async function computeAccountDetail(
 		id: s.id,
 		date: formatDayMonth(s.next_date!),
 		payee: (s._payee && payeeName.get(s._payee)) || s.name || "Scheduled",
-		amount: scheduleAmount(s._amount),
+		amount: scheduleAmount(s._amount) ?? 0,
 		overdue: s.next_date! < today,
 	}));
 

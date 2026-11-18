@@ -1,3 +1,4 @@
+import { scheduleAmount } from "@lib/actual/schedules";
 import type {
 	Account,
 	Category,
@@ -25,32 +26,6 @@ export function monthsFromNow(year: number, month: number, now = new Date()): nu
 
 export function hasTransactions(day: DayData): boolean {
 	return day.isCurrentMonth && day.transactions.length > 0;
-}
-
-export function parseScheduleAmount(raw: unknown): number {
-	if (typeof raw === "number") {
-		return raw;
-	}
-	if (typeof raw === "string") {
-		try {
-			const parsed = JSON.parse(raw);
-			if (typeof parsed === "number") {
-				return parsed;
-			}
-			if (parsed?.value != null) {
-				return parsed.value;
-			}
-		} catch {
-			return 0;
-		}
-	}
-	if (raw && typeof raw === "object") {
-		const obj = raw as Record<string, unknown>;
-		if (typeof obj.value === "number") {
-			return obj.value;
-		}
-	}
-	return 0;
 }
 
 /**
@@ -246,7 +221,7 @@ export function createMonthLoader() {
 		// hidden account, the shown one it pays into, where the amount runs the other way.
 		const sides = new Map<string, { account: string | null; amount: number; from?: string }>();
 		for (const s of schedules) {
-			const amount = parseScheduleAmount(s._amount);
+			const amount = scheduleAmount(s._amount) ?? 0;
 			const transferAcct = (s._payee && payeeTransferAcct.get(s._payee)) || null;
 			const transferShown = !!transferAcct && !isHidden(transferAcct);
 			if (!isHidden(s._account)) {

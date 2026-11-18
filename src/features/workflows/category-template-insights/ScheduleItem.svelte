@@ -2,7 +2,8 @@
 	import { fmtMoney } from "@lib/format/currency";
 	import { formatDate, loadDatePrefs } from "@lib/format/date-format.svelte";
 	import { isoDate } from "@lib/format/months";
-	import { getAccountName, parseScheduleAmount } from "./data";
+	import { getAccountName } from "./data";
+	import { scheduleAmount } from "@lib/actual/schedules";
 	import type { LinkedSchedule } from "./types";
 
 	const { link, fallbackName = "" }: { link: LinkedSchedule; fallbackName?: string } = $props();
@@ -65,7 +66,7 @@
 		return unit ? `Every ${interval} ${unit}s` : null;
 	}
 
-	const amount = $derived(parseScheduleAmount(link.schedule));
+	const amount = $derived(scheduleAmount(link.schedule._amount));
 	const meta = $derived(
 		[...when(), frequency(), getAccountName(link.schedule._account)].filter(Boolean),
 	);

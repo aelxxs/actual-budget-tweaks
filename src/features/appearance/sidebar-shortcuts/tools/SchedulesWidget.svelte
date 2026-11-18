@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { scheduleAmount } from "@lib/actual/schedules";
 	import { onMount } from "svelte";
 	import { query, navigate } from "@lib/actual/actual-api";
 	import { fmtMoney } from "@lib/format/currency";
@@ -31,32 +32,6 @@
 	let loading = $state(true);
 	let error = $state(false);
 
-	function parseAmount(raw: unknown): number {
-		if (typeof raw === "number") {
-			return raw;
-		}
-		if (typeof raw === "string") {
-			try {
-				const parsed = JSON.parse(raw);
-				if (typeof parsed === "number") {
-					return parsed;
-				}
-				if (parsed?.value != null) {
-					return parsed.value;
-				}
-			} catch {
-				return 0;
-			}
-		}
-		if (raw && typeof raw === "object") {
-			const obj = raw as Record<string, unknown>;
-			if (typeof obj.value === "number") {
-				return obj.value;
-			}
-		}
-		return 0;
-	}
-
 	function daysUntil(dateStr: string): number {
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -87,7 +62,7 @@
 				.filter((s) => !s.completed && !s.tombstone && s.next_date)
 				.map((s) => {
 					const days = daysUntil(s.next_date);
-					const amount = parseAmount(s._amount);
+					const amount = scheduleAmount(s._amount) ?? 0;
 					const name = s.name || payeeMap.get(s._payee) || "Unknown";
 					return { id: s.id, name, amount, date: s.next_date, daysUntil: days };
 				})

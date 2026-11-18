@@ -1,6 +1,6 @@
 import type { Schedule, Transaction } from "@lib/types/actual-schema";
 import { calculate } from "@lib/actual/actual-api";
-import { parseScheduleAmount } from "./month-data";
+import { scheduleAmount } from "@lib/actual/schedules";
 
 /** One unpaid scheduled occurrence, signed as it lands in the selected accounts. */
 interface Projected {
@@ -18,7 +18,7 @@ export function scheduleEffect(
 	accounts: Set<string>,
 	transferAccount: string | null,
 ): number {
-	const amount = parseScheduleAmount(s._amount);
+	const amount = scheduleAmount(s._amount) ?? 0;
 	if (!s._account) {
 		return accounts.size === 1 ? amount : 0;
 	}

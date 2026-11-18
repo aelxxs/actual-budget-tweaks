@@ -27,6 +27,24 @@ export interface TemplateEntry {
 	engineTemplate?: unknown;
 }
 
+/** A category's `goal_def` column: its template and goal directives, parsed. */
+export function parseGoalDef(goalDef: string | null | undefined): GoalDefEntry[] {
+	if (!goalDef) {
+		return [];
+	}
+	try {
+		const parsed = JSON.parse(goalDef);
+		if (!Array.isArray(parsed)) {
+			return [];
+		}
+		return parsed.filter(
+			(d): d is GoalDefEntry => d && (d.directive === "template" || d.directive === "goal"),
+		);
+	} catch {
+		return [];
+	}
+}
+
 /**
  * Converts a category's parsed `goal_def` directives into the TemplateEntry
  * shape the priority planner consumes. `goal_def` is already Actual's own
