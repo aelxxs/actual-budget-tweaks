@@ -1,5 +1,6 @@
 import { ACTUAL_TOOLTIP } from "@lib/actual-dom";
 import { applyGlobalCSS } from "@lib/dom/dom";
+import { clamp } from "@lib/math";
 
 /*
  * Every `title` on the page, ABT's and Actual's, shown as ABT's tooltip. An element can add a muted
@@ -194,7 +195,6 @@ function findTitledAncestor(node: EventTarget | null): HTMLElement | null {
 	return null;
 }
 
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(v, hi));
 
 /** Where the tooltip goes on a side, and whether it fits there inside the window. */
 function place(side: Side, a: DOMRect, tip: DOMRect) {
