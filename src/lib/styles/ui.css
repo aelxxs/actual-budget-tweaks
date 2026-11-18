@@ -74,7 +74,7 @@
 	--abt-panel-surface: var(--color-budgetCurrentMonth, var(--color-tableBackground));
 	/* A step below the page: 5% darker when dark, under 2% when light, where more turns grey. */
 	--abt-panel-bg: oklch(
-		from var(--color-pageBackground) calc(l * (0.95 + 0.0325 * clamp(0, (l - 0.5) * 100, 1))) c h
+		from var(--color-pageBackground) calc(l * (0.95 + 0.0395 * clamp(0, (l - 0.5) * 100, 1))) c h
 	);
 }
 
@@ -314,11 +314,13 @@
 .abt-controls-quiet {
 	--abt-fill: var(--abt-ink-2);
 	--abt-fill-hover: var(--abt-ink-3);
+	--abt-line: var(--abt-ink-2);
 }
 
 .abt-controls-quiet .abt-tone-accent {
 	--abt-btn-bg: color-mix(in srgb, var(--abt-accent) 20%, transparent);
 	--abt-btn-bg-hover: color-mix(in srgb, var(--abt-accent) 30%, transparent);
+	--abt-btn-line: color-mix(in srgb, var(--abt-accent) 22%, transparent);
 }
 
 .abt-btn {
