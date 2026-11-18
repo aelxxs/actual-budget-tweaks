@@ -106,8 +106,10 @@ const SIDE_PANEL = `
 		column-gap: ${GAP};
 		background: transparent !important;
 	}
-	/* Not the bottom: that's the titlebar's own divider. */
+	/* Not the bottom: that's the titlebar's own divider. 1px taller to hold this border, so its
+	   divider lines up with the sidebar's and the panel's, whose borders sit above their headers. */
 	${OPEN} > div:nth-child(1) {
+		height: calc(var(--abt-titlebar-height) + 1px);
 		border-top: 1px solid var(--abt-inset-border);
 		border-inline: 1px solid var(--abt-inset-border);
 		border-radius: ${RADIUS} ${RADIUS} 0 0;
