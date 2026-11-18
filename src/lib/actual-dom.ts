@@ -200,6 +200,7 @@ export const PAGE_ANCHORS: Record<string, Record<string, string>> = {
 		ACCOUNT_NAME,
 		ACCOUNT_BALANCE,
 		TRANSACTION_TABLE,
+		TRANSACTION_HEADER,
 		TRANSACTION_ROW,
 		FOCUS_KEY,
 		AUTO_SIZER,

@@ -2,7 +2,6 @@ import { defineSetting } from "@features/types";
 import { createElement, createToolbarButton } from "@lib/dom/dom";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { Page, matchesPage } from "@lib/actual/pages";
-import { watchRoute } from "@lib/dom/route-watcher";
 import { getValue, setValue } from "@lib/store";
 import {
 	ACCOUNT_CELL,
@@ -33,6 +32,7 @@ type AmountColumn = "payment" | "deposit" | "balance";
 type StoredWidths = Partial<Record<HeaderColumn, number>>;
 
 const RESIZE_HANDLE_CLASS = "abt-col-resizer";
+const RESET_BUTTON_ID = "abt-transaction-col-reset-btn";
 const ROOT_TOGGLE_ATTR = "data-abt-resizable-cols";
 const ROOT_RESIZING_ATTR = "data-abt-resizing-cols";
 /** Amount columns the user has resized; the rest keep Actual's auto-measured width. */
@@ -40,8 +40,6 @@ const ROOT_FIXED_AMOUNTS_ATTR = "data-abt-fixed-amounts";
 // Set per route rather than `:root:has([data-testid="budget-table"])`, which Firefox
 // re-searched the whole page for on every row it styled, blanking fast scrolls.
 const ROOT_BUDGET_ATTR = "data-abt-budget-page";
-const ROUTE_REFRESH_DELAY_MS = 0;
-const INITIAL_ATTACH_RETRY_FRAMES = 6;
 const HEADER_COLUMNS: HeaderColumn[] = [
 	"date",
 	"account",
@@ -53,14 +51,16 @@ const HEADER_COLUMNS: HeaderColumn[] = [
 	"deposit",
 	"balance",
 ];
-const RESIZABLE_COLUMNS: ResizableColumn[] = [
+const RESIZABLE_COLUMNS = new Set<string>([
 	"account",
 	"payee",
 	"notes",
 	"group",
 	"category",
 	"payment",
-];
+	"deposit",
+	"balance",
+]);
 const NON_FREE_COLUMNS = new Set<string>(["select", "cleared", "date"]);
 const MIN_COL_WIDTH = 80;
 const MAX_COL_WIDTH_SAFETY = 9999;
@@ -86,58 +86,18 @@ const STATIC_FIXED_WIDTHS = {
 } as const;
 const DEFAULT_DATE_WIDTH = 110;
 
-let headerObserver: MutationObserver | null = null;
-let scheduled = false;
-let currentStorageKey = "";
-let cachedWidths: StoredWidths = {};
-let storagePrefixKey = "";
-let routeSyncToken = 0;
-const pageWidthsCache = new Map<string, StoredWidths>();
-let routeRefreshTimer: number | null = null;
-let observedRouteKey = "";
-let observedHeaderRow: HTMLElement | null = null;
-let observedHeaderCellCount = 0;
-let stopInitialAttach: (() => void) | null = null;
-let stopWatchingRoute: (() => void) | null = null;
-let stopWatchingDom: (() => void) | null = null;
+/** Each page keeps its own widths, stored under the setting's key plus the page's address. */
+let storagePrefix = "";
+let route = "";
+let widths: StoredWidths = {};
+let loadToken = 0;
+const widthsCache = new Map<string, StoredWidths>();
+/** The header the handles were last fitted to, and its columns then. */
+let header: HTMLElement | null = null;
+let headerColumns = "";
 
-function markBudgetPage(): void {
-	document.documentElement.toggleAttribute(ROOT_BUDGET_ATTR, matchesPage(Page.Budget));
-}
-
-function onRouteSignal(): void {
-	const currentRouteKey = getCurrentRouteKey();
-	if (currentRouteKey === observedRouteKey) {
-		return;
-	}
-	observedRouteKey = currentRouteKey;
-	markBudgetPage();
-
-	// Apply widths synchronously before React re-renders the new page so the new
-	// header never paints with the previous page's CSS variable values.
-	if (storagePrefixKey) {
-		const nextKey = getPageStorageKey(storagePrefixKey);
-		if (nextKey !== currentStorageKey) {
-			const cached = pageWidthsCache.get(nextKey);
-			cachedWidths = cached ? { ...cached } : {};
-			applyWidths(cachedWidths);
-		}
-	}
-
-	scheduleRouteRefresh();
-}
-
-function areWidthsEqual(a: StoredWidths, b: StoredWidths): boolean {
-	for (const column of HEADER_COLUMNS) {
-		if (column === "date") {
-			continue;
-		}
-		if (a[column] !== b[column]) {
-			return false;
-		}
-	}
-	return true;
-}
+const routeKey = () => `${location.pathname}${location.search}${location.hash}`;
+const storageKey = () => `${storagePrefix}:${route}`;
 
 function clampWidth(value: number): number {
 	return Math.max(MIN_COL_WIDTH, Math.min(MAX_COL_WIDTH_SAFETY, Math.round(value)));
@@ -147,42 +107,28 @@ function clampWidthLive(value: number): number {
 	return Math.max(MIN_COL_WIDTH, Math.min(MAX_COL_WIDTH_SAFETY, value));
 }
 
-function getCurrentRouteKey(): string {
-	return `${window.location.pathname}${window.location.search}${window.location.hash}`;
-}
-
-function getPageStorageKey(prefix: string): string {
-	return `${prefix}:${getCurrentRouteKey()}`;
-}
-
-function cssVariableName(column: HeaderColumn): string {
-	return `--abt-col-${column}`;
+function sameWidths(a: StoredWidths, b: StoredWidths): boolean {
+	return HEADER_COLUMNS.every((column) => a[column] === b[column]);
 }
 
 function normalizeSavedWidths(value: unknown): StoredWidths {
 	if (!value || typeof value !== "object") {
 		return {};
 	}
-
 	const result: StoredWidths = {};
 	for (const column of HEADER_COLUMNS) {
-		if (column === "date") {
-			continue;
-		}
 		const raw = (value as Record<string, unknown>)[column];
-		if (typeof raw === "number" && Number.isFinite(raw)) {
+		if (column !== "date" && typeof raw === "number" && Number.isFinite(raw)) {
 			result[column] = clampWidth(raw);
 		}
 	}
-
 	return result;
 }
 
 function setFixedColumn(column: string, width: number, clamp = true): void {
 	const root = document.documentElement;
-	const normalizedWidth = clamp ? clampWidth(width) : Math.max(0, width);
-	const px = `${normalizedWidth}px`;
-	root.style.setProperty(cssVariableName(column as HeaderColumn), px);
+	const px = `${clamp ? clampWidth(width) : Math.max(0, width)}px`;
+	root.style.setProperty(`--abt-col-${column}`, px);
 	root.style.setProperty(`--abt-col-${column}-min`, px);
 	root.style.setProperty(`--abt-col-${column}-max`, px);
 	root.style.setProperty(`--abt-col-${column}-flex`, `0 0 ${px}`);
@@ -190,186 +136,84 @@ function setFixedColumn(column: string, width: number, clamp = true): void {
 
 function setFlexColumn(column: HeaderColumn): void {
 	const root = document.documentElement;
-	root.style.setProperty(cssVariableName(column), "auto");
+	root.style.setProperty(`--abt-col-${column}`, "auto");
 	root.style.setProperty(`--abt-col-${column}-min`, "0px");
 	root.style.setProperty(`--abt-col-${column}-max`, "none");
 	root.style.setProperty(`--abt-col-${column}-flex`, "1 1 0px");
 }
 
-function syncFixedAmountsAttr(widths: StoredWidths): void {
+function syncFixedAmountsAttr(): void {
 	const fixed = HEADER_COLUMNS.filter(
 		(column) => AMOUNT_COLUMNS.has(column) && typeof widths[column] === "number",
 	);
 	document.documentElement.setAttribute(ROOT_FIXED_AMOUNTS_ATTR, fixed.join(" "));
 }
 
-function applyWidths(widths: StoredWidths): void {
+function applyWidths(): void {
 	setFixedColumn("select", STATIC_FIXED_WIDTHS.select, false);
 	setFixedColumn("cleared", STATIC_FIXED_WIDTHS.cleared, false);
-
 	for (const column of HEADER_COLUMNS) {
-		const savedWidth = widths[column];
-		if (typeof savedWidth === "number") {
-			setFixedColumn(column, savedWidth);
+		const saved = widths[column];
+		if (typeof saved === "number") {
+			setFixedColumn(column, saved);
 		} else if (FLEX_DEFAULT_COLUMNS.has(column)) {
 			setFlexColumn(column);
 		} else if (column === "date") {
 			setFixedColumn(column, DEFAULT_DATE_WIDTH);
 		}
 	}
-	syncFixedAmountsAttr(widths);
+	syncFixedAmountsAttr();
 }
 
 function updateColumnWidth(column: HeaderColumn, width: number): void {
-	cachedWidths[column] = clampWidthLive(width);
-	setFixedColumn(column, cachedWidths[column] as number, false);
+	widths[column] = clampWidthLive(width);
+	setFixedColumn(column, widths[column], false);
 	if (AMOUNT_COLUMNS.has(column)) {
-		syncFixedAmountsAttr(cachedWidths);
+		syncFixedAmountsAttr();
 	}
 }
 
-async function persistCurrentWidths(): Promise<void> {
-	if (!currentStorageKey) {
+async function persistWidths(): Promise<void> {
+	if (!storagePrefix) {
 		return;
 	}
-	pageWidthsCache.set(currentStorageKey, { ...cachedWidths });
-	await setValue(currentStorageKey, cachedWidths);
+	const key = storageKey();
+	widthsCache.set(key, { ...widths });
+	await setValue(key, widths);
 }
 
 async function resetAllWidths(): Promise<void> {
-	cachedWidths = {};
-	applyWidths(cachedWidths);
-	await persistCurrentWidths();
+	widths = {};
+	applyWidths();
+	await persistWidths();
 }
 
-async function syncPageWidths(force = false): Promise<void> {
-	if (!storagePrefixKey) {
-		return;
-	}
-
-	const nextStorageKey = getPageStorageKey(storagePrefixKey);
-	const previousStorageKey = currentStorageKey;
-	if (!force && nextStorageKey === currentStorageKey) {
-		return;
-	}
-
-	currentStorageKey = nextStorageKey;
-
-	const cachedPageWidths = pageWidthsCache.get(nextStorageKey);
-	const fastWidths = cachedPageWidths ? { ...cachedPageWidths } : {};
-	if (force || !areWidthsEqual(cachedWidths, fastWidths)) {
-		cachedWidths = fastWidths;
-		applyWidths(cachedWidths);
-	}
-
-	const syncToken = ++routeSyncToken;
-	const storedWidths = normalizeSavedWidths(await getValue(nextStorageKey, {}));
-	if (syncToken !== routeSyncToken || currentStorageKey !== nextStorageKey) {
-		return;
-	}
-
-	const changed = !areWidthsEqual(cachedWidths, storedWidths);
-	cachedWidths = storedWidths;
-	pageWidthsCache.set(nextStorageKey, { ...storedWidths });
-	if (changed || force || previousStorageKey !== nextStorageKey) {
-		applyWidths(cachedWidths);
-	}
-	scheduleAttachHandles();
-}
-
-function scheduleRouteRefresh(): void {
-	if (routeRefreshTimer !== null) {
-		window.clearTimeout(routeRefreshTimer);
-	}
-
-	routeRefreshTimer = window.setTimeout(() => {
-		routeRefreshTimer = null;
-		void syncPageWidths();
-	}, ROUTE_REFRESH_DELAY_MS);
-}
-
-function observeHeaderRow(headerRow: HTMLElement | null): void {
-	if (!headerRow) {
-		if (headerObserver) {
-			headerObserver.disconnect();
-			headerObserver = null;
+/** The page's cached widths go on at once, before it paints; its stored ones follow. */
+function enterRoute(next: string): Promise<void> {
+	route = next;
+	document.documentElement.toggleAttribute(ROOT_BUDGET_ATTR, matchesPage(Page.Budget));
+	const key = storageKey();
+	widths = { ...(widthsCache.get(key) ?? {}) };
+	applyWidths();
+	const token = ++loadToken;
+	return getValue(key, {}).then((raw) => {
+		if (token !== loadToken) {
+			return;
 		}
-		observedHeaderRow = null;
-		observedHeaderCellCount = 0;
-		return;
-	}
-
-	if (stopInitialAttach) {
-		stopInitialAttach();
-		stopInitialAttach = null;
-	}
-
-	const headerCells = Array.from(headerRow.querySelectorAll<HTMLElement>(":scope > [data-testid]"));
-	const cellCountChanged = headerCells.length !== observedHeaderCellCount;
-
-	if (observedHeaderRow === headerRow && headerObserver && !cellCountChanged) {
-		return;
-	}
-
-	if (headerObserver) {
-		headerObserver.disconnect();
-	}
-
-	observedHeaderRow = headerRow;
-	observedHeaderCellCount = headerCells.length;
-	headerObserver = new MutationObserver((records) => {
-		let headerStructureChanged = false;
-		for (const record of records) {
-			if (record.type === "childList" && record.target === observedHeaderRow) {
-				headerStructureChanged = true;
-				break;
-			}
+		const stored = normalizeSavedWidths(raw);
+		widthsCache.set(key, stored);
+		if (!sameWidths(widths, stored)) {
+			widths = { ...stored };
+			applyWidths();
 		}
-
-		scheduleAttachHandles();
-		if (headerStructureChanged) {
-			requestAnimationFrame(() => {
-				observeHeaderRow(findHeaderRow());
-			});
+		if (header) {
+			attachHandles(header);
 		}
 	});
-
-	headerObserver.observe(headerRow, {
-		childList: true,
-		subtree: false,
-	});
-
-	for (const cell of headerCells) {
-		headerObserver.observe(cell, {
-			attributes: true,
-			attributeFilter: ["style", "class", "hidden"],
-		});
-	}
-}
-
-function installRouteListeners(): void {
-	if (stopWatchingRoute) {
-		return;
-	}
-	stopWatchingRoute = watchRoute(onRouteSignal);
-	// Actual's own navigations call its world's pushState, which the route watcher can't patch
-	// from here; the new page's render is caught instead, a frame before it paints.
-	stopWatchingDom = watchDom(onRouteSignal);
-}
-
-function uninstallRouteListeners(): void {
-	stopWatchingRoute?.();
-	stopWatchingRoute = null;
-	stopWatchingDom?.();
-	stopWatchingDom = null;
-}
-
-function removeHandles(): void {
-	document.querySelectorAll(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => handle.remove());
 }
 
 function getColumnCell(row: HTMLElement, testId: string): HTMLElement | null {
-	return row.querySelector<HTMLElement>(byTestId(testId));
+	return row.querySelector<HTMLElement>(`:scope > ${byTestId(testId)}`);
 }
 
 function isVisibleCell(cell: HTMLElement | null): cell is HTMLElement {
@@ -383,91 +227,26 @@ function isVisibleCell(cell: HTMLElement | null): cell is HTMLElement {
 	return cell.getBoundingClientRect().width > 0;
 }
 
-function isVisibleColumn(row: HTMLElement, testId: string): boolean {
-	return isVisibleCell(getColumnCell(row, testId));
-}
-
 function getVisibleColumnOrder(row: HTMLElement): string[] {
-	const cells = Array.from(row.querySelectorAll<HTMLElement>(":scope > [data-testid]"));
-	return cells
-		.filter((cell) => isVisibleCell(cell))
+	return Array.from(row.querySelectorAll<HTMLElement>(":scope > [data-testid]"))
+		.filter(isVisibleCell)
 		.map((cell) => cell.dataset.testid ?? "")
 		.filter(Boolean);
 }
 
 function getVisibleFreeColumns(row: HTMLElement): ResizableColumn[] {
-	const visibleColumns = getVisibleColumnOrder(row);
-	return visibleColumns.filter((col): col is ResizableColumn => !NON_FREE_COLUMNS.has(col));
+	return getVisibleColumnOrder(row).filter(
+		(col): col is ResizableColumn => !NON_FREE_COLUMNS.has(col),
+	);
 }
 
 /** The last free column absorbs leftover space, so it never gets a handle or a fixed width. */
 function getAnchorColumn(row: HTMLElement): ResizableColumn | undefined {
-	const freeColumns = getVisibleFreeColumns(row);
-	return freeColumns[freeColumns.length - 1];
-}
-
-function getVisibleResizableColumns(row: HTMLElement): ResizableColumn[] {
-	const freeColumns = getVisibleFreeColumns(row);
-	const anchorColumn = getAnchorColumn(row);
-	const resizableSet = new Set<string>([...RESIZABLE_COLUMNS, "deposit", "balance"]);
-	return freeColumns.filter(
-		(col): col is ResizableColumn => col !== anchorColumn && resizableSet.has(col),
-	);
-}
-
-function findHeaderRow(): HTMLElement | null {
-	const amountIds = new Set(["payment", "debit", "deposit", "credit", "balance"]);
-	const isHeaderLike = (container: HTMLElement): boolean => {
-		const directCells = Array.from(
-			container.querySelectorAll<HTMLElement>(":scope > [data-testid]"),
-		);
-		if (directCells.length < 4) {
-			return false;
-		}
-		const ids = directCells.map((cell) => cell.dataset.testid ?? "");
-		return ids.includes("date") && ids.some((id) => amountIds.has(id));
-	};
-
-	const header = document.querySelector<HTMLElement>(TRANSACTION_HEADER);
-	if (header && isHeaderLike(header)) {
-		return header;
-	}
-
-	// Older Actual versions render the header as a plain row.
-	const rows = document.querySelectorAll<HTMLElement>(ROW);
-	for (const row of rows) {
-		if (isHeaderLike(row)) {
-			return row;
-		}
-	}
-
-	// Fallback: derive a header-like container from known cell parents even when
-	// the row wrapper no longer exposes data-testid='row'.
-	const anchorCells = document.querySelectorAll<HTMLElement>(
-		`${DATE_CELL}, ${PAYEE_CELL}, ${ACCOUNT_CELL}, ${CATEGORY_CELL}`,
-	);
-	const visited = new Set<HTMLElement>();
-	for (const cell of anchorCells) {
-		let parent = cell.parentElement;
-		let depth = 0;
-		while (parent && depth < 4) {
-			if (!visited.has(parent)) {
-				visited.add(parent);
-				if (isHeaderLike(parent)) {
-					return parent;
-				}
-			}
-			parent = parent.parentElement;
-			depth += 1;
-		}
-	}
-
-	return null;
+	return getVisibleFreeColumns(row).at(-1);
 }
 
 function getCellWidth(row: HTMLElement, testId: string): number {
-	const cell = row.querySelector<HTMLElement>(byTestId(testId));
-	return cell ? cell.getBoundingClientRect().width : 0;
+	return getColumnCell(row, testId)?.getBoundingClientRect().width ?? 0;
 }
 
 /** Never below the current width: Actual may auto-widen amount columns past our cap. */
@@ -475,35 +254,23 @@ function getHardMaxWidth(column: ResizableColumn, currentWidth = 0): number {
 	return Math.max(NUMERIC_MAX_WIDTH[column] ?? MAX_COL_WIDTH_SAFETY, currentWidth);
 }
 
-function getMaxResizableWidth(column: ResizableColumn): number {
-	const headerRow = findHeaderRow();
-	if (!headerRow) {
-		return getHardMaxWidth(column);
-	}
-
-	const containerWidth = headerRow.getBoundingClientRect().width;
+function getMaxResizableWidth(row: HTMLElement, column: ResizableColumn): number {
 	let reserved = 0;
-
-	const visibleColumns = getVisibleColumnOrder(headerRow);
-	for (const other of visibleColumns) {
+	for (const other of getVisibleColumnOrder(row)) {
 		if (other === column) {
 			continue;
 		}
-
-		const current = getCellWidth(headerRow, other);
-		const isKnownColumn = HEADER_COLUMNS.includes(other as HeaderColumn);
+		const current = getCellWidth(row, other);
 		const isFlexDonor =
-			isKnownColumn &&
 			FLEX_DEFAULT_COLUMNS.has(other as HeaderColumn) &&
-			typeof cachedWidths[other as HeaderColumn] !== "number";
+			typeof widths[other as HeaderColumn] !== "number";
 		reserved += isFlexDonor ? Math.min(current, FLEX_SHRINK_FLOOR) : current;
 	}
-
 	return Math.max(
 		MIN_COL_WIDTH,
 		Math.min(
-			getHardMaxWidth(column, getCellWidth(headerRow, column)),
-			Math.floor(containerWidth - reserved),
+			getHardMaxWidth(column, getCellWidth(row, column)),
+			Math.floor(row.getBoundingClientRect().width - reserved),
 		),
 	);
 }
@@ -512,18 +279,15 @@ function getMinWidth(column: ResizableColumn): number {
 	return FLEX_DEFAULT_COLUMNS.has(column) ? FLEX_SHRINK_FLOOR : MIN_COL_WIDTH;
 }
 
-function getNextResizableColumn(
-	column: ResizableColumn,
-	headerRow: HTMLElement,
-): ResizableColumn | null {
-	const freeColumns = getVisibleFreeColumns(headerRow);
+function getNextResizableColumn(column: ResizableColumn, row: HTMLElement): ResizableColumn | null {
+	const freeColumns = getVisibleFreeColumns(row);
 	const index = freeColumns.indexOf(column);
 	if (index === -1) {
 		return null;
 	}
 	const next = freeColumns[index + 1] ?? null;
 	// A flexible anchor absorbs the change itself; pairing would fix its width.
-	if (next && next === getAnchorColumn(headerRow) && FLEX_DEFAULT_COLUMNS.has(next)) {
+	if (next && next === freeColumns.at(-1) && FLEX_DEFAULT_COLUMNS.has(next)) {
 		return null;
 	}
 	return next;
@@ -544,8 +308,8 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 		event.stopPropagation();
 
 		// Bail before entering drag state, or nothing would ever clear it.
-		const headerRow = findHeaderRow();
-		if (!headerRow || !isVisibleColumn(headerRow, column)) {
+		const row = header;
+		if (!row || !isVisibleCell(getColumnCell(row, column))) {
 			return;
 		}
 
@@ -558,17 +322,15 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 		let latestX = startX;
 		let framePending = false;
 
-		const nextColumn = getNextResizableColumn(column, headerRow);
-		const nextCell = nextColumn ? getColumnCell(headerRow, nextColumn) : null;
+		const nextColumn = getNextResizableColumn(column, row);
+		const nextCell = nextColumn ? getColumnCell(row, nextColumn) : null;
 		const startNextWidth = nextCell?.getBoundingClientRect().width ?? 0;
 
 		const applyDrag = () => {
 			framePending = false;
-
 			const deltaX = latestX - startX;
 
 			if (nextColumn && nextCell) {
-				const rawDelta = deltaX;
 				const minDelta = Math.max(
 					getMinWidth(column) - startWidth,
 					startNextWidth - getHardMaxWidth(nextColumn, startNextWidth),
@@ -577,15 +339,13 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 					getHardMaxWidth(column, startWidth) - startWidth,
 					startNextWidth - getMinWidth(nextColumn),
 				);
-				const delta = Math.max(minDelta, Math.min(maxDelta, rawDelta));
-
+				const delta = Math.max(minDelta, Math.min(maxDelta, deltaX));
 				updateColumnWidth(column, startWidth + delta);
 				updateColumnWidth(nextColumn, startNextWidth - delta);
 				return;
 			}
 
-			const proposedWidth = startWidth + deltaX;
-			updateColumnWidth(column, Math.min(proposedWidth, getMaxResizableWidth(column)));
+			updateColumnWidth(column, Math.min(startWidth + deltaX, getMaxResizableWidth(row, column)));
 		};
 
 		const onPointerMove = (moveEvent: PointerEvent) => {
@@ -606,7 +366,7 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 			if (handle.hasPointerCapture(upEvent.pointerId)) {
 				handle.releasePointerCapture(upEvent.pointerId);
 			}
-			persistCurrentWidths();
+			void persistWidths();
 		};
 
 		window.addEventListener("pointermove", onPointerMove);
@@ -617,9 +377,9 @@ function addHandle(cell: HTMLElement, column: ResizableColumn): void {
 	handle.addEventListener("dblclick", (event: MouseEvent) => {
 		event.preventDefault();
 		event.stopPropagation();
-		delete cachedWidths[column];
-		applyWidths(cachedWidths);
-		void persistCurrentWidths();
+		delete widths[column];
+		applyWidths();
+		void persistWidths();
 	});
 
 	cell.appendChild(handle);
@@ -646,125 +406,59 @@ function createSvgIcon(): SVGSVGElement {
 	return svg;
 }
 
-function attachResetButton(): void {
-	createToolbarButton({
-		id: "abt-transaction-col-reset-btn",
-		title: "Reset all column widths",
-		icon: createSvgIcon(),
-		onClick: () => void resetAllWidths(),
-	});
-}
-
-function attachHandles(): void {
-	const headerRow = findHeaderRow();
-	observeHeaderRow(headerRow);
-	if (!headerRow) {
-		return;
+function attachHandles(row: HTMLElement): void {
+	const anchor = getAnchorColumn(row);
+	// A saved width on a flexible anchor would leave nothing to fill the row, e.g. after a reorder.
+	if (anchor && FLEX_DEFAULT_COLUMNS.has(anchor) && typeof widths[anchor] === "number") {
+		delete widths[anchor];
+		applyWidths();
+		void persistWidths();
 	}
 
-	const resizable = new Set<string>(getVisibleResizableColumns(headerRow));
-
-	// Earlier versions could save a width for a flexible anchor, leaving nothing to fill the row.
-	const anchor = getAnchorColumn(headerRow);
-	if (anchor && FLEX_DEFAULT_COLUMNS.has(anchor) && typeof cachedWidths[anchor] === "number") {
-		delete cachedWidths[anchor];
-		applyWidths(cachedWidths);
-		void persistCurrentWidths();
-	}
-
-	// Remove handles from columns that are now the anchor or hidden.
-	headerRow.querySelectorAll<HTMLElement>(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => {
+	const resizable = new Set<string>(
+		getVisibleFreeColumns(row).filter((col) => col !== anchor && RESIZABLE_COLUMNS.has(col)),
+	);
+	row.querySelectorAll<HTMLElement>(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => {
 		const testId = handle.parentElement?.dataset.testid;
 		if (testId && !resizable.has(testId)) {
 			handle.remove();
 		}
 	});
-
 	for (const column of resizable) {
-		const cell = getColumnCell(headerRow, column);
+		const cell = getColumnCell(row, column);
 		if (cell) {
 			addHandle(cell, column as ResizableColumn);
 		}
 	}
-
-	attachResetButton();
 }
 
-function scheduleAttachHandles(): void {
-	// Some app navigations can mutate the URL without going through our patched
-	// history methods. Re-check route key on each attach cycle as a fallback.
-	onRouteSignal();
-	if (scheduled) {
+// Runs on every DOM batch, so everything but the route check waits for a header that changed.
+function onDom(): void {
+	const next = routeKey();
+	if (next !== route) {
+		void enterRoute(next);
+	}
+	const found = document.querySelector<HTMLElement>(TRANSACTION_HEADER);
+	if (!found) {
+		header = null;
+		headerColumns = "";
 		return;
 	}
-	scheduled = true;
-	requestAnimationFrame(() => {
-		scheduled = false;
-		attachHandles();
-	});
-}
-
-function scheduleInitialAttachRetries(): void {
-	let attempts = 0;
-
-	const tick = () => {
-		attempts += 1;
-		scheduleAttachHandles();
-		if (findHeaderRow() || attempts >= INITIAL_ATTACH_RETRY_FRAMES) {
-			return;
-		}
-		requestAnimationFrame(tick);
-	};
-
-	requestAnimationFrame(tick);
-}
-
-function ensureInitialAttachObserver(): void {
-	if (stopInitialAttach || !document.body) {
+	if (!document.getElementById(RESET_BUTTON_ID)) {
+		createToolbarButton({
+			id: RESET_BUTTON_ID,
+			title: "Reset all column widths",
+			icon: createSvgIcon(),
+			onClick: () => void resetAllWidths(),
+		});
+	}
+	const columns = Array.from(found.children, (c) => (c as HTMLElement).dataset.testid).join(" ");
+	if (found === header && columns === headerColumns) {
 		return;
 	}
-
-	stopInitialAttach = watchDom(() => {
-		const headerRow = findHeaderRow();
-		if (!headerRow) {
-			return;
-		}
-
-		observeHeaderRow(headerRow);
-		scheduleAttachHandles();
-		stopInitialAttach?.();
-		stopInitialAttach = null;
-	});
-}
-
-function startObserving(): void {
-	observedRouteKey = getCurrentRouteKey();
-	installRouteListeners();
-	const headerRow = findHeaderRow();
-	observeHeaderRow(headerRow);
-	void syncPageWidths();
-	scheduleAttachHandles();
-	scheduleInitialAttachRetries();
-	if (!headerRow) {
-		ensureInitialAttachObserver();
-	}
-}
-
-function stopObserving(): void {
-	if (headerObserver) {
-		headerObserver.disconnect();
-		headerObserver = null;
-	}
-	if (stopInitialAttach) {
-		stopInitialAttach();
-		stopInitialAttach = null;
-	}
-	observedHeaderRow = null;
-	uninstallRouteListeners();
-	if (routeRefreshTimer !== null) {
-		window.clearTimeout(routeRefreshTimer);
-		routeRefreshTimer = null;
-	}
+	header = found;
+	headerColumns = columns;
+	attachHandles(found);
 }
 
 function amountColumnCss(column: AmountColumn, testIds: string[], rootSuffix = ""): string {
@@ -927,28 +621,26 @@ export const resizableTransactionColumns = defineSetting({
 			}
 		`,
 	init: async (ctx) => {
-		stopObserving();
-		removeHandles();
-		document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
-
-		storagePrefixKey = ctx.key;
-		currentStorageKey = "";
-		cachedWidths = {};
-
-		document.documentElement.setAttribute(ROOT_TOGGLE_ATTR, "on");
-		markBudgetPage();
-		await syncPageWidths(true);
-		startObserving();
+		const root = document.documentElement;
+		storagePrefix = ctx.key;
+		route = "";
+		header = null;
+		headerColumns = "";
+		root.setAttribute(ROOT_TOGGLE_ATTR, "on");
+		await enterRoute(routeKey());
+		const stop = watchDom(onDom);
 
 		return () => {
-			stopObserving();
-			removeHandles();
-			document.documentElement.removeAttribute(ROOT_TOGGLE_ATTR);
-			document.documentElement.removeAttribute(ROOT_RESIZING_ATTR);
-			document.documentElement.removeAttribute(ROOT_FIXED_AMOUNTS_ATTR);
-			document.documentElement.removeAttribute(ROOT_BUDGET_ATTR);
-			storagePrefixKey = "";
-			currentStorageKey = "";
+			stop();
+			loadToken++;
+			document.querySelectorAll(`.${RESIZE_HANDLE_CLASS}`).forEach((handle) => handle.remove());
+			document.getElementById(RESET_BUTTON_ID)?.remove();
+			root.removeAttribute(ROOT_TOGGLE_ATTR);
+			root.removeAttribute(ROOT_RESIZING_ATTR);
+			root.removeAttribute(ROOT_FIXED_AMOUNTS_ATTR);
+			root.removeAttribute(ROOT_BUDGET_ATTR);
+			storagePrefix = "";
+			header = null;
 		};
 	},
 });
