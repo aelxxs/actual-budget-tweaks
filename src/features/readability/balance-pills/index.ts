@@ -112,17 +112,17 @@ const CSS = (Object.keys(TONES) as Status[])
 	}
 `);
 
-// Goal states match Actual's own goal colouring. Without a goal, overspent still shows, and a
-// non-negative balance gets a plain pill, including zero balances.
+// Goal states match Actual's own goal colouring, except a zero balance on a met goal stays plain:
+// it reads as nothing left, not as a tick. Without a goal, only overspent carries a status.
 function statusFor(data: CatCells): Status {
-	if (data.balance === 0) {
-		return "available";
-	}
 	if (data.balance < 0) {
 		return "overspent";
 	}
-	if (data.hasGoal) {
-		return data.goalShortfall > 0 ? "underfunded" : "funded";
+	if (data.hasGoal && data.goalShortfall > 0) {
+		return "underfunded";
+	}
+	if (data.hasGoal && data.balance > 0) {
+		return "funded";
 	}
 	return "available";
 }
