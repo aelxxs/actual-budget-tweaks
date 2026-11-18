@@ -85,24 +85,6 @@ const STATIC_FIXED_WIDTHS = {
 	cleared: 38,
 } as const;
 const DEFAULT_DATE_WIDTH = 110;
-const LEGACY_COLUMNS: Array<Exclude<HeaderColumn, "account" | "group">> = [
-	"date",
-	"payee",
-	"notes",
-	"category",
-	"payment",
-	"deposit",
-	"balance",
-];
-const LEGACY_DEFAULT_WIDTHS: Record<Exclude<HeaderColumn, "account" | "group">, number> = {
-	date: 110,
-	payee: 240,
-	notes: 200,
-	category: 190,
-	payment: 130,
-	deposit: 130,
-	balance: 130,
-};
 
 let headerObserver: MutationObserver | null = null;
 let scheduled = false;
@@ -177,15 +159,6 @@ function cssVariableName(column: HeaderColumn): string {
 	return `--abt-col-${column}`;
 }
 
-function isLegacySnapshot(widths: StoredWidths): boolean {
-	for (const column of LEGACY_COLUMNS) {
-		if (widths[column] !== LEGACY_DEFAULT_WIDTHS[column]) {
-			return false;
-		}
-	}
-	return true;
-}
-
 function normalizeSavedWidths(value: unknown): StoredWidths {
 	if (!value || typeof value !== "object") {
 		return {};
@@ -200,10 +173,6 @@ function normalizeSavedWidths(value: unknown): StoredWidths {
 		if (typeof raw === "number" && Number.isFinite(raw)) {
 			result[column] = clampWidth(raw);
 		}
-	}
-
-	if (isLegacySnapshot(result)) {
-		return {};
 	}
 
 	return result;
