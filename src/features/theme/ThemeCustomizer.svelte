@@ -176,12 +176,12 @@
 			galleryNode = null;
 		};
 	}
-	/** Opens on the mode in use, or the slot being changed; the others stay a click away. */
+	/** Opens on every theme, or on the slot's mode when choosing a theme for that slot. */
 	function openGallery(mode: "light" | "dark" | null) {
 		if (mode) {
 			slot = mode;
 		}
-		themeFilter = autoSwitch ? slot : modeOf(activeThemeKey);
+		themeFilter = autoSwitch ? slot : "all";
 		searchQuery = "";
 		expanded = {};
 		if (galleryNode) {
