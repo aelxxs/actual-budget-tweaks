@@ -1,17 +1,15 @@
 <script lang="ts">
 	import OptionPicker from "@lib/components/OptionPicker.svelte";
-	import { onMount } from "svelte";
-	import { applyGlobalCSS } from "@lib/dom/dom";
-	import { getValue, setValue } from "@lib/store";
 
-	let { ctx }: { ctx: { key: string; defaultValue: string; css: (v: string) => string } } =
-		$props();
-
-	const options = [
-		{ value: ".05rem", label: "Slim" },
-		{ value: ".15rem", label: "Normal" },
-		{ value: ".25rem", label: "Relaxed" },
-	];
+	let {
+		options,
+		selected,
+		onPick,
+	}: {
+		options: { value: string; label: string }[];
+		selected: string;
+		onPick: (value: string) => void;
+	} = $props();
 
 	// Real values (.05rem/.15rem/.25rem) are too close together to read at this
 	// scale — exaggerated here just to make the three options distinguishable.
@@ -22,21 +20,9 @@
 	};
 
 	const PREVIEW_ROWS = 4;
-
-	let selected = $derived(ctx.defaultValue);
-
-	onMount(async () => {
-		selected = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
-	});
-
-	async function pick(value: string) {
-		selected = value;
-		await setValue(ctx.key, value);
-		applyGlobalCSS(ctx.css(value), ctx.key);
-	}
 </script>
 
-<OptionPicker {options} {selected} onPick={pick}>
+<OptionPicker {options} {selected} {onPick}>
 	{#snippet preview({ value })}
 		<div class="sp-rows" style="gap: {PREVIEW_GAP[value] ?? '4px'}">
 			{#each { length: PREVIEW_ROWS } as _, i (i)}

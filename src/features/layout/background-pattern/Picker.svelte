@@ -1,33 +1,23 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { applyGlobalCSS } from "@lib/dom/dom";
-	import { getValue, setValue } from "@lib/store";
 	import { bgPatterns } from "./data";
 
-	let { ctx }: { ctx: { key: string; defaultValue: string; css: (v: string) => string } } =
-		$props();
-
-	const options = Object.keys(bgPatterns);
-
-	let selected = $derived(ctx.defaultValue);
-
-	onMount(async () => {
-		selected = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
-	});
-
-	async function pick(value: string) {
-		selected = value;
-		await setValue(ctx.key, value);
-		applyGlobalCSS(ctx.css(value), ctx.key);
-	}
+	let {
+		options,
+		selected,
+		onPick,
+	}: {
+		options: { value: string; label: string }[];
+		selected: string;
+		onPick: (value: string) => void;
+	} = $props();
 </script>
 
 <div class="bpp-grid">
-	{#each options as name (name)}
+	{#each options as { value: name } (name)}
 		<button
 			class="bpp-option"
 			class:is-active={selected === name}
-			onclick={() => pick(name)}
+			onclick={() => onPick(name)}
 			title={name}
 		>
 			<div class="bpp-swatch" style={bgPatterns[name]}></div>

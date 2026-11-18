@@ -1,35 +1,25 @@
 <script lang="ts">
 	import OptionPicker from "@lib/components/OptionPicker.svelte";
-	import { onMount } from "svelte";
-	import { applyGlobalCSS } from "@lib/dom/dom";
-	import { getValue, setValue } from "@lib/store";
 	import { ROW_HEIGHT_OPTIONS } from "./options";
 
-	let { ctx }: { ctx: { key: string; defaultValue: string; css: (v: string) => string } } =
-		$props();
-
-	const options = ROW_HEIGHT_OPTIONS;
+	let {
+		options,
+		selected,
+		onPick,
+	}: {
+		options: { value: string; label: string }[];
+		selected: string;
+		onPick: (value: string) => void;
+	} = $props();
 
 	const PREVIEW_ROWS = 4;
 
-	let selected = $derived(ctx.defaultValue);
-
-	onMount(async () => {
-		selected = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
-	});
-
-	async function pick(value: string) {
-		selected = value;
-		await setValue(ctx.key, value);
-		applyGlobalCSS(ctx.css(value), ctx.key);
-	}
-
 	function rowPxFor(value: string): number {
-		return options.find((o) => o.value === value)?.rowPx ?? 14;
+		return ROW_HEIGHT_OPTIONS.find((o) => o.value === value)?.rowPx ?? 14;
 	}
 </script>
 
-<OptionPicker {options} {selected} onPick={pick}>
+<OptionPicker {options} {selected} {onPick}>
 	{#snippet preview({ value })}
 		<div class="rhp-header"></div>
 		{#each { length: PREVIEW_ROWS } as _, i (i)}

@@ -16,9 +16,8 @@
 	} from "@features/appearance/sidebar-shortcuts/store";
 	import type { Shortcut } from "@features/appearance/sidebar-shortcuts/types";
 	import { applySettingChange } from "@features/runtime";
-	import type { CheckboxSetting } from "@features/types";
+	import type { CheckboxSetting, Setting } from "@features/types";
 	import Switch from "@lib/components/Switch.svelte";
-	import { applyGlobalCSS } from "@lib/dom/dom";
 	import { getValue, setValue, watchValue } from "@lib/store";
 	import {
 		Archive,
@@ -55,12 +54,6 @@
 		{ value: "standard", label: "Standard" },
 		{ value: "split", label: "Split" },
 	];
-	const DENSITIES = [
-		{ value: ".05rem", label: "Slim" },
-		{ value: ".15rem", label: "Normal" },
-		{ value: ".25rem", label: "Relaxed" },
-	];
-
 	const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
 	// Room for the edge that ties the panel to the sidebar, as Insights' cards menu has.
 	const GAP = 32;
@@ -179,8 +172,7 @@
 
 	function pickDensity(value: string) {
 		density = value;
-		void setValue(sidebarDensity.context.key, value);
-		applyGlobalCSS(sidebarDensity.context.css(value), sidebarDensity.context.key);
+		void applySettingChange(sidebarDensity as Setting, value);
 	}
 
 	function pin(item: Shortcut) {
@@ -317,7 +309,7 @@
 					<div class="choice">
 						<span class="choice__label">Density</span>
 						<div class="abt-seg abt-seg--sm" role="group" aria-label="Density">
-							{#each DENSITIES as opt (opt.value)}
+							{#each sidebarDensity.options as opt (opt.value)}
 								<button
 									type="button"
 									aria-pressed={density === opt.value}

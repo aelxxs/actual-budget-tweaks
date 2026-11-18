@@ -95,24 +95,24 @@
 		"items": [
 			{
 				"key": "border-radius",
-				"type": "custom",
+				"type": "select",
 				"defaultValue": "0.5rem",
-				"platform": "desktop",
+				"platform": "all",
 				"label": "Rounded corners",
 				"description": "Sets how round cards and buttons are.",
-				"icon": null,
+				"icon": "square",
 				"group": null,
 				"writes": null,
 				"experimental": false
 			},
 			{
 				"key": "background-pattern",
-				"type": "custom",
+				"type": "select",
 				"defaultValue": "None",
 				"platform": "desktop",
 				"label": "Background pattern",
 				"description": "Adds a pattern behind the page.",
-				"icon": null,
+				"icon": "layout",
 				"group": null,
 				"writes": null,
 				"experimental": false
@@ -281,12 +281,12 @@
 			},
 			{
 				"key": "actual-sidebar-account-spacing",
-				"type": "custom",
+				"type": "select",
 				"defaultValue": ".15rem",
 				"platform": "desktop",
 				"label": "Sidebar density",
 				"description": "Sets the spacing in the live sidebar.",
-				"icon": null,
+				"icon": "sliders",
 				"group": null,
 				"writes": null,
 				"experimental": false
@@ -359,12 +359,12 @@
 		"items": [
 			{
 				"key": "actual-slimmer-budgetrows",
-				"type": "custom",
+				"type": "select",
 				"defaultValue": "2.25rem",
 				"platform": "desktop",
 				"label": "Budget row height",
 				"description": "Sets how tall each budget row is.",
-				"icon": null,
+				"icon": "rows",
 				"group": "Layout",
 				"writes": null,
 				"experimental": false

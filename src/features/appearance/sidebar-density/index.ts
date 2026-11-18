@@ -1,6 +1,4 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/dom/dom";
-import { getValue } from "@lib/store";
 import DensityPicker from "./Picker.svelte";
 
 // Stored as the rem values the old native-sidebar version used, so saved choices carry over.
@@ -11,19 +9,20 @@ const ROW_PAD: Record<string, string> = {
 };
 
 export const sidebarDensity = defineSetting({
-	type: "custom",
+	type: "select",
 	label: "Sidebar density",
 	description: "Sets the spacing in the live sidebar.",
 	group: "Sidebar",
+	icon: "sliders",
 	context: {
 		key: "actual-sidebar-account-spacing",
 		defaultValue: ".15rem",
-		css: (value: string) => `:root { --sb-row-pad-y: ${ROW_PAD[value] ?? "5px"}; }`,
 	},
-	component: DensityPicker,
-	init: async (ctx) => {
-		const value = await getValue(ctx.key, ctx.defaultValue);
-		applyGlobalCSS(ctx.css(value as string), ctx.key);
-	},
-	apply: (value, ctx) => applyGlobalCSS(ctx.css(value as string), ctx.key),
+	options: [
+		{ value: ".05rem", label: "Slim" },
+		{ value: ".15rem", label: "Normal" },
+		{ value: ".25rem", label: "Relaxed" },
+	],
+	picker: DensityPicker,
+	css: ({ value }) => `:root { --sb-row-pad-y: ${ROW_PAD[value as string] ?? "5px"}; }`,
 });

@@ -1,33 +1,27 @@
 import { defineSetting } from "@features/types";
-import { applyGlobalCSS } from "@lib/dom/dom";
-import { desktopOnly } from "@lib/actual/pages";
-import { getValue } from "@lib/store";
-import RowHeightPicker from "./Picker.svelte";
 import { BUDGET_TOTALS, ROW } from "@lib/actual-dom";
+import { ROW_HEIGHT_OPTIONS } from "./options";
+import RowHeightPicker from "./Picker.svelte";
 
 export const budgetTableRowHeight = defineSetting({
-	type: "custom",
+	type: "select",
 	label: "Budget row height",
 	description: "Sets how tall each budget row is.",
 	group: "Budget",
+	icon: "rows",
 	context: {
 		key: "actual-slimmer-budgetrows",
 		defaultValue: "2.25rem",
-		css: (value: string) =>
-			desktopOnly(`
-			:root {
-				--abt-budget-row-height: ${value};
-			}
-			div${BUDGET_TOTALS} + div div${ROW} {
-				height: ${value};
-				flex: 0 0 ${value};
-			}
-		`),
 	},
-	component: RowHeightPicker,
-	init: async (ctx) => {
-		const value = await getValue(ctx.key, ctx.defaultValue);
-		applyGlobalCSS(ctx.css(value as string), ctx.key);
-	},
-	apply: (value, ctx) => applyGlobalCSS(ctx.css(value as string), ctx.key),
+	options: ROW_HEIGHT_OPTIONS,
+	picker: RowHeightPicker,
+	css: ({ value }) => `
+		:root {
+			--abt-budget-row-height: ${value};
+		}
+		div${BUDGET_TOTALS} + div div${ROW} {
+			height: ${value};
+			flex: 0 0 ${value};
+		}
+	`,
 });

@@ -1,29 +1,13 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { getValue, setValue } from "@lib/store";
-
-	let { ctx }: { ctx: { key: string; defaultValue: string } } = $props();
-
-	const options = [
-		{ value: "0rem", label: "None" },
-		{ value: "0.25rem", label: "Small" },
-		{ value: "0.5rem", label: "Medium" },
-		{ value: "0.75rem", label: "Rounder" },
-		{ value: "1rem", label: "Large" },
-		{ value: "1.5rem", label: "Pill" },
-	];
-
-	let selected = $derived(ctx.defaultValue);
-
-	onMount(async () => {
-		selected = (await getValue<string>(ctx.key, ctx.defaultValue)) as string;
-	});
-
-	async function pick(value: string) {
-		selected = value;
-		await setValue(ctx.key, value);
-		document.documentElement.style.setProperty("--border-radius", value);
-	}
+	let {
+		options,
+		selected,
+		onPick,
+	}: {
+		options: { value: string; label: string }[];
+		selected: string;
+		onPick: (value: string) => void;
+	} = $props();
 </script>
 
 <div class="rp-grid">
@@ -31,7 +15,7 @@
 		<button
 			class="rp-option"
 			class:is-active={selected === opt.value}
-			onclick={() => pick(opt.value)}
+			onclick={() => onPick(opt.value)}
 			title={opt.value}
 		>
 			<div class="rp-preview">
