@@ -7,7 +7,8 @@
 	import { dispatch, navigate } from "@lib/actual/actual-api";
 	import RollingNumber from "@lib/components/RollingNumber.svelte";
 	import { lastShown, rememberShown } from "@lib/last-shown";
-	import { getValue, setValue, watchValue } from "@lib/store";
+	import { getValue, setValue } from "@lib/store";
+	import { storedValue } from "@lib/stored.svelte";
 	import { ChevronDown, List, ListTree, Plus } from "@lucide/svelte";
 	import { overlayScrollbar } from "../actions/overlay-scrollbar";
 	import { portal } from "../actions/portal";
@@ -96,18 +97,10 @@
 	$effect(() => {
 		getValue<Record<string, boolean>>(STORAGE_KEY, {}).then((stored) => (collapsed = stored));
 	});
-	const { key: TOTALS_KEY, defaultValue: TOTALS_DEFAULT } = sidebarGroupTotals.context;
-	let showGroupTotals = $state(TOTALS_DEFAULT);
-	$effect(() => {
-		getValue<boolean>(TOTALS_KEY, TOTALS_DEFAULT).then((v) => (showGroupTotals = v));
-		return watchValue<boolean>(TOTALS_KEY, (v) => (showGroupTotals = v ?? TOTALS_DEFAULT));
-	});
-	const { key: CLOSED_KEY, defaultValue: CLOSED_DEFAULT } = sidebarClosedAccounts.context;
-	let showClosed = $state(CLOSED_DEFAULT);
-	$effect(() => {
-		getValue<boolean>(CLOSED_KEY, CLOSED_DEFAULT).then((v) => (showClosed = v));
-		return watchValue<boolean>(CLOSED_KEY, (v) => (showClosed = v ?? CLOSED_DEFAULT));
-	});
+	const groupTotals = storedValue<boolean>(() => sidebarGroupTotals.context);
+	const showGroupTotals = $derived(groupTotals.current);
+	const closed = storedValue<boolean>(() => sidebarClosedAccounts.context);
+	const showClosed = $derived(closed.current);
 	$effect(() => {
 		loadCollapsedGroups().then((stored) => (collapsedGroups = stored));
 		return watchCollapsedGroups((stored) => (collapsedGroups = stored));

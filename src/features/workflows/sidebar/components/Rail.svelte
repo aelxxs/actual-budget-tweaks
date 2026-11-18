@@ -9,7 +9,7 @@
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 	import { dispatch, navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
-	import { getValue, watchValue } from "@lib/store";
+	import { storedValue } from "@lib/stored.svelte";
 	import { lastShown, rememberShown } from "@lib/last-shown";
 	import {
 		CalendarDays,
@@ -65,33 +65,10 @@
 		return Boolean(route()) && location.pathname === `/accounts/${id}`;
 	}
 
-	let calendarFeatureEnabled = $state(false);
-	let graphFeatureEnabled = $state(false);
-
-	$effect(() => {
-		const links = [
-			[spendingCalendar, (value: boolean) => (calendarFeatureEnabled = value)],
-			[graphView, (value: boolean) => (graphFeatureEnabled = value)],
-		] as const;
-		const stops = links.map(([setting, update]) => {
-			const { key, defaultValue } = setting.context;
-			let stale = false;
-			const stop = watchValue<boolean>(key, (value) => {
-				stale = true;
-				update(value ?? defaultValue);
-			});
-			void getValue<boolean>(key, defaultValue).then((value) => {
-				if (!stale) {
-					update(value);
-				}
-			});
-			return () => {
-				stale = true;
-				stop();
-			};
-		});
-		return () => stops.forEach((stop) => stop());
-	});
+	const calendarFeature = storedValue<boolean>(() => spendingCalendar.context);
+	const graphFeature = storedValue<boolean>(() => graphView.context);
+	const calendarFeatureEnabled = $derived(calendarFeature.current);
+	const graphFeatureEnabled = $derived(graphFeature.current);
 
 	function go(page: Page) {
 		const covered = isOverlayOpen();
@@ -272,12 +249,8 @@
 		saveCollapsedGroups(collapsedGroups);
 	}
 
-	const { key: CLOSED_KEY, defaultValue: CLOSED_DEFAULT } = sidebarClosedAccounts.context;
-	let showClosed = $state(CLOSED_DEFAULT);
-	$effect(() => {
-		getValue<boolean>(CLOSED_KEY, CLOSED_DEFAULT).then((v) => (showClosed = v));
-		return watchValue<boolean>(CLOSED_KEY, (v) => (showClosed = v ?? CLOSED_DEFAULT));
-	});
+	const closed = storedValue<boolean>(() => sidebarClosedAccounts.context);
+	const showClosed = $derived(closed.current);
 
 	const sections = $derived(
 		[

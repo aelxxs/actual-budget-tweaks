@@ -18,7 +18,8 @@
 	import { applySettingChange } from "@features/runtime";
 	import type { CheckboxSetting, Setting } from "@features/types";
 	import Switch from "@lib/components/Switch.svelte";
-	import { getValue, setValue, watchValue } from "@lib/store";
+	import { setValue } from "@lib/store";
+	import { storedValue } from "@lib/stored.svelte";
 	import {
 		Archive,
 		Calculator,
@@ -58,13 +59,17 @@
 	// Room for the edge that ties the panel to the sidebar, as Insights' cards menu has.
 	const GAP = 32;
 
-	let values = $state<Record<string, boolean>>(
-		Object.fromEntries(
-			[...SHOW, ...ACCOUNTS].map(({ setting: s }) => [s.context.key, s.context.defaultValue]),
-		),
+	const stored = [...SHOW, ...ACCOUNTS].map(({ setting: s }) => ({
+		key: s.context.key,
+		value: storedValue<unknown>(() => s.context),
+	}));
+	const values: Record<string, boolean> = $derived(
+		Object.fromEntries(stored.map(({ key, value }) => [key, Boolean(value.current)])),
 	);
-	let layout = $state<SidebarLayout>("split");
-	let density = $state(sidebarDensity.context.defaultValue);
+	const storedLayout = storedValue<unknown>(LAYOUT_KEY, "split");
+	const layout = $derived(toLayout(storedLayout.current));
+	const storedDensity = storedValue<string>(() => sidebarDensity.context);
+	const density = $derived(storedDensity.current);
 	let shortcuts = $state<Shortcut[]>([]);
 
 	let box = $state({ left: 0, top: 0, maxHeight: 0 });
@@ -125,21 +130,11 @@
 		const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		document.addEventListener("keydown", onKey, true);
 		document.addEventListener("pointerdown", onPointer, true);
-		const stops = [...SHOW, ...ACCOUNTS].map(({ setting: s }) => {
-			const { key, defaultValue } = s.context;
-			void getValue<boolean>(key, defaultValue).then((v) => (values[key] = Boolean(v)));
-			return watchValue<boolean>(key, (v) => (values[key] = Boolean(v ?? defaultValue)));
-		});
-		void getValue<unknown>(LAYOUT_KEY, "split").then((v) => (layout = toLayout(v)));
-		stops.push(watchValue<unknown>(LAYOUT_KEY, (v) => (layout = toLayout(v))));
-		const { key: densityKey, defaultValue: densityDefault } = sidebarDensity.context;
-		void getValue<string>(densityKey, densityDefault).then((v) => (density = v ?? densityDefault));
 		// The sidebar changes width as the layout switches, and can be dragged wider.
 		const resize = new ResizeObserver(place);
 		resize.observe(sidebar);
 		addEventListener("resize", place);
 		return () => {
-			stops.forEach((stop) => stop());
 			resize.disconnect();
 			removeEventListener("resize", place);
 			document.removeEventListener("keydown", onKey, true);
@@ -161,17 +156,14 @@
 	});
 
 	function toggle(setting: CheckboxSetting<any>, on: boolean) {
-		values[setting.context.key] = on;
 		void applySettingChange(setting, on);
 	}
 
 	function pickLayout(value: SidebarLayout) {
-		layout = value;
 		void setValue(LAYOUT_KEY, value);
 	}
 
 	function pickDensity(value: string) {
-		density = value;
 		void applySettingChange(sidebarDensity as Setting, value);
 	}
 

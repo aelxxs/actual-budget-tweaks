@@ -3,9 +3,8 @@
 		customizeSidebar,
 		customizeState,
 	} from "@features/workflows/sidebar/lib/customize.svelte";
-	import { getValue, watchValue } from "@lib/store";
+	import { storedValue } from "@lib/stored.svelte";
 	import { lastShown, rememberShown } from "@lib/last-shown";
-	import { onMount } from "svelte";
 	import { sidebarShortcutsAddTile } from ".";
 	import Tiles from "./components/Tiles.svelte";
 	import { closeTool, isToolOpen, openTool } from "./open-tool";
@@ -22,12 +21,8 @@
 
 	// The last load's tiles show until this budget's arrive, so the accounts below don't shift.
 	let shortcuts = $state<Shortcut[]>(lastShown("sidebar-shortcuts", []));
-	let showAddTile = $state(true);
-
-	onMount(() => {
-		getValue(ADD_TILE_KEY, true).then((v) => (showAddTile = Boolean(v)));
-		return watchValue<boolean>(ADD_TILE_KEY, (v) => (showAddTile = v ?? true));
-	});
+	const addTile = storedValue<unknown>(ADD_TILE_KEY, true);
+	const showAddTile = $derived(Boolean(addTile.current));
 
 	// Reloaded for each budget opened.
 	$effect(() => {

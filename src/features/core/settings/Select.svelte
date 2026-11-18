@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import type { SelectSetting } from "@features/types";
 	import { applySettingChange } from "@features/runtime";
-	import { getValue, watchValue } from "@lib/store";
+	import { storedValue } from "@lib/stored.svelte";
 	import Icon from "@lib/components/Icon.svelte";
 	import PreviewToggle from "@lib/components/PreviewToggle.svelte";
 	import ExperimentalMark from "@lib/components/ExperimentalMark.svelte";
@@ -17,36 +16,14 @@
 	}>();
 	const ctx = $derived(setting.context);
 
-	// local reactive state for select value
-	let value = $state("");
-
-	// initialize from storage on mount
-	onMount(async () => {
-		const saved = await getValue(ctx.key, ctx.defaultValue);
-		value = typeof saved === "string" ? saved : "";
-	});
-
-	$effect(() =>
-		watchValue(ctx.key, (v) => {
-			const next = v ?? ctx.defaultValue;
-			value = typeof next === "string" ? next : "";
-		}),
-	);
+	const stored = storedValue<unknown>(() => setting.context);
+	const value = $derived(typeof stored.current === "string" ? stored.current : "");
 
 	// Matches the live sidebar's default, which `getValue` falls back to the same way.
-	let liveSidebar = $state(true);
-	$effect(() => {
-		if (!setting.liveSidebarOnly) {
-			return;
-		}
-		void getValue("experimental-sidebar", true).then((v) => (liveSidebar = v !== false));
-		return watchValue("experimental-sidebar", (v) => (liveSidebar = v !== false));
-	});
+	const sidebar = storedValue<unknown>("experimental-sidebar", true);
+	const liveSidebar = $derived(sidebar.current !== false);
 
-	async function pick(next: string) {
-		await applySettingChange(setting, next);
-		value = next;
-	}
+	const pick = (next: string) => applySettingChange(setting, next);
 
 	const Picker = $derived(setting.picker);
 	const description = $derived(
@@ -96,7 +73,7 @@
 		</div>
 	{:else}
 		<select
-			bind:value
+			{value}
 			class="abt-input abt-setting__select"
 			onchange={(e) => pick(e.currentTarget.value)}
 		>

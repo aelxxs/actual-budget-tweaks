@@ -4,39 +4,17 @@
 	import { openCalendar, spendingCalendar } from "@features/workflows/spending-calendar";
 	import { navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
-	import { getValue, setValue, watchValue } from "@lib/store";
+	import { getValue, setValue } from "@lib/store";
+	import { storedValue } from "@lib/stored.svelte";
 	import { CalendarDays, ChevronDown, Network } from "@lucide/svelte";
 	import { mainItems, settingsItems, trackSidebarMenu } from "../lib/menu.svelte";
 	import { settingsItem, settingsMenu } from "../lib/nav";
 	import { route, trackRoute } from "../lib/route.svelte";
 
-	let calendarFeatureEnabled = $state(false);
-	let graphFeatureEnabled = $state(false);
-
-	$effect(() => {
-		const links = [
-			[spendingCalendar, (value: boolean) => (calendarFeatureEnabled = value)],
-			[graphView, (value: boolean) => (graphFeatureEnabled = value)],
-		] as const;
-		const stops = links.map(([setting, update]) => {
-			const { key, defaultValue } = setting.context;
-			let stale = false;
-			const stop = watchValue<boolean>(key, (value) => {
-				stale = true;
-				update(value ?? defaultValue);
-			});
-			void getValue<boolean>(key, defaultValue).then((value) => {
-				if (!stale) {
-					update(value);
-				}
-			});
-			return () => {
-				stale = true;
-				stop();
-			};
-		});
-		return () => stops.forEach((stop) => stop());
-	});
+	const calendarFeature = storedValue<boolean>(() => spendingCalendar.context);
+	const graphFeature = storedValue<boolean>(() => graphView.context);
+	const calendarFeatureEnabled = $derived(calendarFeature.current);
+	const graphFeatureEnabled = $derived(graphFeature.current);
 
 	// The spending calendar isn't a real Actual route — it's a DOM overlay this
 	// extension itself manages (see spending-calendar/index.ts) — so opening it

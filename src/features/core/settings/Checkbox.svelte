@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import type { CheckboxSetting } from "@features/types";
 	import { applySettingChange } from "@features/runtime";
 	import { isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
-	import { getValue, watchValue } from "@lib/store";
+	import { storedValue } from "@lib/stored.svelte";
 	import Icon from "@lib/components/Icon.svelte";
 	import PreviewToggle from "@lib/components/PreviewToggle.svelte";
 	import Switch from "@lib/components/Switch.svelte";
@@ -19,26 +18,16 @@
 		icon,
 	}: { labelText: string; setting: CheckboxSetting<any>; icon?: IconName } = $props();
 	const ctx = $derived(setting.context);
-	let value = $state(false);
+	const stored = storedValue<unknown>(() => setting.context);
+	const value = $derived(Boolean(stored.current));
 	// The row's label points at the switch, not the first control inside it (the preview button).
 	const switchId = $props.id();
-
-	onMount(async () => {
-		const saved = await getValue(ctx.key, ctx.defaultValue);
-		value = Boolean(saved);
-	});
 
 	let tracking = $state(isTrackingBudget());
 	$effect(() => onBudgetType((type) => (tracking = type === "tracking")));
 	const standsDown = $derived(!!setting.envelopeOnly && tracking);
 
-	// Follows changes made elsewhere, like a sync from another browser.
-	$effect(() => watchValue(ctx.key, (v) => (value = Boolean(v ?? ctx.defaultValue))));
-
-	async function handleChange(newValue: boolean) {
-		await applySettingChange(setting, newValue);
-		value = newValue;
-	}
+	const handleChange = (newValue: boolean) => applySettingChange(setting, newValue);
 </script>
 
 <label class="abt-setting switch-row" for={switchId} data-testid={ctx.key}>
