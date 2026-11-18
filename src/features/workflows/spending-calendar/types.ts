@@ -19,7 +19,7 @@ export interface DayData {
 	date: number;
 	iso: string;
 	total: number;
-	/** Posted outflows only, for the heat tint. */
+	/** Posted spending net of refunds, for the heat tint. */
 	spent: number;
 	transactions: DayTransaction[];
 	/** Closing balance of the selected accounts, when balances are on. */

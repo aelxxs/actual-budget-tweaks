@@ -420,9 +420,10 @@ function buildGrid(
 	for (let d = 1; d <= daysInMonth; d++) {
 		const txs = byDay.get(d) || [];
 		const total = txs.reduce((sum, t) => sum + (t.missed ? 0 : t.amount), 0);
-		const spent = txs.reduce(
-			(sum, t) => sum + (!t.missed && !t.upcoming && !t.transfer && t.amount < 0 ? -t.amount : 0),
+		// Net of refunds, so a charge and its reversal on the same day don't read as a heavy day.
+		const spent = Math.max(
 			0,
+			-txs.reduce((sum, t) => sum + (!t.missed && !t.upcoming && !t.transfer ? t.amount : 0), 0),
 		);
 		const iso = `${monthPrefix}${String(d).padStart(2, "0")}`;
 		grid.push({
