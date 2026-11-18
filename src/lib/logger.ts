@@ -16,7 +16,7 @@ const LEVEL_METHOD: Record<Level, (...args: unknown[]) => void> = {
 	error: console.error,
 };
 
-export interface Logger {
+interface Logger {
 	debug: (...args: unknown[]) => void;
 	info: (...args: unknown[]) => void;
 	warn: (...args: unknown[]) => void;

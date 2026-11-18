@@ -10,10 +10,10 @@ export interface SettingContext {
 	[key: string]: unknown;
 }
 
-export type SettingType = "select" | "checkbox" | "custom" | "core";
+type SettingType = "select" | "checkbox" | "custom" | "core";
 
 /** Known subgroup labels settings can be grouped under within a section. Add new values here as needed. */
-export type SettingGroup =
+type SettingGroup =
 	| "General"
 	| "Budget"
 	| "Transactions"
@@ -23,9 +23,9 @@ export type SettingGroup =
 	| "Reports"
 	| "Mobile";
 
-export type Cleanup = void | (() => void | Promise<void>);
+type Cleanup = void | (() => void | Promise<void>);
 
-export interface BaseSetting<C extends SettingContext> {
+interface BaseSetting<C extends SettingContext> {
 	type: SettingType;
 	label: string;
 	/** Optional one-line explanation shown under the label wherever this setting is rendered. */

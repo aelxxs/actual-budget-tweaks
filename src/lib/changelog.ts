@@ -7,10 +7,7 @@ export interface ReleaseNoteSection {
 }
 
 /** Extracts the `## v{version}` section of the changelog into grouped, cleaned-up bullet items. */
-export function parseChangelogSection(
-	markdown: string,
-	version: string,
-): ReleaseNoteSection[] | null {
+function parseChangelogSection(markdown: string, version: string): ReleaseNoteSection[] | null {
 	const versionHeading = `## v${version}`;
 	const start = markdown.indexOf(versionHeading);
 	if (start === -1) {
@@ -82,7 +79,7 @@ export async function fetchReleaseNotes(version: string): Promise<ReleaseNoteSec
 
 const SHOWN_FEATURES = 5;
 
-export interface ReleaseNoteSummary {
+interface ReleaseNoteSummary {
 	features: string[];
 	moreFeatures: number;
 	fixes: number;

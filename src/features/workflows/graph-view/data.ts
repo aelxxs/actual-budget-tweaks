@@ -31,7 +31,7 @@ export interface GraphLink {
 	transfer?: boolean;
 }
 
-export interface Graph {
+interface Graph {
 	nodes: GraphNode[];
 	links: GraphLink[];
 }

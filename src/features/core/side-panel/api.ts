@@ -22,7 +22,7 @@ export type OpenOptions = {
 	scope?: "page" | "app";
 };
 
-export type SidePanelApi = {
+type SidePanelApi = {
 	open: (options?: OpenOptions) => void;
 	/** Closes the panel named `key`, wherever it is in the stack; without one, the top panel. */
 	close: (key?: string) => void;

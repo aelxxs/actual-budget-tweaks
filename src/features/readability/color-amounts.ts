@@ -15,8 +15,6 @@ import {
 	TRANSACTION_ROW,
 } from "@lib/actual-dom";
 
-export type AmountColors = "off" | "negatives" | "all";
-
 const UPCOMING_ATTR = "data-abt-upcoming";
 const NEGATIVE_ATTR = "data-abt-negative";
 // Hyphen-minus or Unicode minus, then any currency symbol or space before a digit.

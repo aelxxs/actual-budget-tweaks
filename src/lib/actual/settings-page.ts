@@ -28,7 +28,7 @@ export function takeTweaksSection(): string {
 	return title;
 }
 
-export type TweaksSection = { title: string; count: number };
+type TweaksSection = { title: string; count: number };
 let listSections: () => TweaksSection[] = () => [];
 
 /** Set by the settings registry, which the nav can't import without a cycle. */

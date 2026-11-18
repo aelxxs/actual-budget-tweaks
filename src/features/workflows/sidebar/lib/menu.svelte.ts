@@ -37,7 +37,7 @@ interface MenuEntry {
 }
 
 /** Actual's `sidebar-menu-items` pref, read the way Actual reads it: unknown ids dropped, missing ones slotted in at their default place. */
-export function parseMenu(raw: string | null): MenuEntry[] {
+function parseMenu(raw: string | null): MenuEntry[] {
 	const saved: MenuEntry[] = [];
 	try {
 		const parsed: unknown = raw ? JSON.parse(raw) : [];

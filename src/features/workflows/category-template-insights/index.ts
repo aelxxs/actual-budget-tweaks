@@ -26,7 +26,7 @@ import { CATEGORY_NAME, ROW } from "@lib/actual-dom";
 
 const BAR_CLASS = "abt-cti-bar";
 const BAR_ATTR = "data-abt-cti-row";
-export const STATE_ATTR = "data-abt-cti-state";
+const STATE_ATTR = "data-abt-cti-state";
 // Older switches folded into this setting once (see migratedMode).
 const LEGACY_BARS_KEY = "abt-cti-bars-enabled";
 const QUIET_FUNDED_KEY = "cti-hide-funded";

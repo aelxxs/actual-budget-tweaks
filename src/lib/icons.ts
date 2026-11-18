@@ -1,4 +1,4 @@
-export interface IconOptions {
+interface IconOptions {
 	size?: number;
 	strokeWidth?: number;
 	class?: string;

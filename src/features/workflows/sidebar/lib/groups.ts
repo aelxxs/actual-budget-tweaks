@@ -47,21 +47,16 @@ function scopedKey(base: string, budgetId: string | undefined): string {
 	return budgetId ? `${base}:${budgetId}` : base;
 }
 
-export async function loadGroups(
-	budgetId: string | undefined,
-): Promise<Record<string, AccountGroup>> {
+async function loadGroups(budgetId: string | undefined): Promise<Record<string, AccountGroup>> {
 	return getValue<Record<string, AccountGroup>>(scopedKey(GROUPS_KEY, budgetId), {});
 }
 
-export function saveGroups(
-	budgetId: string | undefined,
-	groups: Record<string, AccountGroup>,
-): void {
+function saveGroups(budgetId: string | undefined, groups: Record<string, AccountGroup>): void {
 	setValue(scopedKey(GROUPS_KEY, budgetId), groups);
 }
 
 /** Follows group edits made elsewhere, such as the Customize sidebar panel. */
-export function watchGroups(
+function watchGroups(
 	budgetId: string | undefined,
 	callback: (groups: Record<string, AccountGroup>) => void,
 ): () => void {
@@ -70,7 +65,7 @@ export function watchGroups(
 	);
 }
 
-export function watchAssignments(
+function watchAssignments(
 	budgetId: string | undefined,
 	callback: (assignments: Record<string, string>) => void,
 ): () => void {
@@ -79,16 +74,11 @@ export function watchAssignments(
 	);
 }
 
-export async function loadAssignments(
-	budgetId: string | undefined,
-): Promise<Record<string, string>> {
+async function loadAssignments(budgetId: string | undefined): Promise<Record<string, string>> {
 	return getValue<Record<string, string>>(scopedKey(ASSIGNMENTS_KEY, budgetId), {});
 }
 
-export function saveAssignments(
-	budgetId: string | undefined,
-	assignments: Record<string, string>,
-): void {
+function saveAssignments(budgetId: string | undefined, assignments: Record<string, string>): void {
 	setValue(scopedKey(ASSIGNMENTS_KEY, budgetId), assignments);
 }
 
@@ -359,11 +349,11 @@ export function groupsIn(
 		.sort((a, b) => a.order - b.order);
 }
 
-export function nextGroupId(): string {
+function nextGroupId(): string {
 	return `grp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function createGroup(
+function createGroup(
 	groups: Record<string, AccountGroup>,
 	section: Section,
 ): { id: string; groups: Record<string, AccountGroup> } {
@@ -397,7 +387,7 @@ async function withFreeName<T>(
 }
 
 /** Actual keeps group names unique, so a taken one gets a number: "New Group 2". */
-export function uniqueLabel(
+function uniqueLabel(
 	groups: Record<string, AccountGroup>,
 	label: string,
 	exceptId?: string,

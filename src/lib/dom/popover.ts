@@ -1,4 +1,4 @@
-export interface PopoverPositionOptions {
+interface PopoverPositionOptions {
 	/** Gap in px between anchor and popover. Default 4. */
 	gap?: number;
 	/** Minimum distance from viewport edges. Default 8. */

@@ -25,11 +25,8 @@ export const PREVIEW_ROW = '[data-focus-key^="preview/"]';
 /** The page's own content, inside the content grid. */
 export const MAIN = '[role="main"]';
 export const DIALOG = '[role="dialog"]';
-export const MENU = '[role="menu"]';
-/** Actual's own goal progress in the balance menu (actualbudget/actual#9281, 26.11+). */
-export const GOAL_PROGRESS = '[role="progressbar"]';
 export const TOAST = '[role="alert"]';
-export const NAVIGATION = '[role="navigation"]';
+const NAVIGATION = '[role="navigation"]';
 /** Mobile lists: transactions and accounts are listboxes of options, the budget a grid of rows. */
 export const LISTBOX = '[role="listbox"]';
 export const OPTION = '[role="option"]';
@@ -77,7 +74,7 @@ export const BUDGET_SUMMARY = byTestId("budget-summary");
 export const BUDGET_TOTALS = byTestId("budget-totals");
 /** Only category rows have it, not group headers. */
 export const CATEGORY_NAME = byTestId("category-name");
-export const CATEGORY_ROW = `${ROW}:has(${CATEGORY_NAME})`;
+const CATEGORY_ROW = `${ROW}:has(${CATEGORY_NAME})`;
 /** A category's budgeted amount cell (holds the input while editing). */
 export const BUDGETED_CELL = byTestId("budget");
 /** A balance cell: a category's in the budget table, or a transaction table's running one. */
@@ -89,9 +86,8 @@ export const GOAL_RING = 'svg[role="img"]';
 /** Each shown month's column in the hidden native month picker. */
 export const SELECTED_MONTH = byTestId("selected-budget-month");
 export const SHOWN_MONTH = `${SELECTED_MONTH}[data-month]`;
-/** A category's spent amount, and its button in the budget table. */
-export const SPENT_CELL = byTestId("spent");
-export const CATEGORY_SPENT = byTestId("category-month-spent");
+/** A category's spent amount, a button in the budget table. */
+const CATEGORY_SPENT = byTestId("category-month-spent");
 /** A category row's amount cells, named "<sheet>!sum-amount-<id>" and "<sheet>!leftover-<id>". */
 export const CATEGORY_AMOUNT_CELL = '[data-testid*="sum-amount-"], [data-testid*="leftover-"]';
 /** The totals row's labels. */
@@ -100,8 +96,6 @@ export const BUDGET_TOTAL_LABELS =
 /** Spreadsheet balances: the sidebar's and accounts' (not balance queries) and categories'. */
 export const SHEET_BALANCES =
 	"span[data-testid^='__global!balance-']:not([data-testid^='__global!balance-query']), span[data-testid$='-balance']";
-/** Envelope budgets' per-category amounts, e.g. "budget202610!sum-amount-<id>". */
-export const ENVELOPE_AMOUNT = '[data-testid^="budget2"][data-testid*="!sum-amount-"]';
 /** Spreadsheet cells by name: a category's leftover, envelope budgets' Available funds. */
 export const LEFTOVER_CELL = '[data-cellname*="!leftover-"]';
 /** One category's balance cell in one month, e.g. "budget202611!leftover-<id>". */
@@ -150,7 +144,7 @@ export const CONTENT_GRID = `div:has(> div:nth-child(4)):has(${BUDGET_TABLE}, ${
 export const PAGE_COLUMN =
 	"[data-abt-content-grid] > div:is(:nth-child(4), [data-abt-side-drawer-sidebar]:nth-child(4) + div):not([data-abt-side-drawer-sidebar])";
 /** Actual's privacy filter: the real value, then a redacted copy over it, shown until hover. */
-export const PRIVACY_WRAPPER = 'div:has(> div:first-child + div[aria-hidden="true"]:last-child)';
+const PRIVACY_WRAPPER = 'div:has(> div:first-child + div[aria-hidden="true"]:last-child)';
 export const PRIVACY_COPY = `${PRIVACY_WRAPPER} > div[aria-hidden="true"]`;
 
 // ── Other pages ─────────────────────────────────────────────────────────

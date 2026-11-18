@@ -15,21 +15,6 @@ import { createLogger } from "@lib/logger";
 
 const log = createLogger("calendar");
 
-export const MONTH_NAMES = [
-	"January",
-	"February",
-	"March",
-	"April",
-	"May",
-	"June",
-	"July",
-	"August",
-	"September",
-	"October",
-	"November",
-	"December",
-];
-
 /** How far ahead the month nav can go, so paging forward stays bounded. */
 export const MAX_FUTURE_MONTHS = 12;
 
@@ -73,7 +58,7 @@ export function parseScheduleAmount(raw: unknown): number {
  * a manual schedule can be paid up to two days early, while an auto-posting or
  * fixed-date one always lands exactly on its date.
  */
-export function occurrenceMatchStart(s: Schedule, occurrenceDate: string): string {
+function occurrenceMatchStart(s: Schedule, occurrenceDate: string): string {
 	if (s.posts_transaction || typeof s._date === "string") {
 		return occurrenceDate;
 	}
@@ -439,7 +424,7 @@ export function createMonthLoader() {
  * Lays a month's days out in full weeks starting on `firstDayOfWeek` (0 = Sunday), padded
  * with neighbouring days.
  */
-export function buildGrid(
+function buildGrid(
 	year: number,
 	month: number,
 	byDay: Map<number, DayTransaction[]>,

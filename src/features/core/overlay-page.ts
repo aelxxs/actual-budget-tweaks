@@ -18,7 +18,6 @@ import { type Component, mount, unmount } from "svelte";
  * A page ABT draws over Actual's own (the calendar, the graph). It covers the page column rather
  * than routing, since Actual's router would redirect an address it doesn't know.
  */
-export { OVERLAY_ATTR };
 const CLOSE_ATTR = "data-abt-overlay-close";
 
 let current: {
@@ -50,7 +49,7 @@ function changed(): void {
 }
 
 /** Calls back whenever an ABT page opens or closes. */
-export function onOverlayChange(listener: () => void): () => void {
+function onOverlayChange(listener: () => void): () => void {
 	changeListeners.add(listener);
 	return () => changeListeners.delete(listener);
 }

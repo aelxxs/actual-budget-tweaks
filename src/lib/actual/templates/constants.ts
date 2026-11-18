@@ -1,6 +1,3 @@
-export const PRIO_COLLAPSE_STORAGE_KEY = "abt-tab-prio-collapse";
-
-export type TriggerAction = "apply" | "overwrite" | "apply-single" | "apply-group";
 export type PriorityValue = number | null | undefined;
 
 // Priority cache TTL. Goal/budget cells only change via apply/overwrite

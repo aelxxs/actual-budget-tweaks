@@ -13,20 +13,6 @@ export interface TemplateEntry {
 	engineTemplate?: unknown;
 }
 
-export type TemplateKind =
-	| "goal"
-	| "schedule"
-	| "remainder"
-	| "upto"
-	| "average"
-	| "copy"
-	| "percentage"
-	| "simple"
-	| "periodic"
-	| "by"
-	| "spend"
-	| "unknown";
-
 /**
  * Converts a category's parsed `goal_def` directives into the TemplateEntry
  * shape the priority planner consumes. `goal_def` is already Actual's own

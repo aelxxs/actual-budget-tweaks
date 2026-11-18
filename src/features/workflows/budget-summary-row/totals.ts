@@ -34,25 +34,6 @@ const latest = new Map<string, MonthTotals>();
 
 export const cachedTotals = (sheet: string): MonthTotals | null => latest.get(sheet) ?? null;
 
-// Whether the last month loaded had targets, so a reload's placeholder has the row's shape.
-const TARGETS_KEY = "abt-summary-has-targets";
-
-export function expectsTargets(): boolean {
-	try {
-		return localStorage.getItem(TARGETS_KEY) === "1";
-	} catch {
-		return false;
-	}
-}
-
-function rememberTargets(has: boolean): void {
-	try {
-		localStorage.setItem(TARGETS_KEY, has ? "1" : "0");
-	} catch {
-		// The placeholder just guesses the shape without it.
-	}
-}
-
 /**
  * The categories the table shows, from any month's balance cells: every month lists the
  * same ones, and the carousel's off-screen months have no cells of their own.
@@ -136,7 +117,6 @@ export async function loadMonthTotals(sheet: string): Promise<MonthTotals> {
 		toApply: toBudget > 0 ? await applyAmount(sheet) : 0,
 	};
 	latest.set(sheet, totals);
-	rememberTargets(totals.goals > 0);
 	return totals;
 }
 
@@ -197,7 +177,6 @@ export async function loadTrackingTotals(sheet: string): Promise<TrackingTotals>
 		...(await categoryStats(sheet)),
 	};
 	latestTracking.set(sheet, totals);
-	rememberTargets(totals.goals > 0);
 	return totals;
 }
 

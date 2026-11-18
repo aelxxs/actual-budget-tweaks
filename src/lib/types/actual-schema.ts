@@ -11,9 +11,6 @@
 /** ISO date string: YYYY-MM-DD */
 export type ISODate = string;
 
-/** ISO month string: YYYY-MM */
-export type ISOMonth = string;
-
 /** UUID */
 export type UUID = string;
 
@@ -183,10 +180,10 @@ export interface Payee {
 	tombstone?: boolean;
 }
 
-export type RuleStage = "pre" | "default" | "post";
-export type RuleConditionsOp = "and" | "or";
+type RuleStage = "pre" | "default" | "post";
+type RuleConditionsOp = "and" | "or";
 
-export interface ConditionOrAction {
+interface ConditionOrAction {
 	field: string;
 	op: string;
 	value: unknown;
@@ -201,11 +198,11 @@ export interface Rule {
 }
 
 export type ScheduleAmountOp = "is" | "isapprox" | "isbetween";
-export type RecurFrequency = "daily" | "weekly" | "monthly" | "yearly";
-export type RecurEndMode = "never" | "after_n_occurrences" | "on_date";
-export type WeekendSolveMode = "before" | "after";
+type RecurFrequency = "daily" | "weekly" | "monthly" | "yearly";
+type RecurEndMode = "never" | "after_n_occurrences" | "on_date";
+type WeekendSolveMode = "before" | "after";
 
-export interface RecurPattern {
+interface RecurPattern {
 	type?: string;
 	value?: number;
 }
@@ -286,13 +283,6 @@ export type TableName = keyof ActualTable;
 
 // ── Budget sheet cells ────────────────────────────────────────────
 
-/**
- * Budget sheet name format: `budget${YYYYMM}`, e.g. `budget202506`.
- *
- * Usage: send("get-cell", { sheetName: `budget${ym}`, name: "available-funds" })
- */
-export type BudgetSheetName = `budget${number}`;
-
 export type BudgetCellName =
 	| "available-funds" // Total available to budget ("To Budget")
 	| "to-budget" // Alias for available-funds
@@ -325,5 +315,3 @@ export interface SendMethodMap {
 		result: { budgeted: number; perTemplate: number[] };
 	};
 }
-
-export type SendMethod = keyof SendMethodMap;

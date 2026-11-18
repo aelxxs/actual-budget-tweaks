@@ -1,4 +1,4 @@
-export type DragMove = (fx: number, fy: number, event: PointerEvent, box: DOMRect) => void;
+type DragMove = (fx: number, fy: number, event: PointerEvent, box: DOMRect) => void;
 
 /**
  * Reports the pointer as fractions of the element while a press drags over it. `start` can veto

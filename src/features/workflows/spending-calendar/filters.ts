@@ -1,8 +1,6 @@
 import type { BaseFilters } from "@features/workflows/filters/types";
 import { getValue, setValue } from "@lib/store";
 
-export type { Flow } from "@features/workflows/filters/types";
-
 export interface CalendarFilters extends BaseFilters {
 	showScheduled: boolean;
 	showBalance: boolean;

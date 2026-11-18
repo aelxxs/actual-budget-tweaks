@@ -17,7 +17,7 @@ export type RemoteTheme = {
 	mode: "light" | "dark";
 };
 
-export const TOKENS_STYLE_ID = "color-tokens";
+const TOKENS_STYLE_ID = "color-tokens";
 const CSS_OVERRIDE_STYLE_ID = "theme-css-override";
 
 export async function saveCssOverride(key: string, css: string): Promise<void> {
@@ -82,7 +82,7 @@ function setRootProperty(root: HTMLElement, name: string, value: string) {
 	root.style.setProperty(name, value);
 }
 
-export const BUILTIN_CSS = `:root {
+const BUILTIN_CSS = `:root {
 	/* Theme Studio's borders: tables and controls take its border color in full; containers and
 	   dividers (menus, modals, panels) a step below. Without one, both are surface0. */
 	--abt-line-secondary: color-mix(in oklab, var(--ctp-line, var(--ctp-surface0)) 50%, var(--ctp-surface0));
@@ -502,7 +502,7 @@ export function syncWindowColor() {
 	}
 }
 
-export function applyPalette(name: string) {
+function applyPalette(name: string) {
 	const palette = getTheme(name);
 	if (!palette) {
 		return;
@@ -609,7 +609,7 @@ export async function fetchCommunityCSS(repo: string): Promise<string> {
 	throw new Error(`Could not fetch actual.css from ${repo}`);
 }
 
-export async function applyCommunityTheme(repo: string) {
+async function applyCommunityTheme(repo: string) {
 	const css = await fetchCommunityCSS(repo);
 	const root = document.querySelector<HTMLElement>(":root");
 	if (root) {
@@ -624,7 +624,7 @@ export async function applyCommunityTheme(repo: string) {
 	applyOverrides(repo);
 }
 
-export function applyNativeTheme() {
+function applyNativeTheme() {
 	applyGlobalCSS("", TOKENS_STYLE_ID);
 	const root = document.querySelector<HTMLElement>(":root");
 	if (root) {

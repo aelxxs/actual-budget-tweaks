@@ -18,7 +18,7 @@ export const STUDIO_STYLE_ID = "theme-studio";
  * Every shell surface paints the same viewport-fixed background, so the effects line up across
  * them as one surface. Nothing goes transparent, so content can't show through while it scrolls.
  */
-export const SURFACES = `
+const SURFACES = `
 	[data-abt-content-grid],
 	[data-abt-header],
 	${PAGE_COLUMN},
@@ -36,7 +36,7 @@ export const SURFACES = `
 `;
 
 /** The accent and second colors of a theme without a generated palette, as its CSS has them. */
-export const CSS_COLORS = { mauve: "var(--abt-accent)", sapphire: "var(--color-pageTextLink)" };
+const CSS_COLORS = { mauve: "var(--abt-accent)", sapphire: "var(--color-pageTextLink)" };
 
 /** The palette as the theme loader takes it: `--ctp-<name>` to hex. */
 export function paletteKeys(g: Generated): Record<string, string> {

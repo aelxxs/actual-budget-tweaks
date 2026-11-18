@@ -1,6 +1,6 @@
 import type { Shortcut } from "@features/appearance/sidebar-shortcuts/types";
 
-export type CustomizePane = "main" | "add-shortcut" | "groups";
+type CustomizePane = "main" | "add-shortcut" | "groups";
 
 /** The live sidebar's edit mode, with the Customize panel open beside it. */
 export const customizeState = $state({

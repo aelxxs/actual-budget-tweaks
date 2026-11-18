@@ -1,4 +1,4 @@
-export type TriggerAction = "apply" | "overwrite" | "apply-single" | "apply-group";
+type TriggerAction = "apply" | "overwrite" | "apply-single" | "apply-group";
 
 // Menu-item button labels we hook. The app's React layer calls the backend
 // via an internal `send()` (not our bridge), so wrapping it misses these —

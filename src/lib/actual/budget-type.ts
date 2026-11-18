@@ -1,6 +1,6 @@
 import { query } from "./actual-api";
 
-export type BudgetType = "envelope" | "tracking";
+type BudgetType = "envelope" | "tracking";
 
 /** Set on <html> once ABT starts on Actual, so CSS can tell the two budget types apart. */
 export const BUDGET_TYPE_ATTR = "data-abt-budget-type";
@@ -22,7 +22,7 @@ let current: BudgetType | null = null;
 const listeners = new Set<(type: BudgetType) => void>();
 
 /** The open budget's type; until it's read, the last one seen. */
-export function budgetType(): BudgetType {
+function budgetType(): BudgetType {
 	current ??= lastSeen();
 	return current;
 }

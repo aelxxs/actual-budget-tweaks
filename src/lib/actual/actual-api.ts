@@ -219,7 +219,7 @@ export async function loadCurrentBudgetId(): Promise<string | undefined> {
 	return (await send<{ id?: string }>("load-prefs"))?.id;
 }
 
-export interface Toast {
+interface Toast {
 	type?: "message" | "error" | "warning";
 	title?: string;
 	message: string;

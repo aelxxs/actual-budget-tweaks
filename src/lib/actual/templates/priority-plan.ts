@@ -44,7 +44,7 @@ export interface DemandRow {
 	remainderCapCents?: number | null;
 }
 
-export interface TierRow {
+interface TierRow {
 	catId: string;
 	catName: string;
 	priority: Priority;

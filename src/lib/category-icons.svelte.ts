@@ -1,7 +1,7 @@
 import { getValue, watchValue } from "./store";
 
 /** The icons picked with the category icon picker, by category id. */
-export type CategoryIcons = Record<string, { value: string }>;
+type CategoryIcons = Record<string, { value: string }>;
 
 const KEY = "abt-category-icons";
 

@@ -20,7 +20,7 @@ export interface Shortfall {
 	shortfall: number;
 }
 
-export const monthOf = (sheet: string) => `${sheet.slice(6, 10)}-${sheet.slice(10, 12)}`;
+const monthOf = (sheet: string) => `${sheet.slice(6, 10)}-${sheet.slice(10, 12)}`;
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 

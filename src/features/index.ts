@@ -65,7 +65,7 @@ import { transactionInspector } from "./workflows/transaction-inspector";
 
 export type PageSetting = Exclude<Setting<any>, CoreSetting>;
 
-export interface SettingsSection {
+interface SettingsSection {
 	title: string;
 	/** Edited elsewhere, named here; the page lists the section only in search and Changed. */
 	elsewhere?: string;

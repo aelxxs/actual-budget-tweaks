@@ -4,7 +4,7 @@ import { createLogger } from "@lib/logger";
 const log = createLogger("date-format");
 
 /** Actual's Settings › Format choices that ABT's dates and calendars follow. */
-export interface DatePrefs {
+interface DatePrefs {
 	/** Actual's pattern, e.g. "dd/MM/yyyy" or "yyyy-MM-dd". */
 	dateFormat: string;
 	/** 0 = Sunday … 6 = Saturday. */
@@ -55,12 +55,6 @@ export async function loadDatePrefs(): Promise<DatePrefs> {
 	} catch (e) {
 		log.warn("Failed to read date format:", e);
 	}
-	return prefs;
-}
-
-/** The current prefs; reactive, so markup re-renders once they load. */
-export function datePrefs(): DatePrefs {
-	watchDatePrefs();
 	return prefs;
 }
 

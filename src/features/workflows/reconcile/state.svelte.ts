@@ -9,7 +9,7 @@ import {
 import { whenLock } from "./dom";
 import { isPanelShowing, openPanel } from "./panel";
 
-export interface UnclearedRow {
+interface UnclearedRow {
 	id: string;
 	date: string;
 	amount: number;

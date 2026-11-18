@@ -1,6 +1,6 @@
 import { TIP_HINT_ATTR, TIP_KEYS_ATTR, TIP_SIDE_ATTR } from "@features/core/tooltip";
 
-export type TipPlacement = "right" | "left" | "top" | "bottom";
+type TipPlacement = "right" | "left" | "top" | "bottom";
 type TipOpts = {
 	text: string;
 	placement?: TipPlacement;

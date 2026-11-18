@@ -12,7 +12,7 @@ const BILL_CYCLES: [number, number][] = [
 /** How far from a steady bill's usual a charge has to be to count as a price change. */
 export const PRICE_CHANGE = 0.25;
 
-export function median(list: number[]): number {
+function median(list: number[]): number {
 	if (!list.length) {
 		return 0;
 	}
@@ -22,7 +22,7 @@ export function median(list: number[]): number {
 }
 
 /** The median gap in days between distinct dates; null with fewer than three. */
-export function typicalInterval(dates: string[]): number | null {
+function typicalInterval(dates: string[]): number | null {
 	const days = [...new Set(dates)]
 		.map((d) => Date.parse(`${d}T00:00:00Z`) / 86_400_000)
 		.sort((a, b) => b - a);

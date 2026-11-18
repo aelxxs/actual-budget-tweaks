@@ -67,10 +67,6 @@ export async function setCategoryColor(categoryId: string, color: string): Promi
 	await setValue(STORAGE_KEY, { ...auto, ...picked.map });
 }
 
-export function getAllCategoryColors(): Record<string, string> {
-	return { ...auto, ...picked.map };
-}
-
 export const PRESET_COLORS = [
 	"#ef4444",
 	"#f97316",

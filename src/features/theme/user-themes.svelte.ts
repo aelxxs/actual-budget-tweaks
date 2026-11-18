@@ -40,17 +40,3 @@ export function generateThemeId(): string {
 export function isUserTheme(key: string): boolean {
 	return key.startsWith("user:");
 }
-
-export function getPreviewColorsFromTheme(theme: UserTheme): string[] {
-	if (theme.type === "palette" && theme.keys) {
-		return [
-			theme.keys["--ctp-base"],
-			theme.keys["--ctp-mantle"],
-			theme.keys["--ctp-surface0"],
-			theme.keys["--ctp-text"],
-			theme.keys["--ctp-mauve"],
-			theme.keys["--ctp-blue"],
-		].filter(Boolean) as string[];
-	}
-	return [];
-}

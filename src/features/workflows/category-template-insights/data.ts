@@ -33,12 +33,6 @@ export function getAccountName(id: string): string | null {
 	return accountNameById.get(id) ?? null;
 }
 
-/** Has the next `loadData` read again while `getInsights` keeps serving the current data. */
-export function markStale() {
-	stale = true;
-	loading = null;
-}
-
 export function resetData() {
 	insights = null;
 	loading = null;
@@ -334,7 +328,7 @@ export function progressFor(
 
 export { parseScheduleAmount };
 
-export type ProgressState = "under" | "near" | "full" | "paid";
+type ProgressState = "under" | "near" | "full" | "paid";
 
 export function progressState(entry: CategoryInsight, ratio: number): ProgressState {
 	if (entry.linkedSchedules.length > 0 && entry.linkedSchedules.every((ls) => ls.paid)) {

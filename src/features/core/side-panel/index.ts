@@ -441,4 +441,3 @@ export function isPanelPersistedOpen(): boolean | undefined {
 }
 
 export { sidepanel } from "./api";
-export type { OpenOptions, SidePanelApi } from "./api";

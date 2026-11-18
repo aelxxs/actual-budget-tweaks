@@ -4,7 +4,7 @@ import type { Effects } from "./studio/generator";
 const KEY = "theme-effects";
 
 /** Glow and grain per theme key, for every theme but Studio ones, whose recipe holds them. */
-export const effectsState = $state<{ byTheme: Record<string, Effects> }>({ byTheme: {} });
+const effectsState = $state<{ byTheme: Record<string, Effects> }>({ byTheme: {} });
 
 export const NO_EFFECTS: Effects = {
 	glow: { on: false, lights: [] },

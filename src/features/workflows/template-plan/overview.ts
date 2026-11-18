@@ -186,7 +186,7 @@ export function withGoalPlans(
 }
 
 /** The average assigned in months that had anything assigned. */
-export function typicalMonth(trend: MonthTrend[]): number {
+function typicalMonth(trend: MonthTrend[]): number {
 	const assigned = trend.filter((t) => t.budgeted > 0);
 	return assigned.reduce((sum, t) => sum + t.budgeted, 0) / (assigned.length || 1);
 }
@@ -285,7 +285,7 @@ export function recentAverageSpending(trend: MonthTrend[], fallback: number): nu
 	return recent.length ? recent.reduce((sum, t) => sum + t.spent, 0) / recent.length : fallback;
 }
 
-export interface MoveRow {
+interface MoveRow {
 	key: string;
 	from: string;
 	to: string;
@@ -296,7 +296,7 @@ export interface MoveRow {
 	count: number;
 }
 
-export interface MoveDay {
+interface MoveDay {
 	key: string;
 	day: string;
 	/** Set when every row moved money out of this one category; its rows then name only `to`. */
@@ -367,7 +367,7 @@ export const TO_BUDGET = "To Budget";
 export const touchesToBudget = (m: BudgetMove) =>
 	(m.fromId === null && m.from === TO_BUDGET) || (m.toId === null && m.to === TO_BUDGET);
 
-export interface MoveNet {
+interface MoveNet {
 	key: string;
 	name: string;
 	id: string | null;
@@ -398,13 +398,13 @@ export function netMoves(moves: BudgetMove[]): MoveNet[] {
 	return [...byKey.values()].filter((r) => r.net !== 0).sort((a, b) => b.net - a.net);
 }
 
-export interface RunwayMonth {
+interface RunwayMonth {
 	key: string;
 	/** How much of the month's need the held money still covers, 0 to 1. */
 	fill: number;
 }
 
-export interface Runway {
+interface Runway {
 	/** From next month on, at least `shown` long, each month against its own need. */
 	months: RunwayMonth[];
 	/** Index of the last fully covered month; -1 when next month isn't. */

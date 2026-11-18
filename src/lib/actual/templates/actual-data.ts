@@ -16,7 +16,7 @@ export interface SnapshotDescriptor {
 	promises: Promise<{ value: number } | null>[];
 }
 
-export interface SnapshotResult {
+interface SnapshotResult {
 	sheet: string;
 	availableFunds: number;
 	toBudget: number;
@@ -30,14 +30,14 @@ let categoriesPromise: Promise<Category[]> | null = null;
 // ── Backend readiness ────────────────────────────────────────────────
 // query()/send() already wait on the API bridge internally (waitForBudget),
 // so readiness here just needs to confirm the budget page has rendered.
-export function isBackendReady(): boolean {
+function isBackendReady(): boolean {
 	if (!document.querySelector(BUDGET_LINK)) {
 		return false;
 	}
 	return !!document.querySelector(BUDGET_TABLE);
 }
 
-export function waitForBackendReady(): Promise<void> {
+function waitForBackendReady(): Promise<void> {
 	return new Promise<void>((resolve) => {
 		if (isBackendReady()) {
 			resolve();
@@ -106,7 +106,7 @@ export function invalidateCategoriesCache(): void {
 // with the in-flight promises. Must be callable from a click capture
 // handler so the worker queues these reads BEFORE React's bubble-phase
 // onClick posts the apply-template message.
-export function startSnapshotMonth(sheet: string, cats: Category[]): SnapshotDescriptor {
+function startSnapshotMonth(sheet: string, cats: Category[]): SnapshotDescriptor {
 	const ids = cats.filter((c) => !c.hidden).map((c) => c.id);
 	const promises = [
 		send("get-cell", { sheetName: sheet, name: "available-funds" }),
@@ -116,7 +116,7 @@ export function startSnapshotMonth(sheet: string, cats: Category[]): SnapshotDes
 	return { sheet, ids, promises };
 }
 
-export async function awaitSnapshotMonth(start: SnapshotDescriptor): Promise<SnapshotResult> {
+async function awaitSnapshotMonth(start: SnapshotDescriptor): Promise<SnapshotResult> {
 	const vals = await Promise.all(start.promises.map((p) => p.catch(() => null)));
 	const v = (cell: { value: number } | null) =>
 		cell && typeof cell.value === "number" ? cell.value : 0;
@@ -144,7 +144,7 @@ export function sheetToMonthLabel(sheet: string): string | null {
 	return formatMonthLabel(key);
 }
 
-export function formatMonthLabel(value: string | null): string | null {
+function formatMonthLabel(value: string | null): string | null {
 	if (!value) {
 		return null;
 	}
@@ -164,7 +164,7 @@ export function formatMonthLabel(value: string | null): string | null {
 	}).format(date);
 }
 
-export function activeMonthLabel(): string | null {
+function activeMonthLabel(): string | null {
 	const current = getCurrentSheet();
 	return current ? sheetToMonthLabel(current) : null;
 }

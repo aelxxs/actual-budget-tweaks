@@ -99,48 +99,6 @@ export function createDebouncedObserver(
 	};
 }
 
-export type DebouncedObserver = ReturnType<typeof createDebouncedObserver>;
-
-export interface WaitForElementOptions {
-	/** How many times to retry before giving up. Default: 10 */
-	maxRetries?: number;
-	/** Milliseconds between retries. Default: 300 */
-	interval?: number;
-	/** Root element to query within. Default: document */
-	root?: ParentNode;
-}
-
-/**
- * Polls the DOM until a matching element appears, then resolves with it.
- * Rejects after `maxRetries` attempts.
- */
-export function waitForElement(
-	selector: string,
-	options: WaitForElementOptions = {},
-): Promise<HTMLElement> {
-	const { maxRetries = 10, interval = 300, root = document } = options;
-
-	return new Promise((resolve, reject) => {
-		let attempts = 0;
-
-		const check = () => {
-			const el = root.querySelector<HTMLElement>(selector);
-			if (el) {
-				resolve(el);
-				return;
-			}
-			attempts++;
-			if (attempts >= maxRetries) {
-				reject(new Error(`waitForElement: "${selector}" not found after ${maxRetries} attempts`));
-				return;
-			}
-			setTimeout(check, interval);
-		};
-
-		check();
-	});
-}
-
 /** The nearest ancestor that scrolls `el` vertically, or null. */
 export function scrollParent(el: Element): HTMLElement | null {
 	for (let node = el.parentElement; node; node = node.parentElement) {

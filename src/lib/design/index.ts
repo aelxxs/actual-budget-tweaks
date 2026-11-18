@@ -13,7 +13,7 @@ import { tomorrowNight } from "./palettes/tomorrow-night";
 import { velvet } from "./palettes/velvet";
 import { Theme } from "./types";
 
-export const defaultTheme = mocha;
+const defaultTheme = mocha;
 
 export const themes: Record<string, Theme> = {
 	cyberpunk,
@@ -58,10 +58,3 @@ export const RETIRED_THEMES: Record<string, string> = {
 export const getTheme = (key: string): Theme => {
 	return themes[RETIRED_THEMES[key] ?? key] ?? defaultTheme;
 };
-
-export const themeSelectOptions: { value: string; label: string }[] = Object.entries(themes).map(
-	([key, theme]) => ({
-		value: key,
-		label: theme.name,
-	}),
-);
