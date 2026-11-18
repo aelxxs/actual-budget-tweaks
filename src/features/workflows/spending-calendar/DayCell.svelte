@@ -283,8 +283,8 @@
 	}
 
 	.cal-tx__dot {
-		width: 7px;
-		height: 7px;
+		width: 5px;
+		height: 5px;
 		border-radius: var(--abt-radius-pill);
 		flex-shrink: 0;
 	}
