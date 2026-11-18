@@ -48,7 +48,7 @@
 	<span class="title">{title}</span>
 	{@render badges?.()}
 	{#if count !== undefined}
-		<span class="abt-count">{count}</span>
+		<span class="count">{count}</span>
 	{/if}
 	{#if trailing}
 		<span class="trailing" class:abt-privacy-number={privateTrailing}>{@render trailing()}</span>
@@ -154,8 +154,10 @@
 		color: var(--abt-soft);
 	}
 
-	.abt-count {
+	.count {
+		font-size: var(--abt-text-sm);
 		font-variant-numeric: tabular-nums;
+		color: var(--abt-muted);
 	}
 
 	.trailing {
