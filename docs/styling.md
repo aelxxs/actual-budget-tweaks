@@ -21,6 +21,24 @@ Ink steps follow the surface: the page, `.sidebar`, `.abt-popover`, and `.abt-on
 
 Marks smaller than about 8px (bars, swatches, dots) may use 1–3px corners.
 
+## Colour roles
+
+Pick a colour by what it means, then use that role's tokens. One meaning per role, everywhere in ABT.
+
+| Role        | Tokens                                                      | Means                                    | Examples                                                    |
+| ----------- | ----------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| Accent      | `--abt-accent`, `--abt-accent-1..4`, `--abt-selected-bg/fg` | Selected, focused, or the primary action | Active tab, chosen option, focus ring, primary button       |
+| Status      | `--abt-positive-*`, `--abt-warning-*`, `--abt-danger-*`     | A judgement: good, needs attention, bad  | Funded, underfunded, overspent; a goal reached or off track |
+| Data        | `--abt-data`, `--abt-data-1..4`                             | An amount or progress, with no judgement | Spent so far, goal progress, a month's total in a trend     |
+| Categorical | `--color-chartQual1..9`                                     | Which series a mark belongs to           | Categories in a donut, payees in a stacked bar              |
+| Neutral     | `--abt-ink-1..5`, `--abt-muted`, `--abt-soft`               | Structure and empty space                | Tracks behind a bar, the remainder of a whole, dividers     |
+
+- Data is the default for a bar, meter or chart mark. Switch it to a status colour only when the status is the point, such as a goal bar turning green when reached or red when overspent.
+- Keep data colour for a card's main quantity. A bar that gives context, such as a comparison or the rest of a whole, uses neutral ink (`--abt-ink-4` or `--abt-ink-5`), so the data colour stays on the number the reader came for.
+- In parts of one whole, the part the reader cares about takes the data colour and the rest neutral ink. A part that carries a judgement, such as money left over, may take its status colour.
+- Never use the accent for data, and never use a status colour for a plain amount: both teach the reader a meaning that isn't there.
+- Text that names a status (overspent, 3 behind) takes the status colour; amounts in tables and rows stay ink unless they carry the status.
+
 ## Primitives
 
 - Layout: `abt-stack`, `abt-cluster`, `abt-repel`.

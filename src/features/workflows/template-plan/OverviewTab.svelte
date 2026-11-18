@@ -328,7 +328,7 @@
 	{#snippet goalsCard()}
 		{#if data.underfundedGoals.length > 0}
 			<Section
-				title="Targets to Fund"
+				title="Targets to fund"
 				count={`${data.fullyFundedGoalCount} of ${data.totalGoalCount} funded`}
 			>
 				{#each allTargets ? data.underfundedGoals : data.underfundedGoals.slice(0, TARGETS_SHOWN) as cat (cat.id)}
@@ -448,7 +448,6 @@
 						<div
 							class="abt-tab-overview-mini-bar"
 							style:width="{Math.min(100, (income.received / income.usual) * 100)}%"
-							data-status="goal"
 						></div>
 					</div>
 					{@const average =
@@ -775,10 +774,10 @@
 		background: var(--color-errorText);
 	}
 	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="spent"] {
-		background: var(--abt-accent);
+		background: var(--abt-data);
 	}
 	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="left"] {
-		background: var(--abt-accent-3);
+		background: var(--abt-ink-5);
 	}
 	:is(.abt-tab-overview-split span, .abt-tab-overview-swatch)[data-part="held"] {
 		background: var(--abt-positive-3);
@@ -842,7 +841,7 @@
 	}
 	.abt-moves-bar i {
 		min-width: 2px;
-		background: var(--abt-accent-4);
+		background: var(--abt-ink-5);
 	}
 	.abt-moves-bar > span:first-child i {
 		border-radius: var(--abt-radius-pill) 0 0 var(--abt-radius-pill);
@@ -928,7 +927,7 @@
 		height: 100%;
 		min-width: 2px;
 		border-radius: inherit;
-		background: var(--abt-accent);
+		background: var(--abt-data);
 	}
 	.abt-goal__fill[data-done] {
 		background: var(--color-budgetNumberPositive);
@@ -1030,23 +1029,8 @@
 		height: 100%;
 		border-radius: 2px;
 		min-width: 2px;
+		background: var(--abt-ink-5);
 		transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-	.abt-tab-overview-mini-bar[data-status="ok"] {
-		background: var(--abt-accent);
-	}
-	.abt-tab-overview-mini-bar[data-status="warn"] {
-		background: var(--color-warningText);
-	}
-	.abt-tab-overview-mini-bar[data-status="over"] {
-		background: var(--color-errorText);
-	}
-	.abt-tab-overview-mini-bar[data-status="goal"] {
-		background: linear-gradient(
-			90deg,
-			var(--abt-accent) 0%,
-			var(--abt-panel-accent-secondary) 100%
-		);
 	}
 
 	.abt-tab-overview-sched-date {

@@ -55,17 +55,22 @@
 	--abt-danger-2: color-mix(in srgb, var(--color-errorText) 16%, transparent);
 	--abt-danger-3: color-mix(in srgb, var(--color-errorText) 26%, transparent);
 	--abt-danger-4: color-mix(in srgb, var(--color-errorText) 40%, transparent);
+	/* Amounts and progress with no judgement attached (see Colour roles in docs/styling.md). */
+	--abt-data: var(--color-reportsBlue);
+	--abt-data-1: color-mix(in srgb, var(--abt-data) 10%, transparent);
+	--abt-data-2: color-mix(in srgb, var(--abt-data) 16%, transparent);
+	--abt-data-3: color-mix(in srgb, var(--abt-data) 26%, transparent);
+	--abt-data-4: color-mix(in srgb, var(--abt-data) 40%, transparent);
 	/* How strongly accent cards (To Budget, current month, suggestions) wash in their colour. */
 	--abt-wash: 14%;
 	--abt-glow-duration: 200ms;
 
-	/* Side panel surfaces. Cards match the budget's current-month column, the same kind of surface
-	   on the same page background. */
-	--abt-panel-accent-secondary: var(--color-pageTextLink);
 	/* Side panel header, matched by page headers beside it (border included). */
 	--abt-panel-header-height: 51px;
 	/* The sidebar's budget header, which a full-height panel's header and the titlebar beside it match. */
 	--abt-titlebar-height: 3.75rem;
+	/* Side panel cards match the budget's current-month column, the same kind of surface on the
+	   same page background. */
 	--abt-panel-surface: var(--color-budgetCurrentMonth, var(--color-tableBackground));
 	/* A step below the page: 5% darker when dark, under 2% when light, where more turns grey. */
 	--abt-panel-bg: oklch(
