@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { getFaviconUrl } from "@lib/dom/favicon";
 	import { icon } from "@lib/icons";
-	import { X } from "@lucide/svelte";
+	import { Link, X } from "@lucide/svelte";
 	import { onDestroy, tick, type Snippet } from "svelte";
 	import type { AnimationConfig } from "svelte/animate";
 	import { cubicOut } from "svelte/easing";
+	import { SvelteSet } from "svelte/reactivity";
 	import { scale } from "svelte/transition";
 	import {
 		GAP,
@@ -77,14 +78,7 @@
 		return `--sc-bg: ${bg}; --sc-bg-hover: ${hover}; --sc-shadow: rgba(${r}, ${g}, ${b}, 0.18)`;
 	}
 
-	function onFaviconError(e: Event) {
-		const img = e.currentTarget as HTMLImageElement;
-		const parent = img.parentElement;
-		if (parent) {
-			img.remove();
-			parent.textContent = "🔗";
-		}
-	}
+	const brokenFavicons = new SvelteSet<string>();
 
 	const MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1;
 	const FLIP_MS = 180 * MOTION;
@@ -469,15 +463,24 @@
 		{@html SVG_ICONS[shortcut.icon]}
 	{:else if shortcut.type === "external" && !shortcut.icon}
 		{@const fav = getFaviconUrl(shortcut.url)}
-		{#if fav}
+		{#if fav && !brokenFavicons.has(fav)}
 			{#key fav}
-				<img src={fav} alt="" width="20" height="20" class="favicon" onerror={onFaviconError} />
+				<img
+					src={fav}
+					alt=""
+					width="20"
+					height="20"
+					class="favicon"
+					onerror={() => brokenFavicons.add(fav)}
+				/>
 			{/key}
 		{:else}
-			🔗
+			<Link size={18} />
 		{/if}
+	{:else if shortcut.icon}
+		{shortcut.icon}
 	{:else}
-		{shortcut.icon || "🔗"}
+		<Link size={18} />
 	{/if}
 {/snippet}
 
