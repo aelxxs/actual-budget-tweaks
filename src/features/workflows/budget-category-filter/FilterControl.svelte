@@ -58,11 +58,28 @@
 		display: inline;
 	}
 
+	/* A chip, so the count reads as a number beside the label rather than more of its words. */
 	.cf__count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 18px;
+		box-sizing: border-box;
+		padding: 0 var(--abt-space-2);
+		border-radius: var(--abt-radius-pill);
+		background: var(--abt-ink-2);
+		font-size: var(--abt-text-sm);
+		font-weight: 600;
 		font-variant-numeric: tabular-nums;
+		line-height: 18px;
 	}
 
 	.cf__count.is-alert {
+		background: var(--abt-warning-2);
 		color: var(--color-warningText);
+	}
+
+	button[aria-pressed="true"] .cf__count:not(.is-alert) {
+		background: var(--abt-accent-2);
 	}
 </style>
