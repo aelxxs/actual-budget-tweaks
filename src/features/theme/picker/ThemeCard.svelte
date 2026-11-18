@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onOutsideClick } from "@lib/dom/popover";
+	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
+	import { portal } from "@lib/dom/svelte";
 	import { Ellipsis, Moon, Sun } from "@lucide/svelte";
 	import ThemeThumb from "./ThemeThumb.svelte";
 	import type { Thumb } from "./thumbs";
@@ -39,10 +40,19 @@
 
 	let menuOpen = $state(false);
 	let card: HTMLElement;
+	let more = $state<HTMLButtonElement>();
+	let menu = $state<HTMLElement>();
 
 	$effect(() => {
-		if (menuOpen) {
-			return onOutsideClick(card, () => (menuOpen = false));
+		if (menuOpen && menu && more) {
+			positionPopover(menu, more, { align: "right" });
+			const close = () => (menuOpen = false);
+			const stop = onOutsideClick([card, menu], close);
+			window.addEventListener("scroll", close, { capture: true, once: true });
+			return () => {
+				stop();
+				window.removeEventListener("scroll", close, { capture: true });
+			};
 		}
 	});
 </script>
@@ -78,6 +88,7 @@
 			<button
 				type="button"
 				class="more abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+				bind:this={more}
 				aria-label="More for {name}"
 				aria-expanded={menuOpen}
 				onclick={() => (menuOpen = !menuOpen)}
@@ -97,7 +108,7 @@
 	{/if}
 
 	{#if menuOpen}
-		<div class="menu abt-popover abt-menu" role="menu">
+		<div class="menu abt-popover abt-menu" role="menu" use:portal bind:this={menu}>
 			{#each actions as action (action.label)}
 				{#if action.href}
 					<a
@@ -247,12 +258,9 @@
 		opacity: 1;
 	}
 	.menu {
-		position: absolute;
-		z-index: 20;
-		top: 100%;
-		right: 0;
+		position: fixed;
+		z-index: 10000;
 		min-width: 180px;
-		margin-top: var(--abt-space-1);
 	}
 	.menu .danger {
 		color: var(--color-errorText);
