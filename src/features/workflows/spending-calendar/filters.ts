@@ -4,6 +4,8 @@ import { getValue, setValue } from "@lib/store";
 export interface CalendarFilters extends BaseFilters {
 	showScheduled: boolean;
 	showBalance: boolean;
+	showHeat: boolean;
+	showCategoryBars: boolean;
 }
 
 /** What "Clear all" restores; off-budget accounts and balances stay as chosen, since they're view preferences. */
@@ -18,7 +20,14 @@ const LEGACY_OFFBUDGET_KEY = "spending-calendar-hide-offbudget";
 export async function loadFilters(): Promise<CalendarFilters> {
 	const hideOffBudget = await getValue(LEGACY_OFFBUDGET_KEY, true);
 	const saved = await getValue<Partial<CalendarFilters>>(FILTERS_KEY, {});
-	return { ...CLEARED, hideOffBudget, showBalance: false, ...saved };
+	return {
+		...CLEARED,
+		hideOffBudget,
+		showBalance: false,
+		showHeat: true,
+		showCategoryBars: true,
+		...saved,
+	};
 }
 
 export function saveFilters(filters: CalendarFilters): Promise<void> {

@@ -2,6 +2,7 @@
 	import { sidepanel } from "@features/core/side-panel";
 	import { SIDEBAR_ATTR } from "@features/core/side-panel/api";
 	import { SCHEDULE_EDITOR } from "@lib/actual-dom";
+	import MonthNav from "@lib/components/MonthNav.svelte";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import { onListChange } from "@lib/actual/actual-api";
 	import { loadCategoryColors } from "@lib/category-colors.svelte";
@@ -373,63 +374,32 @@
 </script>
 
 <div class="cal-page" bind:this={pageEl}>
-	<div class="cal-header">
+	<div class="cal-header abt-controls-quiet">
 		<div class="cal-header__left">
+			<MonthNav
+				atToday={isAtCurrentMonth}
+				nextDisabled={isAtMaxMonth}
+				onToday={goToday}
+				onPrev={() => shiftMonth(-1)}
+				onNext={() => shiftMonth(1)}
+			/>
 			<MonthPicker
 				{year}
 				{month}
+				variant="compact"
 				bind:open={pickerOpen}
 				onpick={setMonth}
 				isDisabled={(y, m) => monthsFromNow(y, m) > MAX_FUTURE_MONTHS}
 				maxYear={maxPickerYear}
 			/>
+		</div>
+		<div class="cal-header__right">
 			{#if hasLoadedOnce}
 				<MonthSummary {summary} stale={loading} />
 			{/if}
-		</div>
-		<div class="cal-header__right">
 			{#if filters}
 				<CalendarFilters bind:open={filtersOpen} {filters} {...lists} onChange={setFilters} />
 			{/if}
-			<span class="cal-header__sep"></span>
-			<button
-				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
-				title="Previous month"
-				aria-label="Previous month"
-				onclick={() => shiftMonth(-1)}
-			>
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg
-				>
-			</button>
-			<button class="abt-btn abt-btn--sm" onclick={goToday} disabled={isAtCurrentMonth}
-				>Today</button
-			>
-			<button
-				class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
-				title="Next month"
-				aria-label="Next month"
-				onclick={() => shiftMonth(1)}
-				disabled={isAtMaxMonth}
-			>
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg
-				>
-			</button>
 		</div>
 	</div>
 
@@ -462,7 +432,8 @@
 					<DayCell
 						{day}
 						corner={cellCorner(idx, days.length)}
-						heat={dayHeat(day, maxSpent)}
+						heat={filters?.showHeat === false ? 0 : dayHeat(day, maxSpent)}
+						bars={filters?.showCategoryBars !== false}
 						selected={day.isCurrentMonth && selectedIso === day.iso}
 						tabbable={day.iso === tabIso}
 						categoryNames={loader.categoryNames}
@@ -497,28 +468,19 @@
 		box-sizing: border-box;
 		min-height: var(--abt-panel-header-height);
 		border-bottom: 1px solid var(--abt-panel-border);
-		/* The month reads as this page's title, sized like the Reports title it opens over. */
-		--abt-month-title-size: 20px; /* raw: no type token this large */
 	}
 
 	.cal-header__left {
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: var(--abt-space-4);
 		min-width: 0;
 	}
 
 	.cal-header__right {
 		display: flex;
 		align-items: center;
-		gap: 6px;
-	}
-
-	.cal-header__sep {
-		width: 1px;
-		height: 18px;
-		margin: 0 var(--abt-space-1);
-		background: var(--abt-line);
+		gap: var(--abt-space-6);
 	}
 
 	/* The same gutter on both, so the columns line up when the grid scrolls. */

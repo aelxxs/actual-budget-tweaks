@@ -12,7 +12,9 @@
 	</div>
 	<div>
 		<dt>Income</dt>
-		<dd class="abt-privacy-number is-pos">{fmtMoney(summary.income)}</dd>
+		<dd class="abt-privacy-number" class:is-pos={summary.income > 0}>
+			{fmtMoney(summary.income)}
+		</dd>
 	</div>
 	<div>
 		<dt>Net</dt>
@@ -33,8 +35,6 @@
 		display: flex;
 		gap: 20px;
 		margin: 0;
-		padding-left: var(--abt-space-5);
-		border-left: 1px solid var(--abt-line);
 		transition: opacity 0.15s;
 	}
 	.summary.is-stale {
@@ -43,13 +43,10 @@
 	.summary > div {
 		display: flex;
 		flex-direction: column;
-		gap: 1px;
+		gap: 3px; /* raw: between the 2px and 4px steps */
 	}
 	dt {
-		font-size: var(--abt-text-xs);
-		font-weight: 600;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
+		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
 	}
 	dd {
@@ -66,7 +63,7 @@
 		color: var(--color-errorText);
 	}
 	.is-upcoming dd {
-		opacity: 0.65;
+		color: var(--abt-muted);
 	}
 
 	/* Queries the calendar page's container. */

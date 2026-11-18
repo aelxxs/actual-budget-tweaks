@@ -50,5 +50,17 @@
 			checked={filters.showBalance}
 			onCheckedChange={(showBalance) => onChange({ showBalance })}
 		/>
+		<FilterToggle
+			label="Spending heat"
+			title="Shades busier days"
+			checked={filters.showHeat}
+			onCheckedChange={(showHeat) => onChange({ showHeat })}
+		/>
+		<FilterToggle
+			label="Category bars"
+			title="Each day's spending split by category"
+			checked={filters.showCategoryBars}
+			onCheckedChange={(showCategoryBars) => onChange({ showCategoryBars })}
+		/>
 	{/snippet}
 </FilterPopover>

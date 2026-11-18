@@ -9,6 +9,7 @@
 		day,
 		corner,
 		heat,
+		bars,
 		selected,
 		tabbable,
 		categoryNames,
@@ -18,6 +19,7 @@
 		day: DayData;
 		corner: string | undefined;
 		heat: number;
+		bars: boolean;
 		selected: boolean;
 		tabbable: boolean;
 		categoryNames: Map<string, string>;
@@ -75,8 +77,8 @@
 		{#if day.total !== 0 && day.isCurrentMonth}
 			<span
 				class="cal-cell__total abt-privacy-number"
-				class:is-neg={day.total < 0}
 				class:is-pos={day.total > 0}
+				class:is-upcoming={day.transactions.every((t) => t.upcoming)}
 			>
 				{fmtMoney(day.total, { short: true, sign: true })}
 			</span>
@@ -110,16 +112,18 @@
 			{/if}
 		</div>
 
-		<div class="cal-cell__bars">
-			{#each spendingByCategory(day.transactions) as [catId, amount] (catId)}
-				{@const pct = Math.max(8, (amount / Math.abs(day.total || 1)) * 100)}
-				<div
-					class="cal-bar"
-					style="width: {pct}%; background: {getCategoryColor(catId)}"
-					title="{categoryNames.get(catId) || 'Uncategorized'}: {fmtMoney(-amount)}"
-				></div>
-			{/each}
-		</div>
+		{#if bars}
+			<div class="cal-cell__bars">
+				{#each spendingByCategory(day.transactions) as [catId, amount] (catId)}
+					{@const pct = Math.max(8, (amount / Math.abs(day.total || 1)) * 100)}
+					<div
+						class="cal-bar"
+						style="width: {pct}%; background: {getCategoryColor(catId)}"
+						title="{categoryNames.get(catId) || 'Uncategorized'}: {fmtMoney(-amount)}"
+					></div>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 
 	{#if day.balance !== undefined && day.isCurrentMonth}
@@ -257,12 +261,13 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	.cal-cell__total.is-neg {
-		color: var(--color-errorText);
-	}
-
 	.cal-cell__total.is-pos {
 		color: var(--color-noticeTextLight);
+	}
+
+	/* Only bills still to come: a forecast, like the header's Upcoming. */
+	.cal-cell__total.is-upcoming {
+		color: var(--abt-muted);
 	}
 
 	.cal-cell__txs {
