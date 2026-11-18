@@ -505,6 +505,16 @@ const FULL_CSS = `
 	/* A step heavier than Actual's 400, so the plain card's figure still leads the row. */
 	${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
 		font-weight: 500 !important;
+		line-height: 1.1;
+	}
+	/* A line under the figure saying what it means, like the other cards' second lines. */
+	${ENVELOPE} ${SUMMARY_CARD} > :last-child[data-abt-to-budget-note]::after {
+		content: attr(data-abt-to-budget-note);
+		margin-top: var(--abt-space-2);
+		line-height: 16px;
+		font-size: var(--abt-text-base);
+		color: var(--color-tableHeaderText);
+		white-space: nowrap;
 	}
 	/* Top-aligned like the other cards' labels: their 68px of lines sit centred, 3px down. */
 	${ENVELOPE} ${SUMMARY_CARD} > :last-child {

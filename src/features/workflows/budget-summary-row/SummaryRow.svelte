@@ -28,9 +28,21 @@
 		}
 		card.toggleAttribute("data-abt-to-budget-negative", totals.toBudget < 0);
 		card.setAttribute("data-abt-to-budget-known", "");
+		// What the figure means, for anyone new to envelope budgeting. On Actual's card itself,
+		// since its ::after reads the attribute from there.
+		const lead = card.lastElementChild;
+		lead?.setAttribute(
+			"data-abt-to-budget-note",
+			totals.toBudget > 0
+				? "Ready to give a job"
+				: totals.toBudget < 0
+					? "Over-assigned"
+					: "Every dollar has a job",
+		);
 		return () => {
 			card.removeAttribute("data-abt-to-budget-negative");
 			card.removeAttribute("data-abt-to-budget-known");
+			lead?.removeAttribute("data-abt-to-budget-note");
 		};
 	});
 
