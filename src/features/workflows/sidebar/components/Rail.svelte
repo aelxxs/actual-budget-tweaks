@@ -557,7 +557,7 @@
 		width: 34px;
 		height: 34px;
 		border-radius: var(--abt-radius);
-		background: linear-gradient(135deg, var(--abt-accent), var(--abt-accent));
+		background: var(--abt-accent);
 		color: #fff;
 		font-size: var(--abt-text-base);
 		font-weight: 800;
