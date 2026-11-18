@@ -6,7 +6,7 @@
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Icon from "@lib/components/Icon.svelte";
 	import { onListChange, send } from "@lib/actual/actual-api";
-	import { getValue, setValue } from "@lib/store";
+	import { removeValue } from "@lib/store";
 	import {
 		addMonths,
 		currentMonth,
@@ -21,8 +21,6 @@
 	} from "./native";
 	import { budgetNav } from "./state.svelte";
 
-	const MOST_KEY = "budget-month-count-most";
-
 	let pickerOpen = $state(false);
 
 	const start = $derived(budgetNav.months[0] ?? null);
@@ -31,14 +29,15 @@
 	const base = $derived(target ?? start);
 	const parsed = $derived(start ? parseMonth(start) : null);
 	const span = $derived(budgetNav.months.length);
-	// Every count that has ever fit stays listed (remembered across visits), disabled while it doesn't
-	// fit, so opening a panel or narrowing the window greys a count out instead of reshaping the header.
+	// Every count that has fit this visit stays listed, disabled while it doesn't fit, so opening a
+	// panel or narrowing the window greys a count out instead of reshaping the header. Not saved:
+	// a zoomed-out visit would leave counts that never fit again.
 	let most = $state(1);
-	void getValue<number>(MOST_KEY, 1).then((v) => (most = Math.max(most, v)));
+	// The count this used to save; safe to drop after 2027-02.
+	void removeValue("budget-month-count-most");
 	$effect(() => {
 		if (budgetNav.displayMax > most) {
 			most = budgetNav.displayMax;
-			void setValue(MOST_KEY, most);
 		}
 	});
 	const counts = $derived(
