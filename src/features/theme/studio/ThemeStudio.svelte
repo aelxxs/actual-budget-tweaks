@@ -4,8 +4,7 @@
 	import Switch from "@lib/components/Switch.svelte";
 	import { Dices, Lock, LockOpen, Moon, Shuffle, Sun } from "@lucide/svelte";
 	import { onMount } from "svelte";
-	import AccentHex from "./AccentHex.svelte";
-	import BaseHex from "./BaseHex.svelte";
+	import HexField from "./HexField.svelte";
 	import { previewRecipe } from "./apply";
 	import ColorWheel from "./ColorWheel.svelte";
 	import {
@@ -28,7 +27,16 @@
 	import MiniTheme from "./MiniTheme.svelte";
 	import StylePanel from "../style/StylePanel.svelte";
 	import Rail from "./Rail.svelte";
-	import { copyRecipe, PRESETS, rerollTrait, shuffleRecipe, type Trait, TRAITS } from "./recipes";
+	import {
+		copyRecipe,
+		PRESETS,
+		rerollTrait,
+		setAccentHex,
+		setBackgroundHex,
+		shuffleRecipe,
+		type Trait,
+		TRAITS,
+	} from "./recipes";
 	import { remember, studio } from "./state.svelte";
 
 	const r = $derived(studio.recipe);
@@ -288,7 +296,12 @@
 
 	<div class="sections">
 		<Section card={false} muted title="Color" collapsible={false} privateTrailing={false}>
-			{#snippet trailing()}<AccentHex hex={g.colors.mauve} />{/snippet}
+			{#snippet trailing()}<HexField
+					hex={g.colors.mauve}
+					label="Accent hex"
+					hint="Type a hex code to set the accent exactly"
+					onCommit={(hex) => setAccentHex(studio.recipe, hex)}
+				/>{/snippet}
 			<div class="stack">
 				<div class="abt-seg stretch" role="group" aria-label="Mode">
 					<button
@@ -308,7 +321,12 @@
 				</div>
 				<div class="abt-repel">
 					<span class="field-label">Background</span>
-					<BaseHex hex={g.colors.crust} />
+					<HexField
+						hex={g.colors.crust}
+						label="Background hex"
+						hint="Type a hex code to set the background"
+						onCommit={(hex) => setBackgroundHex(studio.recipe, hex)}
+					/>
 				</div>
 				<ColorWheel {g} />
 				<div class="field-row">

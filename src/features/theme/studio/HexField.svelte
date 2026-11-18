@@ -1,32 +1,28 @@
 <script lang="ts">
-	import { backgroundFromHex } from "./generator";
-	import { studio } from "./state.svelte";
-
-	const { hex }: { hex: string } = $props();
+	/** A color's swatch and hex, typed over to set it exactly. */
+	const {
+		hex,
+		label,
+		hint,
+		onCommit,
+	}: { hex: string; label: string; hint: string; onCommit: (hex: string) => void } = $props();
 
 	let draft = $state<string | null>(null);
 
 	function commit() {
 		const value = (draft ?? "").trim().replace(/^#?/, "#");
 		draft = null;
-		if (!/^#[0-9a-f]{6}$/i.test(value)) {
-			return;
+		if (/^#[0-9a-f]{6}$/i.test(value)) {
+			onCommit(value);
 		}
-		const r = studio.recipe;
-		const background = backgroundFromHex(r.mode, r.contrast, value, "crust");
-		r.baseHue = background.baseHue ?? r.baseHue;
-		r.tint = background.tint;
-		r.depth = background.depth;
-		r.backgroundLink = null;
 	}
 </script>
 
-<label class="hex" title="Background hex" data-abt-tip-hint="Type a hex code to set the background">
+<label class="hex" title={label} data-abt-tip-hint={hint}>
 	<span class="swatch" style:background={hex}></span>
 	<input
-		class="abt-input"
 		spellcheck="false"
-		aria-label="Background hex"
+		aria-label={label}
 		value={draft ?? hex}
 		onfocus={(e) => e.currentTarget.select()}
 		oninput={(e) => (draft = e.currentTarget.value)}
@@ -44,7 +40,6 @@
 </label>
 
 <style>
-	/* Compact swatch and monospace field match the accent hex control. */
 	.hex {
 		display: inline-flex;
 		align-items: center;
@@ -65,7 +60,6 @@
 	}
 	input {
 		width: 7ch;
-		height: auto;
 		padding: 0;
 		border: 0;
 		background: none;

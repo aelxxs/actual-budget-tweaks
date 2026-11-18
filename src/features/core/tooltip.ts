@@ -195,7 +195,6 @@ function findTitledAncestor(node: EventTarget | null): HTMLElement | null {
 	return null;
 }
 
-
 /** Where the tooltip goes on a side, and whether it fits there inside the window. */
 function place(side: Side, a: DOMRect, tip: DOMRect) {
 	const vertical = side === "top" || side === "bottom";

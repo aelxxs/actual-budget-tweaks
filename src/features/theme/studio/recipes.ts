@@ -1,4 +1,14 @@
-import type { GlowLight, GrainSize, Mode, Recipe } from "./generator";
+import {
+	accentLightness,
+	backgroundFromHex,
+	CHROMA_CEILING,
+	type GlowLight,
+	type GrainSize,
+	hexToOklch,
+	LIFT_RANGE,
+	type Mode,
+	type Recipe,
+} from "./generator";
 
 /** What Shuffle can reroll, each lockable on its own. */
 export type Trait = "mode" | "background" | "accent" | "palette" | "glow" | "grain";
@@ -361,4 +371,23 @@ export function followAccent(r: Recipe): Recipe {
 // Recipes come out of Svelte state as proxies, which structuredClone can't copy.
 export function copyRecipe(r: Recipe): Recipe {
 	return JSON.parse(JSON.stringify(r)) as Recipe;
+}
+
+/** Sets the accent to a hex exactly: its hue, vibrance and brightness. */
+export function setAccentHex(r: Recipe, hex: string): void {
+	const o = hexToOklch(hex);
+	r.accentHue = o.h;
+	r.accentChroma = Math.min(CHROMA_CEILING, Math.max(0.02, o.C));
+	const lift = o.L - accentLightness(r.mode, r.contrast);
+	r.accentLift = Math.min(LIFT_RANGE[1], Math.max(LIFT_RANGE[0], lift));
+	followAccent(r);
+}
+
+/** Sets the background to a hex, no longer following the accent. */
+export function setBackgroundHex(r: Recipe, hex: string): void {
+	const background = backgroundFromHex(r.mode, r.contrast, hex, "crust");
+	r.baseHue = background.baseHue ?? r.baseHue;
+	r.tint = background.tint;
+	r.depth = background.depth;
+	r.backgroundLink = null;
 }
