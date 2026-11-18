@@ -45,9 +45,14 @@
 		flex-direction: column;
 		gap: 3px; /* raw: between the 2px and 4px steps */
 	}
+	/* The same as the account page's Cleared/Uncleared labels. */
 	dt {
-		font-size: var(--abt-text-sm);
-		color: var(--abt-muted);
+		font-size: var(--abt-text-2xs);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		line-height: 1.3;
+		text-transform: uppercase;
+		color: var(--abt-subtle);
 	}
 	dd {
 		margin: 0;
