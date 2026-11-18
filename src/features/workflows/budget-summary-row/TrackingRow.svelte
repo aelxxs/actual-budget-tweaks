@@ -152,46 +152,10 @@
 		justify-content: center;
 	}
 
-	/* Tinted by the month's result, glowing from its corner like envelope's To Budget card. */
 	.tr__lead {
 		order: 0;
 		position: relative;
 		min-width: 200px;
-		--abt-card-tone: var(--abt-muted);
-		border-color: transparent;
-		background:
-			linear-gradient(
-					135deg,
-					color-mix(in srgb, var(--abt-card-tone) var(--abt-wash), transparent),
-					transparent 70%
-				)
-				padding-box,
-			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
-			linear-gradient(
-					var(--abt-glow-angle),
-					color-mix(in srgb, var(--abt-card-tone) var(--abt-glow-strength), transparent),
-					var(--abt-panel-border) var(--abt-glow-reach)
-				)
-				border-box,
-			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box;
-		transition:
-			--abt-glow-angle var(--abt-glow-duration) ease,
-			--abt-glow-reach var(--abt-glow-duration) ease,
-			--abt-glow-strength var(--abt-glow-duration) ease;
-	}
-
-	.tr__lead:hover {
-		--abt-glow-angle: 225deg;
-		--abt-glow-reach: 100%;
-		--abt-glow-strength: 75%;
-	}
-
-	.tr__lead[data-tone="good"] {
-		--abt-card-tone: var(--color-noticeTextLight);
-	}
-
-	.tr__lead[data-tone="bad"] {
-		--abt-card-tone: var(--color-errorText);
 	}
 
 	.tr__lead[data-tone="good"] :global(.tr__lead-value) {

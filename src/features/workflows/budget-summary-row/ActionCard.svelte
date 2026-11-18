@@ -468,7 +468,7 @@
 		background: linear-gradient(var(--abt-ink-2), var(--abt-ink-2)), var(--abt-panel-surface);
 	}
 
-	/* Washed in the suggestion's colour, the border glowing from the corner like To Budget's. */
+	/* A suggestion to act on: washed in its colour, the border lit from the same corner. */
 	.ac.is-primary,
 	.ac.is-danger {
 		border-color: transparent;
@@ -481,28 +481,31 @@
 				padding-box,
 			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
 			linear-gradient(
-					var(--abt-glow-angle),
-					color-mix(in srgb, var(--ac-tone) var(--abt-glow-strength), transparent),
-					var(--abt-panel-border) var(--abt-glow-reach)
+					var(--ac-glow-angle),
+					color-mix(in srgb, var(--ac-tone) var(--ac-glow-strength), transparent),
+					var(--abt-panel-border) var(--ac-glow-reach)
 				)
 				border-box,
 			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box;
-	}
-
-	.ac.is-primary,
-	.ac.is-danger {
 		transition:
-			border-color 0.12s,
-			--abt-glow-angle var(--abt-glow-duration) ease,
-			--abt-glow-reach var(--abt-glow-duration) ease,
-			--abt-glow-strength var(--abt-glow-duration) ease;
+			--ac-glow-angle 200ms ease,
+			--ac-glow-reach 200ms ease,
+			--ac-glow-strength 200ms ease;
 	}
 
+	/* The border's light swings round the card on hover, saying the whole card is a button. */
 	.ac.is-primary:hover,
 	.ac.is-danger:hover {
-		--abt-glow-angle: 225deg;
-		--abt-glow-reach: 100%;
-		--abt-glow-strength: 75%;
+		--ac-glow-angle: 225deg;
+		--ac-glow-reach: 100%;
+		--ac-glow-strength: 75%;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ac.is-primary,
+		.ac.is-danger {
+			transition: none;
+		}
 	}
 
 	.ac.is-primary {

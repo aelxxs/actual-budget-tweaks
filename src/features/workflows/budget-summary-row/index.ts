@@ -486,36 +486,10 @@ const FULL_CSS = `
 		margin: 0 !important;
 		padding: var(--abt-space-3) var(--abt-space-5) !important;
 		justify-content: center;
-		/* The border is drawn by the background's border-box layers: the panel border, glowing
-		   in the card's colour from the top-left corner. */
-		/* Neutral until ABT has read the month, so it never shows the wrong sign. */
-		--abt-card-tone: var(--abt-muted);
-		border: 1px solid transparent !important;
+		/* Plain like the cards beside it: its figure already carries the colour. */
+		border: 1px solid var(--abt-panel-border) !important;
 		border-radius: var(--abt-radius);
-		background:
-			linear-gradient(135deg, color-mix(in srgb, var(--abt-card-tone) var(--abt-wash), transparent), transparent 70%) padding-box,
-			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) padding-box,
-			linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-card-tone) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
-			linear-gradient(var(--abt-panel-surface), var(--abt-panel-surface)) border-box !important;
-	}
-	${ENVELOPE} ${SUMMARY_CARD}[data-abt-to-budget-known] > :last-child {
-		--abt-card-tone: var(--color-noticeTextLight);
-	}
-	${ENVELOPE} ${SUMMARY_CARD}[data-abt-to-budget-negative] > :last-child {
-		--abt-card-tone: var(--color-errorText);
-	}
-	${ENVELOPE} ${SUMMARY_CARD} > :last-child,
-	${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
-		transition:
-			--abt-glow-angle var(--abt-glow-duration) ease,
-			--abt-glow-reach var(--abt-glow-duration) ease,
-			--abt-glow-strength var(--abt-glow-duration) ease;
-	}
-	${ENVELOPE} ${SUMMARY_CARD} > :last-child:hover,
-	${MONTH_CARD}[${CURRENT_MONTH_ATTR}]:hover {
-		--abt-glow-angle: 225deg;
-		--abt-glow-reach: 100%;
-		--abt-glow-strength: 75%;
+		background: var(--abt-panel-surface) !important;
 	}
 	${ENVELOPE} ${SUMMARY_CARD} > :last-child > * { margin: 0 !important; }
 	/* Same label colour as the summary cards; the subdued default is faint on the tint. */
@@ -527,6 +501,10 @@ const FULL_CSS = `
 		align-items: flex-start !important;
 		text-align: left !important;
 		padding-left: 0 !important;
+	}
+	/* A step heavier than Actual's 400, so the plain card's figure still leads the row. */
+	${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
+		font-weight: 500 !important;
 	}
 	/* Top-aligned like the other cards' labels: their 68px of lines sit centred, 3px down. */
 	${ENVELOPE} ${SUMMARY_CARD} > :last-child {
@@ -569,15 +547,9 @@ const FULL_CSS = `
 		container-type: inline-size;
 		overflow: visible !important;
 	}
-	/* The current month, tinted like its Now tag, its border glowing like To Budget's. */
+	/* The current month keeps Actual's own current-month surface; its Now tag marks it. */
 	${MONTH_CARD}[${CURRENT_MONTH_ATTR}] {
-		--abt-card-surface: var(--color-budgetCurrentMonth, var(--abt-panel-surface));
-		border-color: transparent !important;
-		background:
-			linear-gradient(135deg, color-mix(in srgb, var(--abt-accent) var(--abt-wash), transparent), transparent 70%) padding-box,
-			linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) padding-box,
-			linear-gradient(var(--abt-glow-angle), color-mix(in srgb, var(--abt-accent) var(--abt-glow-strength), transparent), var(--abt-panel-border) var(--abt-glow-reach)) border-box,
-			linear-gradient(var(--abt-card-surface), var(--abt-card-surface)) border-box !important;
+		background: var(--color-budgetCurrentMonth, var(--abt-panel-surface)) !important;
 	}
 	/* Header: its title and notes/menu join the row; the collapse toggle has nothing to collapse. */
 	${MONTH_CARD} > :first-child { display: contents !important; }

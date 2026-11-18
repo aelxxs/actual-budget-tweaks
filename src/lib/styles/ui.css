@@ -61,9 +61,8 @@
 	--abt-data-2: color-mix(in srgb, var(--abt-data) 16%, transparent);
 	--abt-data-3: color-mix(in srgb, var(--abt-data) 26%, transparent);
 	--abt-data-4: color-mix(in srgb, var(--abt-data) 40%, transparent);
-	/* How strongly accent cards (To Budget, current month, suggestions) wash in their colour. */
+	/* How strongly the suggestion card washes in its colour. */
 	--abt-wash: 14%;
-	--abt-glow-duration: 200ms;
 
 	/* Side panel header, matched by page headers beside it (border included). */
 	--abt-panel-header-height: 51px;
@@ -122,30 +121,23 @@
 	--abt-panel-track: var(--abt-ink-2);
 }
 
-/* An accent card's glowing border: its angle, reach and brightness. Registered so hovering can
-   move and grow it. */
-@property --abt-glow-angle {
+/* The suggestion card's lit border (ActionCard), registered so its hover can animate it. */
+@property --ac-glow-angle {
 	syntax: "<angle>";
 	inherits: false;
 	initial-value: 135deg;
 }
 
-@property --abt-glow-reach {
+@property --ac-glow-reach {
 	syntax: "<percentage>";
 	inherits: false;
 	initial-value: 40%;
 }
 
-@property --abt-glow-strength {
+@property --ac-glow-strength {
 	syntax: "<percentage>";
 	inherits: false;
 	initial-value: 45%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	:root {
-		--abt-glow-duration: 0ms;
-	}
 }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
