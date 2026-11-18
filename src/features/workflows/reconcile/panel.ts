@@ -1,7 +1,6 @@
 import { sidepanel } from "@features/core/side-panel";
 import { type Mounted, mountToPanelBody } from "@lib/dom/svelte";
 import ReconcilePanel from "./ReconcilePanel.svelte";
-import { reconcile } from "./state.svelte";
 
 const PANEL_KEY = "reconcile";
 
@@ -21,12 +20,7 @@ export function openPanel(accountId: string): void {
 		current = { ...mountToPanelBody(ReconcilePanel, { accountId }), accountId, shown: false };
 	}
 	current.shown = false;
-	// The panel sets the account's name once loaded; reopening must not put "Reconcile" back.
-	const title =
-		reconcile.accountId === accountId && reconcile.accountName
-			? reconcile.accountName
-			: "Reconcile";
-	sidepanel.open({ title, bodyNode: current.node, key: PANEL_KEY });
+	sidepanel.open({ title: "Reconcile", bodyNode: current.node, key: PANEL_KEY });
 }
 
 export function isPanelShowing(): boolean {

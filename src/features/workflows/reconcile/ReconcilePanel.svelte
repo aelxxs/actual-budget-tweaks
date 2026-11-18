@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { TRANSACTION_TABLE } from "@lib/actual-dom";
-	import { sidepanel } from "@features/core/side-panel";
 	import Icon from "@lib/components/Icon.svelte";
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
@@ -56,7 +55,6 @@
 	onMount(async () => {
 		void loadDatePrefs();
 		await loadAccount(accountId);
-		sidepanel.setTitle(reconcile.accountName);
 		text = formatMoneyInput(reconcile.target ?? reconcile.cleared);
 	});
 
