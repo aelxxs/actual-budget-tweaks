@@ -48,7 +48,7 @@
 	<span class="title">{title}</span>
 	{@render badges?.()}
 	{#if count !== undefined}
-		<span class="count">{count}</span>
+		<span class="abt-count">{count}</span>
 	{/if}
 	{#if trailing}
 		<span class="trailing" class:abt-privacy-number={privateTrailing}>{@render trailing()}</span>
@@ -154,10 +154,8 @@
 		color: var(--abt-soft);
 	}
 
-	.count {
-		font-size: var(--abt-text-xs);
+	.abt-count {
 		font-variant-numeric: tabular-nums;
-		color: color-mix(in srgb, currentColor 65%, var(--color-pageText));
 	}
 
 	.trailing {
@@ -170,7 +168,7 @@
 
 	.chevron {
 		flex-shrink: 0;
-		opacity: 0.65;
+		color: var(--abt-muted);
 		transition: transform 150ms ease;
 	}
 	.chevron[data-open="false"] {

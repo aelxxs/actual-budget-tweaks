@@ -169,6 +169,17 @@
 			</Section>
 
 			{#each batches as batch (batch.at)}
+				<!-- With one batch, the footer's button already reviews it. -->
+				{#snippet reviewBatch()}
+					<button
+						type="button"
+						class="abt-btn abt-btn--sm abt-btn--ghost review-batch"
+						onclick={(e) => {
+							e.stopPropagation();
+							void review(only ? batch.rows.map((t) => t.id) : batch.pending);
+						}}>Mark reviewed</button
+					>
+				{/snippet}
 				<Section
 					title={when(batch.at)}
 					count={!only && batch.rows.length < batch.total
@@ -176,17 +187,8 @@
 						: batch.rows.length}
 					caps={false}
 					privateTrailing={false}
+					trailing={batches.length > 1 ? reviewBatch : undefined}
 				>
-					{#snippet trailing()}
-						<button
-							type="button"
-							class="abt-btn abt-btn--sm abt-btn--ghost"
-							onclick={(e) => {
-								e.stopPropagation();
-								void review(only ? batch.rows.map((t) => t.id) : batch.pending);
-							}}>Mark reviewed</button
-						>
-					{/snippet}
 					<ul class="list">
 						{#each batch.rows as tx (tx.id)}
 							<li class="item">
@@ -232,6 +234,10 @@
 </div>
 
 <style>
+	.review-batch {
+		--abt-btn-fg: var(--abt-accent-text);
+	}
+
 	.shell {
 		display: flex;
 		flex-direction: column;
