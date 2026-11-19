@@ -481,13 +481,16 @@ function sidebarBase(
 	}
 	if (r.sidebar === "dark") {
 		// In a dark theme "Deeper" is already dark, so this one goes to near black.
-		const l = dark ? 0.06 : 0.235 - 0.03 * r.contrast;
-		const bg = oklchToHex(l, dark ? 0.003 + 0.008 * t : 0.008 + 0.02 * t, H);
+		const l = dark ? 0.06 : 0.26 - 0.03 * r.contrast;
+		// A hint of the accent, in proportion to it, so a grey accent keeps a neutral sidebar.
+		const A = r.accentHue;
+		const C = r.accentChroma * (dark ? 0.08 : 0.15);
+		const bg = oklchToHex(l, C, A);
 		return {
 			bg,
-			hover: oklchToHex(l + 0.06, 0.01 + 0.02 * t, H),
-			text: oklchToHex(0.94, 0.008 + 0.01 * t, H),
-			sub: readable(0.72, 0.01 + 0.015 * t, H, bg, 4.5, 1),
+			hover: oklchToHex(l + 0.06, C, A),
+			text: oklchToHex(0.94, C * 0.3, A),
+			sub: readable(0.72, C * 0.6, A, bg, 4.5, 1),
 			sel: readable(0.78, r.accentChroma, r.accentHue, bg, 4.5, 1),
 			neg: readable(0.74, 0.15, 25, bg, 4.5, 1),
 		};
