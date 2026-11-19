@@ -651,7 +651,7 @@
 	/* 36px, the nav buttons' size, so the rail lines up from top to bottom. */
 	.rtile {
 		position: absolute;
-		inset: 2px;
+		inset: var(--abt-space-1);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -694,7 +694,7 @@
 	}
 	.rfolder {
 		position: absolute;
-		inset: 2px;
+		inset: var(--abt-space-1);
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		grid-auto-rows: 1fr;
