@@ -7,7 +7,7 @@ import {
 	type LucideIcon,
 	PiggyBank,
 	Settings,
-	SlidersHorizontal,
+	Settings2,
 	Store,
 	Wallet,
 } from "@lucide/svelte";
@@ -25,7 +25,7 @@ const ICONS: Record<string, LucideIcon> = {
 	"/reports": ChartColumn,
 	"/schedules": CalendarDays,
 	"/payees": Store,
-	"/rules": SlidersHorizontal,
+	"/rules": Settings2,
 	"/bank-sync": CreditCard,
 	"/settings": Settings,
 	"/notifications": Bell,

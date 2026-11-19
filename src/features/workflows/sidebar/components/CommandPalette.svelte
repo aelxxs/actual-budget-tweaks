@@ -60,7 +60,7 @@
 		RefreshCw,
 		Search,
 		Settings,
-		SlidersHorizontal,
+		Settings2,
 		Tag,
 		ToggleRight,
 		Users,
@@ -98,7 +98,7 @@
 		{ label: "Schedules", page: Page.Schedules, icon: ClipboardList },
 		{ label: "Payees", page: Page.Payees, icon: Users },
 		{ label: "Bank Sync", page: Page.BankSync, icon: Landmark },
-		{ label: "Rules", page: Page.Rules, icon: SlidersHorizontal },
+		{ label: "Rules", page: Page.Rules, icon: Settings2 },
 		{ label: "Tags", page: Page.Tags, icon: Tag },
 		{ label: "Settings", page: Page.Settings, icon: Settings },
 	];
@@ -132,7 +132,7 @@
 			label: "Sync all accounts",
 			run: () => syncAllAccounts(accounts),
 		},
-		{ icon: SlidersHorizontal, label: "Customize sidebar", run: () => customizeSidebar() },
+		{ icon: Settings2, label: "Customize sidebar", run: () => customizeSidebar() },
 		{
 			icon: Plus,
 			label: "Add new account",

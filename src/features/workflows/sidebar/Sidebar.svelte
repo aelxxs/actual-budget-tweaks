@@ -10,7 +10,7 @@
 	import { createLogger } from "@lib/logger";
 	import { getValue, removeValue, setValue } from "@lib/store";
 	import { lastShown, rememberShown } from "@lib/last-shown";
-	import { Search, SlidersHorizontal } from "@lucide/svelte";
+	import { Search, Settings2 } from "@lucide/svelte";
 	import { onMount, untrack } from "svelte";
 	import ShortcutsBar from "../../appearance/sidebar-shortcuts/ShortcutsBar.svelte";
 	import { portal } from "./actions/portal";
@@ -662,7 +662,7 @@
 				customizeSidebar();
 			}}
 		>
-			<SlidersHorizontal strokeWidth={1.5} />
+			<Settings2 strokeWidth={1.5} />
 			<span>Customize sidebar…</span>
 		</button>
 	</div>

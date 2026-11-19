@@ -7,7 +7,7 @@ import {
 	ClipboardList,
 	LayoutGrid,
 	type LucideIcon,
-	SlidersHorizontal,
+	Settings2,
 	Tag,
 	Users,
 } from "@lucide/svelte";
@@ -25,7 +25,7 @@ const ITEMS: NavItem[] = [
 	{ label: "Schedules", page: Page.Schedules, icon: ClipboardList },
 	{ label: "Payees", page: Page.Payees, icon: Users },
 	{ label: "Tags", page: Page.Tags, icon: Tag },
-	{ label: "Rules", page: Page.Rules, icon: SlidersHorizontal },
+	{ label: "Rules", page: Page.Rules, icon: Settings2 },
 	{ label: "Bank Sync", page: Page.BankSync, icon: Banknote },
 ];
 const LOCKED: readonly Page[] = [Page.Budget, Page.Reports];

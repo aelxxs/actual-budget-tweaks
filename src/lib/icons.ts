@@ -56,7 +56,7 @@ import {
 	Shield,
 	Shuffle,
 	Sigma,
-	SlidersHorizontal,
+	Settings2,
 	Smartphone,
 	Sparkles,
 	Square,
@@ -110,7 +110,7 @@ const LUCIDE = {
 	calendar: { component: Calendar, strokeWidth: 1.5 },
 	eye: { component: Eye, strokeWidth: 1.75 },
 	eyeOff: { component: EyeOff, strokeWidth: 1.75 },
-	sliders: { component: SlidersHorizontal, strokeWidth: 1.75 },
+	sliders: { component: Settings2, strokeWidth: 1.75 },
 	target: { component: Target, strokeWidth: 1.75 },
 	alert: { component: TriangleAlert, strokeWidth: 1.75 },
 	shield: { component: Shield, strokeWidth: 1.75 },
@@ -296,7 +296,7 @@ const DRAWN = {
 	sliders: {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.75,
-		body: '<line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/>',
+		body: '<path d="M14 17H5"/><path d="M19 7h-9"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
 	},
 	chevronLeft: {
 		viewBox: "0 0 16 16",

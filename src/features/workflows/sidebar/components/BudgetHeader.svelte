@@ -11,7 +11,7 @@
 		CloudOff,
 		LogOut,
 		Pencil,
-		SlidersHorizontal,
+		Settings2,
 	} from "@lucide/svelte";
 	import { onMount } from "svelte";
 	import { autofocus } from "../actions/autofocus";
@@ -401,7 +401,7 @@
 					customizeSidebar();
 				}}
 			>
-				<SlidersHorizontal strokeWidth={1.5} />
+				<Settings2 strokeWidth={1.5} />
 				<span>Customize sidebar…</span>
 			</button>
 			<button type="button" class="budget-exit" onclick={onCloseFile}>
