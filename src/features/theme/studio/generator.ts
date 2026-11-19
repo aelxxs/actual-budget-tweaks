@@ -322,7 +322,8 @@ const BUDGET_COLORS: Record<string, [number, number, number]> = {
 	maroon: [15, 0.66, 0.5],
 	peach: [55, 0.76, 0.6],
 	yellow: [90, 0.86, 0.66],
-	green: [150, 0.76, 0.55],
+	// Toward emerald: at 150 a bright green reads as lime.
+	green: [157, 0.72, 0.55],
 };
 
 /**
@@ -330,6 +331,8 @@ const BUDGET_COLORS: Record<string, [number, number, number]> = {
  * is equally vivid: a fixed chroma clips some hues to their edge and leaves others well inside.
  */
 const BUDGET_SHARE = { vivid: 0.88, muted: 0.55 };
+/** Hues with the most room (green, maroon at dark-theme lightness) turn neon near their edge. */
+const BUDGET_CHROMA_CAP = 0.16;
 
 export function generate(r: Recipe): Generated {
 	const dark = r.mode === "dark";
@@ -428,12 +431,22 @@ export function generate(r: Recipe): Generated {
 
 	for (const [key, [h, darkL, lightL]] of Object.entries(BUDGET_COLORS)) {
 		const muted = r.budget === "muted";
-		const hue = muted ? lerpHue(h, H, 0.11 * t) : h;
+		// A dark yellow turns olive; light themes take it toward amber, which stays warm when dark.
+		const own = !dark && key === "yellow" ? 70 : h;
+		const hue = muted ? lerpHue(own, H, 0.11 * t) : own;
 		const share = BUDGET_SHARE[muted ? "muted" : "vivid"];
 		// surface0 too: it's the sidebar's hover when the sidebar matches the page.
 		const bgs = [...surfaces(), K.surface0];
 		const L = dark ? darkL + 0.03 * c : lightL - 0.04 * c;
-		K[key] = readable(L, (l) => share * maxChroma(l, hue), hue, bgs, 4.5, dir);
+		K[key] = readable(
+			L,
+			(l) => Math.min(share * maxChroma(l, hue), BUDGET_CHROMA_CAP),
+			hue,
+			bgs,
+			// Light themes stop past 4.5:1: at the floor, coloured figures read as tinted grey.
+			dark ? 4.5 : 5.5,
+			dir,
+		);
 	}
 
 	return {
