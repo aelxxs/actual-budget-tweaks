@@ -27,7 +27,7 @@
 	} = $props();
 
 	/** Months shown in the strip; a longer runway is summed up beside the headline. */
-	const SHOWN = 6;
+	const SHOWN = 4;
 
 	const monthName = (key: string, style: "long" | "short", year = false) => {
 		const [y, m] = key.split("-").map(Number);
@@ -42,7 +42,7 @@
 	const lastCovered = $derived(plan?.lastCovered ?? -1);
 	const covered = $derived(lastCovered >= 0);
 	const beyond = $derived(lastCovered - (SHOWN - 1));
-	const pct = $derived(need && need > 0 ? Math.round((Math.max(0, held) / need) * 100) : 0);
+	const pct = $derived(need && need > 0 ? Math.floor((Math.max(0, held) / need) * 100) : 0);
 </script>
 
 <Section title="Next month">
@@ -69,7 +69,7 @@
 		<div class="abt-tab-overview-empty-row">{emptyText}</div>
 	{:else}
 		<div class="answer" data-state={covered ? "covered" : "short"}>
-			<Icon name={covered ? "checkCircle" : "calendar"} size={18} />
+			<Icon name={covered ? "checkCircle" : "calendar"} size={16} />
 			<span class="headline">
 				{#if lastCovered > 0}
 					Covered through {monthName(months[lastCovered].key, "short", true)}
@@ -85,16 +85,22 @@
 		</div>
 		<div class="strip" data-state={covered ? "covered" : "short"}>
 			{#each months.slice(0, SHOWN) as slot, i (slot.key)}
-				<div class="slot" class:next={i === 0}>
+				<div class="slot" class:next={i === 0} class:empty={i > 0 && slot.fill === 0}>
 					<span class="bar"><span class="fill" style:width="{slot.fill * 100}%"></span></span>
-					<span class="label">{monthName(slot.key, "short")}</span>
+					<span class="label"
+						>{monthName(slot.key, "short")}{#if i > 0 && slot.fill > 0 && slot.fill < 1}<span
+								class="pct">&nbsp;{Math.floor(slot.fill * 100)}%</span
+							>{/if}</span
+					>
 				</div>
 			{/each}
 		</div>
 		<div class="ends">
 			{#if covered}
-				<span class="abt-privacy-number">{fmtMoney(held)}</span> spare ·
 				<span class="abt-privacy-number">{fmtMoney(need)}</span> for {monthName(monthKey, "short")}
+				{#if held > need}
+					· <span class="abt-privacy-number">{fmtMoney(held - need)}</span> left after
+				{/if}
 			{:else}
 				<span class="abt-privacy-number">{fmtMoney(Math.max(0, held))}</span> of
 				<span class="abt-privacy-number">{fmtMoney(need)}</span> for {monthName(monthKey, "short")}
@@ -121,8 +127,8 @@
 		flex: 1;
 		min-width: 0;
 		color: var(--abt-ink);
-		font-size: var(--abt-text-lg);
-		font-weight: 700;
+		font-size: var(--abt-text-base);
+		font-weight: 600;
 	}
 
 	.beyond {
@@ -134,7 +140,8 @@
 
 	.strip {
 		display: grid;
-		grid-template-columns: repeat(6, 1fr);
+		grid-auto-columns: 1fr;
+		grid-auto-flow: column;
 		gap: var(--abt-space-2);
 		margin: 10px 0 8px;
 		--fill: var(--color-warningText);
@@ -174,13 +181,25 @@
 	}
 	.next .label {
 		color: var(--abt-ink);
-		box-shadow: inset 0 -1px 0 currentColor;
+		font-weight: 600;
+	}
+	/* Months the money doesn't reach yet. */
+	.empty .label {
+		opacity: 0.6;
+	}
+
+	.pct {
+		font-variant-numeric: tabular-nums;
 	}
 
 	.ends {
 		font-size: var(--abt-text-xs);
 		color: var(--abt-muted);
 		font-variant-numeric: tabular-nums;
+	}
+	.ends .abt-privacy-number {
+		color: var(--abt-ink);
+		font-weight: 600;
 	}
 
 	.sub {

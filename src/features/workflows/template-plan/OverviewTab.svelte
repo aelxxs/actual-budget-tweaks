@@ -379,7 +379,12 @@
 
 	{#snippet longGoalsCard()}
 		{@const reached = data.longGoals.filter((g) => g.balance >= g.goal).length}
-		<Section title="Long-term goals" count={`${reached} of ${data.longGoals.length} reached`}>
+		<Section
+			title="Long-term goals"
+			count={reached > 0
+				? `${reached} of ${data.longGoals.length} reached`
+				: `${data.longGoals.length} ${data.longGoals.length === 1 ? "goal" : "goals"}`}
+		>
 			{#each data.longGoals as g (g.id)}
 				{@const done = g.balance >= g.goal}
 				{@const share = Math.min(100, Math.max(0, (g.balance / g.goal) * 100))}
@@ -465,11 +470,21 @@
 					{@const average =
 						income.usualMonths === 1 ? "last month" : `your ${income.usualMonths}-month average`}
 					<p class="abt-tab-overview-note">
-						<span class="abt-privacy-number"
-							>{fmtMoney(Math.abs(income.received - income.usual))}</span
-						>
-						{income.received >= income.usual ? "above" : "below"}
-						{average}
+						{#if income.received >= income.usual}
+							<span class="abt-privacy-number">{fmtMoney(income.received - income.usual)}</span>
+							above {average}
+						{:else if isCurrentMonth || isFutureMonth}
+							<!-- A month still in progress isn't behind; say what usually comes in. -->
+							{income.received > 0 ? "" : "Nothing received yet · "}
+							{#if income.usualMonths === 1}
+								<span class="abt-privacy-number">{fmtMoney(income.usual)}</span> last month
+							{:else}
+								Usually <span class="abt-privacy-number">{fmtMoney(income.usual)}</span> a month
+							{/if}
+						{:else}
+							<span class="abt-privacy-number">{fmtMoney(income.usual - income.received)}</span>
+							below {average}
+						{/if}
 					</p>
 				{/if}
 				{#if income.categories.length > 1}
@@ -618,7 +633,11 @@
 					{#each data.upcomingSchedules as s, i (s.id)}
 						<Row
 							name={s.name}
-							value={s.amount === null ? undefined : fmtMoney(s.amount)}
+							value={s.amount === null
+								? undefined
+								: s.amount > 0
+									? `+${fmtMoney(s.amount)}`
+									: fmtMoney(-s.amount)}
 							tone={s.amount !== null && s.amount > 0 ? "positive" : undefined}
 						>
 							{#snippet leading()}
@@ -816,7 +835,7 @@
 	}
 	.abt-moves-head strong {
 		margin-right: var(--abt-space-1);
-		font-size: var(--abt-text-lg);
+		font-size: var(--abt-text-base);
 		font-weight: 600;
 		color: var(--abt-ink);
 	}
