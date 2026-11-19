@@ -156,12 +156,14 @@
 		}
 		return slot === "dark" ? "Dark theme" : "Light theme";
 	}
+	/** Panels opened from the gallery share its scope, so they stay in the same place. */
+	const panelScope = $derived(galleryOnly ? "app" : "page");
 	function showGallery(node: HTMLElement) {
 		sidepanel.open({
 			title: galleryTitle(),
 			bodyNode: node,
 			key: galleryOnly ? GALLERY_APP_KEY : "theme-gallery",
-			scope: galleryOnly ? "app" : "page",
+			scope: panelScope,
 		});
 	}
 	function inPanel(node: HTMLElement) {
@@ -232,7 +234,12 @@
 			placeholder: `:root {\n  --color-pageBackground: #1e1e2e;\n}`,
 			onCssApply: (css: string) => void saveCssOverride(key, css),
 		});
-		sidepanel.open({ title: "CSS override", bodyNode: overrideEditor.node, key: "css-override" });
+		sidepanel.open({
+			title: "CSS override",
+			bodyNode: overrideEditor.node,
+			key: "css-override",
+			scope: panelScope,
+		});
 	}
 
 	async function selectTheme(key: string) {
@@ -428,6 +435,7 @@
 			bodyNode: creator.node,
 			headerNode: creatorHeader.node,
 			key: "theme-creator",
+			scope: panelScope,
 		});
 	}
 
