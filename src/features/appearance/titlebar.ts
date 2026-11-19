@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { type IconName, iconMask } from "@lib/icons";
+import { type DrawnIconName, iconMask } from "@lib/icons";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { removeValue } from "@lib/store";
 import { mountThemeMenu } from "@features/theme/menu";
@@ -27,7 +27,7 @@ const SYNC = `${BAR} > div > button:has(> div > svg)`;
 const ONLINE = `${BAR}:has(> div > button:not([aria-disabled="true"]) > div > svg)`;
 
 // Swaps a native glyph for ours by masking the svg itself, so React keeps owning its nodes.
-function swap(button: string, name: IconName): string {
+function swap(button: string, name: DrawnIconName): string {
 	return `
 		${button} svg {
 			background: currentColor;

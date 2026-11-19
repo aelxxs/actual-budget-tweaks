@@ -1,5 +1,5 @@
 import { defineSetting } from "@features/types";
-import { type IconName, iconMask } from "@lib/icons";
+import { type DrawnIconName, iconMask } from "@lib/icons";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { findAccountToolbar } from "@lib/actual/native-ui";
 import { ACCOUNT_BALANCE } from "@lib/actual-dom";
@@ -33,7 +33,7 @@ const SEARCH = `${BAR} [${PART_ATTR}="search"]`;
 const ICONS = `${BAR} [${PART_ATTR}="icon"]`;
 const DOTS = 'path[d^="M10 12a2 2 0 1 1"]';
 
-const GLYPHS: [string, IconName][] = [
+const GLYPHS: [string, DrawnIconName][] = [
 	['path[d^="M10 3v2a5 5"]', "refreshCw"],
 	['path[d^="M8.616 1.741"]', "download"],
 	['path[d^="M23 11.5"]', "plus"],

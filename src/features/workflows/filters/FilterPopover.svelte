@@ -5,7 +5,7 @@
 	import Tabs from "@lib/components/Tabs.svelte";
 	import type { Category, CategoryGroup } from "@lib/types/actual-schema";
 	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
-	import { Wallet } from "@lucide/svelte";
+	import { Funnel, Wallet } from "@lucide/svelte";
 	import { onMount, type Snippet } from "svelte";
 	import FilterTree from "./FilterTree.svelte";
 	import {
@@ -108,16 +108,7 @@
 	bind:this={button}
 	onclick={() => (open = !open)}
 >
-	<svg
-		width="16"
-		height="16"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg
-	>
+	<Funnel size={16} />
 </button>
 
 {#if open}

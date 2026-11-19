@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ChevronDown } from "@lucide/svelte";
 	import type { Snippet } from "svelte";
 
 	let {
@@ -54,23 +55,13 @@
 		<span class="trailing" class:abt-privacy-number={privateTrailing}>{@render trailing()}</span>
 	{/if}
 	{#if collapsible}
-		<svg
-			class="chevron"
+		<ChevronDown
+			class="abt-section-chevron"
 			data-open={open}
-			width="12"
-			height="12"
-			viewBox="0 0 12 12"
+			size={12}
+			strokeWidth={2.25}
 			aria-hidden="true"
-		>
-			<polyline
-				points="2,4 6,8 10,4"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.8"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			/>
-		</svg>
+		/>
 	{/if}
 {/snippet}
 
@@ -168,16 +159,16 @@
 		color: var(--color-pageText);
 	}
 
-	.chevron {
+	:global(.abt-section-chevron) {
 		flex-shrink: 0;
 		color: var(--abt-muted);
 		transition: transform 150ms ease;
 	}
-	.chevron[data-open="false"] {
+	:global(.abt-section-chevron[data-open="false"]) {
 		transform: rotate(-90deg);
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.chevron {
+		:global(.abt-section-chevron) {
 			transition: none;
 		}
 	}

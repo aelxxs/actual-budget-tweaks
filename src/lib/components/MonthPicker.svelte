@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+	import { ChevronDown, ChevronLeft, ChevronRight } from "@lucide/svelte";
 	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
 
 	const MONTH_NAMES = [
@@ -115,17 +116,7 @@
 	{:else}
 		<span class="title__long">{label}</span><span class="title__short">{shortLabel}</span>
 	{/if}
-	<svg
-		class="title__chevron"
-		width="14"
-		height="14"
-		viewBox="0 0 24 24"
-		fill="none"
-		stroke="currentColor"
-		stroke-width="2"
-		stroke-linecap="round"
-		stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
-	>
+	<ChevronDown class="abt-month-chevron" size={14} />
 </button>
 
 {#if open}
@@ -145,16 +136,7 @@
 				disabled={minYear !== undefined && pickerYear <= minYear}
 				onclick={() => pickerYear--}
 			>
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg
-				>
+				<ChevronLeft size={14} />
 			</button>
 			<span class="picker__year">{pickerYear}</span>
 			<button
@@ -164,16 +146,7 @@
 				disabled={maxYear !== undefined && pickerYear >= maxYear}
 				onclick={() => pickerYear++}
 			>
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg
-				>
+				<ChevronRight size={14} />
 			</button>
 		</div>
 		<div class="picker__months">
@@ -228,11 +201,11 @@
 	.title[aria-expanded="true"] {
 		background: var(--abt-fill-hover);
 	}
-	.title__chevron {
+	.title :global(.abt-month-chevron) {
 		opacity: 0.45;
 		transition: transform 0.15s;
 	}
-	.title[aria-expanded="true"] .title__chevron {
+	.title[aria-expanded="true"] :global(.abt-month-chevron) {
 		transform: rotate(180deg);
 	}
 
@@ -336,7 +309,7 @@
 	:global(.bmh--squeeze-3) .title__short {
 		display: inline;
 	}
-	.title.is-compact .title__chevron {
+	.title.is-compact :global(.abt-month-chevron) {
 		width: 16px;
 		height: 16px;
 		stroke-width: 2.5;
