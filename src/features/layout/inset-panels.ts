@@ -39,10 +39,6 @@ const CSS = `
 	[data-abt-page-card] {
 		${CARD}
 	}
-	/* Side panels are part of the page card (or a card of their own), so they take its surface. */
-	[data-abt-side-drawer-sidebar] {
-		--abt-panel-bg: var(--color-pageBackground);
-	}
 	[data-abt-sidebar-root] {
 		${CARD}
 		overflow: hidden;
@@ -125,8 +121,9 @@ const SIDE_PANEL = `
 	}
 	${OPEN} > [data-abt-side-drawer-sidebar] {
 		${CARD}
-		/* The page card's surface, so the same border reads the same on both. */
+		/* The page card's surface, so the same border reads the same on both. Page panels keep their own. */
 		background: var(--color-pageBackground);
+		--abt-panel-bg: var(--color-pageBackground);
 	}
 	/* Centred on the gap, as the sidebar's is (its offset starts inside the panel's border). */
 	${OPEN} .abt-side-drawer-resize-handle {
