@@ -15,7 +15,7 @@ export const mobilePageTransitions = defineSetting({
 	description: "How each page appears as you move between them.",
 	group: "Mobile",
 	platform: "mobile",
-	icon: "sparkles",
+	icon: "layers",
 	context: {
 		key: "mobile-page-transitions",
 		defaultValue: "off",

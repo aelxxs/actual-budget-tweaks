@@ -664,7 +664,7 @@
 				"platform": "mobile",
 				"label": "Page transitions",
 				"description": "How each page appears as you move between them.",
-				"icon": "sparkles",
+				"icon": "layers",
 				"group": null,
 				"writes": null,
 				"experimental": false

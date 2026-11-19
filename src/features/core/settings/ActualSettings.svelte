@@ -32,7 +32,7 @@
 		Heart,
 		Power,
 		RotateCcw,
-		Sparkles,
+		Megaphone,
 		Star,
 		Upload,
 	} from "@lucide/svelte";
@@ -500,7 +500,7 @@
 				{@render menuItem(Download, "Import settings…", importSettings)}
 				<div class="abt-menu__sep"></div>
 				{#if hasNotes}
-					{@render menuItem(Sparkles, "What's new", () => void showReleaseNotes(version))}
+					{@render menuItem(Megaphone, "What's new", () => void showReleaseNotes(version))}
 				{/if}
 				{@render menuItem(Compass, "Getting started", () => void openOnboarding())}
 				{@render menuItem(Bug, "Report a bug", () => (showBugModal = true))}

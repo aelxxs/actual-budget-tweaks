@@ -88,7 +88,7 @@
 		action: TemplateAction;
 		/** Shown in Insights Breakdown; cleanup and check aren't. */
 		track?: TrackedAction;
-		icon: "target" | "copy" | "sparkles" | "alert";
+		icon: "target" | "copy" | "cleanup" | "alert";
 		title: string;
 		desc: string;
 	}[] = [
@@ -108,7 +108,7 @@
 		},
 		{
 			action: "cleanup-goal-template",
-			icon: "sparkles",
+			icon: "cleanup",
 			title: "End of month cleanup",
 			desc: "Run the month's cleanup templates",
 		},

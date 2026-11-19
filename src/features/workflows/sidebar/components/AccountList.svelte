@@ -976,7 +976,6 @@
 		height: 2px;
 		border-radius: 2px;
 		background: var(--abt-accent);
-		box-shadow: 0 0 4px var(--abt-accent-4);
 		pointer-events: none;
 	}
 	.group-block.drop-before::after {
