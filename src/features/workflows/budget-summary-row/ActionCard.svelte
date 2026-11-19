@@ -57,7 +57,8 @@
 	type Suggestion = {
 		/** Alert: overspending, plain like a quiet card; danger washes the card for over-assigning. */
 		tone: "danger" | "alert" | "primary" | "quiet";
-		icon: "alert" | "shield" | "target" | "wallet";
+		/** None for the plain actions menu: no icon says "auto-assign" better than its label. */
+		icon?: "alert" | "shield" | "target";
 		title: string;
 		short: string;
 		/** Before the amount, e.g. the overspent category's name. */
@@ -153,7 +154,6 @@
 			}
 			return {
 				tone: "quiet",
-				icon: "wallet",
 				title: "Budget actions",
 				short: "Actions",
 				sub: "Apply, overwrite, or reset templates",
@@ -218,7 +218,6 @@
 		}
 		return {
 			tone: "quiet",
-			icon: "wallet",
 			title: "Auto-assign",
 			short: "Actions",
 			sub: "Copy, average, or reset",
@@ -304,19 +303,23 @@
 		class:is-quiet={suggestion.tone === "quiet"}
 		bind:this={root}
 	>
-		<button
-			type="button"
-			class="abt-btn abt-btn--sm"
-			disabled={busy || loading}
-			title={loading ? undefined : `${suggestion.title}: ${suggestion.sub}`}
-			onclick={() => (suggestion.run ? suggestion.run() : (menuOpen = !menuOpen))}
-		>
-			<Icon name={suggestion.icon} size={13} />
-			<span class="ac-compact__short">{busy ? "Working…" : suggestion.short}</span>
-		</button>
+		<!-- Without a suggestion it would only open the menu, so the chevron stands alone. -->
+		{#if suggestion.run}
+			<button
+				type="button"
+				class="abt-btn abt-btn--sm"
+				disabled={busy || loading}
+				title={loading ? undefined : `${suggestion.title}: ${suggestion.sub}`}
+				onclick={() => suggestion.run?.()}
+			>
+				{#if suggestion.icon}<Icon name={suggestion.icon} size={13} />{/if}
+				<span class="ac-compact__short">{busy ? "Working…" : suggestion.short}</span>
+			</button>
+		{/if}
 		<button
 			type="button"
 			class="abt-btn abt-btn--sm abt-btn--icon"
+			title={suggestion.run ? undefined : "Budget actions"}
 			aria-label="More budget actions"
 			aria-expanded={menuOpen}
 			disabled={busy || loading}
@@ -337,7 +340,7 @@
 		>
 			<span class="abt-label">{suggestion.run ? "Suggested" : "Budget actions"}</span>
 			<span class="ac__title abt-cluster abt-gap-3">
-				<Icon name={suggestion.icon} size={15} />
+				{#if suggestion.icon}<Icon name={suggestion.icon} size={15} />{/if}
 				{busy ? "Working…" : suggestion.title}
 				{#if suggestion.run && !busy}<span class="ac__go"
 						><Icon name="chevronRight" size={14} /></span
