@@ -7,7 +7,7 @@
 		tab === "overview"
 			? "Loading overview"
 			: tab === "priority"
-				? "Computing template plan"
+				? "Computing priority plan"
 				: "Computing breakdown",
 	);
 </script>

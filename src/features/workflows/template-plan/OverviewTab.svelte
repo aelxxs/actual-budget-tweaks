@@ -102,8 +102,7 @@
 	function goalOutlook(g: LongGoalRow): { text: string; behind?: boolean } {
 		if (g.balance >= g.goal) {
 			return {
-				text:
-					g.balance > g.goal ? `+${fmtMoney(g.balance - g.goal)} over target` : "Target reached",
+				text: g.balance > g.goal ? `+${fmtMoney(g.balance - g.goal)} over goal` : "Goal reached",
 			};
 		}
 		if (g.plan && g.monthly < g.plan.perMonth) {
@@ -322,7 +321,7 @@
 				? (data.aheadTemplateNeeds ?? [])
 				: Array.from({ length: 11 }, () => coverageTarget ?? 0)}
 			emptyText={coverageTarget === null
-				? "Couldn't preview next month's goal templates. Refresh to try again."
+				? "Couldn't preview next month's goals. Refresh to try again."
 				: "Not enough spending history to compare next month against."}
 		/>
 	{/snippet}
@@ -340,7 +339,7 @@
 	{#snippet goalsCard()}
 		{#if data.underfundedGoals.length > 0}
 			<Section
-				title="Targets to fund"
+				title="Goals to fund"
 				count={`${data.fullyFundedGoalCount} of ${data.totalGoalCount} funded`}
 			>
 				{#each allTargets ? data.underfundedGoals : data.underfundedGoals.slice(0, TARGETS_SHOWN) as cat (cat.id)}
@@ -684,8 +683,8 @@
 						: id === "long-goals"
 							? "Shows when a category has a long-term goal"
 							: data.totalGoalCount > 0
-								? "Every target is funded, so it's hidden for now"
-								: "Shows when a category has a target to fund"}
+								? "Every goal is funded, so it's hidden for now"
+								: "Shows when a category has a goal to fund"}
 			</div>
 		</Section>
 	{/snippet}

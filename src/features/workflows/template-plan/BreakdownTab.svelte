@@ -42,7 +42,7 @@
 	<TabSkeleton tab="breakdown" />
 {:else if !breakdownState}
 	<div class="abt-tab-empty">
-		Apply templates, fund targets, or cover overspending to see a breakdown here.
+		Apply templates, fund goals, or cover overspending to see a breakdown here.
 	</div>
 {:else}
 	{@const note = breakdownState.ctx.notification}

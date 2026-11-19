@@ -126,7 +126,7 @@
 	{/if}
 
 	<div class="pop__section abt-label">
-		<span>{entry.directives.length === 1 ? "Template" : "Templates"}</span>
+		<span>{entry.directives.length === 1 ? "Automation" : "Automations"}</span>
 		{#if sharedPriority != null}
 			<span class="pop__prio">Priority {sharedPriority}</span>
 		{/if}
@@ -151,7 +151,7 @@
 									{:else if d.monthly != null}
 										{fmtMoney(Math.round(d.monthly * 100))} a month
 									{:else}
-										Simple template
+										Simple automation
 									{/if}
 								</span>
 							{:else if d.type === "average"}

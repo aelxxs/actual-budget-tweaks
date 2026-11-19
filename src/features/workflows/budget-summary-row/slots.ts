@@ -1,7 +1,7 @@
 /** The cards that can fill the summary row's two middle slots. */
 export const SLOT_CARDS = [
 	{ id: "spent", label: "Spent" },
-	{ id: "targets", label: "Targets funded" },
+	{ id: "targets", label: "Goals funded" },
 	{ id: "runway", label: "Months ahead" },
 	{ id: "pinned", label: "Pinned category" },
 	{ id: "income", label: "Income" },

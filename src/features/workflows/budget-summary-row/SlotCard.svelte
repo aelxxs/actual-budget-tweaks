@@ -210,7 +210,7 @@
 			{:else if id === "targets"}
 				{#if totals.goals}
 					{@const needs = totals.short.reduce((t, c) => t + c.shortfall, 0)}
-					<span class="sr__row" title="{totals.funded} of {totals.goals} targets funded">
+					<span class="sr__row" title="{totals.funded} of {totals.goals} goals funded">
 						<span class="sr__bar"><i style:width="{pct(totals.funded, totals.goals)}%"></i></span>
 						<span class="sr__count abt-num"
 							><RollingNumber
@@ -229,7 +229,7 @@
 								· <span class="abt-privacy-number">{fmtMoney(totals.fromMoves)}</span> from moving money
 							{/if}
 						{:else}
-							All targets met
+							All goals met
 							{#if totals.settled}
 								· <span class="abt-privacy-number">{fmtMoney(totals.fromMoves)}</span> moved to other
 								categories
@@ -238,7 +238,7 @@
 					</span>
 				{:else}
 					<span class="sr__value abt-num sr__none">None</span>
-					<span class="sr__sub">No targets due this month</span>
+					<span class="sr__sub">No goals due this month</span>
 				{/if}
 			{:else if id === "runway"}
 				{#if tracking}

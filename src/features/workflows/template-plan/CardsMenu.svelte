@@ -335,14 +335,14 @@
 		<div
 			class="row fixed"
 			role="group"
-			aria-label="Templates bar"
+			aria-label="Automations bar"
 			data-row={TEMPLATES_BAR}
 			onpointerenter={spotlight(TEMPLATES_BAR)}
 			onpointerleave={spotlight(null)}
 		>
 			<span class="tile" data-off={!barShown || undefined}><ListChecks size={14} /></span>
 			<label class="toggle">
-				<span class="name">Templates bar</span>
+				<span class="name">Automations bar</span>
 				<Switch checked={barShown} onCheckedChange={(on) => setShown(TEMPLATES_BAR, on)} />
 			</label>
 		</div>

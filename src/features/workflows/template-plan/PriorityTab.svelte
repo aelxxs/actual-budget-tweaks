@@ -48,7 +48,7 @@
 			return "parsed estimate";
 		}
 		if (row.templateCount > 1) {
-			return `${row.templateCount} templates`;
+			return `${row.templateCount} automations`;
 		}
 		return null;
 	}
@@ -60,7 +60,7 @@
 	<div class="abt-tab-empty">{data.reason || "Unavailable"}</div>
 {:else}
 	<Section title="Plan summary">
-		<Row name="Template demand" value={fmtMoney(data.totalRequestedCents ?? 0)} />
+		<Row name="Automation demand" value={fmtMoney(data.totalRequestedCents ?? 0)} />
 		<Row
 			name="Will allocate"
 			value={fmtMoney(data.totalAllocatedCents ?? 0)}
@@ -78,7 +78,7 @@
 		/>
 
 		{#if !data.tiers || data.tiers.length === 0}
-			<Callout tone="positive">No categories have a budget template.</Callout>
+			<Callout tone="positive">No categories have an automation.</Callout>
 		{:else if data.watermark == null}
 			<Callout tone="positive">
 				All {data.tiers.length} tier{data.tiers.length === 1 ? "" : "s"} funded by the overwrite plan.

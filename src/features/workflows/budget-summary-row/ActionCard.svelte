@@ -209,7 +209,7 @@
 			return {
 				tone: "primary",
 				icon: "target",
-				title: "Fund targets",
+				title: "Fund goals",
 				short: "Fund",
 				amount: fundable,
 				sub: "from To Budget",
@@ -397,8 +397,8 @@
 			<div class="am__group">Fill this month</div>
 			{@render row(
 				"target",
-				"Fund underfunded targets",
-				"Move each target's shortfall from To Budget",
+				"Fund underfunded goals",
+				"Move each goal's shortfall from To Budget",
 				fundable,
 				fundable <= 0,
 				() => perform(() => tracked("fund", () => fundTargets(sheet, short))),

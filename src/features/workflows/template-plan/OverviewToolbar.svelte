@@ -16,11 +16,11 @@
 			data-tone={remaining === null ? null : toApply ? "warn" : "ok"}
 		>
 			{#if !data.hasTemplates}
-				No templates
+				No automations
 			{:else if remaining === null}
 				Templates
 			{:else if toApply}
-				Templates · <span class="abt-privacy-number abt-num">{fmtMoney(remaining)}</span> to apply
+				Automations · <span class="abt-privacy-number abt-num">{fmtMoney(remaining)}</span> to apply
 			{:else}
 				Templates · all applied
 			{/if}

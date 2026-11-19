@@ -691,7 +691,7 @@ export const monthCards = defineSetting({
 	icon: "layoutDashboard",
 	group: "Budget",
 	writes:
-		"Full runs budget templates in tracking mode; envelope mode can also fund targets or cover overspending from To Budget.",
+		"Full runs budget templates in tracking mode; envelope mode can also fund goals or cover overspending from To Budget.",
 	context: {
 		key: "budget-summary-row",
 		defaultValue: "light",

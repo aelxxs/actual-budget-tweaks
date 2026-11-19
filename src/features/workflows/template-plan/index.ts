@@ -1041,7 +1041,7 @@ function tick(): void {
 export const templatePlan = defineSetting({
 	type: "checkbox",
 	label: "Budget insights",
-	description: "Shows the month's summary, templates and plan in a side panel.",
+	description: "Shows the month's summary, goals and plan in a side panel.",
 	icon: "panelRight",
 	group: "Budget",
 	writes: "Applies the month's budget templates when you click Apply.",

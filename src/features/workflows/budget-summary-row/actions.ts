@@ -141,13 +141,13 @@ export async function fundTargets(sheet: string, short: Shortfall[]): Promise<Ac
 	}
 	const full = short.filter((s) => (adds.get(s.id) ?? 0) >= s.shortfall).length;
 	const partial = adds.size - full;
-	const total = plural(short.length, "target", "targets");
+	const total = plural(short.length, "goal", "goals");
 	const message =
 		full === short.length
 			? `Funded ${total}`
 			: full
 				? `Funded ${full} of ${total}${partial ? `, and part of ${partial} more` : ""}`
-				: `Funded part of ${plural(partial, "target", "targets")}`;
+				: `Funded part of ${plural(partial, "goal", "goals")}`;
 	return { message, undoSteps: adds.size };
 }
 

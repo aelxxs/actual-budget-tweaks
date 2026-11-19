@@ -20,7 +20,7 @@
 			case "apply-group":
 				return "Applied templates (group)";
 			case "fund":
-				return "Funded targets";
+				return "Funded goals";
 			case "cover":
 				return "Covered overspending";
 			default:

@@ -60,7 +60,7 @@ export const quietCategoryIcons = defineSetting({
 	type: "checkbox",
 	label: "Quiet category icons",
 	description:
-		"Hides the template and notes icons until you hover. Notes icons stay where there are notes.",
+		"Hides the automation and notes icons until you hover. Notes icons stay where there are notes.",
 	group: "Categories",
 	icon: "note",
 	context: {
