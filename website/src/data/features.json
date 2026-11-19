@@ -230,6 +230,18 @@
 				"group": "Amounts",
 				"writes": null,
 				"experimental": false
+			},
+			{
+				"key": "keyboard-shortcuts",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Keyboard shortcuts",
+				"description": "Single keys for the sidebar, Insights, Reconcile and Theme Studio. Ignored while you type.",
+				"icon": "keyboard",
+				"group": "Keyboard",
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},

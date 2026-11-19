@@ -28,6 +28,7 @@
 	import {
 		adoptOldCollapsed,
 		isSidebarCollapsed,
+		onToggleRequest,
 		setSidebarCollapsed,
 		undoAutoCollapse,
 		watchSidebarCollapsed,
@@ -115,6 +116,8 @@
 		}
 		setSidebarCollapsed(true);
 	}
+	const togglePanel = () => (isCollapsed ? expandSidebar() : collapseSidebar());
+	$effect(() => onToggleRequest(togglePanel));
 
 	// ---- layout: "standard" (text nav + accounts, the original design) vs
 	// "split" (icon-only activity bar + a dedicated accounts panel). Chosen
@@ -555,7 +558,7 @@
 				split
 				panelCollapsed={isCollapsed}
 				{groupAccounts}
-				onTogglePanel={() => (isCollapsed ? expandSidebar() : collapseSidebar())}
+				onTogglePanel={togglePanel}
 			/>
 		</div>
 		<!-- Hidden rather than removed, so reopening it doesn't rebuild its groups and shortcut rows. -->

@@ -33,6 +33,24 @@ export function watchSidebarCollapsed(listener: (collapsed: boolean) => void): (
 	return () => listeners.delete(listener);
 }
 
+// The sidebar's own toggle, which also handles narrow windows; set while it's mounted.
+let toggler: (() => void) | null = null;
+
+export function onToggleRequest(toggle: () => void): () => void {
+	toggler = toggle;
+	return () => {
+		if (toggler === toggle) {
+			toggler = null;
+		}
+	};
+}
+
+/** Collapses or expands the live sidebar; false when it isn't on the page. */
+export function toggleSidebar(): boolean {
+	toggler?.();
+	return toggler !== null;
+}
+
 /** A collapsed state saved in the extension's storage before, moved here once. */
 export async function adoptOldCollapsed(): Promise<void> {
 	if (await getValue<boolean | null>(OLD_COLLAPSED_KEY, null)) {

@@ -63,6 +63,10 @@
 	{/if}
 	<Switch id={switchId} checked={value} onCheckedChange={handleChange} />
 </label>
+{#if setting.details && value}
+	{@const Details = setting.details}
+	<div class="details" class:indent={!!icon}><Details /></div>
+{/if}
 
 <style>
 	.switch-row {
@@ -78,6 +82,14 @@
 
 	.guide:hover {
 		text-decoration: underline;
+	}
+
+	.details {
+		margin-bottom: var(--abt-space-3);
+	}
+	/* Lines up with the label, past the row's icon. */
+	.details.indent {
+		margin-left: calc(15px + var(--abt-space-3)); /* raw: the row icon's size */
 	}
 
 	.switch-row:hover {

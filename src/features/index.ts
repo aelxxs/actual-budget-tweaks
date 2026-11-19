@@ -54,6 +54,7 @@ import { monthCards } from "./workflows/budget-summary-row";
 import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { incomeBreakdown } from "./workflows/income-breakdown";
+import { keyboardShortcuts } from "./workflows/keyboard-shortcuts";
 import { modernReconcile } from "./workflows/reconcile";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
@@ -126,6 +127,7 @@ export const scriptSections: SettingsSection[] = [
 				],
 			},
 			{ label: "Amounts", items: [colorAmounts, privacyStyle] },
+			{ label: "Keyboard", items: [keyboardShortcuts] },
 		],
 	},
 	{

@@ -1,5 +1,6 @@
 import {
 	Columns3,
+	Keyboard,
 	AppWindow,
 	Archive,
 	BadgeAlert,
@@ -101,6 +102,7 @@ const LUCIDE = {
 	star: { component: Star, strokeWidth: 1.5 },
 	image: { component: Image, strokeWidth: 1.5 },
 	cog: { component: Settings, strokeWidth: 1.5 },
+	keyboard: { component: Keyboard, strokeWidth: 1.5 },
 	pencil: { component: Pencil },
 	shuffle: { component: Shuffle, strokeWidth: 1.75 },
 	calculator: { component: Calculator, strokeWidth: 1.5 },

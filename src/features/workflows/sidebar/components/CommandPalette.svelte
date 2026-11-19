@@ -73,6 +73,11 @@
 	import StatusIcon from "./StatusIcon.svelte";
 	import { DEFAULT_THEME } from "@features/theme/defaults";
 	import { openThemeStudio } from "@features/theme/studio/open";
+	import {
+		type ShortcutId,
+		keyLabels,
+		shortcutsState,
+	} from "@features/workflows/keyboard-shortcuts/bindings.svelte";
 
 	// Matches theme.ts's setting key — this palette applies/persists the same
 	// setting the full ThemeCustomizer settings panel reads from, so they stay in sync.
@@ -145,7 +150,13 @@
 		| { kind: "reconcile"; account: SidebarAccount }
 		| { kind: "report"; report: CustomReport }
 		| { kind: "nav"; label: string; page: Page; icon: typeof LayoutGrid }
-		| { kind: "action"; label: string; icon: typeof LayoutGrid; run: () => void }
+		| {
+				kind: "action";
+				label: string;
+				icon: typeof LayoutGrid;
+				run: () => void;
+				shortcut?: ShortcutId;
+		  }
 		| { kind: "view-all"; label: string; target: SubPage }
 		| { kind: "subpage"; label: string; icon: typeof LayoutGrid; target: SubPage }
 		| { kind: "theme"; key: string; name: string; swatch: string[] }
@@ -346,7 +357,7 @@
 				? [{ label: "Spending Calendar", icon: CalendarDays, run: openCalendar }]
 				: []),
 			...(enabled[templatePlan.context.key]
-				? [{ label: "Insights", icon: PanelLeft, run: showInsights }]
+				? [{ label: "Insights", icon: PanelLeft, run: showInsights, shortcut: "insights" as const }]
 				: []),
 			...(enabled[graphView.context.key]
 				? [{ label: "Graph", icon: Network, run: openGraphView }]
@@ -421,6 +432,7 @@
 									label: "Create theme",
 									icon: Paintbrush,
 									run: () => openThemeStudio(),
+									shortcut: "studio" as const,
 								},
 							]
 						: []),
@@ -752,6 +764,12 @@
 							{:else}
 								<span class="cp-item-glyph cp-item-icon"><item.icon strokeWidth={1.5} /></span>
 								<span class="cp-item-label">{@render hl(item.label)}</span>
+								{#if item.shortcut && shortcutsState.on}
+									<span class="cp-keys">
+										{#each keyLabels(item.shortcut) as key (key)}<kbd class="abt-kbd">{key}</kbd
+											>{/each}
+									</span>
+								{/if}
 							{/if}
 						</button>
 					{/each}
@@ -935,6 +953,12 @@
 	.cp-math {
 		font-variant-numeric: tabular-nums;
 		font-weight: 600;
+	}
+
+	.cp-keys {
+		display: flex;
+		flex-shrink: 0;
+		gap: var(--abt-space-1);
 	}
 
 	.cp-item-meta {

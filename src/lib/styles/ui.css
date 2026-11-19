@@ -253,6 +253,23 @@
 	line-height: 1.5;
 }
 
+/* A key to press, e.g. `<kbd class="abt-kbd">I</kbd>`. */
+.abt-kbd {
+	flex-shrink: 0;
+	min-width: 18px;
+	padding: 0 var(--abt-space-2);
+	border: 1px solid var(--abt-ink-4);
+	border-bottom-width: 2px;
+	border-radius: var(--abt-radius-sm);
+	background: var(--abt-ink-2);
+	color: var(--abt-muted);
+	font: inherit;
+	font-size: var(--abt-text-xs);
+	font-weight: 600;
+	line-height: 1.5;
+	text-align: center;
+}
+
 /* Placeholder for content that's loading; size it with width and height. */
 .abt-skeleton {
 	display: block;

@@ -73,6 +73,8 @@ export interface SelectSetting<C extends SettingContext> extends BaseSetting<C> 
 
 export interface CheckboxSetting<C extends SettingContext> extends BaseSetting<C> {
 	type: "checkbox";
+	/** Shown under the description while it's on, e.g. the keys it adds. */
+	details?: Component;
 }
 
 export interface CustomSetting<C extends SettingContext> {

@@ -152,6 +152,11 @@ function onBudgetTypeChange(): void {
 	}
 }
 
+/** Whether the setting is on and started in the view Actual shows now. */
+export function isRunning(setting: Setting): boolean {
+	return setting.type !== "core" && !!active.get(setting.context.key)?.stop;
+}
+
 /** Called by settings-panel UI (Checkbox/Select) when the user changes a value. */
 export async function applySettingChange(setting: Setting, newValue: unknown) {
 	if (setting.type === "core" || setting.type === "custom") {
