@@ -39,6 +39,10 @@ const CSS = `
 	[data-abt-page-card] {
 		${CARD}
 	}
+	/* Side panels are part of the page card (or a card of their own), so they take its surface. */
+	[data-abt-side-drawer-sidebar] {
+		--abt-panel-bg: var(--color-pageBackground);
+	}
 	[data-abt-sidebar-root] {
 		${CARD}
 		overflow: hidden;
