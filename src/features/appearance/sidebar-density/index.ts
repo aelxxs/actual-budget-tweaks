@@ -13,7 +13,7 @@ export const sidebarDensity = defineSetting({
 	label: "Sidebar density",
 	description: "Sets the spacing in the live sidebar.",
 	group: "Sidebar",
-	icon: "sliders",
+	icon: "unfoldVertical",
 	context: {
 		key: "actual-sidebar-account-spacing",
 		defaultValue: ".15rem",

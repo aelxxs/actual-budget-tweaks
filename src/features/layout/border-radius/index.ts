@@ -6,7 +6,7 @@ export const borderRadius = defineSetting({
 	label: "Rounded corners",
 	description: "Sets how round cards and buttons are.",
 	group: "General",
-	icon: "square",
+	icon: "squareRoundCorner",
 	platform: "all",
 	context: {
 		key: "border-radius",

@@ -18,7 +18,7 @@ export const alternatingTransactionRows = defineSetting({
 	label: "Striped rows",
 	description: "Shades every other row in the transaction table.",
 	group: "Transactions",
-	icon: "rows",
+	icon: "rows3",
 	preview: AlternatingRowsPreview,
 	context: {
 		key: "alternating-transaction-rows",

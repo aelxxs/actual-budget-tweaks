@@ -130,7 +130,7 @@ export const modernReconcile = defineSetting({
 	label: "Reconcile panel",
 	description: "Reconciles in a side panel that tracks the difference as you clear transactions.",
 	group: "General",
-	icon: "shield",
+	icon: "scale",
 	writes:
 		"Clears transactions you tick, adds an adjustment if you ask, and locks them when you finish.",
 	guide: "/guides/modern-reconcile",
