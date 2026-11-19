@@ -504,7 +504,7 @@ const FULL_CSS = `
 	}
 	/* A step heavier than Actual's 400, so the plain card's figure still leads the row. */
 	${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
-		font-weight: 500 !important;
+		font-weight: 600 !important;
 		line-height: 1.1;
 	}
 	/* A line under the figure saying what it means, like the other cards' second lines. */
