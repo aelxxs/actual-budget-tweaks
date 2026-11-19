@@ -12,7 +12,7 @@
 	import { mount, onMount, unmount, untrack } from "svelte";
 	import { mountToPanelBody, type Mounted } from "@lib/dom/svelte";
 	import { accountIconPicker } from "@features/appearance/account-icon-picker";
-	import { getEmojiAssetUrl, loadIconCache } from "@lib/account-icons";
+	import { loadIconCache } from "@lib/account-icons";
 	import { categoryColorDots } from "@features/appearance/category-color-dots";
 	import { transactionInspector } from "@features/workflows/transaction-inspector";
 	import Inspector from "@features/workflows/transaction-inspector/Inspector.svelte";
@@ -144,8 +144,8 @@
 	// Transaction rows open the inspector over the node's panel, when the inspector is on.
 	let canInspect = false;
 	let inspecting: Mounted | null = null;
-	// Account icons by account id, when Account icons is on; emoji sit inset, images fill the square.
-	let icons = $state.raw(new Map<string, { href: string; emoji: boolean }>());
+	// Account icons by account id, when Account icons is on: an emoji, drawn as text, or an image.
+	let icons = $state.raw(new Map<string, { emoji: string } | { href: string }>());
 
 	let data: GraphData | null = null;
 	// The range as loaded; the filters narrow it into `data` without loading again.
@@ -171,7 +171,7 @@
 		}
 		const href =
 			n.kind === "category" ? categoryIconUrl(n.id.slice("category:".length)) : undefined;
-		return href ? { href, emoji: false } : undefined;
+		return href ? { href } : undefined;
 	};
 	// Big enough for an icon to read, where the account or category has one.
 	const radius = (n: GraphNode) =>
@@ -716,9 +716,7 @@
 						icons = new Map(
 							Object.entries(cache).map(([id, icon]) => [
 								id,
-								icon.type === "emoji"
-									? { href: getEmojiAssetUrl(icon.value), emoji: true }
-									: { href: icon.value, emoji: false },
+								icon.type === "emoji" ? { emoji: icon.value } : { href: icon.value },
 							]),
 						);
 					}
@@ -1010,24 +1008,32 @@
 				{@const icon = iconOf(n)}
 				{#if icon}
 					{@const r = radius(n)}
-					{@const inset = icon.emoji ? r * 0.3 : 0}
-					<clipPath id="gv-clip-{layer}-{n.id}">
-						<rect x={-r} y={-r} width={r * 2} height={r * 2} rx={r * 0.35} />
-					</clipPath>
-					<image
-						href={icon.href}
-						x={-r + inset}
-						y={-r + inset}
-						width={(r - inset) * 2}
-						height={(r - inset) * 2}
-						clip-path="url(#gv-clip-{layer}-{n.id})"
-						preserveAspectRatio="xMidYMid slice"
-					/>
+					{#if "emoji" in icon}
+						<text
+							class="gv__emoji"
+							font-size={r * 1.3}
+							text-anchor="middle"
+							dominant-baseline="central">{icon.emoji}</text
+						>
+					{:else}
+						<clipPath id="gv-clip-{layer}-{n.id}">
+							<rect x={-r} y={-r} width={r * 2} height={r * 2} rx={r * 0.35} />
+						</clipPath>
+						<image
+							href={icon.href}
+							x={-r}
+							y={-r}
+							width={r * 2}
+							height={r * 2}
+							clip-path="url(#gv-clip-{layer}-{n.id})"
+							preserveAspectRatio="xMidYMid slice"
+						/>
+					{/if}
 				{/if}
 			{:else}
 				<circle class="gv__shape" r={radius(n)} data-kind={n.kind} style:fill={colorOf(n)} />
 				{@const icon = iconOf(n)}
-				{#if icon}
+				{#if icon && "href" in icon}
 					{@const r = radius(n)}
 					<clipPath id="gv-clip-{layer}-{n.id}">
 						<circle {r} />
@@ -1585,6 +1591,11 @@
 	.gv__dim {
 		fill: var(--color-pageBackground);
 		opacity: 0.8;
+	}
+
+	.gv__emoji {
+		pointer-events: none;
+		user-select: none;
 	}
 
 	.gv__shape {

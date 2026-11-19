@@ -1,10 +1,5 @@
 <script lang="ts">
-	import {
-		type AccountIconData,
-		getEmojiAssetUrl,
-		loadIconCache,
-		watchAccountIcons,
-	} from "@lib/account-icons";
+	import { type AccountIconData, loadIconCache, watchAccountIcons } from "@lib/account-icons";
 	import StatusIcon from "@features/workflows/sidebar/components/StatusIcon.svelte";
 	import { type SidebarAccount, loadSidebarAccounts } from "@features/workflows/sidebar/lib/data";
 	import {
@@ -114,13 +109,6 @@
 		return bucketOf(account, groupState.assignments, groupState.groups);
 	}
 
-	function iconUrl(icon: AccountIconData | undefined): string | null {
-		if (!icon) {
-			return null;
-		}
-		return icon.type === "emoji" ? getEmojiAssetUrl(icon.value) : icon.value;
-	}
-
 	function tone(amount: number): string {
 		return amount > 0 ? "positive" : amount < 0 ? "negative" : "zero";
 	}
@@ -132,15 +120,17 @@
 {/snippet}
 
 {#snippet row(account: SidebarAccount)}
-	{@const url = iconUrl(icons[account.id])}
+	{@const icon = icons[account.id] as AccountIconData | undefined}
 	<button type="button" class="acct-row" onclick={() => navigate(`/accounts/${account.id}`)}>
 		<span class="acct-status">
 			{#if account.status !== "manual"}
 				<StatusIcon status={syncing.has(account.id) ? "syncing" : account.status} />
 			{/if}
 		</span>
-		{#if url}
-			<img class="acct-icon" src={url} alt="" />
+		{#if icon?.type === "emoji"}
+			<span class="abt-emoji acct-emoji" aria-hidden="true">{icon.value}</span>
+		{:else if icon}
+			<img class="acct-icon" src={icon.value} alt="" />
 		{/if}
 		<span class="acct-name">{account.name}</span>
 		{@render amount(account.balance)}
@@ -288,6 +278,10 @@
 		width: 17px;
 		flex-shrink: 0;
 		margin: 0 calc(-1 * var(--abt-space-2));
+	}
+
+	.acct-emoji {
+		--abt-emoji-size: 20px;
 	}
 
 	.acct-icon {

@@ -198,6 +198,9 @@
 	flex-shrink: 0;
 	margin-left: -1px;
 }
+.sidebar .acct-icon-emoji {
+	--abt-emoji-size: 14px;
+}
 .sidebar .acct-icon-img {
 	width: 16px;
 	height: 16px;

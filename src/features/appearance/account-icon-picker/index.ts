@@ -4,7 +4,6 @@ import { createElement } from "@lib/dom/dom";
 import { watchDom } from "@lib/dom/dom-watcher";
 import {
 	cachedIcons,
-	getEmojiAssetUrl,
 	loadIconCache,
 	watchAccountIcons,
 	type AccountIconData,
@@ -50,9 +49,6 @@ function clearTitle(el: HTMLElement): void {
 	delete el.dataset.abtBaseText;
 }
 
-const iconUrl = (iconData: AccountIconData) =>
-	iconData.type === "emoji" ? getEmojiAssetUrl(iconData.value) : iconData.value;
-
 function renderTitle(el: HTMLElement, iconData: AccountIconData): void {
 	const signature = `${iconData.type}:${iconData.value}`;
 	const current = el.querySelector(`.${ACCOUNT_ICON_IMG_CLASS}`);
@@ -67,28 +63,31 @@ function renderTitle(el: HTMLElement, iconData: AccountIconData): void {
 	el.dataset.abtBaseText = baseText;
 	el.dataset.abtIconSignature = signature;
 
-	const icon = createElement("img", {
-		className: ACCOUNT_ICON_IMG_CLASS,
-		src: iconUrl(iconData),
-		alt: iconData.type === "emoji" ? iconData.value : "Account icon",
-		width: ICON_SIZE,
-		height: ICON_SIZE,
-		style: {
-			width: `${ICON_SIZE}px`,
-			height: `${ICON_SIZE}px`,
-			objectFit: "contain",
-			flexShrink: "0",
-			marginRight: "0.25em",
-			borderRadius: iconData.type === "emoji" ? "0" : "2px",
-			pointerEvents: "none",
-		},
-	}) as HTMLImageElement;
+	const icon =
+		iconData.type === "emoji"
+			? createElement("span", {
+					className: `${ACCOUNT_ICON_IMG_CLASS} abt-emoji`,
+					style: { marginRight: "0.25em", pointerEvents: "none" },
+				})
+			: createElement("img", {
+					className: ACCOUNT_ICON_IMG_CLASS,
+					src: iconData.value,
+					alt: "Account icon",
+					width: ICON_SIZE,
+					height: ICON_SIZE,
+					style: {
+						width: `${ICON_SIZE}px`,
+						height: `${ICON_SIZE}px`,
+						objectFit: "contain",
+						flexShrink: "0",
+						marginRight: "0.25em",
+						borderRadius: "2px",
+						pointerEvents: "none",
+					},
+				});
 	if (iconData.type === "emoji") {
-		icon.onerror = () => {
-			const glyph = createElement("span", { className: ACCOUNT_ICON_IMG_CLASS });
-			glyph.textContent = iconData.value;
-			icon.replaceWith(glyph);
-		};
+		icon.textContent = iconData.value;
+		icon.style.setProperty("--abt-emoji-size", `${ICON_SIZE - 4}px`);
 	}
 	const text = document.createElement("span");
 	text.textContent = baseText;
@@ -114,36 +113,38 @@ function syncTitle(): void {
 	}
 }
 
-function cellIcon(iconData: AccountIconData, url: string): HTMLElement {
-	const img = document.createElement("img");
-	img.className = CELL_ICON_CLASS;
-	img.alt = "";
-	img.src = url;
-	img.dataset.abtIcon = url;
+/** Which icon an element shows, so a changed one is redrawn and an unchanged one left alone. */
+const iconKey = (iconData: AccountIconData) => `${iconData.type}:${iconData.value}`;
+
+function cellIcon(iconData: AccountIconData): HTMLElement {
+	let icon: HTMLElement;
 	if (iconData.type === "emoji") {
-		img.onerror = () => {
-			const glyph = document.createElement("span");
-			glyph.className = CELL_ICON_CLASS;
-			glyph.dataset.abtIcon = url;
-			glyph.textContent = iconData.value;
-			img.replaceWith(glyph);
-		};
+		icon = document.createElement("span");
+		icon.className = `${CELL_ICON_CLASS} abt-emoji`;
+		icon.textContent = iconData.value;
+	} else {
+		const img = document.createElement("img");
+		img.className = CELL_ICON_CLASS;
+		img.alt = "";
+		img.src = iconData.value;
+		icon = img;
 	}
-	return img;
+	icon.dataset.abtIcon = iconKey(iconData);
+	return icon;
 }
 
 function syncCells(): void {
 	document.dispatchEvent(new CustomEvent("abt:api:mark-account-ids"));
 	for (const cell of document.querySelectorAll(`${ACCOUNT_CELL}[${ACCOUNT_ID_ATTR}]`)) {
 		const iconData = cachedIcons()?.[cell.getAttribute(ACCOUNT_ID_ATTR) ?? ""];
-		const url = iconData ? iconUrl(iconData) : null;
+		const key = iconData ? iconKey(iconData) : null;
 		const shown = cell.querySelector<HTMLElement>(`.${CELL_ICON_CLASS}`);
-		if ((shown?.dataset.abtIcon ?? null) === url) {
+		if ((shown?.dataset.abtIcon ?? null) === key) {
 			continue;
 		}
 		shown?.remove();
-		if (iconData && url) {
-			cell.querySelector(":scope > div > span")?.prepend(cellIcon(iconData, url));
+		if (iconData) {
+			cell.querySelector(":scope > div > span")?.prepend(cellIcon(iconData));
 		}
 	}
 }
@@ -184,18 +185,23 @@ function syncMobileRows(): void {
 	for (const el of rows) {
 		const id = accountIds.get(el.textContent?.trim() ?? "");
 		const iconData = id ? cachedIcons()?.[id] : undefined;
-		const url = iconData ? iconUrl(iconData) : null;
-		const value = url ? `url("${url.replace(/"/g, "%22")}")` : "";
-		if (el.style.getPropertyValue("--abt-account-icon") === value) {
+		const key = iconData ? iconKey(iconData) : "";
+		if ((el.getAttribute(MOBILE_ICON_ATTR) ?? "") === key) {
 			continue;
 		}
-		if (value) {
-			el.style.setProperty("--abt-account-icon", value);
-			el.setAttribute(MOBILE_ICON_ATTR, "");
-		} else {
-			el.style.removeProperty("--abt-account-icon");
+		el.style.removeProperty("--abt-account-icon");
+		el.style.removeProperty("--abt-account-emoji");
+		if (!iconData) {
 			el.removeAttribute(MOBILE_ICON_ATTR);
+			continue;
 		}
+		// Emoji as text, like Actual's category emoji; images as a background.
+		if (iconData.type === "emoji") {
+			el.style.setProperty("--abt-account-emoji", JSON.stringify(iconData.value));
+		} else {
+			el.style.setProperty("--abt-account-icon", `url("${iconData.value.replace(/"/g, "%22")}")`);
+		}
+		el.setAttribute(MOBILE_ICON_ATTR, key);
 	}
 }
 
@@ -228,19 +234,26 @@ export const accountIconPicker = defineSetting({
 			border-radius: 2px;
 			line-height: 14px;
 		}
+		.${CELL_ICON_CLASS}.abt-emoji {
+			display: inline-flex;
+			--abt-emoji-size: 13px;
+		}
 
 		${PREVIEW_ROW} .${CELL_ICON_CLASS} {
 			opacity: 0.6;
 		}
 
 		[${MOBILE_ICON_ATTR}]::before {
-			content: "";
+			content: var(--abt-account-emoji, "");
 			display: inline-block;
 			width: 22px;
 			height: 22px;
+			font-size: 19px;
+			line-height: 22px;
+			text-align: center;
 			margin-right: var(--abt-space-3);
 			vertical-align: -5px;
-			background: var(--abt-account-icon) center / contain no-repeat;
+			background: var(--abt-account-icon, none) center / contain no-repeat;
 			border-radius: var(--abt-radius-sm);
 		}
 	`,

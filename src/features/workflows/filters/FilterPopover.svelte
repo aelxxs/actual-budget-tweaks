@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { hasCategoryIcons, useCategoryIcons } from "@lib/category-icons.svelte";
 	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
-	import { getEmojiAssetUrl } from "@lib/account-icons";
 	import Tabs from "@lib/components/Tabs.svelte";
 	import type { Category, CategoryGroup } from "@lib/types/actual-schema";
 	import { onOutsideClick, positionPopover } from "@lib/dom/popover";
@@ -87,11 +86,11 @@
 {#snippet accountIcon(account: FilterAccount)}
 	{@const icon = layout.icons[account.id]}
 	{#if icon}
-		<img
-			class="fp__img"
-			src={icon.type === "emoji" ? getEmojiAssetUrl(icon.value) : icon.value}
-			alt=""
-		/>
+		{#if icon.type === "emoji"}
+			<span class="abt-emoji fp__emoji" aria-hidden="true">{icon.value}</span>
+		{:else}
+			<img class="fp__img" src={icon.value} alt="" />
+		{/if}
 	{:else}
 		<Wallet size={14} strokeWidth={1.75} />
 	{/if}
@@ -230,6 +229,9 @@
 		margin: var(--abt-space-2) 0 var(--abt-space-3);
 	}
 
+	.fp__emoji {
+		--abt-emoji-size: 14px;
+	}
 	.fp__img {
 		width: 16px;
 		height: 16px;

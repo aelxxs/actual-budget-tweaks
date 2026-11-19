@@ -3,7 +3,7 @@
 
 	followBalanceColors();
 	import { type AccountIconData } from "@lib/account-icons";
-	import { getEmojiAssetUrl, removeAccountIcon, setAccountIcon } from "@lib/account-icons";
+	import { removeAccountIcon, setAccountIcon } from "@lib/account-icons";
 	import IconPickerModal from "@features/appearance/account-icon-picker/Modal.svelte";
 	import { leaveOverlay } from "@features/core/overlay-page";
 	import { navigate } from "@lib/actual/actual-api";
@@ -135,11 +135,9 @@
 		{#if effectiveIcon}
 			<span class="acct-icon">
 				{#if effectiveIcon.type === "emoji"}
-					<img
-						class="acct-icon-img"
-						src={getEmojiAssetUrl(effectiveIcon.value)}
-						alt={effectiveIcon.value}
-					/>
+					<span class="abt-emoji acct-icon-emoji" role="img" aria-label={effectiveIcon.value}
+						>{effectiveIcon.value}</span
+					>
 				{:else}
 					<img class="acct-icon-img" src={effectiveIcon.value} alt="" />
 				{/if}
@@ -210,11 +208,9 @@
 				{#if effectiveIcon}
 					<span class="acct-icon">
 						{#if effectiveIcon.type === "emoji"}
-							<img
-								class="acct-icon-img"
-								src={getEmojiAssetUrl(effectiveIcon.value)}
-								alt={effectiveIcon.value}
-							/>
+							<span class="abt-emoji acct-icon-emoji" role="img" aria-label={effectiveIcon.value}
+								>{effectiveIcon.value}</span
+							>
 						{:else}
 							<img class="acct-icon-img" src={effectiveIcon.value} alt="" />
 						{/if}

@@ -253,6 +253,19 @@
 	line-height: 1.5;
 }
 
+/* An emoji drawn as text, the way Actual draws category emoji; size it with --abt-emoji-size. */
+.abt-emoji {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: var(--abt-emoji-size, 1em);
+	height: var(--abt-emoji-size, 1em);
+	font-size: var(--abt-emoji-size, 1em);
+	font-style: normal;
+	line-height: 1;
+}
+
 /* A key to press, e.g. `<kbd class="abt-kbd">I</kbd>`. */
 .abt-kbd {
 	flex-shrink: 0;

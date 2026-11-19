@@ -4,7 +4,6 @@
 	followBalanceColors();
 	import { customizeSidebar } from "../lib/customize.svelte";
 	import { type AccountIconData } from "@lib/account-icons";
-	import { getEmojiAssetUrl } from "@lib/account-icons";
 	import { openTool } from "@features/appearance/sidebar-shortcuts/open-tool";
 	import { BUILTIN_TOOLS } from "@features/appearance/sidebar-shortcuts/store";
 	import type { ToolId } from "@features/appearance/sidebar-shortcuts/types";
@@ -655,7 +654,9 @@
 	{#if icon}
 		<span class="acct-icon">
 			{#if icon.type === "emoji"}
-				<img class="acct-icon-img" src={getEmojiAssetUrl(icon.value)} alt={icon.value} />
+				<span class="abt-emoji acct-icon-emoji" role="img" aria-label={icon.value}
+					>{icon.value}</span
+				>
 			{:else}
 				<img class="acct-icon-img" src={icon.value} alt="" />
 			{/if}

@@ -3,7 +3,7 @@
 	import { isOverlayOpen, leaveOverlay } from "@features/core/overlay-page";
 	import { graphView, openGraphView } from "@features/workflows/graph-view";
 	import { openCalendar, spendingCalendar } from "@features/workflows/spending-calendar";
-	import { type AccountIconData, getEmojiAssetUrl } from "@lib/account-icons";
+	import type { AccountIconData } from "@lib/account-icons";
 	import { dispatch, navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
@@ -296,7 +296,7 @@
 {#snippet face(account: SidebarAccount, mini = false)}
 	{@const icon = icons[account.id]}
 	{#if icon?.type === "emoji"}
-		<img class="rtile-emoji" src={getEmojiAssetUrl(icon.value)} alt={icon.value} />
+		<span class="abt-emoji rtile-emoji" role="img" aria-label={icon.value}>{icon.value}</span>
 	{:else if icon}
 		<img class="rtile-img" src={icon.value} alt="" />
 	{:else}
@@ -664,8 +664,7 @@
 		transition: filter 0.12s ease;
 	}
 	.rtile-emoji {
-		width: 20px;
-		height: 20px;
+		--abt-emoji-size: 18px;
 	}
 	.rtile-img {
 		position: absolute;
@@ -725,8 +724,7 @@
 		font-weight: 800;
 	}
 	.rmini .rtile-emoji {
-		width: 11px;
-		height: 11px;
+		--abt-emoji-size: 10px;
 	}
 	.rmini .rtile-img {
 		border-radius: 0;
