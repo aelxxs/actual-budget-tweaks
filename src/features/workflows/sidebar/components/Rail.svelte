@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { spendingCalendar } from "@features/workflows/spending-calendar";
-	import { graphView, openGraphView } from "@features/workflows/graph-view";
-	import { getEmojiAssetUrl } from "@lib/account-icons";
-	import { type AccountIconData } from "@lib/account-icons";
 	import { sidebarClosedAccounts } from "@features/appearance/sidebar-closed-accounts";
-	import { openCalendar } from "@features/workflows/spending-calendar";
 	import { isOverlayOpen, leaveOverlay } from "@features/core/overlay-page";
-	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
+	import { graphView, openGraphView } from "@features/workflows/graph-view";
+	import { openCalendar, spendingCalendar } from "@features/workflows/spending-calendar";
+	import { type AccountIconData, getEmojiAssetUrl } from "@lib/account-icons";
 	import { dispatch, navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
-	import { storedValue } from "@lib/stored.svelte";
+	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
 	import { lastShown, rememberShown } from "@lib/last-shown";
+	import { storedValue } from "@lib/stored.svelte";
 	import {
 		CalendarDays,
 		Folder,
@@ -27,22 +25,20 @@
 	import {
 		cachedBudgetIcon,
 		loadBudgetIcon,
-		watchBudgetIcon,
 		removeBudgetIcon,
 		setBudgetIcon,
+		watchBudgetIcon,
 	} from "../lib/budgets";
 	import type { SidebarAccount } from "../lib/data";
 	import {
 		type GroupState,
 		groupOf,
-		groupsIn as visibleGroups,
 		loadCollapsedGroups,
 		saveCollapsedGroups,
+		groupsIn as visibleGroups,
 		watchCollapsedGroups,
 		watchGroupState,
 	} from "../lib/groups";
-	import { applyOrder, loadAccountOrder, watchAccountOrder } from "../lib/order";
-	import { settingsItem, settingsMenu } from "../lib/nav";
 	import {
 		lockedItems,
 		mainItems,
@@ -50,6 +46,8 @@
 		settingsItems,
 		trackSidebarMenu,
 	} from "../lib/menu.svelte";
+	import { settingsItem, settingsMenu } from "../lib/nav";
+	import { applyOrder, loadAccountOrder, watchAccountOrder } from "../lib/order";
 	import { route, trackRoute } from "../lib/route.svelte";
 	import { isMac } from "../lib/search";
 
@@ -645,14 +643,15 @@
 	}
 	.rtile-wrap {
 		position: relative;
-		width: 40px;
-		height: 40px;
+		width: 36px;
+		height: 36px;
 		flex-shrink: 0;
 		cursor: pointer;
 	}
+	/* 36px, the nav buttons' size, so the rail lines up from top to bottom. */
 	.rtile {
 		position: absolute;
-		inset: 3px;
+		inset: 2px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -695,7 +694,7 @@
 	}
 	.rfolder {
 		position: absolute;
-		inset: 3px;
+		inset: 2px;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		grid-auto-rows: 1fr;
