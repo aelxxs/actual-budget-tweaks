@@ -158,19 +158,23 @@ function worstRatio(fg: string, bg: string | string[]): number {
 	return Math.min(...[bg].flat().map((b) => contrastRatio(fg, b)));
 }
 
-/** Steps lightness away from the backgrounds until the color reaches the target on all of them. */
+/**
+ * Steps lightness away from the backgrounds until the color reaches the target on all of them.
+ * Chroma can follow the lightness, as a share of what the hue holds there.
+ */
 function readable(
 	L: number,
-	C: number,
+	C: number | ((L: number) => number),
 	h: number,
 	bg: string | string[],
 	target: number,
 	dir: 1 | -1,
 ) {
-	let out = oklchToHex(L, C, h);
+	const at = (l: number) => oklchToHex(l, typeof C === "number" ? C : C(l), h);
+	let out = at(L);
 	for (let i = 0; i < 60 && worstRatio(out, bg) < target && L > 0 && L < 1; i++) {
 		L += 0.01 * dir;
-		out = oklchToHex(L, C, h);
+		out = at(L);
 	}
 	return out;
 }
@@ -308,14 +312,20 @@ export function recipeFromPalette(keys: Record<string, string>, name: string): R
 
 export const FAMILY_KEYS = ["blue", "sapphire", "sky", "teal"] as const;
 
-// Hue, vivid chroma, then lightness in dark and in light themes.
-const BUDGET_COLORS: Record<string, [number, number, number, number]> = {
-	red: [25, 0.17, 0.72, 0.55],
-	maroon: [15, 0.14, 0.66, 0.5],
-	peach: [55, 0.15, 0.76, 0.6],
-	yellow: [90, 0.14, 0.86, 0.66],
-	green: [150, 0.15, 0.76, 0.55],
+// Hue, then lightness in dark and in light themes.
+const BUDGET_COLORS: Record<string, [number, number, number]> = {
+	red: [25, 0.72, 0.55],
+	maroon: [15, 0.66, 0.5],
+	peach: [55, 0.76, 0.6],
+	yellow: [90, 0.86, 0.66],
+	green: [150, 0.76, 0.55],
 };
+
+/**
+ * Budget colours' chroma as a share of the most each hue holds at its lightness, so every hue
+ * is equally vivid: a fixed chroma clips some hues to their edge and leaves others well inside.
+ */
+const BUDGET_SHARE = { vivid: 0.88, muted: 0.55 };
 
 export function generate(r: Recipe): Generated {
 	const dark = r.mode === "dark";
@@ -412,14 +422,14 @@ export function generate(r: Recipe): Generated {
 		K[key] = readable(aL + [-0.02, 0, 0.04, 0.02][i], fc, hues[i], surfaces(), 4.5, dir);
 	});
 
-	for (const [key, [h, chroma, darkL, lightL]] of Object.entries(BUDGET_COLORS)) {
+	for (const [key, [h, darkL, lightL]] of Object.entries(BUDGET_COLORS)) {
 		const muted = r.budget === "muted";
-		const hue = muted ? lerpHue(h, H, 0.22 * t) : h;
-		// Clearly calmer, not just a touch softer: about a third of the saturation.
-		const C = muted ? chroma * 0.35 : chroma;
+		const hue = muted ? lerpHue(h, H, 0.11 * t) : h;
+		const share = BUDGET_SHARE[muted ? "muted" : "vivid"];
 		// surface0 too: it's the sidebar's hover when the sidebar matches the page.
 		const bgs = [...surfaces(), K.surface0];
-		K[key] = readable(dark ? darkL + 0.03 * c : lightL - 0.04 * c, C, hue, bgs, 4.5, dir);
+		const L = dark ? darkL + 0.03 * c : lightL - 0.04 * c;
+		K[key] = readable(L, (l) => share * maxChroma(l, hue), hue, bgs, 4.5, dir);
 	}
 
 	return { colors: K, sidebar: sidebarColors(r, K, crustL, mantleL) };
