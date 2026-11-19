@@ -191,3 +191,30 @@ test("background hex conversion preserves grey hue and clamps extreme colours", 
 		}
 	}
 });
+
+test("charts get nine colours of their own, and the family setting moves every one", () => {
+	for (const mode of ["dark", "light"]) {
+		const byFamily = ["close", "opposite", "rainbow"].map(
+			(family) => generate({ ...base, mode, family }).chart,
+		);
+		for (const chart of byFamily) {
+			assert.equal(chart.length, 9);
+			assert.equal(new Set(chart).size, 9, `${mode}: ${chart}`);
+			for (const hex of chart) {
+				assert.match(hex, /^#[0-9a-f]{6}$/);
+			}
+		}
+		for (let i = 0; i < 9; i++) {
+			assert.equal(new Set(byFamily.map((c) => c[i])).size, 3, `${mode} slot ${i + 1}`);
+		}
+	}
+});
+
+test("the data colour is blue whatever the family", () => {
+	for (const mode of ["dark", "light"]) {
+		for (const family of ["close", "opposite", "rainbow", "custom"]) {
+			const { h, C } = hexToOklch(generate({ ...base, mode, family, linkHue: 60 }).data);
+			assert.ok(h > 230 && h < 275 && C > 0.08, `${mode} ${family}: ${h} ${C}`);
+		}
+	}
+});

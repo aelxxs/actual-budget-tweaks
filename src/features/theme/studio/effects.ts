@@ -47,12 +47,17 @@ export function paletteKeys(g: Generated): Record<string, string> {
 /** A recipe as the palette theme it makes, painted like any built-in one. */
 export function themeFromRecipe(r: Recipe, g: Generated = generate(r)): PaletteTheme {
 	const { line, ...colors } = g.colors;
-	const keys = paletteKeys({ ...g, colors: r.borders ? { ...colors, line } : colors });
+	const keys = paletteKeys({ ...g, colors });
+	if (r.borders) {
+		keys["--theme-line"] = line;
+	}
 	if (r.sidebar !== "match") {
 		for (const [name, hex] of Object.entries(g.sidebar)) {
-			keys[name === "bg" ? "--ctp-sidebar" : `--ctp-sidebar-${name}`] = hex;
+			keys[name === "bg" ? "--theme-sidebar" : `--theme-sidebar-${name}`] = hex;
 		}
 	}
+	g.chart.forEach((hex, i) => (keys[`--theme-chart-${i + 1}`] = hex));
+	keys["--theme-data"] = g.data;
 	return { mode: r.mode, keys };
 }
 

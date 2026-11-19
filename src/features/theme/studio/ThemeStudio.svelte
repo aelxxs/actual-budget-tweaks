@@ -144,18 +144,6 @@
 		["sky", "Light links"],
 		["teal", "Notices"],
 	];
-	// Actual's chart colors, in the order charts use them (theme-apply's chartQual1-9).
-	const CHART_STRIP: [string, string][] = [
-		["teal", "Notices"],
-		["yellow", "Warning"],
-		["peach", "Caution"],
-		["red", "Overspent"],
-		["blue", "Links"],
-		["pink", "Accent light"],
-		["green", "Funded"],
-		["mauve", "Accent"],
-		["rosewater", "Accent pale"],
-	];
 	const BUDGET_TONES: [BudgetTone, string][] = [
 		["vivid", "Vivid"],
 		["muted", "Muted"],
@@ -502,15 +490,14 @@
 						<div class="strip-row">
 							<span class="strip-label">Charts</span>
 							<div class="strip">
-								{#each CHART_STRIP as [key, label], i (i)}
-									<span style:background={g.colors[key]} title="{i + 1}. {label} {g.colors[key]}"
-									></span>
+								{#each g.chart as hex, i (i)}
+									<span style:background={hex} title="{i + 1}. {hex}"></span>
 								{/each}
 							</div>
 						</div>
 						<span class="note"
 							>Links, menu headers and notices use the first row. Charts take their colors in the
-							order of the second, which mixes in the budget and accent colors.</span
+							order of the second.</span
 						>
 					</div>
 

@@ -16,7 +16,7 @@ export function placeholderThumb(mode: "light" | "dark"): Thumb {
 function fromPalette(keys: Record<string, string>): Thumb {
 	const k = (name: string) => keys[`--ctp-${name}`];
 	return {
-		side: k("sidebar") ?? k("mantle"),
+		side: keys["--theme-sidebar"] ?? k("mantle"),
 		page: k("crust"),
 		card: k("mantle"),
 		text: k("text"),

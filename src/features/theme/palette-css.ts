@@ -2,26 +2,37 @@ import { ACCOUNTS_LINKS, BANK_SYNC_PROVIDER } from "@lib/actual-dom";
 import type { PaletteTheme } from "@lib/design/types";
 import { hexToOklch, oklchToHex } from "./studio/generator";
 
-const CHART_KEYS = [
-	"teal",
-	"yellow",
-	"peach",
-	"red",
+/**
+ * Charts' colours in order: the link-and-chart family and the accent first, so Theme Studio's
+ * family setting shapes them; status colours last, and red not at all, so a slice isn't read as overspent.
+ */
+export const CHART_KEYS = [
 	"blue",
-	"pink",
-	"green",
 	"mauve",
-	"rosewater",
+	"teal",
+	"peach",
+	"sapphire",
+	"pink",
+	"sky",
+	"green",
+	"yellow",
 ];
 
+const isHex = (value: string | undefined): value is string => /^#[\da-f]{6}$/i.test(value ?? "");
+
 /**
- * Lifts soft pastels for charts only (chroma toward a 0.17 floor), resolved to hex because
- * Actual's donut chart parses only hex when shading categories and greys out anything else.
+ * Charts' colours as hex, since Actual's donut chart parses only hex when shading categories and
+ * greys out anything else. A theme's own `--theme-chart-N` as given; otherwise its palette colour
+ * for the slot, with soft pastels lifted (chroma toward a 0.17 floor).
  */
 function chartCSS(keys: Record<string, string>): string {
 	const lines = CHART_KEYS.flatMap((name, i) => {
+		const own = keys[`--theme-chart-${i + 1}`];
+		if (isHex(own)) {
+			return [`--color-chartQual${i + 1}: ${own};`];
+		}
 		const hex = keys[`--ctp-${name}`];
-		if (!/^#[\da-f]{6}$/i.test(hex ?? "")) {
+		if (!isHex(hex)) {
 			return [];
 		}
 		const { L, C, h } = hexToOklch(hex);
@@ -38,7 +49,7 @@ const BUILTIN_CSS = `
 		--abt-border-rest: var(--ctp-surface0);
 		/* Theme Studio's borders: tables and controls take its border color in full; containers and
 		dividers (menus, modals, panels) a step below. Without one, both are surface0. */
-		--abt-line-secondary: color-mix(in oklab, var(--ctp-line, var(--abt-border-rest)) 50%, var(--ctp-surface0));
+		--abt-line-secondary: color-mix(in oklab, var(--theme-line, var(--abt-border-rest)) 50%, var(--ctp-surface0));
 		/* Budget */
 		--color-budgetCurrentMonth: var(--ctp-mantle);
 		--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
@@ -61,7 +72,7 @@ const BUILTIN_CSS = `
 		/* Button – menu */
 		--color-buttonMenuBackground: transparent;
 		--color-buttonMenuBackgroundHover: rgba(205, 214, 244, 0.07);
-		--color-buttonMenuBorder: var(--ctp-line, var(--abt-border-rest));
+		--color-buttonMenuBorder: var(--theme-line, var(--abt-border-rest));
 		--color-buttonMenuSelectedBackground: var(--ctp-yellow);
 		--color-buttonMenuSelectedBackgroundHover: var(--ctp-peach);
 		--color-buttonMenuSelectedBorder: var(--ctp-yellow);
@@ -73,7 +84,7 @@ const BUILTIN_CSS = `
 		/* Button – normal */
 		--color-buttonNormalBackground: var(--ctp-mantle);
 		--color-buttonNormalBackgroundHover: var(--ctp-crust);
-		--color-buttonNormalBorder: var(--ctp-line, var(--abt-border-rest));
+		--color-buttonNormalBorder: var(--theme-line, var(--abt-border-rest));
 		--color-buttonNormalDisabledBackground: var(--ctp-surface0);
 		--color-buttonNormalDisabledBorder: var(--ctp-surface2);
 		--color-buttonNormalDisabledText: var(--ctp-overlay0);
@@ -134,7 +145,7 @@ const BUILTIN_CSS = `
 		--color-formInputBackground: var(--ctp-surface0);
 		--color-formInputBackgroundSelected: var(--ctp-surface1);
 		--color-formInputBackgroundSelection: var(--ctp-blue);
-		--color-formInputBorder: var(--ctp-line, var(--abt-border-rest));
+		--color-formInputBorder: var(--theme-line, var(--abt-border-rest));
 		--color-formInputBorderSelected: var(--ctp-blue);
 		--color-formInputShadowSelected: transparent;
 		--color-formInputText: var(--ctp-text);
@@ -240,8 +251,8 @@ const BUILTIN_CSS = `
 		/* A tint, not solid mauve: Actual's rule stage buttons and multi-select chips paint this behind
 		the page's own text without setting pillTextSelected. */
 		--color-pillBackgroundSelected: color-mix(in srgb, var(--ctp-mauve) 35%, transparent);
-		--color-pillBorder: var(--ctp-line, var(--abt-border-rest));
-		--color-pillBorderDark: var(--ctp-line, var(--abt-border-rest));
+		--color-pillBorder: var(--theme-line, var(--abt-border-rest));
+		--color-pillBorderDark: var(--theme-line, var(--abt-border-rest));
 		--color-pillBorderSelected: var(--ctp-lavender);
 		--color-pillText: var(--ctp-subtext1);
 		--color-pillTextHighlighted: var(--ctp-text);
@@ -270,30 +281,30 @@ const BUILTIN_CSS = `
 		--color-reportsRed: var(--ctp-red);
 
 		/* Sidebar */
-		--color-sidebarBackground: var(--ctp-sidebar, var(--ctp-mantle));
+		--color-sidebarBackground: var(--theme-sidebar, var(--ctp-mantle));
 		--color-sidebarBackgroundFailedSubtle: color-mix(in srgb, var(--ctp-red) 16%, transparent);
-		--color-sidebarBorder: var(--ctp-sidebar-hover, var(--abt-line-secondary));
-		--color-sidebarBrand: var(--ctp-sidebar-sel, var(--ctp-mauve));
-		--color-sidebarBudgetName: var(--ctp-sidebar-text, var(--ctp-text));
-		--color-sidebarControlBackground: var(--ctp-sidebar-hover, var(--ctp-surface0));
-		--color-sidebarHeaderText: var(--ctp-sidebar-text, var(--ctp-text));
+		--color-sidebarBorder: var(--theme-sidebar-hover, var(--abt-line-secondary));
+		--color-sidebarBrand: var(--theme-sidebar-sel, var(--ctp-mauve));
+		--color-sidebarBudgetName: var(--theme-sidebar-text, var(--ctp-text));
+		--color-sidebarControlBackground: var(--theme-sidebar-hover, var(--ctp-surface0));
+		--color-sidebarHeaderText: var(--theme-sidebar-text, var(--ctp-text));
 		--color-sidebarItemAccentSelected: var(--ctp-mauve);
 		--color-sidebarItemBackgroundFailed: var(--ctp-red);
-		--color-sidebarItemBackgroundHover: var(--ctp-sidebar-hover, var(--ctp-surface0));
+		--color-sidebarItemBackgroundHover: var(--theme-sidebar-hover, var(--ctp-surface0));
 		--color-sidebarItemBackgroundPending: var(--ctp-yellow);
 		--color-sidebarItemBackgroundPositive: var(--ctp-green);
-		--color-sidebarItemBackgroundSelected: color-mix(in srgb, var(--ctp-sidebar-sel, var(--ctp-mauve)) 18%, transparent);
-		--color-sidebarItemText: var(--ctp-sidebar-text, var(--ctp-text));
-		--color-sidebarItemTextSelected: var(--ctp-sidebar-sel, var(--ctp-mauve));
-		--color-sidebarItemTextUpdated: var(--ctp-sidebar-updated, var(--ctp-blue));
-		--color-sidebarTextFailed: var(--ctp-sidebar-neg, var(--ctp-red));
-		--color-sidebarTextMuted: var(--ctp-sidebar-sub, var(--ctp-overlay1));
+		--color-sidebarItemBackgroundSelected: color-mix(in srgb, var(--theme-sidebar-sel, var(--ctp-mauve)) 18%, transparent);
+		--color-sidebarItemText: var(--theme-sidebar-text, var(--ctp-text));
+		--color-sidebarItemTextSelected: var(--theme-sidebar-sel, var(--ctp-mauve));
+		--color-sidebarItemTextUpdated: var(--theme-sidebar-updated, var(--ctp-blue));
+		--color-sidebarTextFailed: var(--theme-sidebar-neg, var(--ctp-red));
+		--color-sidebarTextMuted: var(--theme-sidebar-sub, var(--ctp-overlay1));
 		--color-sidebarTextPositive: var(--ctp-green);
-		--color-sidebarTextSubdued: var(--ctp-sidebar-sub, var(--ctp-subtext0));
+		--color-sidebarTextSubdued: var(--theme-sidebar-sub, var(--ctp-subtext0));
 
 		/* Table */
 		--color-tableBackground: var(--ctp-mantle);
-		--color-tableBorder: var(--ctp-line, var(--abt-border-rest));
+		--color-tableBorder: var(--theme-line, var(--abt-border-rest));
 		--color-tableBorderHover: var(--ctp-mauve);
 		--color-tableBorderSelected: var(--ctp-mauve);
 		--color-tableBorderSeparator: var(--ctp-overlay0);
@@ -338,15 +349,7 @@ const BUILTIN_CSS = `
 		--color-warningTextLight: var(--ctp-peach);
 
 		/* Charts */
-		--color-chartQual1: var(--ctp-teal);
-		--color-chartQual2: var(--ctp-yellow);
-		--color-chartQual3: var(--ctp-peach);
-		--color-chartQual4: var(--ctp-red);
-		--color-chartQual5: var(--ctp-blue);
-		--color-chartQual6: var(--ctp-pink);
-		--color-chartQual7: var(--ctp-green);
-		--color-chartQual8: var(--ctp-mauve);
-		--color-chartQual9: var(--ctp-rosewater);
+		${CHART_KEYS.map((key, i) => `--color-chartQual${i + 1}: var(--ctp-${key});`).join("\n\t\t")}
 
 		--border: 1px solid var(--color-tableBorder);
 	}
@@ -363,31 +366,22 @@ const BUILTIN_CSS = `
 	}
 `;
 
-const DATA_KEYS = ["blue", "sapphire", "sky", "teal"];
-
 /**
- * The data colour: the first of the theme's second-colour family that can't be read as a status.
- * A Studio theme's "blue" follows its family, so it can land on yellow or green.
+ * The data colour is always blue, so it means the same in every theme: a theme's own
+ * `--theme-data`, else its palette blue when it is one, else blue at that blue's lightness.
  */
 function dataCSS(keys: Record<string, string>): string {
-	const hue = (name: string) => {
-		const hex = keys[`--ctp-${name}`];
-		return /^#[\da-f]{6}$/i.test(hex ?? "") ? hexToOklch(hex) : null;
-	};
-	const status = ["red", "yellow", "green"].flatMap((n) => hue(n)?.h ?? []);
-	const apart = (h: number) => status.every((s) => Math.abs(((h - s + 540) % 360) - 180) >= 35);
-	const pick = DATA_KEYS.find((n) => {
-		const c = hue(n);
-		return c && c.C >= 0.03 && apart(c.h);
-	});
-	if (pick) {
-		return `:root {\n\t--abt-data: var(--ctp-${pick});\n}\n`;
+	const own = keys["--theme-data"];
+	if (isHex(own)) {
+		return `:root {\n\t--abt-data: ${own};\n}\n`;
 	}
-	const blue = hue("blue");
-	if (!blue) {
+	const hex = keys["--ctp-blue"];
+	if (!isHex(hex)) {
 		return "";
 	}
-	return `:root {\n\t--abt-data: ${oklchToHex(blue.L, Math.max(blue.C, 0.1), 255)};\n}\n`;
+	const { L, C, h } = hexToOklch(hex);
+	const data = h >= 225 && h <= 280 && C >= 0.06 ? hex : oklchToHex(L, Math.max(C, 0.12), 255);
+	return `:root {\n\t--abt-data: ${data};\n}\n`;
 }
 
 /** Light themes: controls raised over the page, a firmer wash, paler other months. */
@@ -395,7 +389,7 @@ const LIGHT_CSS = `
 	:root {
 		--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 55%);
 		/* A sidebar without its own colour matches the cards as they're shown. */
-		--color-sidebarBackground: var(--ctp-sidebar, var(--color-budgetCurrentMonth));
+		--color-sidebarBackground: var(--theme-sidebar, var(--color-budgetCurrentMonth));
 		/* Group rows a step deeper, so they stand off the table. */
 		--color-budgetHeaderCurrentMonth: color-mix(in oklab, var(--ctp-base), var(--ctp-surface0) 65%);
 		/* Borders between surface0 and surface1, so they show beside the group rows. */
@@ -414,25 +408,25 @@ const LIGHT_CSS = `
 /** Page colours that ABT's sidebar tiles use, remade for a sidebar with its own background. */
 const SIDEBAR_CSS = `
 	.sidebar {
-		--abt-accent: var(--ctp-sidebar-sel);
-		--color-sidebarItemAccentSelected: var(--ctp-sidebar-sel);
-		--color-pageText: var(--ctp-sidebar-text);
-		--color-pageTextSubdued: var(--ctp-sidebar-sub);
-		--color-sidebarTextPositive: var(--ctp-sidebar-pos);
-		--color-noticeTextLight: var(--ctp-sidebar-pos);
-		--color-errorText: var(--ctp-sidebar-neg);
-		--color-sidebarItemBackgroundFailed: var(--ctp-sidebar-neg);
-		--color-sidebarItemBackgroundPositive: var(--ctp-sidebar-pos);
-		--color-sidebarItemBackgroundPending: var(--ctp-sidebar-warn);
-		--color-warningText: var(--ctp-sidebar-warn);
-		--color-tableBorder: var(--ctp-sidebar-hover);
+		--abt-accent: var(--theme-sidebar-sel);
+		--color-sidebarItemAccentSelected: var(--theme-sidebar-sel);
+		--color-pageText: var(--theme-sidebar-text);
+		--color-pageTextSubdued: var(--theme-sidebar-sub);
+		--color-sidebarTextPositive: var(--theme-sidebar-pos);
+		--color-noticeTextLight: var(--theme-sidebar-pos);
+		--color-errorText: var(--theme-sidebar-neg);
+		--color-sidebarItemBackgroundFailed: var(--theme-sidebar-neg);
+		--color-sidebarItemBackgroundPositive: var(--theme-sidebar-pos);
+		--color-sidebarItemBackgroundPending: var(--theme-sidebar-warn);
+		--color-warningText: var(--theme-sidebar-warn);
+		--color-tableBorder: var(--theme-sidebar-hover);
 	}
 `;
 
-/** Raised borders (a theme with `--ctp-line`) reach ABT's own panels and cards too, which otherwise draw a faint ink tint. */
+/** Raised borders (a theme with `--theme-line`) reach ABT's own panels and cards too, which otherwise draw a faint ink tint. */
 const BORDERS_CSS = `
 	:root:root {
-		--abt-line: var(--ctp-line);
+		--abt-line: var(--theme-line);
 		--abt-panel-border: var(--abt-line-secondary);
 		--color-sidebarBorder: var(--abt-line-secondary);
 	}
@@ -450,10 +444,10 @@ export function paletteCSS(theme: PaletteTheme): string {
 	css += chartCSS(theme.keys);
 	css += dataCSS(theme.keys);
 	// Only for themes with a sidebar of their own, so a user's overrides of these page colours still reach it.
-	if ("--ctp-sidebar" in theme.keys) {
+	if ("--theme-sidebar" in theme.keys) {
 		css += SIDEBAR_CSS;
 	}
-	if ("--ctp-line" in theme.keys) {
+	if ("--theme-line" in theme.keys) {
 		css += BORDERS_CSS;
 	}
 	return css;

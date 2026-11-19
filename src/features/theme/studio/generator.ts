@@ -63,6 +63,10 @@ export type Generated = {
 	/** Keyed by the palette's names (text, mantle, mauve...), as hex. */
 	colors: Record<string, string>;
 	sidebar: SidebarColors;
+	/** Charts' nine colours in order, spread by the link-and-chart family. */
+	chart: string[];
+	/** Amounts and progress with no judgement (spent, goal progress): always a blue. */
+	data: string;
 };
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
@@ -432,7 +436,38 @@ export function generate(r: Recipe): Generated {
 		K[key] = readable(L, (l) => share * maxChroma(l, hue), hue, bgs, 4.5, dir);
 	}
 
-	return { colors: K, sidebar: sidebarColors(r, K, crustL, mantleL) };
+	return {
+		colors: K,
+		sidebar: sidebarColors(r, K, crustL, mantleL),
+		chart: chartColors(r),
+		data: atShare(dark ? 0.7 : 0.52, 0.8, 255),
+	};
+}
+
+/** A hue at a share of the most chroma it holds at this lightness. */
+function atShare(L: number, share: number, h: number): string {
+	return oklchToHex(L, share * maxChroma(L, h), h);
+}
+
+/**
+ * Each family's nine chart hues, in slice order: Rainbow round the whole wheel, the others a 120°
+ * band round their hue, ordered so neighbouring slices sit far apart on it.
+ */
+export function chartHues(r: Pick<Recipe, "accentHue" | "family" | "linkHue">): number[] {
+	const A = r.accentHue;
+	if (r.family === "rainbow") {
+		// Nine hues 40° apart, each slot at least 70° from the Similar and Opposite hues in that
+		// slot, so switching style changes every slice; neighbours sit at least 80° apart.
+		return [90, 330, 210, 290, 10, 130, 250, 170, 50].map((d) => (A + d) % 360);
+	}
+	const centre = { close: A, opposite: A + 180, custom: r.linkHue ?? A + 180 }[r.family];
+	return [0, 45, -45, 15, -60, 30, -15, 60, -30].map((d) => (centre + d + 360) % 360);
+}
+
+/** Equally vivid at every hue; lightness alternates, so slices side by side stay apart. */
+function chartColors(r: Recipe): string[] {
+	const levels = r.mode === "dark" ? [0.74, 0.62] : [0.5, 0.64];
+	return chartHues(r).map((h, i) => atShare(levels[i % 2], 0.85, h));
 }
 
 function sidebarColors(

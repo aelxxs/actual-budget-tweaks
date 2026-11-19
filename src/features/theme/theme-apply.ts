@@ -37,7 +37,7 @@ const originalRootProperties = new Map<string, { value: string; priority: string
 /** Keys a theme can leave out (the sidebar's, the border's) don't linger from the one before. */
 function clearMissingKeys(root: HTMLElement, keys: Record<string, string>) {
 	for (const prop of Array.from(root.style)) {
-		if (prop.startsWith("--ctp-") && !(prop in keys)) {
+		if ((prop.startsWith("--ctp-") || prop.startsWith("--theme-")) && !(prop in keys)) {
 			root.style.removeProperty(prop);
 		}
 	}

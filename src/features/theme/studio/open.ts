@@ -18,7 +18,7 @@ let stop: (() => void) | null = null;
 export function openPaletteInStudio(theme: Theme): void {
 	studio.editing = null;
 	studio.recipe = recipeFromPalette(theme.keys, `${theme.name} (Studio)`);
-	const sidebar = theme.keys["--ctp-sidebar"];
+	const sidebar = theme.keys["--theme-sidebar"];
 	if (sidebar) {
 		studio.recipe.sidebar = hexToOklch(sidebar).L < 0.5 ? "dark" : "deeper";
 	}
