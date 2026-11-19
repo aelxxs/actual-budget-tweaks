@@ -333,6 +333,15 @@ const BUDGET_COLORS: Record<string, [number, number, number]> = {
 const BUDGET_SHARE = { vivid: 0.88, muted: 0.55 };
 /** Hues with the most room (green, maroon at dark-theme lightness) turn neon near their edge. */
 const BUDGET_CHROMA_CAP = 0.16;
+/**
+ * Calmer stand-ins on a dark page: a saturated emerald or a near-white yellow glows across a column
+ * of balances, louder than the red beside them. Light themes keep BUDGET_COLORS.
+ */
+const DARK_BUDGET: Record<string, { hue: number; L: number; cap: number }> = {
+	green: { hue: 135, L: 0.72, cap: 0.12 },
+	// Warmer than 90, which turns olive this dark.
+	yellow: { hue: 85, L: 0.8, cap: 0.12 },
+};
 
 export function generate(r: Recipe): Generated {
 	const dark = r.mode === "dark";
@@ -432,15 +441,20 @@ export function generate(r: Recipe): Generated {
 	for (const [key, [h, darkL, lightL]] of Object.entries(BUDGET_COLORS)) {
 		const muted = r.budget === "muted";
 		// A dark yellow turns olive; light themes take it toward amber, which stays warm when dark.
-		const own = !dark && key === "yellow" ? 70 : h;
+		const tame = dark ? DARK_BUDGET[key] : undefined;
+		const own = tame?.hue ?? (!dark && key === "yellow" ? 70 : h);
 		const hue = muted ? lerpHue(own, H, 0.11 * t) : own;
 		const share = BUDGET_SHARE[muted ? "muted" : "vivid"];
 		// surface0 too: it's the sidebar's hover when the sidebar matches the page.
 		const bgs = [...surfaces(), K.surface0];
-		const L = dark ? darkL + 0.03 * c : lightL - 0.04 * c;
+		const L = dark ? (tame?.L ?? darkL) + 0.03 * c : lightL - 0.04 * c;
 		K[key] = readable(
 			L,
-			(l) => Math.min(share * maxChroma(l, hue), BUDGET_CHROMA_CAP),
+			(l) =>
+				Math.min(
+					share * maxChroma(l, hue),
+					tame ? tame.cap * (share / BUDGET_SHARE.vivid) : BUDGET_CHROMA_CAP,
+				),
 			hue,
 			bgs,
 			// Light themes stop past 4.5:1: at the floor, coloured figures read as tinted grey.
