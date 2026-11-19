@@ -16,7 +16,8 @@ export function previewRecipe(r: Recipe, g: Generated): void {
 
 /** Puts the saved theme back, as the theme setting's init chooses it. */
 export async function restoreSavedTheme(): Promise<void> {
-	applyGlobalCSS("", STUDIO_STYLE_ID);
+	// The preview stays up until the saved theme replaces it: clearing it first, then waiting on
+	// storage, flashed the page without its glow and grain.
 	let key = (await getValue<string>("catppuccin-palette", DEFAULT_THEME)) ?? DEFAULT_THEME;
 	if (await getValue<boolean>("theme-auto-switch", false)) {
 		const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
