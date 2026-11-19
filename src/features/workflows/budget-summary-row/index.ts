@@ -1,24 +1,24 @@
-import { markCellsStale } from "@features/readability/category-progress/cells";
-import { defineSetting, type Setting } from "@features/types";
 import { isOverlayOpen } from "@features/core/overlay-page";
-import { iconMask } from "@lib/icons";
+import { FLOW_BAR_CSS, startFlowBars } from "@features/readability/budget-card-styling";
+import { markCellsStale } from "@features/readability/category-progress/cells";
+import { reapplySetting } from "@features/runtime";
+import { defineSetting, type Setting } from "@features/types";
+import { BUDGET_SUMMARY, BUDGET_TABLE, CELL, SHOWN_MONTH, TO_BUDGET_CELL } from "@lib/actual-dom";
 import { type BudgetTableChange, collectChanges, watchBudgetTable } from "@lib/actual/budget-cells";
 import { BUDGET_TYPE_ATTR, isTrackingBudget, onBudgetType } from "@lib/actual/budget-type";
-import { watchDom, watchElement } from "@lib/dom/dom-watcher";
-import { currentMonth, monthToSheet } from "@lib/format/months";
-import { Page, matchesPage } from "@lib/actual/pages";
-import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
-import MonthMeta from "./MonthMeta.svelte";
 import { followBudgetValue } from "@lib/actual/budget-value";
+import { matchesPage, Page } from "@lib/actual/pages";
+import { watchDom, watchElement } from "@lib/dom/dom-watcher";
+import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
+import { currentMonth, monthToSheet } from "@lib/format/months";
+import { iconMask } from "@lib/icons";
 import { getValue, hasValue, removeValue, setValue } from "@lib/store";
-import { reapplySetting } from "@features/runtime";
-import { FLOW_BAR_CSS, startFlowBars } from "@features/readability/budget-card-styling";
+import MonthMeta from "./MonthMeta.svelte";
 import { SLOTS_KEY, toSlots } from "./slots";
 import { slotStore, summaryState } from "./state.svelte";
 import SummaryRow from "./SummaryRow.svelte";
 import TrackingMeta from "./TrackingMeta.svelte";
 import TrackingRow from "./TrackingRow.svelte";
-import { BUDGET_SUMMARY, BUDGET_TABLE, CELL, SHOWN_MONTH, TO_BUDGET_CELL } from "@lib/actual-dom";
 
 const SINGLE_MONTH_ATTR = "data-abt-single-month";
 const MULTI_MONTH_ATTR = "data-abt-multi-month";
@@ -504,7 +504,7 @@ const FULL_CSS = `
 	}
 	/* A step heavier than Actual's 400, so the plain card's figure still leads the row. */
 	${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
-		font-weight: 600 !important;
+		font-weight: 550 !important;
 		line-height: 1.1;
 	}
 	/* A line under the figure saying what it means, like the other cards' second lines. */
