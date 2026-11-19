@@ -213,7 +213,7 @@
 				"defaultValue": "all",
 				"platform": "desktop",
 				"label": "Color amounts",
-				"description": "Colors amounts by sign in transactions, balances and budget groups.",
+				"description": "Colors amounts by sign in transactions, balances and budget groups. Zero stays plain.",
 				"icon": "circleDollarSign",
 				"group": "Amounts",
 				"writes": null,
