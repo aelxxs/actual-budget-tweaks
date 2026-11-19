@@ -18,7 +18,7 @@
 		<Section title="This month" collapsible={false}>
 			{@render rows(4)}
 		</Section>
-		<Section title="Next month" collapsible={false}>
+		<Section title="Months ahead" collapsible={false}>
 			{@render rows(4)}
 		</Section>
 		<Section title="Over / under budget" collapsible={false}>
