@@ -20,7 +20,7 @@
 			{:else if remaining === null}
 				Templates
 			{:else if toApply}
-				Templates · <span class="abt-privacy-number">{fmtMoney(remaining)}</span> to apply
+				Templates · <span class="abt-privacy-number abt-num">{fmtMoney(remaining)}</span> to apply
 			{:else}
 				Templates · all applied
 			{/if}

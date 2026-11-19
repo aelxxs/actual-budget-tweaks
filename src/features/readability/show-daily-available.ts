@@ -68,7 +68,7 @@ function displayDailyBalance() {
 	let number = amount?.querySelector(":scope > .abt-privacy-number");
 	if (amount && !number) {
 		number = document.createElement("span");
-		number.className = "abt-privacy-number";
+		number.className = "abt-privacy-number abt-num";
 		amount.replaceChildren(number);
 	}
 	if (number && number.textContent !== value) {

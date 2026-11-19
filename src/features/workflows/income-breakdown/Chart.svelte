@@ -181,7 +181,7 @@
 						y={(node.y1 + node.y0) / 2}
 						dy="0.35em"
 						text-anchor={left ? "start" : "end"}
-						>{node.name}<tspan class="chart__amount abt-privacy-number" dx="6"
+						>{node.name}<tspan class="chart__amount abt-privacy-number abt-num" dx="6"
 							>{fmtMoney(node.value)}</tspan
 						></text
 					>
@@ -191,7 +191,7 @@
 		{#if tip}
 			<div class="chart__tip abt-popover" style:left="{tip.x}px" style:top="{tip.y}px">
 				<span>{tip.title}</span>
-				<strong class="abt-privacy-number">{tip.amount}</strong>
+				<strong class="abt-privacy-number abt-num">{tip.amount}</strong>
 				{#if tip.hint}
 					<span class="chart__hint">Click to see transactions</span>
 				{/if}
