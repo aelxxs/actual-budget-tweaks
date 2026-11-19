@@ -367,6 +367,8 @@ const BUILTIN_CSS = `
 const LIGHT_CSS = `
 	:root {
 		--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 55%);
+		/* A sidebar without its own colour matches the cards as they're shown. */
+		--color-sidebarBackground: var(--ctp-sidebar, var(--color-budgetCurrentMonth));
 		/* Group rows a step deeper, so they stand off the table. */
 		--color-budgetHeaderCurrentMonth: color-mix(in oklab, var(--ctp-base), var(--ctp-surface0) 65%);
 		/* Borders between surface0 and surface1, so they show beside the group rows. */
