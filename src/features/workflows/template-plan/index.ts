@@ -887,7 +887,7 @@ function installClickListener(): () => void {
 
 function installKeyboard(): () => void {
 	const handler = (ev: KeyboardEvent) => {
-		if (ev.key !== "Escape") {
+		if (ev.key !== "Escape" || ev.defaultPrevented) {
 			return;
 		}
 		if (!drawerOpen || !isBudgetPage()) {

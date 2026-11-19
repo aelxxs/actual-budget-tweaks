@@ -614,6 +614,9 @@
 				openPalette();
 			}
 		} else if (e.key === "Escape" && open) {
+			// The palette's own Escape: panels and pages listening for it shouldn't close too.
+			e.preventDefault();
+			e.stopPropagation();
 			if (page !== "root") {
 				goBackToRoot();
 			} else {
