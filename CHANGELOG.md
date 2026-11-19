@@ -1,6 +1,112 @@
 # Changelog
 
 
+## v0.1.111
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.110...v0.1.111)
+
+### 🚀 Enhancements
+
+- Show each category's net change on the Reassigned card, apart from To Budget covers ([f102b0e](https://github.com/aelxxs/actual-budget-tweaks/commit/f102b0e))
+- Add background hex input to Theme Studio ([6d97160](https://github.com/aelxxs/actual-budget-tweaks/commit/6d97160))
+- Let the Sync recap clear a transaction's category ([9b855c5](https://github.com/aelxxs/actual-budget-tweaks/commit/9b855c5))
+- Leave category color dots off until turned on ([85dc577](https://github.com/aelxxs/actual-budget-tweaks/commit/85dc577))
+- Let the sidebar hide account sync status ([a1df805](https://github.com/aelxxs/actual-budget-tweaks/commit/a1df805))
+- Close a panel opened over another back to the one underneath ([dfc233a](https://github.com/aelxxs/actual-budget-tweaks/commit/dfc233a))
+- Show the five biggest overspent categories in Insights, with the rest on request ([ea70ecb](https://github.com/aelxxs/actual-budget-tweaks/commit/ea70ecb))
+- Match the calendar header to the budget page, keep day totals neutral, and add switches for the heat tint and category bars ([f8682b6](https://github.com/aelxxs/actual-budget-tweaks/commit/f8682b6))
+- Say what To Budget's figure means in a line under it ([77dad07](https://github.com/aelxxs/actual-budget-tweaks/commit/77dad07))
+- Give themes their own --theme-* roles for charts, data, the sidebar and borders, and have Theme Studio generate chart colours from its family setting ([f3cbf37](https://github.com/aelxxs/actual-budget-tweaks/commit/f3cbf37))
+- Show an up-to-date state in Reconcile when nothing has changed since the last reconcile, and drop the toolbar's age badge then ([40b88c1](https://github.com/aelxxs/actual-budget-tweaks/commit/40b88c1))
+- Add Keyboard shortcuts, single keys for the sidebar, Insights, Reconcile and Theme Studio, listed under the setting and shown in the command palette ([5ef75f5](https://github.com/aelxxs/actual-budget-tweaks/commit/5ef75f5))
+
+### 🩹 Fixes
+
+- Suggest applying templates before covering overspending ([cd37a62](https://github.com/aelxxs/actual-budget-tweaks/commit/cd37a62))
+- Stop the Insights panel squeezing the page it's leaving ([d9fcc11](https://github.com/aelxxs/actual-budget-tweaks/commit/d9fcc11))
+- Gracefully shut down the sidecar server ([2e34e1d](https://github.com/aelxxs/actual-budget-tweaks/commit/2e34e1d))
+- Keep a zero balance on a met goal as a plain pill ([cb8f39f](https://github.com/aelxxs/actual-budget-tweaks/commit/cb8f39f))
+- Build Studio themes from their recipe when applying them ([8052597](https://github.com/aelxxs/actual-budget-tweaks/commit/8052597))
+- Keep the theme card menu from being clipped by the gallery ([5b4adcb](https://github.com/aelxxs/actual-budget-tweaks/commit/5b4adcb))
+- Read "is between" schedule amounts as their midpoint, like Actual ([25649c1](https://github.com/aelxxs/actual-budget-tweaks/commit/25649c1))
+- Line up the titlebar's divider with the side panel's in inset cards ([bbbe635](https://github.com/aelxxs/actual-budget-tweaks/commit/bbbe635))
+- Open the theme gallery on all themes ([1d80bd3](https://github.com/aelxxs/actual-budget-tweaks/commit/1d80bd3))
+- Base the calendar's heat tint on net spending, so same-day refunds cancel out ([3ed5136](https://github.com/aelxxs/actual-budget-tweaks/commit/3ed5136))
+- Hold off dimming Insights until a refresh is actually slow ([9b76873](https://github.com/aelxxs/actual-budget-tweaks/commit/9b76873))
+- Show a side panel's title as a tooltip only when it's cut off ([10f1717](https://github.com/aelxxs/actual-budget-tweaks/commit/10f1717))
+- Remember month counts that fit for the visit only, so zooming out doesn't leave them for good ([28c6648](https://github.com/aelxxs/actual-budget-tweaks/commit/28c6648))
+- Keep Theme Studio's preview up until the saved theme replaces it, so closing it doesn't flash ([d619238](https://github.com/aelxxs/actual-budget-tweaks/commit/d619238))
+- Give only app side panels the page background with inset panels on, so page panels keep theirs ([c72f5ad](https://github.com/aelxxs/actual-budget-tweaks/commit/c72f5ad))
+- Keep the command palette's Escape from also closing the Insights panel ([e7d5ae7](https://github.com/aelxxs/actual-budget-tweaks/commit/e7d5ae7))
+- Pick a data colour from the theme's family that can't be read as a status, falling back to blue ([5c0b98c](https://github.com/aelxxs/actual-budget-tweaks/commit/5c0b98c))
+- Use the spacing token for the collapsed rail tiles' inset ([8a69054](https://github.com/aelxxs/actual-budget-tweaks/commit/8a69054))
+- Open the CSS override and theme editor panels with the gallery's scope, so they stay full height when it is ([b2cc34d](https://github.com/aelxxs/actual-budget-tweaks/commit/b2cc34d))
+
+### 💅 Refactors
+
+- Replace the token editor with a per-theme CSS override ([1cf5d17](https://github.com/aelxxs/actual-budget-tweaks/commit/1cf5d17))
+- Type template kinds and budget sheet names ([31e0b40](https://github.com/aelxxs/actual-budget-tweaks/commit/31e0b40))
+- Run the density, row height, pattern and corner pickers as select settings ([95edde4](https://github.com/aelxxs/actual-budget-tweaks/commit/95edde4))
+- Use the shared clamp in tooltips ([fad0162](https://github.com/aelxxs/actual-budget-tweaks/commit/fad0162))
+- Merge the Studio's accent and background hex fields ([d86c72c](https://github.com/aelxxs/actual-budget-tweaks/commit/d86c72c))
+- Run column resizing from one DOM watcher ([bed3c3f](https://github.com/aelxxs/actual-budget-tweaks/commit/bed3c3f))
+- Read settings in components through one storedValue helper ([ed4106f](https://github.com/aelxxs/actual-budget-tweaks/commit/ed4106f))
+- Move Today and the month arrows into a shared MonthNav, giving Today square corners ([ce3244a](https://github.com/aelxxs/actual-budget-tweaks/commit/ce3244a))
+- Drop single-colour gradients from the sidebar logo tiles ([be19691](https://github.com/aelxxs/actual-budget-tweaks/commit/be19691))
+- Draw ABT's icons from Lucide, keeping hand-drawn SVG only for ABT's own glyphs and markup for Actual's pages ([bd1f8a8](https://github.com/aelxxs/actual-budget-tweaks/commit/bd1f8a8))
+- Paint built-in and Studio themes through one palette mapping, with the sidebar and borders as palette keys ([586d34f](https://github.com/aelxxs/actual-budget-tweaks/commit/586d34f))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.110 ([be75242](https://github.com/aelxxs/actual-budget-tweaks/commit/be75242))
+- Remove unused exports, dead helpers and devDependencies ([3319b43](https://github.com/aelxxs/actual-budget-tweaks/commit/3319b43))
+- Drop the old column-width defaults migration ([d526f65](https://github.com/aelxxs/actual-budget-tweaks/commit/d526f65))
+
+### 🎨 Styles
+
+- Use sentence case and plain ink for side panel section titles ([e74f6bb](https://github.com/aelxxs/actual-budget-tweaks/commit/e74f6bb))
+- Give the side panel its own background token, a step below dark pages ([e701b53](https://github.com/aelxxs/actual-budget-tweaks/commit/e701b53))
+- Brighten the light-theme budget table and panel cards ([65c9890](https://github.com/aelxxs/actual-budget-tweaks/commit/65c9890))
+- Give balance pills a light-theme style and a neutral pill for zero balances ([e9f018e](https://github.com/aelxxs/actual-budget-tweaks/commit/e9f018e))
+- Add a data colour role and use it for the plan overview's bars ([0325157](https://github.com/aelxxs/actual-budget-tweaks/commit/0325157))
+- Quiet section counts and chevrons, and show a recap batch's review button only beside other batches ([0b085a4](https://github.com/aelxxs/actual-budget-tweaks/commit/0b085a4))
+- Soften control borders in page chrome ([3bd2595](https://github.com/aelxxs/actual-budget-tweaks/commit/3bd2595))
+- Keep the overspending suggestion card neutral ([383691c](https://github.com/aelxxs/actual-budget-tweaks/commit/383691c))
+- Show section counts as plain text again ([e3f4d2d](https://github.com/aelxxs/actual-budget-tweaks/commit/e3f4d2d))
+- Shrink the spending calendar's category dots ([3aee62c](https://github.com/aelxxs/actual-budget-tweaks/commit/3aee62c))
+- Keep spending amounts neutral in the calendar's day panel ([8c3b886](https://github.com/aelxxs/actual-budget-tweaks/commit/8c3b886))
+- Drop the release notes' gradient bar and uppercase headings ([b0b852c](https://github.com/aelxxs/actual-budget-tweaks/commit/b0b852c))
+- Replace the sparkles icon where nothing is AI ([e6784ac](https://github.com/aelxxs/actual-budget-tweaks/commit/e6784ac))
+- Show the calendar's payee counts and overflow as plain text ([cdbae5e](https://github.com/aelxxs/actual-budget-tweaks/commit/cdbae5e))
+- Use a link icon instead of an emoji for shortcut tiles without one ([8a6c929](https://github.com/aelxxs/actual-budget-tweaks/commit/8a6c929))
+- Keep the corner wash and lit border for the suggestion card only, and weight To Budget's figure a step heavier ([dccfe12](https://github.com/aelxxs/actual-budget-tweaks/commit/dccfe12))
+- Tighten the sidebar rail's top padding ([8ad3a4f](https://github.com/aelxxs/actual-budget-tweaks/commit/8ad3a4f))
+- Match the calendar's stat labels to the account page's ([0e1c9e5](https://github.com/aelxxs/actual-budget-tweaks/commit/0e1c9e5))
+- Title the reconcile panel Reconcile instead of repeating the account's name ([08baa70](https://github.com/aelxxs/actual-budget-tweaks/commit/08baa70))
+- Put the category filter's counts in chips ([bb1a491](https://github.com/aelxxs/actual-budget-tweaks/commit/bb1a491))
+- Give settings that shared an icon one of their own ([ff3b4d8](https://github.com/aelxxs/actual-budget-tweaks/commit/ff3b4d8))
+- Drop the icon from the budget actions card, and its empty half in the multi-month header ([ef66ff3](https://github.com/aelxxs/actual-budget-tweaks/commit/ef66ff3))
+- Give side panels the page background with inset panels on ([e62bb9c](https://github.com/aelxxs/actual-budget-tweaks/commit/e62bb9c))
+- Put Studio light themes' cards on white, deepen light group rows and resting borders, and hover with the ink tint in every theme ([22dd9b2](https://github.com/aelxxs/actual-budget-tweaks/commit/22dd9b2))
+- Tint Theme Studio's dark sidebar with a hint of the accent ([9de953c](https://github.com/aelxxs/actual-budget-tweaks/commit/9de953c))
+- Match a light theme's plain sidebar to its cards as shown ([3a743e2](https://github.com/aelxxs/actual-budget-tweaks/commit/3a743e2))
+- Weight To Budget's figure at 600 ([5d5c667](https://github.com/aelxxs/actual-budget-tweaks/commit/5d5c667))
+- Use the settings-2 icon wherever the sliders icon was ([a7df61e](https://github.com/aelxxs/actual-budget-tweaks/commit/a7df61e))
+- Weight To Budget's figure at 550 ([f6fb0e2](https://github.com/aelxxs/actual-budget-tweaks/commit/f6fb0e2))
+- Put the budget actions chevron in the card's corner, showing its button on hover like the swap button ([ebb7c92](https://github.com/aelxxs/actual-budget-tweaks/commit/ebb7c92))
+- Use tabular figures for the daily-available amount, income chart and Insights toolbar ([81f867e](https://github.com/aelxxs/actual-budget-tweaks/commit/81f867e))
+- Polish the Insights overview: a calmer Income note mid-month, level headlines, a goals count without a zero, unsigned bills, and Next month's tidier strip and footer ([ee529d8](https://github.com/aelxxs/actual-budget-tweaks/commit/ee529d8))
+- Set Studio budget colours' chroma as a share of each hue's gamut, and give muted ones more colour ([ea1cfc8](https://github.com/aelxxs/actual-budget-tweaks/commit/ea1cfc8))
+- Rename the Insights Next month card to Months ahead, and match its headline's icon gap to the goal rows ([e377794](https://github.com/aelxxs/actual-budget-tweaks/commit/e377794))
+- Calm Theme Studio's budget colours: cap their chroma, move green toward emerald, and give light themes more contrast with an amber yellow ([ade1588](https://github.com/aelxxs/actual-budget-tweaks/commit/ade1588))
+- Keep budget group totals and zero balances out of Color amounts' green, and weight coloured balances at 450 ([cf00bb8](https://github.com/aelxxs/actual-budget-tweaks/commit/cf00bb8))
+- Size the collapsed rail's account tiles and folders to match its nav buttons ([fce6ddf](https://github.com/aelxxs/actual-budget-tweaks/commit/fce6ddf))
+- Calm Theme Studio's dark budget colours: a sage green and a softer gold yellow, so neither outshines red ([7a7a5a8](https://github.com/aelxxs/actual-budget-tweaks/commit/7a7a5a8))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+
 ## v0.1.110
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.109...v0.1.110)
