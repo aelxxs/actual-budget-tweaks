@@ -363,6 +363,33 @@ const BUILTIN_CSS = `
 	}
 `;
 
+const DATA_KEYS = ["blue", "sapphire", "sky", "teal"];
+
+/**
+ * The data colour: the first of the theme's second-colour family that can't be read as a status.
+ * A Studio theme's "blue" follows its family, so it can land on yellow or green.
+ */
+function dataCSS(keys: Record<string, string>): string {
+	const hue = (name: string) => {
+		const hex = keys[`--ctp-${name}`];
+		return /^#[\da-f]{6}$/i.test(hex ?? "") ? hexToOklch(hex) : null;
+	};
+	const status = ["red", "yellow", "green"].flatMap((n) => hue(n)?.h ?? []);
+	const apart = (h: number) => status.every((s) => Math.abs(((h - s + 540) % 360) - 180) >= 35);
+	const pick = DATA_KEYS.find((n) => {
+		const c = hue(n);
+		return c && c.C >= 0.03 && apart(c.h);
+	});
+	if (pick) {
+		return `:root {\n\t--abt-data: var(--ctp-${pick});\n}\n`;
+	}
+	const blue = hue("blue");
+	if (!blue) {
+		return "";
+	}
+	return `:root {\n\t--abt-data: ${oklchToHex(blue.L, Math.max(blue.C, 0.1), 255)};\n}\n`;
+}
+
 /** Light themes: controls raised over the page, a firmer wash, paler other months. */
 const LIGHT_CSS = `
 	:root {
@@ -421,6 +448,7 @@ export function paletteCSS(theme: PaletteTheme): string {
 		css += LIGHT_CSS;
 	}
 	css += chartCSS(theme.keys);
+	css += dataCSS(theme.keys);
 	// Only for themes with a sidebar of their own, so a user's overrides of these page colours still reach it.
 	if ("--ctp-sidebar" in theme.keys) {
 		css += SIDEBAR_CSS;
