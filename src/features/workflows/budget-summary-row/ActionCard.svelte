@@ -354,7 +354,7 @@
 		</button>
 		<button
 			type="button"
-			class="ac__more abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
+			class="ac__more abt-btn abt-btn--sm abt-btn--icon"
 			aria-label="More budget actions"
 			aria-expanded={menuOpen}
 			disabled={busy}
@@ -600,14 +600,19 @@
 
 	/* Above the stretched main button, so it stays its own target; in the corner, not centred. */
 	.ac__more {
-		position: relative;
+		position: absolute;
+		top: var(--abt-space-2);
+		right: var(--abt-space-2);
 		z-index: 1;
-		align-self: flex-start;
+		/* Only the chevron at rest; the button shows on hover, like the swap button. */
+		--abt-btn-bg: transparent;
+		--abt-btn-line: transparent;
 	}
-
+	.ac:hover .ac__more,
+	.ac__more:focus-visible,
 	.ac__more[aria-expanded="true"] {
-		background: var(--abt-fill-hover);
-		color: var(--color-pageText);
+		--abt-btn-bg: initial;
+		--abt-btn-line: initial;
 	}
 
 	/* Darker than the header's buttons: the card's own surface, so it sits back inside the card. */
