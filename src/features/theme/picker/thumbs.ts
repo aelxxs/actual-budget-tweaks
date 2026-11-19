@@ -13,12 +13,10 @@ export function placeholderThumb(mode: "light" | "dark"): Thumb {
 		: { side: "#e6e8ec", page: "#f2f3f5", card: "#ffffff", text: "#b9bdc4", accent: "#b9bdc4" };
 }
 
-function fromPalette(keys: Record<string, string>, css?: string): Thumb {
+function fromPalette(keys: Record<string, string>): Thumb {
 	const k = (name: string) => keys[`--ctp-${name}`];
-	// The sidebar follows the cards unless the palette gives it its own color (Daylight's dark one).
-	const sidebar = css?.match(/--color-sidebarBackground:\s*(#[0-9a-f]{3,8})/i)?.[1];
 	return {
-		side: sidebar ?? k("mantle"),
+		side: k("sidebar") ?? k("mantle"),
 		page: k("crust"),
 		card: k("mantle"),
 		text: k("text"),
@@ -28,7 +26,7 @@ function fromPalette(keys: Record<string, string>, css?: string): Thumb {
 
 export function builtinThumb(key: string): Thumb | null {
 	const theme = themes[key];
-	return theme ? fromPalette(theme.keys, theme.css) : null;
+	return theme ? fromPalette(theme.keys) : null;
 }
 
 export function userThumb(theme: UserTheme): Thumb {

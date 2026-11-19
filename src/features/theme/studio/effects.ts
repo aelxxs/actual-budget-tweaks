@@ -1,5 +1,6 @@
 import { MAIN, PAGE_COLUMN, REPORTS_PAGE } from "@lib/actual-dom";
 import { desktopOnly } from "@lib/actual/pages";
+import type { PaletteTheme } from "@lib/design/types";
 import { FLOATING_ATTR } from "@features/layout/inset-panels";
 import { LIVE_SIDEBAR_ATTR } from "@features/workflows/sidebar/lib/collapse";
 import {
@@ -43,70 +44,26 @@ export function paletteKeys(g: Generated): Record<string, string> {
 	return Object.fromEntries(Object.entries(g.colors).map(([k, hex]) => [`--ctp-${k}`, hex]));
 }
 
-/** What a recipe adds beyond its palette: the sidebar's own colors, glow and grain. */
-export function studioCSS(r: Recipe, g: Generated = generate(r)): string {
-	return sidebarCSS(r, g) + bordersCSS(r, g) + desktopOnly(effectsCSS(r, r.mode, g.colors));
+/** A recipe as the palette theme it makes, painted like any built-in one. */
+export function themeFromRecipe(r: Recipe, g: Generated = generate(r)): PaletteTheme {
+	const { line, ...colors } = g.colors;
+	const keys = paletteKeys({ ...g, colors: r.borders ? { ...colors, line } : colors });
+	if (r.sidebar !== "match") {
+		for (const [name, hex] of Object.entries(g.sidebar)) {
+			keys[name === "bg" ? "--ctp-sidebar" : `--ctp-sidebar-${name}`] = hex;
+		}
+	}
+	return { mode: r.mode, keys };
 }
 
-/** Raised borders reach ABT's own panels and cards too, which otherwise draw a faint ink tint. */
-function bordersCSS(r: Recipe, g: Generated): string {
-	if (!r.borders) {
-		return "";
-	}
-	return `
-		:root:root {
-			--abt-line: ${g.colors.line};
-			--abt-panel-border: var(--abt-line-secondary);
-			--color-sidebarBorder: var(--abt-line-secondary);
-		}
-		.sidebar.sidebar {
-			--sb-line: var(--abt-line-secondary);
-		}`;
+/** A recipe's glow and grain. */
+export function studioCSS(r: Recipe, g: Generated = generate(r)): string {
+	return desktopOnly(effectsCSS(r, r.mode, g.colors));
 }
 
 /** Glow and grain on a theme that isn't a Studio one. */
 export function themeEffectsCSS(effects: Effects, mode: Mode): string {
 	return desktopOnly(effectsCSS(effects, mode, CSS_COLORS));
-}
-
-function sidebarCSS(r: Recipe, g: Generated): string {
-	if (r.sidebar === "match") {
-		return "";
-	}
-	const s = g.sidebar;
-	// Only the sidebar's own tokens: --color-sidebarItemAccentSelected is ABT's accent everywhere.
-	return `
-		/* Doubled, to outrank the palette's own :root rule whichever style tag comes later. */
-		:root:root {
-			--color-sidebarBackground: ${s.bg};
-			--color-sidebarBorder: ${r.borders ? "var(--abt-line-secondary)" : s.hover};
-			--color-sidebarBudgetName: ${s.text};
-			--color-sidebarHeaderText: ${s.text};
-			--color-sidebarItemText: ${s.text};
-			--color-sidebarItemTextSelected: ${s.sel};
-			--color-sidebarItemBackgroundHover: ${s.hover};
-			--color-sidebarItemBackgroundSelected: color-mix(in srgb, ${s.sel} 18%, transparent);
-			--color-sidebarControlBackground: ${s.hover};
-			--color-sidebarTextSubdued: ${s.sub};
-			--color-sidebarTextMuted: ${s.sub};
-			--color-sidebarTextFailed: ${s.neg};
-		}
-		/* Page colors that ABT's sidebar tiles use, remade for this background. */
-		.sidebar {
-			--abt-accent: ${s.sel};
-			--color-sidebarItemAccentSelected: ${s.sel};
-			--color-pageText: ${s.text};
-			--color-pageTextSubdued: ${s.sub};
-			--color-sidebarTextPositive: ${s.pos};
-			--color-noticeTextLight: ${s.pos};
-			--color-errorText: ${s.neg};
-			--color-sidebarItemBackgroundFailed: ${s.neg};
-			--color-sidebarItemBackgroundPositive: ${s.pos};
-			--color-sidebarItemBackgroundPending: ${s.warn};
-			--color-warningText: ${s.warn};
-			--color-tableBorder: ${s.hover};
-		}
-	`;
 }
 
 /** Paints glow and grain across every shell surface, as one fixed background. */

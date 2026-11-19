@@ -1,8 +1,8 @@
 import { applyGlobalCSS } from "@lib/dom/dom";
 import { getValue } from "@lib/store";
 import { DEFAULT_THEME } from "../defaults";
-import { applyThemeByKey, applyUserPaletteTheme } from "../theme-apply";
-import { paletteKeys, STUDIO_STYLE_ID, studioCSS } from "./effects";
+import { applyPaletteTheme, applyThemeByKey } from "../theme-apply";
+import { STUDIO_STYLE_ID, studioCSS, themeFromRecipe } from "./effects";
 import type { Generated, Recipe } from "./generator";
 
 const PREVIEW_ID = "studio:preview";
@@ -11,7 +11,7 @@ const PREVIEW_ID = "studio:preview";
 export function previewRecipe(r: Recipe, g: Generated): void {
 	// First: applying the palette tells listeners the theme changed, and they read the sidebar's colours.
 	applyGlobalCSS(studioCSS(r, g), STUDIO_STYLE_ID);
-	applyUserPaletteTheme(PREVIEW_ID, paletteKeys(g), r.mode);
+	applyPaletteTheme(PREVIEW_ID, themeFromRecipe(r, g));
 }
 
 /** Puts the saved theme back, as the theme setting's init chooses it. */

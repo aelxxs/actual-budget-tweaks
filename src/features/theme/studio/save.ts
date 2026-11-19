@@ -1,8 +1,7 @@
 import { sidepanel } from "@features/core/side-panel";
 import { getValue, setValue } from "@lib/store";
 import { generateThemeId, saveUserTheme } from "../user-themes.svelte";
-import { paletteKeys } from "./effects";
-import { generate } from "./generator";
+import { themeFromRecipe } from "./effects";
 import { copyRecipe } from "./recipes";
 import { studio } from "./state.svelte";
 
@@ -19,7 +18,7 @@ export async function saveStudioTheme(asNew = false): Promise<void> {
 		name: recipe.name,
 		mode: recipe.mode,
 		type: "palette",
-		keys: paletteKeys(generate(recipe)),
+		keys: themeFromRecipe(recipe).keys,
 		recipe,
 	});
 	if (await getValue<boolean>("theme-auto-switch", false)) {

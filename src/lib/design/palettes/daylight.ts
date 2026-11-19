@@ -31,44 +31,14 @@ export const daylight = {
 		"--ctp-base": "#f6f7f9",
 		"--ctp-mantle": "#ffffff",
 		"--ctp-crust": "#eceef2",
+		"--ctp-sidebar": "#1e1e2e",
+		"--ctp-sidebar-text": "#f4f4fa",
+		"--ctp-sidebar-sub": "#bcbccb",
+		"--ctp-sidebar-hover": "#2f2f40",
+		"--ctp-sidebar-sel": "#b7aaff",
+		"--ctp-sidebar-neg": "#ff7077",
+		"--ctp-sidebar-pos": "#7ecba0",
+		"--ctp-sidebar-warn": "#e9bc79",
+		"--ctp-sidebar-updated": "#94b7ff",
 	},
-	css: `
-		:root {
-			/* Other months in multi-month view: near-white, a step off the current month's white. */
-			--color-budgetOtherMonth: #fbfbfc;
-			/* Deep accents wash out at the dark themes' strength. */
-			--abt-wash: 22%;
-			/* ABT's page accent; the sidebar gets a lifted one below. */
-			--abt-accent: var(--ctp-mauve);
-
-			/* A dark sidebar: its colours derive from its background, its accents from the page's. */
-			--color-sidebarBackground: #1e1e2e;
-			--color-sidebarItemText: oklch(from var(--color-sidebarBackground) 0.97 0.008 h);
-			--color-sidebarBudgetName: var(--color-sidebarItemText);
-			--color-sidebarHeaderText: var(--color-sidebarItemText);
-			--color-sidebarTextSubdued: oklch(from var(--color-sidebarBackground) 0.8 0.02 h);
-			--color-sidebarTextMuted: oklch(from var(--color-sidebarBackground) 0.74 0.02 h);
-			--color-sidebarBorder: oklch(from var(--color-sidebarBackground) calc(l + 0.08) c h);
-			--color-sidebarControlBackground: oklch(from var(--color-sidebarBackground) calc(l + 0.06) c h);
-			--color-sidebarItemBackgroundHover: oklch(from var(--color-sidebarBackground) calc(l + 0.07) c h);
-			--color-sidebarItemAccentSelected: oklch(from var(--ctp-mauve) 0.78 c h);
-			--color-sidebarItemTextSelected: var(--color-sidebarItemAccentSelected);
-			--color-sidebarBrand: var(--color-sidebarItemAccentSelected);
-			--color-sidebarItemBackgroundSelected: color-mix(in srgb, var(--color-sidebarItemAccentSelected) 18%, transparent);
-			--color-sidebarItemTextUpdated: oklch(from var(--ctp-blue) 0.78 c h);
-			--color-sidebarItemBackgroundPositive: oklch(from var(--ctp-green) 0.78 c h);
-			--color-sidebarTextPositive: var(--color-sidebarItemBackgroundPositive);
-			--color-sidebarItemBackgroundFailed: oklch(from var(--ctp-red) 0.72 c h);
-			--color-sidebarTextFailed: var(--color-sidebarItemBackgroundFailed);
-			--color-sidebarItemBackgroundPending: oklch(from var(--ctp-yellow) 0.82 c h);
-		}
-
-		/* Controls sit above the page (light fill, crisp border), not sunk into it. */
-		:root,
-		.abt-controls-quiet {
-			--abt-fill: var(--ctp-base);
-			--abt-fill-hover: var(--ctp-surface0);
-			--abt-line: var(--ctp-surface1);
-		}
-	`,
 } satisfies Theme;

@@ -1,9 +1,10 @@
 import { sidepanel } from "@features/core/side-panel";
+import type { Theme } from "@lib/design/types";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/dom/svelte";
 import { userThemeState } from "../user-themes.svelte";
 import { restoreSavedTheme } from "./apply";
-import { recipeFromPalette } from "./generator";
+import { hexToOklch, recipeFromPalette } from "./generator";
 import { copyRecipe } from "./recipes";
 import { studio } from "./state.svelte";
 import StudioHeader from "./StudioHeader.svelte";
@@ -13,10 +14,14 @@ let mounted: (Mounted & { shown: boolean }) | null = null;
 let header: Mounted | null = null;
 let stop: (() => void) | null = null;
 
-/** Opens the studio on a copy of a palette from elsewhere (a built-in theme), saved as a new theme. */
-export function openPaletteInStudio(keys: Record<string, string>, name: string): void {
+/** Opens the studio on a copy of a built-in theme, saved as a new theme. */
+export function openPaletteInStudio(theme: Theme): void {
 	studio.editing = null;
-	studio.recipe = recipeFromPalette(keys, `${name} (Studio)`);
+	studio.recipe = recipeFromPalette(theme.keys, `${theme.name} (Studio)`);
+	const sidebar = theme.keys["--ctp-sidebar"];
+	if (sidebar) {
+		studio.recipe.sidebar = hexToOklch(sidebar).L < 0.5 ? "dark" : "deeper";
+	}
 	studio.recent = [];
 	openThemeStudio();
 }

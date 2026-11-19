@@ -53,9 +53,10 @@ export type SidebarColors = {
 	hover: string;
 	sel: string;
 	neg: string;
-	/** Gains and warnings in ABT's sidebar tiles, readable on this background. */
+	/** Gains, warnings and bank sync updates in ABT's sidebar tiles, readable on this background. */
 	pos: string;
 	warn: string;
+	updated: string;
 };
 
 export type Generated = {
@@ -418,12 +419,12 @@ function sidebarColors(
 ): SidebarColors {
 	const s = sidebarBase(r, K, crustL, mantleL);
 	if (r.sidebar === "match") {
-		return { ...s, pos: K.green, warn: K.yellow };
+		return { ...s, pos: K.green, warn: K.yellow, updated: K.blue };
 	}
 	const up = hexToOklch(s.bg).L < 0.55;
 	const tone = (h: number, C: number) =>
 		readable(up ? 0.78 : 0.5, C, h, [s.bg, s.hover], 4.5, up ? 1 : -1);
-	return { ...s, pos: tone(150, 0.15), warn: tone(85, 0.14) };
+	return { ...s, pos: tone(150, 0.15), warn: tone(85, 0.14), updated: tone(260, 0.14) };
 }
 
 /** The Vibrance slider's position, 0 to 1: how near the accent is to the most its hue can hold. */
@@ -436,7 +437,7 @@ function sidebarBase(
 	K: Record<string, string>,
 	crustL: number,
 	mantleL: number,
-): Omit<SidebarColors, "pos" | "warn"> {
+): Omit<SidebarColors, "pos" | "warn" | "updated"> {
 	const dark = r.mode === "dark";
 	const t = r.tint;
 	const H = r.baseHue;

@@ -365,7 +365,7 @@
 		if (isUserTheme(key)) {
 			editUserTheme(key);
 		} else if (themes[key]) {
-			openPaletteInStudio(themes[key].keys, themes[key].name);
+			openPaletteInStudio(themes[key]);
 		} else {
 			void editCssOverride(key);
 		}

@@ -75,7 +75,7 @@
 		if (user) {
 			openThemeStudio(key);
 		} else if (themes[key]) {
-			openPaletteInStudio(themes[key].keys, themes[key].name);
+			openPaletteInStudio(themes[key]);
 		} else {
 			openThemeStudio();
 		}
