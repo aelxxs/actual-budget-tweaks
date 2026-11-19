@@ -29,6 +29,8 @@ export const reconcile = $state({
 	accountName: "",
 	/** The bank's last synced balance, when the account syncs. */
 	bankBalance: null as number | null,
+	/** When the bank balance was last synced, in ms; null for an account that doesn't sync. */
+	lastSync: null as number | null,
 	lastReconciled: null as string | null,
 	/** The statement balance being reconciled against; null while not reconciling. */
 	target: null as number | null,
@@ -89,7 +91,14 @@ export function isUpToDate(a: {
 
 export async function loadAccount(id: string): Promise<void> {
 	// accounts-get, not a query: the bank balance isn't a queryable field.
-	const row = (await send<AccountRow[]>("accounts-get")).find((a) => a.id === id);
+	const [rows, synced] = await Promise.all([
+		send<AccountRow[]>("accounts-get"),
+		query<{ last_sync: string | null }[]>("accounts", {
+			filter: { id },
+			select: ["last_sync"],
+		}).catch(() => []),
+	]);
+	const row = rows.find((a) => a.id === id);
 	if (!row) {
 		return;
 	}
@@ -100,6 +109,7 @@ export async function loadAccount(id: string): Promise<void> {
 	reconcile.accountId = id;
 	reconcile.accountName = row.name;
 	reconcile.bankBalance = row.balance_current;
+	reconcile.lastSync = Number(synced[0]?.last_sync) || null;
 	reconcile.lastReconciled = row.last_reconciled;
 	await refreshTotals();
 }

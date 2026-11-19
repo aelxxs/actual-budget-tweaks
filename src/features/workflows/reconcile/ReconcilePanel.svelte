@@ -8,7 +8,8 @@
 	import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
 	import { onMount } from "svelte";
 	import { closePanel } from "./panel";
-	import { reconciledOn } from "./relative-time";
+	import { syncAccounts } from "@features/workflows/sidebar/lib/data";
+	import { reconciledOn, relativeTime } from "./relative-time";
 	import {
 		addAdjustment,
 		back,
@@ -50,6 +51,25 @@
 			? -parsed
 			: null,
 	);
+	// The field starts out at the cleared balance, so that alone isn't a match: it has to be typed,
+	// picked, or agree with the bank's synced balance.
+	let chosen = $state(false);
+	const matches = $derived(
+		parsed != null && parsed === reconcile.cleared && (chosen || parsed === reconcile.bankBalance),
+	);
+	/** A synced balance older than this may be missing transactions the statement has. */
+	const STALE_MS = 24 * 3600e3;
+	const stale = $derived(reconcile.lastSync != null && Date.now() - reconcile.lastSync > STALE_MS);
+	let syncing = $state(false);
+	async function syncNow() {
+		syncing = true;
+		try {
+			await syncAccounts([accountId]);
+			await loadAccount(accountId);
+		} finally {
+			syncing = false;
+		}
+	}
 	let editing = $state(false);
 	let loaded = $state(false);
 	// Up to date, unless asked to reconcile anyway (the bank may show a balance Actual doesn't know).
@@ -206,6 +226,7 @@
 						aria-label="Statement balance"
 						bind:value={text}
 						use:select
+						oninput={() => (chosen = true)}
 						aria-invalid={parsed == null}
 					/>
 					{#if flipped != null}
@@ -219,17 +240,40 @@
 							<span class="abt-privacy-number">{fmtMoney(flipped)}?</span>
 						</button>
 					{/if}
-					<span class="rp__muted">The ending balance on your statement or in your bank's app.</span>
+					{#if matches}
+						<span class="rp__match">
+							<Icon name="checkCircle" size={14} />
+							Matches your cleared balance
+						</span>
+					{:else}
+						<span class="rp__muted"
+							>The ending balance on your statement or in your bank's app.</span
+						>
+					{/if}
 					{#if reconcile.bankBalance != null}
 						<button
 							type="button"
 							class="rp__chip"
-							onclick={() => (text = formatMoneyInput(reconcile.bankBalance ?? 0))}
+							onclick={() => {
+								text = formatMoneyInput(reconcile.bankBalance ?? 0);
+								chosen = true;
+							}}
 						>
 							<Icon name="refreshCw" size={13} />
 							<span>Use bank's synced balance</span>
 							<span class="abt-privacy-number">{fmtMoney(reconcile.bankBalance)}</span>
 						</button>
+						{#if reconcile.lastSync != null}
+							<span class="rp__synced" class:stale>
+								Synced {relativeTime(reconcile.lastSync)}
+								{#if stale}
+									·
+									<button type="button" class="rp__link" disabled={syncing} onclick={syncNow}>
+										{syncing ? "Syncing…" : "Sync now"}
+									</button>
+								{/if}
+							</span>
+						{/if}
 					{/if}
 					<button type="submit" class="abt-btn abt-tone-accent" disabled={parsed == null}>
 						Start reconciling
@@ -468,6 +512,36 @@
 		color: var(--abt-muted);
 	}
 
+	.rp__match {
+		display: flex;
+		align-items: center;
+		gap: var(--abt-space-2);
+		font-size: var(--abt-text-sm);
+		color: var(--color-budgetNumberPositive);
+	}
+
+	.rp__synced {
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	.rp__synced.stale {
+		color: var(--color-warningText);
+	}
+
+	.rp__link {
+		padding: 0;
+		border: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+	.rp__link:disabled {
+		cursor: default;
+		text-decoration: none;
+	}
+
 	.rp__uptodate {
 		display: flex;
 		align-items: flex-start;
@@ -554,6 +628,7 @@
 	.rp__chip span:last-child {
 		margin-left: auto;
 		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
 	}
 
 	/* Progress hero */

@@ -283,7 +283,11 @@ interface BankSyncResult {
 // error toasts, then the new, matched and updated ids, which Actual's "new" styling and the
 // sync recap read. Its React Query invalidation is left out; this sidebar reloads its own data.
 export async function syncAllAccounts(accounts: SidebarAccount[]): Promise<void> {
-	const ids = accounts.filter((a) => a.status !== "manual" && !a.closed).map((a) => a.id);
+	await syncAccounts(accounts.filter((a) => a.status !== "manual" && !a.closed).map((a) => a.id));
+}
+
+/** Bank-syncs these accounts the way Actual's own sync does, spinner and new-transaction marks included. */
+export async function syncAccounts(ids: string[]): Promise<void> {
 	if (!ids.length) {
 		return;
 	}

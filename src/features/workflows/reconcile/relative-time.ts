@@ -9,7 +9,7 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 	["minute", 60e3],
 ];
 
-function relativeTime(ms: number): string {
+export function relativeTime(ms: number): string {
 	const diff = ms - Date.now();
 	const format = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 	for (const [unit, size] of UNITS) {
