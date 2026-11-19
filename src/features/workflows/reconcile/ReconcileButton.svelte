@@ -3,7 +3,7 @@
 	import { calculate, send } from "@lib/actual/actual-api";
 	import { openPanel } from "./panel";
 	import { compactAge, reconciledOn } from "./relative-time";
-	import { reconcile } from "./state.svelte";
+	import { isUpToDate, reconcile } from "./state.svelte";
 
 	const { accountId }: { accountId: string } = $props();
 
@@ -12,16 +12,27 @@
 
 	let lastReconciled = $state<number | null>(null);
 	let uncleared = $state(0);
+	let newlyCleared = $state(0);
+	let cleared = $state(0);
+	let bankBalance = $state<number | null>(null);
 	let loaded = $state(false);
 
 	const active = $derived(reconcile.target != null && reconcile.accountId === accountId);
 	const days = $derived(lastReconciled == null ? null : (Date.now() - lastReconciled) / DAY);
-	const overdue = $derived(loaded && (days == null || days > OVERDUE_DAYS));
+	// Age alone isn't a reason: an account with nothing new since its last reconcile isn't overdue.
+	const upToDate = $derived(
+		loaded &&
+			lastReconciled != null &&
+			isUpToDate({ newlyCleared, uncleared, cleared, bankBalance }),
+	);
+	const overdue = $derived(loaded && !upToDate && (days == null || days > OVERDUE_DAYS));
 	const age = $derived(days == null ? "never" : compactAge(days));
 	const title = $derived(
 		!loaded
 			? "Reconcile"
-			: `${lastReconciled ? `Last reconciled ${reconciledOn(lastReconciled)}` : "Never reconciled"}` +
+			: upToDate
+				? `Up to date · last reconciled ${reconciledOn(lastReconciled ?? 0)}`
+				: `${lastReconciled ? `Last reconciled ${reconciledOn(lastReconciled)}` : "Never reconciled"}` +
 					` · ${uncleared === 1 ? "1 transaction" : `${uncleared} transactions`} not cleared`,
 	);
 
@@ -30,20 +41,36 @@
 		void reconcile.lastReconciled;
 		void reconcile.target;
 		let stale = false;
+		const splits = { splits: "none" } as const;
 		void Promise.all([
-			send<{ id: string; last_reconciled: string | null }[]>("accounts-get"),
+			send<{ id: string; last_reconciled: string | null; balance_current: number | null }[]>(
+				"accounts-get",
+			),
 			calculate<number>(
 				"transactions",
 				{ $count: "$id" },
-				{ filter: { account: accountId, cleared: false }, options: { splits: "none" } },
+				{ filter: { account: accountId, cleared: false }, options: splits },
 			),
-		]).then(([accounts, count]) => {
+			calculate<number>(
+				"transactions",
+				{ $count: "$id" },
+				{ filter: { account: accountId, cleared: true, reconciled: false }, options: splits },
+			),
+			calculate<number>(
+				"transactions",
+				{ $sum: "$amount" },
+				{ filter: { account: accountId, cleared: true }, options: splits },
+			),
+		]).then(([accounts, notCleared, fresh, clearedSum]) => {
 			if (stale) {
 				return;
 			}
-			const raw = accounts.find((a) => a.id === accountId)?.last_reconciled;
-			lastReconciled = raw ? Number(raw) : null;
-			uncleared = count ?? 0;
+			const account = accounts.find((a) => a.id === accountId);
+			lastReconciled = account?.last_reconciled ? Number(account.last_reconciled) : null;
+			bankBalance = account?.balance_current ?? null;
+			uncleared = notCleared ?? 0;
+			newlyCleared = fresh ?? 0;
+			cleared = clearedSum ?? 0;
 			loaded = true;
 		});
 		return () => {
@@ -67,7 +94,7 @@
 		<span>Reconciling…</span>
 	{:else}
 		<span>Reconcile</span>
-		{#if loaded}<span class="rb__age">{age}</span>{/if}
+		{#if loaded && !upToDate}<span class="rb__age">{age}</span>{/if}
 	{/if}
 </button>
 

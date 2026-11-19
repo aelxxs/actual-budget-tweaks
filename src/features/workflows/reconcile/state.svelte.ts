@@ -70,6 +70,23 @@ async function refreshAccountView(): Promise<void> {
 	}
 }
 
+/**
+ * Nothing to reconcile: no transaction cleared or entered since the last reconcile, and the bank's
+ * synced balance (when there is one) agrees with what's cleared.
+ */
+export function isUpToDate(a: {
+	newlyCleared: number;
+	uncleared: number;
+	cleared: number;
+	bankBalance: number | null;
+}): boolean {
+	return (
+		a.newlyCleared === 0 &&
+		a.uncleared === 0 &&
+		(a.bankBalance == null || a.bankBalance === a.cleared)
+	);
+}
+
 export async function loadAccount(id: string): Promise<void> {
 	// accounts-get, not a query: the bank balance isn't a queryable field.
 	const row = (await send<AccountRow[]>("accounts-get")).find((a) => a.id === id);

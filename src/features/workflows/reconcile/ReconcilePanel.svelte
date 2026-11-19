@@ -15,6 +15,7 @@
 		cancel,
 		clearTransaction,
 		finish,
+		isUpToDate,
 		loadAccount,
 		reconcile,
 		refreshTotals,
@@ -50,12 +51,26 @@
 			: null,
 	);
 	let editing = $state(false);
+	let loaded = $state(false);
+	// Up to date, unless asked to reconcile anyway (the bank may show a balance Actual doesn't know).
+	let anyway = $state(false);
+	const upToDate = $derived(
+		loaded &&
+			!anyway &&
+			isUpToDate({
+				newlyCleared: reconcile.checked,
+				uncleared,
+				cleared: reconcile.cleared,
+				bankBalance: reconcile.bankBalance,
+			}),
+	);
 	let clearing = $state<Set<string>>(new Set());
 
 	onMount(async () => {
 		void loadDatePrefs();
 		await loadAccount(accountId);
 		text = formatMoneyInput(reconcile.target ?? reconcile.cleared);
+		loaded = true;
 	});
 
 	function begin(e: SubmitEvent) {
@@ -166,6 +181,20 @@
 					Locked {finished.locked}
 					{finished.locked === 1 ? "transaction" : "transactions"}.
 				</Callout>
+			</Section>
+		{:else if !started && upToDate}
+			<Section title="Up to date" collapsible={false}>
+				<div class="rp__uptodate">
+					<Icon name="checkCircle" size={18} />
+					<p>
+						{reconcile.lastReconciled
+							? `Nothing has changed since you reconciled on ${formatDayMonth(new Date(Number(reconcile.lastReconciled)))}.`
+							: "There's nothing to reconcile yet."}
+					</p>
+				</div>
+				<button type="button" class="rp__anyway" onclick={() => (anyway = true)}>
+					Reconcile anyway
+				</button>
 			</Section>
 		{:else if !started}
 			<Section title="Statement balance" collapsible={false}>
@@ -437,6 +466,35 @@
 		margin: 0;
 		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
+	}
+
+	.rp__uptodate {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--abt-space-3);
+		color: var(--color-budgetNumberPositive);
+	}
+	.rp__uptodate p {
+		margin: 0;
+		color: var(--abt-ink);
+	}
+
+	/* Quiet: for when the bank shows a balance Actual doesn't know yet. */
+	.rp__anyway {
+		align-self: flex-start;
+		margin-top: var(--abt-space-3);
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--abt-muted);
+		font: inherit;
+		font-size: var(--abt-text-sm);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+	}
+	.rp__anyway:hover {
+		color: var(--abt-ink);
 	}
 
 	/* Start */
