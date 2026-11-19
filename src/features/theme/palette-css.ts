@@ -34,9 +34,11 @@ function chartCSS(keys: Record<string, string>): string {
 
 const BUILTIN_CSS = `
 	:root {
+		/* Borders without a theme line colour; light themes set theirs a step deeper. */
+		--abt-border-rest: var(--ctp-surface0);
 		/* Theme Studio's borders: tables and controls take its border color in full; containers and
 		dividers (menus, modals, panels) a step below. Without one, both are surface0. */
-		--abt-line-secondary: color-mix(in oklab, var(--ctp-line, var(--ctp-surface0)) 50%, var(--ctp-surface0));
+		--abt-line-secondary: color-mix(in oklab, var(--ctp-line, var(--abt-border-rest)) 50%, var(--ctp-surface0));
 		/* Budget */
 		--color-budgetCurrentMonth: var(--ctp-mantle);
 		--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
@@ -59,7 +61,7 @@ const BUILTIN_CSS = `
 		/* Button – menu */
 		--color-buttonMenuBackground: transparent;
 		--color-buttonMenuBackgroundHover: rgba(205, 214, 244, 0.07);
-		--color-buttonMenuBorder: var(--ctp-line, var(--ctp-surface0));
+		--color-buttonMenuBorder: var(--ctp-line, var(--abt-border-rest));
 		--color-buttonMenuSelectedBackground: var(--ctp-yellow);
 		--color-buttonMenuSelectedBackgroundHover: var(--ctp-peach);
 		--color-buttonMenuSelectedBorder: var(--ctp-yellow);
@@ -71,7 +73,7 @@ const BUILTIN_CSS = `
 		/* Button – normal */
 		--color-buttonNormalBackground: var(--ctp-mantle);
 		--color-buttonNormalBackgroundHover: var(--ctp-crust);
-		--color-buttonNormalBorder: var(--ctp-line, var(--ctp-surface0));
+		--color-buttonNormalBorder: var(--ctp-line, var(--abt-border-rest));
 		--color-buttonNormalDisabledBackground: var(--ctp-surface0);
 		--color-buttonNormalDisabledBorder: var(--ctp-surface2);
 		--color-buttonNormalDisabledText: var(--ctp-overlay0);
@@ -132,7 +134,7 @@ const BUILTIN_CSS = `
 		--color-formInputBackground: var(--ctp-surface0);
 		--color-formInputBackgroundSelected: var(--ctp-surface1);
 		--color-formInputBackgroundSelection: var(--ctp-blue);
-		--color-formInputBorder: var(--ctp-line, var(--ctp-surface0));
+		--color-formInputBorder: var(--ctp-line, var(--abt-border-rest));
 		--color-formInputBorderSelected: var(--ctp-blue);
 		--color-formInputShadowSelected: transparent;
 		--color-formInputText: var(--ctp-text);
@@ -238,8 +240,8 @@ const BUILTIN_CSS = `
 		/* A tint, not solid mauve: Actual's rule stage buttons and multi-select chips paint this behind
 		the page's own text without setting pillTextSelected. */
 		--color-pillBackgroundSelected: color-mix(in srgb, var(--ctp-mauve) 35%, transparent);
-		--color-pillBorder: var(--ctp-line, var(--ctp-surface0));
-		--color-pillBorderDark: var(--ctp-line, var(--ctp-surface0));
+		--color-pillBorder: var(--ctp-line, var(--abt-border-rest));
+		--color-pillBorderDark: var(--ctp-line, var(--abt-border-rest));
 		--color-pillBorderSelected: var(--ctp-lavender);
 		--color-pillText: var(--ctp-subtext1);
 		--color-pillTextHighlighted: var(--ctp-text);
@@ -291,7 +293,7 @@ const BUILTIN_CSS = `
 
 		/* Table */
 		--color-tableBackground: var(--ctp-mantle);
-		--color-tableBorder: var(--ctp-line, var(--ctp-surface0));
+		--color-tableBorder: var(--ctp-line, var(--abt-border-rest));
 		--color-tableBorderHover: var(--ctp-mauve);
 		--color-tableBorderSelected: var(--ctp-mauve);
 		--color-tableBorderSeparator: var(--ctp-overlay0);
@@ -365,7 +367,10 @@ const BUILTIN_CSS = `
 const LIGHT_CSS = `
 	:root {
 		--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 55%);
-		--color-budgetHeaderCurrentMonth: color-mix(in oklab, var(--ctp-base), var(--ctp-surface0) 50%);
+		/* Group rows a step deeper, so they stand off the table. */
+		--color-budgetHeaderCurrentMonth: color-mix(in oklab, var(--ctp-base), var(--ctp-surface0) 65%);
+		/* Borders between surface0 and surface1, so they show beside the group rows. */
+		--abt-border-rest: color-mix(in oklab, var(--ctp-surface0), var(--ctp-surface1));
 		--color-budgetOtherMonth: color-mix(in oklab, var(--color-budgetCurrentMonth), white 50%);
 		/* Deep accents wash out at the dark themes' strength. */
 		--abt-wash: 22%;
@@ -373,7 +378,6 @@ const LIGHT_CSS = `
 	:root,
 	.abt-controls-quiet {
 		--abt-fill: var(--ctp-base);
-		--abt-fill-hover: var(--ctp-surface0);
 		--abt-line: var(--ctp-surface1);
 	}
 `;

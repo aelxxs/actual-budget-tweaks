@@ -214,7 +214,7 @@
 	const depthRange = $derived(DEPTH_RANGE[r.mode]);
 	// The cards' lightness at each end, in the background's own hue and tint.
 	const depthTrack = $derived.by(() => {
-		const cardL = r.mode === "dark" ? 0.19 - 0.022 * r.contrast : 0.965 - 0.012 * r.tint;
+		const cardL = r.mode === "dark" ? 0.19 - 0.022 * r.contrast : 1;
 		const C = 0.004 + 0.03 * r.tint;
 		return `linear-gradient(to right, ${oklchToHex(cardL + depthRange[0], C, r.baseHue)}, ${oklchToHex(cardL + depthRange[1], C, r.baseHue)})`;
 	});

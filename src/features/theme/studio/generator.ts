@@ -190,7 +190,8 @@ export const CHROMA_CEILING = 0.26;
 /** How far the backgrounds can move: a dark theme mostly lighter (dim), a light one darker. */
 export const DEPTH_RANGE: Record<Mode, [number, number]> = {
 	dark: [-0.04, 0.1],
-	light: [-0.1, 0.01],
+	// Light cards start at white, so they can only go darker.
+	light: [-0.1, 0],
 };
 export const LIFT_RANGE: [number, number] = [-0.1, 0.12];
 
@@ -243,17 +244,23 @@ export function backgroundFromHex(
 	surface: "mantle" | "crust" = "mantle",
 ): { baseHue: number | null; tint: number; depth: number } {
 	const o = hexToOklch(hex);
-	const dark = mode === "dark";
-	const chroma = !dark && surface === "crust" ? o.C / 1.1 : o.C;
-	const tint = clamp(dark ? (chroma - 0.004) / 0.03 : (chroma - 0.003) / 0.02, 0, 1);
-	const mantleL = o.L + (surface === "crust" ? 0.022 + (dark ? 0.008 : 0.01) * contrast : 0);
-	const depth = dark
-		? mantleL - 0.187 + 0.022 * contrast
-		: mantleL + 0.02 + 0.01 * contrast - (0.985 - 0.012 * tint);
+	if (mode === "light") {
+		// White cards carry no tint, so a light theme's is read off the page (crust).
+		const mantleL = surface === "crust" ? o.L + 0.035 + 0.03 * contrast : o.L;
+		// The cards hold half the page's chroma (see generate).
+		const chroma = surface === "crust" ? o.C : o.C / 0.5;
+		return {
+			baseHue: o.C < 0.004 ? null : o.h,
+			tint: clamp((chroma - 0.003) / 0.02, 0, 1),
+			// White reads back a hair under 1; it is white.
+			depth: clamp(mantleL > 0.9995 ? 0 : mantleL - 1, ...DEPTH_RANGE[mode]),
+		};
+	}
+	const mantleL = o.L + (surface === "crust" ? 0.022 + 0.008 * contrast : 0);
 	return {
 		baseHue: o.C < 0.004 ? null : o.h,
-		tint,
-		depth: clamp(depth, ...DEPTH_RANGE[mode]),
+		tint: clamp((o.C - 0.004) / 0.03, 0, 1),
+		depth: clamp(mantleL - 0.187 + 0.022 * contrast, ...DEPTH_RANGE[mode]),
 	};
 }
 
@@ -270,9 +277,13 @@ export function recipeFromPalette(keys: Record<string, string>, name: string): R
 	const mode: Mode = mantle.L < 0.5 ? "dark" : "light";
 	const dark = mode === "dark";
 	// Contrast from how far apart the page and the cards sit, then the shift that puts them there.
-	const gap = mantle.L - crust.L;
-	const contrast = clamp(dark ? (gap - 0.022) / 0.008 : (gap - 0.022) / 0.01, 0, 1);
-	const background = backgroundFromHex(mode, contrast, keys["--ctp-mantle"] ?? "#808080");
+	// A light palette's lightest card surface stands for its cards, whichever key holds it.
+	const top = dark ? mantle.L : Math.max(mantle.L, at("base").L);
+	const gap = top - crust.L;
+	const contrast = clamp(dark ? (gap - 0.022) / 0.008 : (gap - 0.035) / 0.03, 0, 1);
+	const background = dark
+		? backgroundFromHex(mode, contrast, keys["--ctp-mantle"] ?? "#808080")
+		: backgroundFromHex(mode, contrast, keys["--ctp-crust"] ?? "#808080", "crust");
 	const lift = accent.L - accentLightness(mode, contrast);
 	return {
 		name,
@@ -353,24 +364,27 @@ export function generate(r: Recipe): Generated {
 		put("subtext1", 0.76 + 0.07 * c + depth, ct * 1.1);
 		K.text = readable(0.88 + 0.07 * c, ct, H, K.mantle, 7, 1);
 	} else {
+		// White cards (mantle) on top at white, hover (base) a step under them, the page (crust) below.
 		const cs = 0.003 + 0.02 * t;
 		const ct = 0.006 + 0.03 * t;
-		const baseL = Math.min(1, 0.985 - 0.012 * t + depth);
-		mantleL = baseL - 0.02 - 0.01 * c;
-		crustL = mantleL - 0.022 - 0.01 * c;
-		const s0 = crustL - 0.05 - 0.02 * c;
-		put("base", baseL, cs * 0.7);
-		put("mantle", mantleL, cs);
-		put("crust", crustL, cs * 1.1);
+		mantleL = Math.min(1, 1 + depth);
+		const baseL = mantleL - 0.018 - 0.012 * c;
+		crustL = mantleL - 0.035 - 0.03 * c;
+		const s0 = crustL - 0.018 - 0.01 * c;
+		put("mantle", mantleL, depth < 0 ? cs * 0.5 : 0);
+		put("base", baseL, cs * 0.6);
+		put("crust", crustL, cs);
 		put("surface0", s0, cs * 1.1);
 		lineL = s0;
 		lineC = cs * 1.1;
-		put("surface1", s0 - 0.045, cs * 1.1);
-		put("surface2", s0 - 0.09, cs * 1.1);
-		guardOverlays(0.7, cs * 1.2, -1);
-		put("subtext0", 0.55 - 0.1 * c + depth, ct);
-		put("subtext1", 0.46 - 0.08 * c + depth, ct);
-		K.text = readable(0.33 - 0.1 * c, ct, H, K.mantle, 7, -1);
+		put("surface1", s0 - 0.058, cs * 1.6);
+		put("surface2", s0 - 0.14, cs * 2.4);
+		// Text a touch inkier than the surfaces, and secondary text firm enough to read on white.
+		const ink = ct + 0.012;
+		guardOverlays(0.62, ink * 0.9, -1);
+		put("subtext0", 0.46 - 0.09 * c + depth, ink);
+		put("subtext1", 0.4 - 0.09 * c + depth, ink);
+		K.text = readable(0.3 - 0.1 * c, ink, H, K.mantle, 7, -1);
 	}
 
 	// Borders: surface0 at 0, firming to 3:1 against the page (WCAG's level for the edges of

@@ -307,7 +307,7 @@ const STYLES: Style[] = [
 let lastStyle: Style | null = null;
 
 // The middle of Shade's range: deep to dim in dark themes, white to soft in light ones.
-const SHUFFLE_DEPTH: Record<Mode, [number, number]> = { dark: [-0.03, 0.07], light: [-0.06, 0.01] };
+const SHUFFLE_DEPTH: Record<Mode, [number, number]> = { dark: [-0.03, 0.07], light: [-0.06, 0] };
 
 /** Rerolls the unlocked traits from one style; the locked ones are kept as they are. */
 export function shuffleRecipe(
