@@ -214,7 +214,7 @@
 					<div class="sched">
 						<span class="date">{u.date}</span>
 						<span class="payee">{u.payee}</span>
-						<span class="amount warn abt-privacy-number">{fmtMoney(u.amount, { sign: true })}</span>
+						<span class="amount abt-privacy-number">{fmtMoney(u.amount, { sign: true })}</span>
 					</div>
 				{/each}
 			{/if}
@@ -386,8 +386,8 @@
 		white-space: nowrap;
 		text-overflow: ellipsis;
 	}
-	/* Only the heading and the amount: a whole row in the warning colour was too loud. */
+	/* Only the heading. Mixed toward the ink, so a yellow warning stays readable on a light card. */
 	.warn {
-		color: var(--color-warningText);
+		color: color-mix(in oklab, var(--color-warningText), var(--abt-ink) 40%);
 	}
 </style>
