@@ -513,6 +513,20 @@ function sidebarColors(
 	return { ...s, pos: tone(150, 0.15), warn: tone(85, 0.14), updated: tone(260, 0.14) };
 }
 
+/** A sidebar's own border colour, like the page's: its hover colour at 0, firming to 3:1 against
+ * its background at 1. Null with the Borders slider at 0. */
+export function sidebarLine(r: Recipe, sidebar: SidebarColors): string | null {
+	const borders = clamp(r.borders ?? 0, 0, 1);
+	if (!borders) {
+		return null;
+	}
+	const rest = hexToOklch(sidebar.hover);
+	const restRatio = contrastRatio(sidebar.hover, sidebar.bg);
+	const goal = restRatio + (Math.max(3, restRatio) - restRatio) * borders;
+	const up = hexToOklch(sidebar.bg).L < 0.55;
+	return readable(rest.L, rest.C, rest.h, sidebar.bg, goal, up ? 1 : -1);
+}
+
 /** The Vibrance slider's position, 0 to 1: how near the accent is to the most its hue can hold. */
 function vibrance(r: Recipe): number {
 	return Math.min(1, r.accentChroma / rimChroma(r.mode, r.accentHue));

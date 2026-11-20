@@ -430,10 +430,22 @@ const BORDERS_CSS = `
 	:root:root {
 		--abt-line: var(--theme-line);
 		--abt-panel-border: var(--abt-line-secondary);
-		--color-sidebarBorder: var(--abt-line-secondary);
+	}
+`;
+
+/** The sidebar's lines, a step below its border colour as the page's containers are. A sidebar of
+ * its own has a border colour made for its background; one that matches the page uses the page's. */
+const SIDEBAR_BORDERS_CSS = `
+	:root:root {
+		--abt-sidebar-line: color-mix(
+			in oklab,
+			var(--theme-sidebar-line, var(--theme-line)) 50%,
+			var(--theme-sidebar-hover, var(--ctp-surface0))
+		);
+		--color-sidebarBorder: var(--abt-sidebar-line);
 	}
 	.sidebar.sidebar {
-		--sb-line: var(--abt-line-secondary);
+		--sb-line: var(--abt-sidebar-line);
 	}
 `;
 
@@ -451,6 +463,11 @@ export function paletteCSS(theme: PaletteTheme): string {
 	}
 	if ("--theme-line" in theme.keys) {
 		css += BORDERS_CSS;
+	}
+	// A line made for the page can come out near white on a dark sidebar, so one of its own needs its own.
+	const ownSidebar = "--theme-sidebar" in theme.keys;
+	if (ownSidebar ? "--theme-sidebar-line" in theme.keys : "--theme-line" in theme.keys) {
+		css += SIDEBAR_BORDERS_CSS;
 	}
 	return css;
 }

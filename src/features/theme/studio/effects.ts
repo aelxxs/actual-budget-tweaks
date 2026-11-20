@@ -11,6 +11,7 @@ import {
 	grainImage,
 	type Mode,
 	type Recipe,
+	sidebarLine,
 } from "./generator";
 
 export const STUDIO_STYLE_ID = "theme-studio";
@@ -54,6 +55,10 @@ export function themeFromRecipe(r: Recipe, g: Generated = generate(r)): PaletteT
 	if (r.sidebar !== "match") {
 		for (const [name, hex] of Object.entries(g.sidebar)) {
 			keys[name === "bg" ? "--theme-sidebar" : `--theme-sidebar-${name}`] = hex;
+		}
+		const line = sidebarLine(r, g.sidebar);
+		if (line) {
+			keys["--theme-sidebar-line"] = line;
 		}
 	}
 	g.chart.forEach((hex, i) => (keys[`--theme-chart-${i + 1}`] = hex));
