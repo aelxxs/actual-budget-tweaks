@@ -460,7 +460,6 @@
 				type="button"
 				class="header-add"
 				aria-label="Add account"
-				use:tooltip={{ text: "Add account", placement: "right" }}
 				onclick={() => dispatch("pushModal", { modal: { name: "add-account", options: {} } })}
 			>
 				<Plus strokeWidth={1.5} />
@@ -470,6 +469,7 @@
 				class="group-toggle"
 				class:on={groupAccounts}
 				aria-pressed={groupAccounts}
+				aria-label="Group accounts"
 				use:tooltip={{
 					text: groupAccounts ? "Grouped" : "Flat list",
 					hint: groupAccounts ? "Click for a flat list" : "Click to show groups",
