@@ -52,8 +52,9 @@ const BUILTIN_CSS = `
 		--abt-line-secondary: color-mix(in oklab, var(--theme-line, var(--abt-border-rest)) 50%, var(--ctp-surface0));
 		/* Budget */
 		--color-budgetCurrentMonth: var(--ctp-mantle);
-		--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
-		--color-budgetHeaderOtherMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
+		/* Group rows well past a hovered row (base), so they stand off the table. */
+		--color-budgetHeaderCurrentMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 55%);
+		--color-budgetHeaderOtherMonth: var(--color-budgetHeaderCurrentMonth);
 		--color-budgetOtherMonth: color-mix(in srgb, var(--ctp-crust), var(--ctp-mantle) 40%);
 		--color-budgetNumberNegative: var(--ctp-red);
 		--color-budgetNumberNeutral: var(--ctp-overlay1);
@@ -395,6 +396,7 @@ const LIGHT_CSS = `
 		/* Borders between surface0 and surface1, so they show beside the group rows. */
 		--abt-border-rest: color-mix(in oklab, var(--ctp-surface0), var(--ctp-surface1));
 		--color-budgetOtherMonth: color-mix(in oklab, var(--color-budgetCurrentMonth), white 50%);
+		--color-budgetHeaderOtherMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
 		/* Deep accents wash out at the dark themes' strength. */
 		--abt-wash: 22%;
 	}
