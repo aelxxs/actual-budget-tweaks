@@ -1,6 +1,7 @@
 import { scripts } from "@features/index";
-import { pushStoredSettings } from "@features/settings-sync";
+import { importStoredSettings, pushStoredSettings } from "@features/settings-sync";
 import { isoDate } from "@lib/format/months";
+import { normalizeBaseUrl } from "@lib/store";
 
 // Stored by features outside any one setting, so an export carries them even before first use.
 const AUX_DEFAULTS: Record<string, unknown> = {
@@ -55,10 +56,10 @@ export function pickSettingsFile(onDone: (ok: boolean) => void): void {
 			if (typeof data !== "object" || data === null || Array.isArray(data)) {
 				throw new Error("Invalid format");
 			}
-			await browser.storage.local.clear();
-			await browser.storage.local.set(data);
+			// Someone else's export names their server; keep ABT running on this one.
+			data["local:user-link"] = normalizeBaseUrl(location.href);
 			// Otherwise the budget's old values would win again after the reload.
-			await pushStoredSettings();
+			await importStoredSettings(data);
 			onDone(true);
 		} catch {
 			onDone(false);

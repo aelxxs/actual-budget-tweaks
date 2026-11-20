@@ -78,6 +78,9 @@ const BUDGET_SCOPED: BudgetScoped[] = [
 ];
 
 let applying = false;
+// Set by an import, which reloads the page once done; a pull meanwhile would undo it.
+let paused = false;
+let pulling: Promise<void> | null = null;
 let budgetId: string | undefined;
 const synced = new Set(EXTRA_KEYS);
 
@@ -148,6 +151,28 @@ export async function pushStoredSettings(): Promise<void> {
 	await Promise.all(
 		stored.filter((key) => key !== null).map(async (key) => push(key, await getValue(key, null))),
 	);
+	const id = budgetId;
+	if (!id) {
+		return;
+	}
+	await Promise.all(
+		BUDGET_SCOPED.map(async (scoped) => {
+			const value = await scoped.read(id);
+			if (value !== undefined) {
+				await push(scoped.remote, value, await scopedRemoteKey(scoped));
+			}
+		}),
+	);
+}
+
+/** Replaces every stored setting with `data` and saves it to the open budget. Reload after. */
+export async function importStoredSettings(data: Record<string, unknown>): Promise<void> {
+	paused = true;
+	await pulling;
+	const stale = Object.keys(await browser.storage.local.get(null)).filter((k) => !(k in data));
+	await browser.storage.local.remove(stale);
+	await browser.storage.local.set(data);
+	await pushStoredSettings();
 }
 
 /**
@@ -195,7 +220,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 	let pulled = false;
 
 	onSetValue((key, value) => {
-		if (applying || !pulled || !isBudgetLoaded()) {
+		if (applying || paused || !pulled || !isBudgetLoaded()) {
 			return;
 		}
 		if (synced.has(key)) {
@@ -222,7 +247,6 @@ export function startSettingsSync(settings: Setting[]): () => void {
 		}
 	}
 
-	let pulling: Promise<void> | null = null;
 	let again = false;
 
 	async function pull(): Promise<void> {
@@ -315,7 +339,7 @@ export function startSettingsSync(settings: Setting[]): () => void {
 
 	// Coalesced, so a burst of triggers runs at most one more pull after the current one.
 	function schedulePull(): void {
-		if (!isBudgetLoaded()) {
+		if (paused || !isBudgetLoaded()) {
 			return;
 		}
 		if (pulling) {
