@@ -249,7 +249,6 @@
 			type="button"
 			class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 			aria-label="Close"
-			title="Close"
 			onclick={onClose}
 		>
 			<X size={14} />

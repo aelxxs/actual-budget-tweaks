@@ -62,7 +62,6 @@
 		type="button"
 		class="frame"
 		{disabled}
-		title={name}
 		aria-pressed={active}
 		aria-label={name}
 		onclick={onselect}
@@ -79,7 +78,7 @@
 		<button type="button" class="label" {disabled} tabindex="-1" onclick={onselect}>
 			<span class="name">{name}</span>
 			{#if mode}
-				<span class="mode" title={mode === "dark" ? "Dark theme" : "Light theme"}>
+				<span class="mode" role="img" aria-label={mode === "dark" ? "Dark theme" : "Light theme"}>
 					{#if mode === "dark"}<Moon size={11} />{:else}<Sun size={11} />{/if}
 				</span>
 			{/if}

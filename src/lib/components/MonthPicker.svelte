@@ -102,7 +102,6 @@
 	type="button"
 	class="title"
 	class:is-compact={variant === "compact"}
-	title="Jump to month"
 	aria-haspopup="dialog"
 	aria-expanded={open}
 	bind:this={button}

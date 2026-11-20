@@ -486,7 +486,6 @@
 			aria-haspopup="menu"
 			aria-expanded={moreOpen}
 			aria-label="More settings actions"
-			title="More settings actions"
 			onclick={() => {
 				supportOpen = null;
 				moreOpen = !moreOpen;

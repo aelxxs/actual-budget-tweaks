@@ -263,7 +263,6 @@
 				<button
 					type="button"
 					class="remove"
-					title="Remove this light"
 					aria-label="Remove light {i + 1}"
 					style:left="{remove[0]}px"
 					style:top="{remove[1]}px"

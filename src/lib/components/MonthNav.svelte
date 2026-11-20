@@ -35,7 +35,6 @@
 	<button
 		type="button"
 		class="abt-btn abt-btn--icon"
-		title="Previous month"
 		aria-label="Previous month"
 		disabled={prevDisabled}
 		onclick={onPrev}
@@ -45,7 +44,6 @@
 	<button
 		type="button"
 		class="abt-btn abt-btn--icon"
-		title="Next month"
 		aria-label="Next month"
 		disabled={nextDisabled}
 		onclick={onNext}

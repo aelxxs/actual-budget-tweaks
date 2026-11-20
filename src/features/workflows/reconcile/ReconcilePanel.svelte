@@ -374,7 +374,7 @@
 							<button
 								type="button"
 								class="rp__edit-btn"
-								title="Edit statement balance"
+								aria-label="Edit statement balance"
 								onclick={edit}
 							>
 								<Icon name="pencil" size={11} />

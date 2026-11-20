@@ -1229,10 +1229,10 @@
 		{/if}
 
 		<div class="gv__zoom" role="group" aria-label="Zoom">
-			<button type="button" title="Zoom in" aria-label="Zoom in" onclick={() => zoomBy(1.25)}>
+			<button type="button" aria-label="Zoom in" onclick={() => zoomBy(1.25)}>
 				<Icon name="plus" size={15} />
 			</button>
-			<button type="button" title="Zoom out" aria-label="Zoom out" onclick={() => zoomBy(1 / 1.25)}>
+			<button type="button" aria-label="Zoom out" onclick={() => zoomBy(1 / 1.25)}>
 				<Icon name="minus" size={15} />
 			</button>
 			<button

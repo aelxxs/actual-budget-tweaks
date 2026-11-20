@@ -89,7 +89,7 @@
 					class:is-empty={shortcuts.length === 0}
 					class:is-on={editing && customizeState.pane === "add-shortcut"}
 					onclick={() => customizeSidebar({ pane: "add-shortcut" })}
-					title="Add a shortcut"
+					aria-label="Add a shortcut"
 				>
 					<Plus size={14} />
 				</button>

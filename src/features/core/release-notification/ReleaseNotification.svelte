@@ -30,7 +30,6 @@
 		<button
 			class="toast__close abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
 			type="button"
-			title="Close"
 			aria-label="Close"
 			onclick={() => onClose(dontShowAgain)}
 		>

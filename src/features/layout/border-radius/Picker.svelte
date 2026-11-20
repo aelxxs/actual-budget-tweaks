@@ -16,7 +16,6 @@
 			class="rp-option"
 			class:is-active={selected === opt.value}
 			onclick={() => onPick(opt.value)}
-			title={opt.value}
 		>
 			<div class="rp-preview">
 				<div class="rp-box" style="border-top-right-radius: {opt.value}"></div>
