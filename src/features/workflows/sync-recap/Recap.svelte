@@ -5,6 +5,10 @@
 	import { fmtMoney } from "@lib/format/currency";
 	import { formatDayMonth } from "@lib/format/date-format.svelte";
 	import { onMount, untrack } from "svelte";
+	import { CheckCheck } from "@lucide/svelte";
+	import { query } from "@lib/actual/actual-api";
+	import type { Account } from "@lib/types/actual-schema";
+	import { syncAccounts } from "@features/workflows/sidebar/lib/data";
 	import {
 		loadCategoryGroups,
 		loadTransactions,
@@ -123,6 +127,52 @@
 	}
 
 	const review = (ids: string[]) => updateQueue((q) => without(q, ids));
+
+	// ── Caught up: when each bank-linked account last synced, and a way to sync them now ──
+	let linked = $state<{ id: string; name: string; at: number }[]>([]);
+	let syncing = $state(false);
+
+	async function loadLinked() {
+		try {
+			const rows = await query<Pick<Account, "id" | "name" | "closed" | "last_sync">[]>(
+				"accounts",
+				{
+					filter: { closed: false },
+					select: ["id", "name", "closed", "last_sync"],
+				},
+			);
+			// Actual keeps the time as milliseconds in a string; manual accounts have none.
+			linked = rows
+				.map((r) => ({ id: r.id, name: r.name, at: Number(r.last_sync) }))
+				.filter((r) => r.at > 0)
+				.sort((a, b) => b.at - a.at);
+		} catch {
+			linked = [];
+		}
+	}
+	onMount(() => void loadLinked());
+
+	async function syncNow() {
+		syncing = true;
+		try {
+			await syncAccounts(linked.map((a) => a.id));
+		} finally {
+			syncing = false;
+			void loadLinked();
+		}
+	}
+
+	function ago(at: number): string {
+		const mins = Math.max(0, Math.round((Date.now() - at) / 60_000));
+		if (mins < 1) {
+			return "Just now";
+		}
+		if (mins < 60) {
+			return `${mins}m ago`;
+		}
+		const hours = Math.round(mins / 60);
+		return hours < 24 ? `${hours}h ago` : `${Math.round(hours / 24)}d ago`;
+	}
 </script>
 
 <div class="shell">
@@ -130,10 +180,18 @@
 		{#if !loaded}
 			<p class="empty">Loading…</p>
 		{:else if !all.length}
-			<div class="empty">
+			<div class="caught-up">
+				<span class="caught-up__mark"><CheckCheck size={22} strokeWidth={1.85} /></span>
 				<strong>All caught up</strong>
-				<span>Transactions from your next sync will show up here to review.</span>
+				<span>New transactions from a bank sync or import show up here to review.</span>
 			</div>
+			{#if linked.length}
+				<Section title="Last synced" collapsible={false}>
+					{#each linked as a (a.id)}
+						<Row name={a.name} value={ago(a.at)} tone="muted" sensitive />
+					{/each}
+				</Section>
+			{/if}
 		{:else}
 			{#if accounts.length > 1}
 				<div class="accounts abt-cluster abt-gap-2" role="group" aria-label="Account">
@@ -221,6 +279,14 @@
 		{/if}
 	</div>
 	<div class="footer">
+		{#if !all.length && loaded && linked.length}
+			<button
+				type="button"
+				class="abt-btn abt-tone-accent grow"
+				disabled={syncing}
+				onclick={() => void syncNow()}>{syncing ? "Syncing…" : "Sync now"}</button
+			>
+		{/if}
 		{#if all.length}
 			<button
 				type="button"
@@ -229,7 +295,12 @@
 				>{only ? "Mark these reviewed" : "Mark all reviewed"}</button
 			>
 		{/if}
-		<button type="button" class="abt-btn" class:grow={!all.length} onclick={onDone}>Close</button>
+		<button
+			type="button"
+			class="abt-btn"
+			class:grow={!all.length && !linked.length}
+			onclick={onDone}>Close</button
+		>
 	</div>
 </div>
 
@@ -276,6 +347,31 @@
 		font-variant-numeric: tabular-nums;
 		opacity: 0.7;
 	}
+	/* The caught-up state: a mark, what it means, then when the banks last synced. */
+	.caught-up {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--abt-space-2);
+		padding: var(--abt-space-6) var(--abt-space-5) var(--abt-space-6);
+		text-align: center;
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	.caught-up strong {
+		font-size: var(--abt-text-lg);
+		color: var(--color-pageText);
+	}
+	.caught-up__mark {
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		margin-bottom: var(--abt-space-2);
+		border-radius: var(--abt-radius-pill);
+		background: var(--abt-positive-2);
+		color: var(--color-budgetNumberPositive);
+	}
 	.empty {
 		display: flex;
 		flex-direction: column;
@@ -285,10 +381,6 @@
 		text-align: center;
 		font-size: var(--abt-text-sm);
 		color: var(--abt-muted);
-	}
-	.empty strong {
-		font-size: var(--abt-text-md);
-		color: var(--color-pageText);
 	}
 	.list {
 		list-style: none;
