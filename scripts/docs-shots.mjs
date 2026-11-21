@@ -27,7 +27,7 @@ const TODAY = "2026-06-24";
 const BUDGET_TABLE = '[data-testid="budget-table"]';
 const INSIGHTS_TABS = "[data-abt-side-drawer-sidebar] .abt-tabs__tab";
 
-// The look ABT is shown in: the settings, the light Daylight (Studio) theme with built-in Midnight
+// The look ABT is shown in: the settings, built-in Daylight with built-in Midnight
 // for dark shots, and the panel widths.
 const DEMO = JSON.parse(readFileSync(resolve(ROOT, "scripts/demo-settings.json"), "utf8"));
 const LIGHT_THEME = DEMO.settings["theme-auto-light"];
@@ -888,8 +888,8 @@ async function readmeShots(page, seeded) {
 	await snap("calendar-dark");
 
 	// Both themes are named Daylight (Studio), so it's switched by id rather than from the palette.
-	// The palette lists only built-in themes, and the theme applies when it's picked in the UI or
-	// pulled from the budget. So every synced copy (shared, and this user's own) is set, then pulled.
+	// The theme applies when it's picked in the UI or pulled from the budget, so every synced copy
+	// (shared, and this user's own) is set, then pulled.
 	await page.evaluate(async (id) => {
 		const prefs = await window.$send("preferences/get");
 		const keys = Object.keys(prefs).filter((k) => /^abt:(.+:)?catppuccin-palette$/.test(k));
