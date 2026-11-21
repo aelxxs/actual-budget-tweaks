@@ -3,18 +3,21 @@ export const SLOT_CARDS = [
 	{ id: "spent", label: "Spent" },
 	{ id: "targets", label: "Goals funded" },
 	{ id: "runway", label: "Months ahead" },
-	{ id: "pinned", label: "Pinned category" },
+	{ id: "pinned", label: "Pinned" },
 	{ id: "income", label: "Income" },
 	{ id: "change", label: "Biggest change" },
+	{ id: "held", label: "In categories" },
 ] as const;
 
 export type SlotCardId = (typeof SLOT_CARDS)[number]["id"];
 
 export interface SummarySlots {
 	cards: [SlotCardId, SlotCardId];
-	/** The Pinned category card's category. */
+	/** The Pinned card's category id, or a group's as `group:<id>`. */
 	pinned: string | null;
 }
+
+export const GROUP_PIN = "group:";
 
 export const SLOTS_KEY = "summary-slots";
 

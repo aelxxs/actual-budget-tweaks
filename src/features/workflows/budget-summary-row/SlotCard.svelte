@@ -16,8 +16,14 @@
 		type PinnedTotals,
 		USUAL_MONTHS,
 		changeCache,
+		compareCache,
+		heldCache,
 		incomeCache,
 		loadBiggestChange,
+		loadHeld,
+		loadSpentCompare,
+		monthElapsed,
+		type SpentCompare,
 		loadIncome,
 		loadPinned,
 		nextMonthPlan,
@@ -44,6 +50,7 @@
 	const other = $derived(summaryState.slots.cards[1 - slot]);
 	const pinnedId = $derived(summaryState.slots.pinned);
 	const version = $derived(summaryState.versions[sheet] ?? 0);
+	const elapsed = $derived(monthElapsed(sheet));
 	const spentBudgeted = $derived(
 		"spentBudgeted" in totals ? totals.spentBudgeted : totals.budgeted,
 	);
@@ -70,6 +77,8 @@
 	let pinned = $state<PinnedTotals | null>(null);
 	let income = $state<IncomeTotals | null>(null);
 	let change = $state<Change | null | undefined>(undefined);
+	let held = $state<number | null>(null);
+	let compare = $state<SpentCompare | null>(null);
 
 	function follow<T>(
 		key: string,
@@ -106,6 +115,22 @@
 				incomeCache,
 				() => loadIncome(sheet),
 				(v) => (income = v),
+			);
+		}
+		if (id === "spent") {
+			return follow(
+				sheet,
+				compareCache,
+				() => loadSpentCompare(sheet),
+				(v) => (compare = v),
+			);
+		}
+		if (id === "held") {
+			return follow(
+				sheet,
+				heldCache,
+				() => loadHeld(sheet),
+				(v) => (held = v),
 			);
 		}
 		if (id === "change") {
@@ -163,6 +188,9 @@
 		});
 	};
 
+	const ordinal = (n: number) =>
+		n % 100 >= 11 && n % 100 <= 13 ? "th" : (["th", "st", "nd", "rd"][n % 10] ?? "th");
+
 	const pct = (part: number, whole: number) =>
 		whole > 0 ? Math.max(0, Math.min(100, (part / whole) * 100)) : 0;
 
@@ -175,12 +203,10 @@
 					? "Covered through"
 					: slotLabel(id),
 	);
-	const stretches = $derived(["targets", "runway", "pinned", "income"].includes(id));
 </script>
 
 <div
-	class="sr__card abt-card abt-stack"
-	class:sr__flex={stretches}
+	class="sr__card sr__flex abt-card abt-stack"
 	class:sr__targets={id === "targets"}
 	data-slot-card={id}
 	bind:this={card}
@@ -195,18 +221,40 @@
 			</span>
 
 			{#if id === "spent"}
-				<RollingNumber
-					value={totals.spent}
-					resetKey={sheet}
-					class="sr__value abt-num abt-privacy-number"
-				/>
-				<span class="sr__sub">
+				<!-- The amount and whether it's usual, then what it's against. -->
+				<span class="sr__row">
+					<RollingNumber
+						value={totals.spent}
+						resetKey={sheet}
+						class="sr__value abt-num abt-privacy-number"
+					/>
+					{#if compare && Math.abs(totals.spent - compare.before) >= 1}
+						{@const diff = totals.spent - compare.before}
+						{@const when = compare.day
+							? `${compare.month} by the ${compare.day}${ordinal(compare.day)}`
+							: compare.month}
+						<span
+							class="sr__chip sr__wide abt-num"
+							title="{fmtMoney(Math.abs(diff))} {diff < 0 ? 'less' : 'more'} than {when}"
+							>{diff < 0 ? "↓" : "↑"}
+							<span class="abt-privacy-number">{fmtMoney(Math.abs(diff))}</span> vs {compare.month}</span
+						>
+					{/if}
+				</span>
+				{@const diff = compare ? totals.spent - compare.before : 0}
+				<span class="sr__sub" class:sr__wide={Math.abs(diff) >= 1}>
 					{#if spentBudgeted > 0}
 						of <RollingNumber value={spentBudgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
 					{:else}
 						Nothing budgeted yet
 					{/if}
 				</span>
+				{#if compare && Math.abs(diff) >= 1}
+					<span class="sr__sub sr__narrow abt-num"
+						>{diff < 0 ? "↓" : "↑"}
+						<span class="abt-privacy-number">{fmtMoney(Math.abs(diff))}</span> vs {compare.month}</span
+					>
+				{/if}
 			{:else if id === "targets"}
 				{#if totals.goals}
 					{@const needs = totals.short.reduce((t, c) => t + c.shortfall, 0)}
@@ -284,16 +332,26 @@
 					<span class="sr__row">
 						<span class="sr__value abt-num" class:is-over={pinned.balance < 0}>
 							<span class="abt-privacy-number">{fmtMoney(Math.abs(pinned.balance))}</span>
-							<small>{pinned.balance < 0 ? "over" : "left"}</small>
+							<!-- "over" stays when narrow: the colour alone shouldn't carry it. -->
+							<small class:sr__wide={pinned.balance >= 0}
+								>{pinned.balance < 0 ? "over" : "left"}</small
+							>
 						</span>
 						{#if pinned.budgeted > 0}
-							<span class="sr__bar"
-								><i style:width="{pct(pinned.spent, pinned.budgeted)}%"></i></span
+							<span class="sr__bar" class:has-today={elapsed !== null}
+								><i style:width="{pct(pinned.spent, pinned.budgeted)}%"></i>{#if elapsed !== null}<b
+										class="sr__today"
+										style:left="{elapsed * 100}%"
+										title="Today"
+									></b>{/if}</span
 							>
 						{/if}
 					</span>
 					<span class="sr__sub">
-						Spent <span class="abt-privacy-number">{fmtMoney(pinned.spent)}</span>
+						<!-- Narrow, "left" moves here from the value, so the figure still says what it is. -->
+						{#if pinned.balance >= 0}<span class="sr__narrow-inline">left ·</span>{/if}
+						<span class="sr__wide">Spent</span>
+						<span class="abt-privacy-number">{fmtMoney(pinned.spent)}</span>
 						{#if pinned.budgeted > 0}
 							of <span class="abt-privacy-number">{fmtMoney(pinned.budgeted)}</span>
 						{/if}
@@ -307,7 +365,7 @@
 							menuOpen = true;
 						}}
 					>
-						Choose a category
+						Choose what to pin
 					</button>
 					<span class="sr__sub">Its balance shows here</span>
 				{/if}
@@ -333,6 +391,17 @@
 							Nothing earlier to compare
 						{/if}
 					</span>
+				{:else}
+					<span class="sr__value abt-skeleton sr__ghost"></span>
+					<span class="sr__sub abt-skeleton sr__ghost"></span>
+				{/if}
+			{:else if id === "held"}
+				{#if held !== null}
+					<!-- Wrapped: the over colour is this component's style, which can't reach into RollingNumber. -->
+					<span class="sr__value abt-num" class:is-over={held < 0}
+						><RollingNumber value={held} resetKey={sheet} class="abt-privacy-number" /></span
+					>
+					<span class="sr__sub">Left across your categories</span>
 				{:else}
 					<span class="sr__value abt-skeleton sr__ghost"></span>
 					<span class="sr__sub abt-skeleton sr__ghost"></span>
@@ -394,8 +463,10 @@
 {/if}
 
 <style>
+	/* Each card lays out by its own width, not the window's. */
 	.sr__card {
 		position: relative;
+		container: sr-card / inline-size;
 		transition: border-color 0.12s;
 	}
 	.sr__card:hover,
@@ -434,6 +505,18 @@
 		min-width: 0;
 	}
 
+	/* Last month's comparison: neutral, as spending less isn't always better. */
+	.sr__chip {
+		flex: none;
+		padding: 1px var(--abt-space-3);
+		border-radius: var(--abt-radius-pill);
+		background: var(--abt-fill);
+		color: var(--abt-muted);
+		font-size: var(--abt-text-sm);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
 	.sr__count {
 		font-size: var(--abt-text-base);
 		font-weight: 600;
@@ -457,8 +540,25 @@
 		min-width: 40px;
 		height: 6px;
 		border-radius: 3px;
+		position: relative;
 		background: var(--abt-panel-track);
 		overflow: hidden;
+	}
+
+	/* Where spending would be if it ran evenly through the month. */
+	.sr__bar.has-today {
+		overflow: visible;
+	}
+	/* Taller than the bar so it reads over the fill; the surface ring parts it from the fill. */
+	.sr__today {
+		position: absolute;
+		top: -3px;
+		bottom: -3px;
+		width: 2px;
+		margin-left: -1px;
+		border-radius: 1px;
+		background: var(--abt-muted);
+		box-shadow: 0 0 0 1.5px var(--abt-panel-surface); /* raw: hairline ring */
 	}
 
 	.sr__bar i {
@@ -537,6 +637,23 @@
 		width: 85%;
 		height: 10px;
 		margin: 3px 0;
+	}
+
+	.sr__narrow,
+	.sr__narrow-inline {
+		display: none;
+	}
+	/* A narrow card keeps its three lines: the extras fold into the line below or drop. */
+	@container sr-card (max-width: 240px) {
+		.sr__wide {
+			display: none;
+		}
+		.sr__narrow {
+			display: block;
+		}
+		.sr__narrow-inline {
+			display: inline;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

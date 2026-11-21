@@ -19,6 +19,8 @@ export interface Category {
 	id: string;
 	name: string;
 	group_name: string;
+	/** The group's id, where it was loaded with the category. */
+	group_id?: string;
 	sort_order: number;
 	group_sort_order: number;
 	hidden?: boolean;

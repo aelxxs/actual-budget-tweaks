@@ -79,6 +79,7 @@ export async function loadCategories(force?: boolean): Promise<Category[]> {
 						hidden: !!c.hidden,
 						is_income: !!c.is_income,
 						group_name: g?.name || "Uncategorized",
+						group_id: c.group,
 						group_sort_order: g?.sort_order || 0,
 					};
 				});

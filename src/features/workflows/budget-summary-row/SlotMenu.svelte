@@ -13,6 +13,7 @@
 		ChevronLeft,
 		ChevronRight,
 		type LucideIcon,
+		PiggyBank,
 		Pin,
 		ReceiptText,
 		Search,
@@ -26,11 +27,13 @@
 		type Change,
 		type IncomeTotals,
 		changeCache,
+		heldCache,
 		incomeCache,
 		loadBiggestChange,
+		loadHeld,
 		loadIncome,
 	} from "./slot-data";
-	import { SLOT_CARDS, type SlotCardId, slotLabel } from "./slots";
+	import { GROUP_PIN, SLOT_CARDS, type SlotCardId, slotLabel } from "./slots";
 	import type { MonthTotals, TrackingTotals } from "./totals";
 
 	const {
@@ -74,10 +77,11 @@
 		pinned: Pin,
 		income: Banknote,
 		change: TrendingUp,
+		held: PiggyBank,
 	};
 
 	const HINTS: Partial<Record<SlotCardId, string>> = {
-		pinned: "Choose a category next",
+		pinned: "Choose a category or group next",
 		income: "Best for irregular pay",
 	};
 
@@ -120,18 +124,23 @@
 	let income = $state<IncomeTotals | null>(incomeCache.get(sheet));
 	// svelte-ignore state_referenced_locally
 	let change = $state<Change | null>(changeCache.get(sheet));
+	// svelte-ignore state_referenced_locally
+	let held = $state<number | null>(heldCache.get(sheet));
 
 	// Each card previewed with this month's numbers, so the choice shows what it would say.
 	// svelte-ignore state_referenced_locally
 	void loadIncome(sheet).then((v) => (income = v));
 	// svelte-ignore state_referenced_locally
 	void loadBiggestChange(sheet).then((v) => (change = v));
+	// svelte-ignore state_referenced_locally
+	void loadHeld(sheet).then((v) => (held = v));
 	void loadCategories().then(async (cats) => {
 		categories = cats.filter((c) => !c.hidden && !c.is_income);
-		balances = await readCells(
-			sheet,
-			categories.map((c) => `leftover-${c.id}`),
-		);
+		const groupIds = [...new Set(categories.map((c) => c.group_id).filter(Boolean))];
+		balances = await readCells(sheet, [
+			...categories.map((c) => `leftover-${c.id}`),
+			...groupIds.map((g) => `group-leftover-${g}`),
+		]);
 	});
 
 	const preview = $derived<Record<SlotCardId, string | null>>({
@@ -141,18 +150,25 @@
 		pinned: null,
 		income: income?.usual ? `${Math.round((income.received / income.usual) * 100)}%` : null,
 		change: change ? `${change.name} +${Math.round(change.rise * 100)}%` : null,
+		held: held === null ? null : fmtMoney(held),
 	});
 
 	const stageHeight = $derived(step === "cards" ? cardsHeight : categoriesHeight);
 
+	const needle = $derived(query.trim().toLowerCase());
+	/** A group's name matching shows all of it, so the group itself can be picked. */
 	const matches = $derived(
-		categories.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase())),
+		categories.filter(
+			(c) => c.name.toLowerCase().includes(needle) || c.group_name.toLowerCase().includes(needle),
+		),
 	);
-	/** The matches under their group headings, in the budget's order. */
+	/** The matches under their groups, in the budget's order; each group can be pinned too. */
 	const groups = $derived.by(() => {
-		const byGroup = new Map<string, Category[]>();
+		const byGroup = new Map<string, { id?: string; cats: Category[] }>();
 		for (const cat of matches) {
-			byGroup.set(cat.group_name, [...(byGroup.get(cat.group_name) ?? []), cat]);
+			const entry = byGroup.get(cat.group_name) ?? { id: cat.group_id, cats: [] };
+			entry.cats.push(cat);
+			byGroup.set(cat.group_name, entry);
 		}
 		return [...byGroup];
 	});
@@ -253,15 +269,15 @@
 			>
 				<button type="button" class="sm__back" onclick={() => go("cards")}>
 					<ChevronLeft size={16} />
-					<span class="sm__title">Pin a category</span>
+					<span class="sm__title">Pin a category or group</span>
 				</button>
 				<span class="sm__search">
 					<Search size={14} strokeWidth={1.75} />
 					<input
 						class="abt-input"
 						type="search"
-						placeholder="Search categories"
-						aria-label="Search categories"
+						placeholder="Search categories and groups"
+						aria-label="Search categories and groups"
 						bind:value={query}
 						bind:this={search}
 						onkeydown={(e) => {
@@ -272,8 +288,30 @@
 					/>
 				</span>
 				<div class="sm__list">
-					{#each groups as [group, cats] (group)}
-						<div class="sm__group">{group}</div>
+					{#each groups as [group, { id: groupId, cats }] (group)}
+						{#if groupId}
+							{@const key = `${GROUP_PIN}${groupId}`}
+							{@const balance = balances.get(`group-leftover-${groupId}`)}
+							<button
+								type="button"
+								role="menuitemradio"
+								aria-checked={key === pinned}
+								class="sm__row sm__group sm__group-pick"
+								onclick={() => onPick("pinned", key)}
+							>
+								<span class="sm__label">{group}</span>
+								{#if balance !== undefined}
+									<span class="sm__preview abt-privacy-number" class:is-neg={balance < 0}
+										>{fmtMoney(balance)}</span
+									>
+								{/if}
+								{#if key === pinned}
+									<Check size={16} class="sm__check" />
+								{/if}
+							</button>
+						{:else}
+							<div class="sm__group">{group}</div>
+						{/if}
 						{#each cats as cat (cat.id)}
 							{@const balance = balances.get(`leftover-${cat.id}`)}
 							<button
@@ -467,6 +505,15 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--abt-muted);
+	}
+
+	/* A pickable group stays a heading: its name and balance at the heading's size, not a row's. */
+	.sm__group-pick .sm__label {
+		font-size: inherit;
+	}
+	.sm__group-pick .sm__preview {
+		font-weight: 500;
+		letter-spacing: normal;
 	}
 
 	.sm__row.sm__cat {
