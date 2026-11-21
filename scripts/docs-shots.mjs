@@ -1,6 +1,6 @@
 import { spawn, execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 
@@ -25,34 +25,26 @@ const HERO = resolve(ROOT, "website/public/images");
 const README_IMAGES = resolve(ROOT, "images");
 const TODAY = "2026-06-24";
 const BUDGET_TABLE = '[data-testid="budget-table"]';
+const INSIGHTS_TABS = "[data-abt-side-drawer-sidebar] .abt-tabs__tab";
 
+// The look ABT is shown in: the settings, the light Daylight (Studio) theme with built-in Midnight
+// for dark shots, and the panel widths.
+const DEMO = JSON.parse(readFileSync(resolve(ROOT, "scripts/demo-settings.json"), "utf8"));
+const LIGHT_THEME = DEMO.settings["theme-auto-light"];
+const DARK_THEME = DEMO.settings["theme-auto-dark"];
+
+// The guides show the standard sidebar first, and the shortcuts and add tile they explain.
 const SETTINGS = {
-	"experimental-sidebar": true,
-	"modern-reconcile": true,
-	"account-icon-picker": true,
-	"sidebar-search-enabled": true,
-	"sidebar-shortcuts-enabled": true,
-	"sidebar-group-totals": true,
-	"actual-template-apply-breakdown": true,
+	...DEMO.settings,
 	"experimental-sidebar-layout-mode": "standard",
-	"transaction-inspector": true,
+	"sidebar-shortcuts-enabled": true,
+	"sidebar-shortcuts-add-tile": true,
 };
 
-const HOME_SETTINGS = {
-	...SETTINGS,
-	"experimental-sidebar-layout-mode": "split",
-	"side-panel-width": 280,
-	"budget-summary-row": "full",
-	"category-progress-indicators": true,
-	"balance-status-pills": true,
-};
+const HOME_SETTINGS = DEMO.settings;
 
-const README_SETTINGS = {
-	...HOME_SETTINGS,
-	"budget-month-header": true,
-	"budget-category-filter": true,
-	"spending-calendar-enabled": true,
-};
+// Dark first, then light, switched live in readmeShots.
+const README_SETTINGS = { ...DEMO.settings, "catppuccin-palette": DARK_THEME };
 
 const TEMPLATES = {
 	Rent: ["#template 1450", 145000],
@@ -455,12 +447,12 @@ async function seedBudget(page) {
 	};
 }
 
-async function applySettings(page, { accountIds, budgetId, groupSections }, settings) {
+async function applySettings(page, { accountIds, budgetId, groupSections }, settings, scoped) {
 	const icons = Object.fromEntries(
 		ACCOUNTS.map((a) => [accountIds[a.name], { type: "emoji", value: a.emoji }]),
 	);
 	await page.evaluate(
-		async ([settings, icons, shortcuts, budgetId, sections]) => {
+		async ([settings, icons, shortcuts, budgetId, sections, demo, scoped]) => {
 			for (const [key, value] of Object.entries(settings)) {
 				localStorage.setItem(`local:${key}`, JSON.stringify(value));
 				// The budget's synced copy wins over local storage on the next pull.
@@ -472,8 +464,15 @@ async function applySettings(page, { accountIds, budgetId, groupSections }, sett
 				`local:experimental-sidebar-group-sections:${budgetId}`,
 				JSON.stringify(sections),
 			);
+			for (const [key, value] of Object.entries(scoped)) {
+				localStorage.setItem(`local:${key}:${budgetId}`, JSON.stringify(value));
+			}
+			// Read straight from the page's storage, like Actual's own sidebar width.
+			for (const [key, value] of Object.entries(demo.pageStorage)) {
+				localStorage.setItem(key, value);
+			}
 		},
-		[settings, icons, SHORTCUTS, budgetId, groupSections],
+		[settings, icons, SHORTCUTS, budgetId, groupSections, DEMO, scoped],
 	);
 	await saveBudgetData(page, { accountIds, groupSections });
 }
@@ -541,6 +540,13 @@ async function shot(page, name, around, { room = 24, width, height, cutout = fal
 	await page.screenshot({ path, clip, omitBackground: cutout });
 	await style?.evaluate((el) => el.remove());
 	console.log(`wrote ${path}`);
+}
+
+/** Actual's category column one step wider, which it remembers for the budget. */
+async function widenCategories(page) {
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.locator(`${BUDGET_TABLE} button[aria-label="Expand"]`).first().click();
+	await page.waitForTimeout(500);
 }
 
 /** Actual greets a new budget with a toast that would sit over the panel. */
@@ -826,7 +832,7 @@ async function heroShots(page) {
 	await page.keyboard.press("Control+k");
 	await page.locator(".cp-input").fill("insights");
 	await page.keyboard.press("Enter");
-	await page.locator(".abt-tab-overview-toolbar").waitFor();
+	await page.locator(INSIGHTS_TABS).first().waitFor();
 	await page.mouse.move(700, 20);
 	await dismissWelcome(page);
 	await page.waitForTimeout(3000);
@@ -867,22 +873,36 @@ async function readmeShots(page, seeded) {
 		await page.locator(".cal-page").waitFor();
 	};
 
-	await page.keyboard.press("Control+k");
-	await input.fill("insights");
-	await page.keyboard.press("Enter");
-	await page.locator(".abt-tab-overview-toolbar").waitFor();
+	const openInsights = async () => {
+		if (await page.locator(INSIGHTS_TABS).count()) {
+			return;
+		}
+		await page.keyboard.press("Control+k");
+		await input.fill("insights");
+		await page.keyboard.press("Enter");
+		await page.locator(INSIGHTS_TABS).first().waitFor();
+	};
+	await openInsights();
 	await snap("budget-dark");
 	await calendar();
 	await snap("calendar-dark");
 
-	// Running anything from the palette closes the calendar, so this lands back on the budget.
-	await page.keyboard.press("Control+k");
-	await input.fill("change theme");
-	await page.keyboard.press("Enter");
-	await page.waitForTimeout(400);
-	await input.fill("daylight");
-	await page.waitForTimeout(300);
-	await page.keyboard.press("Enter");
+	// Both themes are named Daylight (Studio), so it's switched by id rather than from the palette.
+	// The palette lists only built-in themes, and the theme applies when it's picked in the UI or
+	// pulled from the budget. So every synced copy (shared, and this user's own) is set, then pulled.
+	await page.evaluate(async (id) => {
+		const prefs = await window.$send("preferences/get");
+		const keys = Object.keys(prefs).filter((k) => /^abt:(.+:)?catppuccin-palette$/.test(k));
+		for (const key of new Set([...keys, "abt:catppuccin-palette"])) {
+			await window.$send("preferences/save", { id: key, value: JSON.stringify(id) });
+		}
+		await window.browser.storage.local.set({ "local:catppuccin-palette": id });
+	}, LIGHT_THEME);
+	await page.goto(`${BASE}/budget`);
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.addStyleTag({ content: '[role="alert"] { display: none !important; }' });
+	await page.waitForTimeout(1500);
+	await openInsights();
 	await snap("budget-light");
 	await calendar();
 	await snap("calendar-light");
@@ -999,9 +1019,16 @@ async function shoot(page, seeded) {
 	if (home || readme) {
 		await fundJune(page, seeded);
 	}
-	await applySettings(page, seeded, readme ? README_SETTINGS : home ? HOME_SETTINGS : SETTINGS);
+	// The guides keep Insights' default cards: their overview shows the automations strip.
+	await applySettings(
+		page,
+		seeded,
+		readme ? README_SETTINGS : home ? HOME_SETTINGS : SETTINGS,
+		readme || home ? DEMO.budgetScoped : {},
+	);
 	await page.reload();
 	await page.waitForFunction(() => typeof window.$send === "function");
+	await widenCategories(page);
 	if (home) {
 		await heroShots(page);
 	} else if (readme) {
