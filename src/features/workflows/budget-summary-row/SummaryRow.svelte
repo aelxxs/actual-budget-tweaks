@@ -124,7 +124,7 @@
 	<!-- Laid out like the real row (the two chosen cards, then the suggestion), so the cards
 	     replace it in place. -->
 	<div class="sr" aria-hidden="true">
-		{#each ["", "sr__flex", "is-action"] as kind (kind)}
+		{#each ["sr__flex", "sr__flex", "is-action"] as kind, i (i)}
 			<div class="sr__card abt-card abt-stack is-skeleton {kind}">
 				<span class="sr__label">&nbsp;</span>
 				<span class="sr__value">&nbsp;</span>
@@ -141,9 +141,8 @@
 	}
 
 	/*
-	 * Cards size to their content; cards with a bar, which can stretch or shrink, take the
-	 * slack. So a longer suggestion only resizes a bar, nothing moves the To Budget card, and
-	 * secondary lines truncate only once the bars are at their minimum.
+	 * To Budget and the actions card size to their content; the two chosen cards split the
+	 * slack evenly. So a longer suggestion only narrows those two, and nothing moves To Budget.
 	 */
 	.sr > :global(*) {
 		order: 1;
@@ -157,18 +156,14 @@
 		min-width: 150px;
 	}
 
-	/* Without a card that stretches, the suggestion card takes the slack instead. */
-	.sr:not(:has(> :global(.sr__flex))) > :global(.ac) {
-		flex-grow: 1;
-	}
-
 	/* Floors that cover their usual content, so ordinary changes don't resize them. */
 	.sr > :global(.ac) {
 		min-width: 210px;
 	}
 
-	.sr > :global(.sr__card:not(.sr__flex)) {
-		min-width: 160px;
+	/* Calm, it's only a menu: the floor of its one short line, leaving the room to the cards. */
+	.sr > :global(.ac.is-quiet) {
+		min-width: 170px;
 	}
 
 	.sr :global(.sr__card) {

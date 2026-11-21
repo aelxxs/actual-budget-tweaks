@@ -22,9 +22,6 @@
 	const lead = $derived(totals ? (projected ? totals.projected : totals.saved) : 0);
 	const leadLabel = $derived(projected ? "Projected savings" : lead < 0 ? "Overspent" : "Saved");
 	const tone = $derived(!totals || lead === 0 ? "none" : lead > 0 ? "good" : "bad");
-	const hasStretch = $derived(
-		summaryState.slots.cards.some((id) => ["targets", "pinned", "income"].includes(id)),
-	);
 
 	$effect(() => {
 		const ours = root;
@@ -54,7 +51,7 @@
 </script>
 
 {#if totals}
-	<div class="tr" class:has-flex={hasStretch} bind:this={root}>
+	<div class="tr" bind:this={root}>
 		<div class="tr__card tr__lead abt-card abt-stack" data-tone={tone}>
 			<span class="tr__label abt-label">{leadLabel}</span>
 			<RollingNumber
@@ -137,11 +134,6 @@
 		min-width: 150px;
 	}
 
-	/* If neither selected card stretches, let the actions card use the remaining width. */
-	.tr:not(.has-flex) > :global(.ac) {
-		flex-grow: 1;
-	}
-
 	.tr > :global(.ac) {
 		order: 1;
 		flex: 0 1 auto;
@@ -150,6 +142,11 @@
 		min-width: 210px;
 		--abt-pad: var(--abt-space-3) var(--abt-space-5);
 		justify-content: center;
+	}
+
+	/* Calm, it's only a menu: the floor of its one short line, leaving the room to the cards. */
+	.tr > :global(.ac.is-quiet) {
+		min-width: 170px;
 	}
 
 	.tr__lead {

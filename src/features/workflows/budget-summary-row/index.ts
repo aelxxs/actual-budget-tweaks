@@ -505,7 +505,14 @@ const FULL_CSS = `
 	/* A step heavier than Actual's 400, so the plain card's figure still leads the row. */
 	${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
 		font-weight: 550 !important;
-		line-height: 1.1;
+		/* Fixed, so the smaller narrow figure keeps the row's height. */
+		line-height: 33px; /* raw: 1.1 of Actual's 30px */
+	}
+	/* The row's biggest figure needs less on a narrow card. */
+	@container abt-month-cards (max-width: 1000px) {
+		${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
+			font-size: 24px !important; /* raw: one step under Actual's 30px figure */
+		}
 	}
 	/* A line under the figure saying what it means, like the other cards' second lines. */
 	${ENVELOPE} ${SUMMARY_CARD} > :last-child[data-abt-to-budget-note]::after {
