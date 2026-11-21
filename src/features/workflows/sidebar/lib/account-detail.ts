@@ -32,9 +32,10 @@ export interface AccountDetail {
 	upcoming: UpcomingItem[];
 }
 
-function relTime(iso: string | null | undefined): string {
-	const then = iso ? new Date(iso).getTime() : NaN;
-	if (Number.isNaN(then)) {
+/** `last_sync` is milliseconds as a string, not an ISO date. */
+function relTime(stamp: string | null | undefined): string {
+	const then = Number(stamp);
+	if (!then) {
 		return "";
 	}
 	const mins = Math.max(0, Math.round((Date.now() - then) / 60_000));

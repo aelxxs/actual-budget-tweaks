@@ -30,7 +30,7 @@ export interface Account {
 	tombstone?: boolean;
 	/** Display name of the linked bank, e.g. "Chase" — null for manual accounts. */
 	bankName?: string | null;
-	/** ISO timestamp of the last successful bank sync — null for manual accounts. */
+	/** When the last bank sync succeeded, as milliseconds in a string; null for manual accounts. */
 	last_sync?: string | null;
 }
 
