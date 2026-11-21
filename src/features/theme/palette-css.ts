@@ -400,10 +400,18 @@ const LIGHT_CSS = `
 		/* Deep accents wash out at the dark themes' strength. */
 		--abt-wash: 22%;
 	}
+	/* Controls raised on a solid surface. Only controls: hovers, tags and chips stay a tint, which
+	   a solid surface would hide on the near-white cards and popovers. */
 	:root,
 	.abt-controls-quiet {
-		--abt-fill: var(--ctp-base);
+		--abt-control-bg: var(--ctp-base);
 		--abt-line: var(--ctp-surface1);
+	}
+	/* Surfaces with their own ink keep tinted controls, as they did before. */
+	.sidebar,
+	.abt-on-sidebar,
+	.abt-popover {
+		--abt-control-bg: initial;
 	}
 `;
 

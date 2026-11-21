@@ -106,7 +106,9 @@
 	--abt-accent-4: color-mix(in srgb, var(--abt-accent) 55%, transparent);
 	--abt-accent-text: color-mix(in srgb, var(--abt-accent) 75%, var(--abt-ink));
 
-	/* What components read. */
+	/* What components read. `--abt-fill` is a tint over whatever it sits on (hovers, tags, chips);
+	   buttons, inputs and segmented controls read `--abt-control-bg` first, which light themes
+	   set to a solid surface so controls stand raised over the page. */
 	--abt-fill: var(--abt-ink-3);
 	--abt-fill-hover: var(--abt-ink-4);
 	--abt-line: var(--abt-ink-3);
@@ -355,7 +357,7 @@
 	padding: 0 var(--abt-space-4);
 	border: 1px solid var(--abt-btn-line, var(--abt-line));
 	border-radius: var(--abt-radius);
-	background: var(--abt-btn-bg, var(--abt-fill));
+	background: var(--abt-btn-bg, var(--abt-control-bg, var(--abt-fill)));
 	color: var(--abt-btn-fg, var(--abt-ink));
 	font: inherit;
 	font-size: var(--abt-text-base);
@@ -417,7 +419,7 @@
 	align-items: stretch;
 	border: 1px solid var(--abt-btn-line, var(--abt-line));
 	border-radius: var(--abt-radius);
-	background: var(--abt-btn-bg, var(--abt-fill));
+	background: var(--abt-btn-bg, var(--abt-control-bg, var(--abt-fill)));
 	overflow: hidden;
 }
 
@@ -449,7 +451,7 @@
 	padding: var(--abt-space-1);
 	border: 1px solid var(--abt-line);
 	border-radius: var(--abt-radius);
-	background: var(--abt-fill);
+	background: var(--abt-control-bg, var(--abt-fill));
 }
 
 .abt-seg--sm {
@@ -519,7 +521,7 @@
 	padding: 0 var(--abt-space-3);
 	border: 1px solid var(--abt-line);
 	border-radius: var(--abt-radius);
-	background: var(--abt-fill);
+	background: var(--abt-control-bg, var(--abt-fill));
 	color: var(--abt-ink);
 	font: inherit;
 	font-size: var(--abt-text-base);
