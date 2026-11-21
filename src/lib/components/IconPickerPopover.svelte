@@ -1,3 +1,12 @@
+<script lang="ts" module>
+	/** `glyph` is a curated line icon, as `glyph:<name>`, drawn in the text colour wherever it shows. */
+	export type IconPickerResult =
+		| { type: "emoji"; value: string }
+		| { type: "url"; value: string }
+		| { type: "dataUrl"; value: string }
+		| { type: "glyph"; value: string };
+</script>
+
 <script lang="ts">
 	import { onOutsideClick } from "@lib/dom/popover";
 	import { getFaviconUrl } from "@lib/dom/favicon";
@@ -19,33 +28,54 @@
 	} from "@lucide/svelte";
 	import { onMount } from "svelte";
 	import Tabs from "./Tabs.svelte";
+	import GlyphIcon from "./GlyphIcon.svelte";
+	import { GLYPHS } from "@lib/glyphs";
+	import { GLYPH_PREFIX } from "@lib/glyph-icons";
 	import emojiData from "unicode-emoji-json/data-by-group.json";
-
-	export type IconPickerResult =
-		| { type: "emoji"; value: string }
-		| { type: "url"; value: string }
-		| { type: "dataUrl"; value: string };
 
 	const {
 		anchorRect,
 		hasIcon = false,
+		glyphs = false,
 		onSelect,
 		onRemove,
 		onClose,
-	} = $props<{
+	}: {
 		anchorRect: DOMRect;
 		hasIcon?: boolean;
+		/** Offers the curated line icons, for callers that draw them themed. */
+		glyphs?: boolean;
 		onSelect: (result: IconPickerResult) => void;
 		onRemove?: () => void;
 		onClose: () => void;
-	}>();
+	} = $props();
 
-	type Tab = "emoji" | "logo" | "upload";
-	const TABS: { value: Tab; label: string; icon: typeof Smile }[] = [
+	type Tab = "emoji" | "icons" | "logo" | "upload";
+	const TABS: { value: Tab; label: string; icon: typeof Smile }[] = $derived([
 		{ value: "emoji", label: "Emoji", icon: Smile },
+		...(glyphs ? [{ value: "icons" as Tab, label: "Icons", icon: Shapes }] : []),
 		{ value: "logo", label: "Logo", icon: Image },
 		{ value: "upload", label: "Upload", icon: Upload },
-	];
+	]);
+
+	// ── Icons ──
+	let glyphSearch = $state("");
+	// Each typed word must start one of the icon's words; whole-word matches come first, so "fun"
+	// puts the ticket before "fund".
+	const shownGlyphs = $derived.by(() => {
+		const typed = glyphSearch.trim().toLowerCase().split(/\s+/).filter(Boolean);
+		if (!typed.length) {
+			return GLYPHS;
+		}
+		const ranked: { glyph: (typeof GLYPHS)[number]; exact: number }[] = [];
+		for (const glyph of GLYPHS) {
+			const words = `${glyph.name.replace(/-/g, " ")} ${glyph.words}`.split(" ");
+			if (typed.every((t) => words.some((w) => w.startsWith(t)))) {
+				ranked.push({ glyph, exact: typed.filter((t) => words.includes(t)).length });
+			}
+		}
+		return ranked.sort((a, b) => b.exact - a.exact).map((r) => r.glyph);
+	});
 	let activeTab = $state<Tab>("emoji");
 	let popoverEl = $state<HTMLElement>();
 	let style = $state("opacity:0");
@@ -296,6 +326,35 @@
 			</div>
 		</div>
 
+		<!-- Icons -->
+	{:else if activeTab === "icons"}
+		<div class="pane pane--emoji">
+			<label class="search">
+				<Search size={14} class="search__icon" />
+				<input
+					class="search__input"
+					type="text"
+					placeholder="Search icons…"
+					bind:value={glyphSearch}
+				/>
+			</label>
+			<div class="eg-grid-wrap">
+				<div class="eg-grid">
+					{#each shownGlyphs as g (g.name)}
+						<button
+							class="eg-btn eg-btn--glyph"
+							title={g.name.replace(/-/g, " ")}
+							aria-label={g.name.replace(/-/g, " ")}
+							onclick={() => onSelect({ type: "glyph", value: GLYPH_PREFIX + g.name })}
+						>
+							<GlyphIcon glyph={g} size={18} />
+						</button>
+					{/each}
+				</div>
+				{#if shownGlyphs.length === 0}<p class="hint hint--empty">No results</p>{/if}
+			</div>
+		</div>
+
 		<!-- Logo -->
 	{:else if activeTab === "logo"}
 		<div class="pane pane--logo">
@@ -532,6 +591,10 @@
 
 	.eg-btn:hover {
 		background: var(--abt-accent-2);
+	}
+	/* Line icons in the text colour while picking, so their shapes are easy to tell apart. */
+	.eg-btn--glyph :global(.glyph-icon) {
+		color: var(--color-pageText);
 	}
 
 	/* ── Logo ── */

@@ -50,6 +50,7 @@
 	import NodeDetail from "./NodeDetail.svelte";
 	import GraphSearch from "./GraphSearch.svelte";
 	import { categoryIconUrl, useCategoryIcons } from "@lib/category-icons.svelte";
+	import { glyphDataUrl, glyphNamed } from "@lib/glyph-icons";
 	import FilterPopover from "@features/workflows/filters/FilterPopover.svelte";
 	import FilterToggle from "@features/workflows/filters/FilterToggle.svelte";
 	import { CLEARED, loadFilters, saveFilters } from "./filters";
@@ -165,13 +166,22 @@
 	let placed = new Map<string, GraphNode>();
 
 	$effect(() => useCategoryIcons());
+	const glyphColor =
+		getComputedStyle(document.documentElement).getPropertyValue("--color-pageText").trim() ||
+		"currentColor";
 	const iconOf = (n: GraphNode) => {
 		if (n.kind === "account") {
 			return icons.get(n.id.slice("account:".length));
 		}
 		const href =
 			n.kind === "category" ? categoryIconUrl(n.id.slice("category:".length)) : undefined;
-		return href ? { href } : undefined;
+		const glyph = glyphNamed(href);
+		// A line icon can't take the page's colour as an image, so it's drawn in it when made.
+		return glyph
+			? { href: glyphDataUrl(glyph, glyphColor), glyph: true }
+			: href
+				? { href }
+				: undefined;
 	};
 	// Big enough for an icon to read, where the account or category has one.
 	const radius = (n: GraphNode) =>
@@ -1038,12 +1048,13 @@
 					<clipPath id="gv-clip-{layer}-{n.id}">
 						<circle {r} />
 					</clipPath>
+					{@const s = "glyph" in icon ? r * 0.6 : r}
 					<image
 						href={icon.href}
-						x={-r}
-						y={-r}
-						width={r * 2}
-						height={r * 2}
+						x={-s}
+						y={-s}
+						width={s * 2}
+						height={s * 2}
 						clip-path="url(#gv-clip-{layer}-{n.id})"
 						preserveAspectRatio="xMidYMid slice"
 					/>

@@ -9,6 +9,7 @@ import { Page, matchesPage } from "@lib/actual/pages";
 import { getValue, setValue } from "@lib/store";
 import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import { createLogger } from "@lib/logger";
+import { glyphElement, glyphNamed } from "@lib/glyph-icons";
 import { CATEGORY_CELL, CATEGORY_ITEM, CATEGORY_NAME, ROW } from "@lib/actual-dom";
 
 const log = createLogger("emoji");
@@ -20,7 +21,7 @@ const ROW_SELECTOR = `${ROW}:has(${CATEGORY_NAME})`;
 const EMOJI_RE = /^(\p{Emoji_Presentation}|\p{Emoji}️)\s*/u;
 
 // ── Category icon storage ────────────────────────────────────────
-type CategoryIcon = { type: "url" | "dataUrl"; value: string };
+type CategoryIcon = { type: "url" | "dataUrl" | "glyph"; value: string };
 let categoryIcons: Record<string, CategoryIcon> = {};
 
 async function loadCategoryIcons(): Promise<void> {
@@ -76,6 +77,12 @@ const CSS = `
 		opacity: 1;
 	}
 
+	.abt-emoji-btn svg {
+		display: block;
+		color: var(--abt-muted);
+		pointer-events: none;
+	}
+
 	.abt-emoji-btn img {
 		width: 14px;
 		height: 14px;
@@ -87,6 +94,11 @@ const CSS = `
 
 	.abt-emoji-hidden {
 		display: none;
+	}
+
+	/* A marker beside the name, a step quieter than the name itself. */
+	svg.abt-category-icon {
+		color: var(--abt-muted);
 	}
 
 	.abt-category-icon {
@@ -138,7 +150,10 @@ const EMPTY_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="var(--color-page
 function renderBtnContent(btn: HTMLButtonElement, catId: string, emoji: string | null) {
 	btn.innerHTML = "";
 	const storedIcon = categoryIcons[catId];
-	if (storedIcon) {
+	const glyph = glyphNamed(storedIcon?.value);
+	if (glyph) {
+		btn.appendChild(glyphElement(glyph, 14));
+	} else if (storedIcon) {
 		const img = document.createElement("img");
 		img.src = storedIcon.value;
 		img.alt = "";
@@ -159,6 +174,7 @@ function openPicker(anchor: HTMLElement, catId: string, currentName: string) {
 	const mounted = mountToNodeWithReturn(IconPickerPopover, {
 		anchorRect: anchor.getBoundingClientRect(),
 		hasIcon,
+		glyphs: true,
 		onSelect: async (result: IconPickerResult) => {
 			if (result.type === "emoji") {
 				await removeCategoryIcon(catId);
@@ -166,7 +182,7 @@ function openPicker(anchor: HTMLElement, catId: string, currentName: string) {
 				await updateCategoryName(catId, result.value + " " + rest);
 			} else {
 				await setCategoryIcon(catId, {
-					type: result.type as "url" | "dataUrl",
+					type: result.type,
 					value: result.value,
 				});
 				if (currentEmoji) {
@@ -259,20 +275,28 @@ function showIcons() {
 	const hosts = `${CATEGORY_CELL}[${CATEGORY_ID_ATTR}], ${CATEGORY_ITEM}[${CATEGORY_ID_ATTR}]`;
 	for (const host of document.querySelectorAll(hosts)) {
 		const icon = categoryIcons[host.getAttribute(CATEGORY_ID_ATTR) ?? ""];
-		const shown = host.querySelector<HTMLImageElement>(".abt-category-icon");
+		const shown = host.querySelector<HTMLElement>(".abt-category-icon");
+		// What's shown, as stored, so an unchanged icon isn't rebuilt on every DOM change.
+		if (shown && shown.dataset.abtIcon === icon?.value) {
+			continue;
+		}
+		shown?.remove();
 		if (!icon) {
-			shown?.remove();
-		} else if (shown) {
-			if (shown.getAttribute("src") !== icon.value) {
-				shown.src = icon.value;
-			}
+			continue;
+		}
+		const glyph = glyphNamed(icon.value);
+		let mark: HTMLElement | SVGSVGElement;
+		if (glyph) {
+			mark = glyphElement(glyph, 14);
 		} else {
 			const img = document.createElement("img");
-			img.className = "abt-category-icon";
 			img.alt = "";
 			img.src = icon.value;
-			host.querySelector(":scope > div > span:not(.abt-tx-cat-dot)")?.prepend(img);
+			mark = img;
 		}
+		mark.classList.add("abt-category-icon");
+		mark.dataset.abtIcon = icon.value;
+		host.querySelector(":scope > div > span:not(.abt-tx-cat-dot)")?.prepend(mark);
 	}
 }
 

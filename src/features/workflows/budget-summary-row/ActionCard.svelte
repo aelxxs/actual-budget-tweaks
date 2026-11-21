@@ -7,6 +7,7 @@
 	import { BUDGET_SUMMARY } from "@lib/actual-dom";
 	import { loadCategories } from "@lib/actual/templates/actual-data";
 	import Icon from "@lib/components/Icon.svelte";
+	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
 	import type { IconName } from "@lib/icons";
 	import { notify } from "@lib/actual/actual-api";
 	import { bulkEdit } from "@lib/actual/bulk-edit";
@@ -63,6 +64,8 @@
 		short: string;
 		/** Before the amount, e.g. the overspent category's name. */
 		lead?: string;
+		/** The category the lead names, so its icon shows beside it as it does everywhere else. */
+		leadId?: string;
 		/** Only this part of the subtitle is private, not the words around it. */
 		amount?: number;
 		sub: string;
@@ -133,6 +136,7 @@
 			title: "Cover overspending",
 			short: "Cover",
 			lead: name ? `${name} is` : undefined,
+			leadId: name ? overIds[0] : undefined,
 			amount: overspent,
 			sub: name ? "over" : `over in ${overIds.length} categories`,
 		};
@@ -347,7 +351,10 @@
 					>{/if}
 			</span>
 			<span class="ac__sub"
-				>{#if suggestion.lead}{suggestion.lead}&nbsp;{/if}{#if suggestion.amount != null}<span
+				>{#if suggestion.leadId}<CategoryIcon
+						id={suggestion.leadId}
+						size={12}
+					/>{/if}{#if suggestion.lead}{suggestion.lead}&nbsp;{/if}{#if suggestion.amount != null}<span
 						class="abt-privacy-number">{fmtMoney(suggestion.amount)}</span
 					>&nbsp;{/if}{suggestion.sub}</span
 			>
@@ -587,6 +594,11 @@
 	.ac__main:hover .ac__go {
 		opacity: 1;
 		transform: translateX(2px);
+	}
+
+	.ac__sub :global(.category-icon) {
+		margin-right: var(--abt-space-2);
+		vertical-align: -2px;
 	}
 
 	.ac__sub {

@@ -26,6 +26,7 @@
 		"format": "eslint --fix . && prettier --write .",
 		"format:check": "prettier --check .",
 		"generate:features-manifest": "node scripts/generate-features-manifest.mjs",
+		"generate:glyphs": "node scripts/generate-glyphs.mjs && prettier --write src/lib/glyphs.ts",
 		"generate:large-budget": "node scripts/generate-large-budget.mjs",
 		"new-feature": "node scripts/new-feature.mjs",
 		"postinstall": "wxt prepare"
