@@ -16,10 +16,10 @@ export const borderRadius = defineSetting({
 		{ value: "0rem", label: "None" },
 		{ value: "0.25rem", label: "Small" },
 		{ value: "0.5rem", label: "Medium" },
-		{ value: "0.75rem", label: "Rounder" },
-		{ value: "1rem", label: "Large" },
-		{ value: "1.5rem", label: "Pill" },
+		{ value: "0.75rem", label: "Large" },
 	],
 	picker: BorderRadiusPicker,
-	css: ({ value }) => `:root { --border-radius: ${value}; }`,
+	// Capped at the top step: the removed 1rem and 1.5rem steps may still be saved, and past it
+	// only Actual's panels rounded further, as ABT's radius tokens stop there.
+	css: ({ value }) => `:root { --border-radius: min(${value}, 0.75rem); }`,
 });

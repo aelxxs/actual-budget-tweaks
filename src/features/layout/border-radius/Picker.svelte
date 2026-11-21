@@ -8,13 +8,18 @@
 		selected: string;
 		onPick: (value: string) => void;
 	} = $props();
+
+	// A saved step that's since been removed was rounder than any left, so it shows as the top one.
+	const current = $derived(
+		options.some((o) => o.value === selected) ? selected : options[options.length - 1]?.value,
+	);
 </script>
 
 <div class="rp-grid">
 	{#each options as opt (opt.value)}
 		<button
 			class="rp-option"
-			class:is-active={selected === opt.value}
+			class:is-active={current === opt.value}
 			onclick={() => onPick(opt.value)}
 		>
 			<div class="rp-preview">
