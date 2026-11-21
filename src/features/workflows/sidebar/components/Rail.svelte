@@ -39,14 +39,8 @@
 		watchCollapsedGroups,
 		watchGroupState,
 	} from "../lib/groups";
-	import {
-		lockedItems,
-		mainItems,
-		optionalItems,
-		settingsItems,
-		trackSidebarMenu,
-	} from "../lib/menu.svelte";
-	import { settingsItem, settingsMenu } from "../lib/nav";
+	import { lockedItems, mainItems, optionalItems, trackSidebarMenu } from "../lib/menu.svelte";
+	import { isTweaksOpen, settingsItem, settingsMenu, tweaksItem } from "../lib/nav";
 	import { applyOrder, loadAccountOrder, watchAccountOrder } from "../lib/order";
 	import { route, trackRoute } from "../lib/route.svelte";
 	import { isMac } from "../lib/search";
@@ -67,6 +61,11 @@
 	const graphFeature = storedValue<boolean>(() => graphView.context);
 	const calendarFeatureEnabled = $derived(calendarFeature.current);
 	const graphFeatureEnabled = $derived(graphFeature.current);
+
+	function openTweaks() {
+		leaveOverlay(tweaksItem.path);
+		navigate(tweaksItem.path);
+	}
 
 	function go(page: Page) {
 		const covered = isOverlayOpen();
@@ -178,11 +177,8 @@
 			moreOpen = false;
 			return;
 		}
-		if (settingsItems().length === 0) {
-			go(settingsItem.page);
-			return;
-		}
-		const MH = 200;
+		// Each row and the menu's padding, so a long menu still opens fully on screen.
+		const MH = (settingsMenu().length + 1) * 34 + 8;
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		moreX = rect.right + 8;
 		moreY = Math.min(rect.top, window.innerHeight - MH - 8);
@@ -439,7 +435,7 @@
 			<button
 				type="button"
 				class="ctx-item"
-				class:active={isActive(item.page)}
+				class:active={isActive(item.page) && !(item.page === Page.Settings && isTweaksOpen())}
 				onclick={() => {
 					moreOpen = false;
 					go(item.page);
@@ -449,6 +445,18 @@
 				<span>{item.label}</span>
 			</button>
 		{/each}
+		<button
+			type="button"
+			class="ctx-item"
+			class:active={Boolean(route()) && isTweaksOpen()}
+			onclick={() => {
+				moreOpen = false;
+				openTweaks();
+			}}
+		>
+			<tweaksItem.icon strokeWidth={1.5} />
+			<span>{tweaksItem.label}</span>
+		</button>
 	</div>
 {/if}
 

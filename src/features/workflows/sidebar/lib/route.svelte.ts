@@ -7,7 +7,8 @@ import { Page, matchesPage } from "@lib/actual/pages";
  * rows don't recompute their active state on every mutation.
  */
 function read(): string {
-	return `${location.pathname}|${Object.values(Page).filter(matchesPage).join(",")}`;
+	// The hash too: the Tweaks tab is General's path with its own hash.
+	return `${location.pathname}${location.hash}|${Object.values(Page).filter(matchesPage).join(",")}`;
 }
 
 let current = $state(read());

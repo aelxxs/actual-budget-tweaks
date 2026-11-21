@@ -7,8 +7,8 @@
 	import { getValue, setValue } from "@lib/store";
 	import { storedValue } from "@lib/stored.svelte";
 	import { CalendarDays, ChevronDown, Network } from "@lucide/svelte";
-	import { mainItems, settingsItems, trackSidebarMenu } from "../lib/menu.svelte";
-	import { settingsItem, settingsMenu } from "../lib/nav";
+	import { mainItems, trackSidebarMenu } from "../lib/menu.svelte";
+	import { isTweaksOpen, settingsItem, settingsMenu, tweaksItem } from "../lib/nav";
 	import { route, trackRoute } from "../lib/route.svelte";
 
 	const calendarFeature = storedValue<boolean>(() => spendingCalendar.context);
@@ -102,50 +102,50 @@
 		</button>
 	{/if}
 
-	{#if settingsItems().length === 0}
-		<button
-			type="button"
-			class="nav-link"
-			class:active={isActive(settingsItem.page)}
-			onclick={() => go(settingsItem.page)}
-		>
-			<span class="nav-icon"><settingsItem.icon strokeWidth={1.5} /></span>
-			<span class="nav-label">{settingsItem.label}</span>
-		</button>
-	{:else}
-		<button
-			type="button"
-			class="nav-link"
-			class:active={!moreExpanded && inSettings}
-			aria-expanded={moreExpanded}
-			onclick={toggleMore}
-		>
-			<span class="nav-icon"><settingsItem.icon strokeWidth={1.5} /></span>
-			<span class="nav-label">{settingsItem.label}</span>
-			<span class="nav-caret">
-				<ChevronDown
-					class={moreExpanded ? "caret" : "caret collapsed"}
-					color="var(--abt-ink-5)"
-					strokeWidth={3}
-				/>
-			</span>
-		</button>
+	<button
+		type="button"
+		class="nav-link"
+		class:active={!moreExpanded && inSettings}
+		aria-expanded={moreExpanded}
+		onclick={toggleMore}
+	>
+		<span class="nav-icon"><settingsItem.icon strokeWidth={1.5} /></span>
+		<span class="nav-label">{settingsItem.label}</span>
+		<span class="nav-caret">
+			<ChevronDown
+				class={moreExpanded ? "caret" : "caret collapsed"}
+				color="var(--abt-ink-5)"
+				strokeWidth={3}
+			/>
+		</span>
+	</button>
 
-		{#if moreExpanded}
-			<div class="nav-sublist">
-				{#each settingsMenu() as sub (sub.page)}
-					<button
-						type="button"
-						class="nav-link nav-sublink"
-						class:active={isActive(sub.page)}
-						onclick={() => go(sub.page)}
-					>
-						<span class="nav-icon"><sub.icon strokeWidth={1.5} /></span>
-						<span class="nav-label">{sub.label}</span>
-					</button>
-				{/each}
-			</div>
-		{/if}
+	{#if moreExpanded}
+		<div class="nav-sublist">
+			{#each settingsMenu() as sub (sub.page)}
+				<button
+					type="button"
+					class="nav-link nav-sublink"
+					class:active={isActive(sub.page) && !(sub.page === Page.Settings && isTweaksOpen())}
+					onclick={() => go(sub.page)}
+				>
+					<span class="nav-icon"><sub.icon strokeWidth={1.5} /></span>
+					<span class="nav-label">{sub.label}</span>
+				</button>
+			{/each}
+			<button
+				type="button"
+				class="nav-link nav-sublink"
+				class:active={Boolean(route()) && isTweaksOpen()}
+				onclick={() => {
+					leaveOverlay(tweaksItem.path);
+					navigate(tweaksItem.path);
+				}}
+			>
+				<span class="nav-icon"><tweaksItem.icon strokeWidth={1.5} /></span>
+				<span class="nav-label">{tweaksItem.label}</span>
+			</button>
+		</div>
 	{/if}
 </nav>
 
