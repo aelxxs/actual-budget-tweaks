@@ -406,6 +406,18 @@
 				"experimental": false
 			},
 			{
+				"key": "budget-hide-header-totals",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Hide header totals",
+				"description": "With month cards on and one month shown, drops the column totals the cards already show.",
+				"icon": "eyeOff",
+				"group": "Layout",
+				"writes": null,
+				"experimental": false
+			},
+			{
 				"key": "category-progress-indicators",
 				"type": "checkbox",
 				"defaultValue": false,

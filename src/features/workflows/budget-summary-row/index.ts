@@ -20,7 +20,7 @@ import SummaryRow from "./SummaryRow.svelte";
 import TrackingMeta from "./TrackingMeta.svelte";
 import TrackingRow from "./TrackingRow.svelte";
 
-const SINGLE_MONTH_ATTR = "data-abt-single-month";
+export const SINGLE_MONTH_ATTR = "data-abt-single-month";
 const MULTI_MONTH_ATTR = "data-abt-multi-month";
 const FULL_WIDTH_ATTR = "data-abt-summary-full-width";
 const SUMMARY_CARD_ATTR = "data-abt-summary-row";

@@ -51,6 +51,7 @@ import { themeLoader } from "./theme/theme-loader";
 import type { CoreSetting, Setting } from "./types";
 import { budgetCategoryFilter } from "./workflows/budget-category-filter";
 import { monthCards } from "./workflows/budget-summary-row";
+import { hideHeaderTotals } from "./workflows/budget-summary-row/header-totals";
 import { budgetViewOptions } from "./workflows/budget-view-options";
 import { categoryTemplateInsights } from "./workflows/category-template-insights";
 import { incomeBreakdown } from "./workflows/income-breakdown";
@@ -159,7 +160,7 @@ export const scriptSections: SettingsSection[] = [
 		groups: [
 			{
 				label: "Layout",
-				items: [budgetTableRowHeight, monthCards],
+				items: [budgetTableRowHeight, monthCards, hideHeaderTotals],
 			},
 			{
 				label: "Readability",
