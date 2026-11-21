@@ -121,9 +121,9 @@ body {
 
 	/* /budget -- table header */
 	[data-testid="budget-totals"] {
+		/* All four sides: its bottom edge is the line under the header, as the body has no top. */
 		border: var(--border);
 		border-radius: var(--border-radius) var(--border-radius) 0px 0px;
-		border-bottom-width: 0px;
 		box-shadow: none;
 		overflow: hidden;
 	}
