@@ -12,8 +12,11 @@ let stop: (() => void) | null = null;
 /** Keeps the shared icons current while anything shows them; returns a release. */
 export function useCategoryIcons(): () => void {
 	if (users++ === 0) {
-		void getValue<CategoryIcons>(KEY, {}).then((icons) => (shared.icons = icons ?? {}));
-		stop = watchValue<CategoryIcons>(KEY, (icons) => (shared.icons = icons ?? {}));
+		const set = (icons: CategoryIcons | null | undefined) => {
+			shared.icons = icons ?? {};
+		};
+		void getValue<CategoryIcons>(KEY, {}).then(set);
+		stop = watchValue<CategoryIcons>(KEY, set);
 	}
 	return () => {
 		if (--users === 0) {
