@@ -23,7 +23,6 @@ import { sidePanel } from "./core/side-panel";
 import { tooltipStyling } from "./core/tooltip";
 import { backgroundPattern } from "./layout/background-pattern";
 import { borderRadius } from "./layout/border-radius";
-import { borders } from "./layout/borders";
 import { budgetTableRowHeight } from "./layout/budget-table-row-height";
 import { insetPanels } from "./layout/inset-panels";
 import { modernHeaders } from "./layout/modern-headers";
@@ -80,7 +79,7 @@ interface SettingsSection {
 }
 
 // How Actual looks across every page, edited from Theme → Style and Theme Studio.
-export const styleSettings: PageSetting[] = [borderRadius, backgroundPattern, insetPanels, borders];
+export const styleSettings: PageSetting[] = [borderRadius, backgroundPattern, insetPanels];
 
 /** Its section starts collapsed once every feature in it is on. */
 export const FEATURES_TITLE = "Features";

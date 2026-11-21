@@ -14,7 +14,6 @@
 		"background-pattern": "None",
 		"balance-status-pills": false,
 		"border-radius": "0.5rem",
-		"borders": true,
 		"budget-card-styling": false,
 		"budget-category-filter": true,
 		"budget-group-spacing": true,

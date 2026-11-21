@@ -1,4 +1,5 @@
 import { defineSetting } from "@features/types";
+import { NAV_BORDER_CSS } from "@features/layout/borders";
 import { type DrawnIconName, iconMask } from "@lib/icons";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { removeValue } from "@lib/store";
@@ -225,7 +226,7 @@ export const modernTitlebar = defineSetting({
 		key: "modern-titlebar",
 		defaultValue: true,
 	},
-	css: () => CSS,
+	css: () => NAV_BORDER_CSS + CSS,
 	init: () => {
 		void removeValue("theme-menu");
 		let bar: Element | null = null;

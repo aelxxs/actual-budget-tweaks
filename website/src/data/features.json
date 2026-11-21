@@ -128,18 +128,6 @@
 				"group": null,
 				"writes": null,
 				"experimental": false
-			},
-			{
-				"key": "borders",
-				"type": "checkbox",
-				"defaultValue": true,
-				"platform": "desktop",
-				"label": "Borders",
-				"description": "Adds borders under the top bar and around the budget and report cards.",
-				"icon": "square",
-				"group": null,
-				"writes": null,
-				"experimental": false
 			}
 		]
 	},

@@ -112,14 +112,16 @@ body {
 		padding-top: 1.5rem;
 	}
 
-	/* /budget -- budget cards */
+	/* /budget -- budget cards. Bordered where Actual had a shadow, as are the table and report cards. */
 	[data-testid="budget-summary"] {
 		box-shadow: none;
+		border: var(--border);
 		border-radius: var(--border-radius);
 	}
 
 	/* /budget -- table header */
 	[data-testid="budget-totals"] {
+		border: var(--border);
 		border-radius: var(--border-radius) var(--border-radius) 0px 0px;
 		border-bottom-width: 0px;
 		box-shadow: none;
@@ -129,6 +131,8 @@ body {
 	/* /budget -- table body */
 	[data-testid="budget-table-scroll-container"] > div > div {
 		box-shadow: none;
+		border: var(--border);
+		border-top: 0px;
 		border-radius: 0 0 var(--border-radius) var(--border-radius);
 		margin-bottom: 1rem;
 	}
@@ -142,6 +146,7 @@ body {
 
 	/* reports borders */
 	.react-grid-item {
+		border: var(--border);
 		border-radius: var(--border-radius);
 	}
 
