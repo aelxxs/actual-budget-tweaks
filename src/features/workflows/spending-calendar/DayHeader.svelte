@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { fmtMoney } from "@lib/format/currency";
 
-	const { dateStr, total } = $props<{
+	const {
+		dateStr,
+		total,
+	}: {
 		dateStr: string;
 		total: number;
-	}>();
+	} = $props();
 </script>
 
 <div class="dh">

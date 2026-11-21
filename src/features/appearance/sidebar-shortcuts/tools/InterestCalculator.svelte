@@ -2,7 +2,7 @@
 	import { fmtNumber } from "@lib/format/currency";
 	// Closing is handled by the parent popover's own backdrop/outside-click
 	// logic; this component doesn't need to trigger it itself.
-	const { onClose: _onClose } = $props<{ onClose: () => void }>();
+	const { onClose: _onClose }: { onClose: () => void } = $props();
 
 	let principal = $state("");
 	let rate = $state("");

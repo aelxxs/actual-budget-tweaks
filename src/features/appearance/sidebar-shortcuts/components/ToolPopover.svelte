@@ -14,7 +14,7 @@
 		centered = false,
 		onClose,
 		onMoved,
-	} = $props<{
+	}: {
 		toolId: ToolId;
 		title: string;
 		anchorX: number;
@@ -23,7 +23,7 @@
 		centered?: boolean;
 		onClose: () => void;
 		onMoved: (x: number, y: number) => void;
-	}>();
+	} = $props();
 
 	let popover: HTMLDivElement;
 	// Set once, then the popover is the user's to move.

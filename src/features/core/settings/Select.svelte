@@ -8,12 +8,17 @@
 	import WritesMark from "@lib/components/WritesMark.svelte";
 	import type { IconName } from "@lib/icons";
 
-	const { labelText, options, setting, icon } = $props<{
+	const {
+		labelText,
+		options,
+		setting,
+		icon,
+	}: {
 		labelText: string;
 		options: { value: string; label: string; description?: string }[];
 		setting: SelectSetting<any>;
 		icon?: IconName;
-	}>();
+	} = $props();
 	const ctx = $derived(setting.context);
 
 	const stored = storedValue<unknown>(() => setting.context);

@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { fmtMoney } from "@lib/format/currency";
 
-	const { available, budgeted, overspent, forNext } = $props<{
+	const {
+		available,
+		budgeted,
+		overspent,
+		forNext,
+	}: {
 		available: number;
 		budgeted: number;
 		overspent: number;
 		forNext: number;
-	}>();
+	} = $props();
 
 	const toBudget = $derived(available - budgeted - overspent - forNext);
 	const total = $derived(Math.max(available, budgeted + overspent + forNext) || 1);

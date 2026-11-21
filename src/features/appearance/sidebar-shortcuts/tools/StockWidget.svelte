@@ -6,7 +6,7 @@
 
 	const log = createLogger("stock");
 
-	const { symbol = "SPY" } = $props<{ symbol?: string }>();
+	const { symbol = "SPY" }: { symbol?: string } = $props();
 
 	let price = $state<number | null>(null);
 	let change = $state<number | null>(null);

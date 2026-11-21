@@ -7,11 +7,11 @@
 		// Closing is handled by the parent popover's own backdrop/outside-click
 		// logic; this component doesn't need to trigger it itself.
 		onClose: _onClose,
-	} = $props<{
+	}: {
 		currentColor: string;
 		onSelect: (color: string) => void;
 		onClose: () => void;
-	}>();
+	} = $props();
 
 	let custom = $derived(currentColor);
 </script>

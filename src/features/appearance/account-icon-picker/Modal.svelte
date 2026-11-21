@@ -4,7 +4,14 @@
 	import type { IconPickerResult } from "@lib/components/IconPickerPopover.svelte";
 	import { loadIconCache, type AccountIconData } from "@lib/account-icons";
 
-	const { accountId, hasIcon, anchorRect, onSave, onRemove, onClose } = $props<{
+	const {
+		accountId,
+		hasIcon,
+		anchorRect,
+		onSave,
+		onRemove,
+		onClose,
+	}: {
 		accountId: string;
 		accountName?: string;
 		hasIcon: boolean;
@@ -12,7 +19,7 @@
 		onSave: (iconData: AccountIconData) => Promise<void>;
 		onRemove: () => Promise<void>;
 		onClose: () => void;
-	}>();
+	} = $props();
 
 	let hasIconActual = $derived(hasIcon);
 

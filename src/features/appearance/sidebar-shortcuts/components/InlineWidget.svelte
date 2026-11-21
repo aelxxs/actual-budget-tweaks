@@ -6,10 +6,13 @@
 
 	import type { WidgetId } from "../types";
 
-	const { widgetId, config } = $props<{
+	const {
+		widgetId,
+		config,
+	}: {
 		widgetId: WidgetId;
 		config?: Record<string, string>;
-	}>();
+	} = $props();
 </script>
 
 {#if widgetId === "stock-tracker"}

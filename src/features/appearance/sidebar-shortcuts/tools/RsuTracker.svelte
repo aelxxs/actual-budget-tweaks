@@ -6,11 +6,11 @@
 		symbol = "",
 		startDate = "",
 		count = "0",
-	} = $props<{
+	}: {
 		symbol?: string;
 		startDate?: string;
 		count?: string;
-	}>();
+	} = $props();
 
 	let currentPrice = $state<number | null>(null);
 	let grantPrice = $state<number | null>(null);

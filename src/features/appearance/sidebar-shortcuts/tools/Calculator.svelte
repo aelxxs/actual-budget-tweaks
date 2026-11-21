@@ -1,5 +1,5 @@
 <script lang="ts">
-	const { onClose } = $props<{ onClose: () => void }>();
+	const { onClose }: { onClose: () => void } = $props();
 
 	let display = $state("0");
 	let expression = $state("");

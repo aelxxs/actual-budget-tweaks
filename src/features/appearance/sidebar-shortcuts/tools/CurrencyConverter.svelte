@@ -2,7 +2,7 @@
 	import Icon from "@lib/components/Icon.svelte";
 	import { onMount } from "svelte";
 
-	const { onClose } = $props<{ onClose: () => void }>();
+	const { onClose }: { onClose: () => void } = $props();
 
 	const CURRENCIES = [
 		"USD",
