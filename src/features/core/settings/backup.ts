@@ -8,6 +8,7 @@ const AUX_DEFAULTS: Record<string, unknown> = {
 	"local:category-colors": {},
 	"local:abt-account-icons": {},
 	"local:abt-category-icons": {},
+	"local:future-transactions-color": "#f0fffd",
 	"local:abt-sidebar-shortcuts": [],
 	"local:user-themes": {},
 	"local:side-panel-width": 420,

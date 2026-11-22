@@ -41,6 +41,7 @@ import { balancePills } from "./readability/balance-pills";
 import { categoryProgress } from "./readability/category-progress";
 import { colorAmounts } from "./readability/color-amounts";
 import { groupOverspent } from "./readability/group-overspent";
+import { highlightFutureTransactions } from "./readability/highlight-future-transactions";
 import { rowStatus } from "./readability/row-status";
 import { quietCategoryIcons } from "./readability/quiet-category-icons";
 import { showDailyAvailable } from "./readability/show-daily-available";
@@ -179,6 +180,7 @@ export const scriptSections: SettingsSection[] = [
 				items: [
 					alternatingTransactionRows,
 					rowStatus,
+					highlightFutureTransactions,
 					tagStyling,
 					resizableTransactionColumns,
 					showDailyAvailable,

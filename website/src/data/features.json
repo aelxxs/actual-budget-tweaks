@@ -520,6 +520,18 @@
 				"experimental": false
 			},
 			{
+				"key": "highlight-future-transactions",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Highlight future transactions",
+				"description": "Tints transactions dated after today.",
+				"icon": "calendar",
+				"group": null,
+				"writes": null,
+				"experimental": false
+			},
+			{
 				"key": "tag-styling",
 				"type": "checkbox",
 				"defaultValue": true,
