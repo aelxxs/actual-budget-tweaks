@@ -325,6 +325,14 @@ export function navigate(path: string | number, options?: Record<string, unknown
 	);
 }
 
+/**
+ * Orders the schedules page's list by these AQL order expressions; null gives it back Actual's
+ * own order. Shows at once if the page is open.
+ */
+export function setScheduleOrder(order: Record<string, unknown>[] | null): Promise<void> {
+	return request("abt:api:schedule-order", { order });
+}
+
 /** Has the open account view reload its transactions in place; false when there's none to reload. */
 export function refetchTransactions(): Promise<boolean> {
 	return request("abt:api:refetch-transactions", {});
@@ -390,6 +398,11 @@ export function onSyncingAccounts(callback: (ids: Set<string>) => void): () => v
 /** Tags the items of Actual's open menus with `data-abt-menu-key`, their untranslated names. */
 export function markMenuKeys(): void {
 	document.dispatchEvent(new CustomEvent("abt:api:mark-menu-keys"));
+}
+
+/** Tags the schedules table's Name and Next date headers with data-abt-sort-column. */
+export function markScheduleColumns(): void {
+	document.dispatchEvent(new CustomEvent("abt:api:mark-schedule-columns"));
 }
 
 let budgetReadyPromise: Promise<void> | null = null;

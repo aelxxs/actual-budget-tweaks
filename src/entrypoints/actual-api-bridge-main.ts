@@ -5,8 +5,12 @@ import {
 	ACCOUNT_CELL,
 	CATEGORY_CELL,
 	CATEGORY_ITEM,
+	GRID,
+	MODAL,
 	ROW,
+	TABLE,
 	TRANSACTION_TABLE,
+	headerRowOf,
 } from "@lib/actual-dom";
 
 const log = createLogger("bridge");
@@ -300,6 +304,107 @@ export default defineUnlistedScript(async () => {
 			() => respond(id, true, null),
 			(err) => respond(id, null, String(err)),
 		);
+	});
+
+	// Actual's schedules page asks for every schedule with no order, which reads back by date. This
+	// adds one to that query on its way to the backend, where Actual's live query re-sends it after
+	// each change. Desktop and mobile list pages alike; the mobile editor's /schedules/<id> filters.
+	let scheduleOrder = null;
+	let unpatchPosts = null;
+	const SCHEDULES_PAGE = /(^|\/)schedules\/?$/;
+
+	function orderSchedules(msg) {
+		const args = msg?.name === "query" ? msg.args : null;
+		if (
+			!scheduleOrder ||
+			args?.table !== "schedules" ||
+			args.orderExpressions?.length !== 0 ||
+			args.filterExpressions?.length !== 0 ||
+			args.calculation ||
+			!SCHEDULES_PAGE.test(location.pathname)
+		) {
+			return msg;
+		}
+		return { ...msg, args: { ...args, orderExpressions: scheduleOrder } };
+	}
+
+	// The backend is a Worker, or a SharedWorker's MessagePort when tabs share one.
+	function patchPosts() {
+		const protos = [Worker.prototype, MessagePort.prototype];
+		const originals = protos.map((proto) => proto.postMessage);
+		const patched = originals.map(
+			(original) =>
+				function (msg, ...rest) {
+					return original.call(this, orderSchedules(msg), ...rest);
+				},
+		);
+		protos.forEach((proto, i) => (proto.postMessage = patched[i]));
+		return () =>
+			protos.forEach((proto, i) => {
+				if (proto.postMessage === patched[i]) {
+					proto.postMessage = originals[i];
+				}
+			});
+	}
+
+	// The open page's live query, in a ref of the component that called useSchedules. Only one still
+	// subscribed: re-running one Actual has let go of would subscribe it again.
+	function pageScheduleQuery() {
+		const start = document.querySelector(TABLE) ?? document.querySelector(GRID);
+		let found = null;
+		if (start) {
+			closestFiber(
+				start,
+				(fiber) => {
+					for (let hook = fiber.memoizedState; hook && !found; hook = hook.next) {
+						const live = hook.memoizedState?.current;
+						if (
+							typeof live?.run === "function" &&
+							live.query?.state?.table === "schedules" &&
+							live._unsubscribeSyncEvent
+						) {
+							found = live;
+						}
+					}
+					return !!found;
+				},
+				40,
+			);
+		}
+		return found;
+	}
+
+	document.addEventListener("abt:api:schedule-order", (e) => {
+		const { id, order } = parseDetail(e);
+		if (!id || !accept(id)) {
+			return;
+		}
+		scheduleOrder = Array.isArray(order) && order.length ? order : null;
+		if (scheduleOrder && !unpatchPosts) {
+			unpatchPosts = patchPosts();
+		} else if (!scheduleOrder && unpatchPosts) {
+			unpatchPosts();
+			unpatchPosts = null;
+		}
+		// Off the page, it applies the next time the page opens.
+		void pageScheduleQuery()?.run();
+		respond(id, null, null);
+	});
+
+	// Tags the schedules table's sortable headers by their labels as Actual's source writes them,
+	// which stay English when the page is translated.
+	const SCHEDULE_COLUMNS = { Name: "name", "Next date": "next_date" };
+	document.addEventListener("abt:api:mark-schedule-columns", () => {
+		const table = [...document.querySelectorAll(TABLE)].find((t) => !t.closest(MODAL));
+		const header = table && headerRowOf(table);
+		for (const field of header?.children ?? []) {
+			const text = field.querySelector("span");
+			const label = text && closestProps(text, (p) => !!p.children?.props)?.children.props;
+			const column = SCHEDULE_COLUMNS[label?.i18nKey ?? label?.children];
+			if (column) {
+				field.setAttribute("data-abt-sort-column", column);
+			}
+		}
 	});
 
 	// Marks the transaction rows Actual shows as new from a sync or import. That's its rows'
