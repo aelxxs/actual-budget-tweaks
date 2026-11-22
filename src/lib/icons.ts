@@ -170,6 +170,12 @@ const LUCIDE = {
  * which a Svelte component can't render into. Svelte uses Lucide for the rest.
  */
 const DRAWN = {
+	/** Lucide's calendar-arrow-down. */
+	calendarArrowDown: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 2,
+		body: '<path d="m14 17 4 4 4-4"/><path d="M16 2v3"/><path d="M18 13v8"/><path d="M21 10.354V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7.343"/><path d="M3 9h18"/><path d="M8 2v3"/>',
+	},
 	rows: {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.5,

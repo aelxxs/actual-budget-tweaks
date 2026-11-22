@@ -520,6 +520,18 @@
 				"experimental": false
 			},
 			{
+				"key": "scheduled-date-order",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Scheduled transactions in date order",
+				"description": "A toggle on the Date header moves upcoming scheduled transactions in among the rest.",
+				"icon": "calendar",
+				"group": null,
+				"writes": null,
+				"experimental": false
+			},
+			{
 				"key": "tag-styling",
 				"type": "checkbox",
 				"defaultValue": true,

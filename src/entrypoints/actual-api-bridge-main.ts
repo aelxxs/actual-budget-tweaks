@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { interleaveScheduled } from "@features/workflows/scheduled-date-order/data";
 import { createLogger } from "@lib/logger";
 import { closestFiber, closestProps, propsUnderRoot } from "@lib/actual/react-fiber";
 import {
@@ -301,6 +302,94 @@ export default defineUnlistedScript(async () => {
 			(err) => respond(id, null, String(err)),
 		);
 	});
+
+	// ── Scheduled transactions in date order (scheduled-date-order tweak) ───────────────────────
+	// Additive on purpose: everything this tweak needs is in this block, and the handlers above are
+	// left as they were. The account-view lookup below repeats the one in refetch-transactions; the
+	// tidier way would be one shared helper used by both, but that means changing existing code.
+
+	// The open account view's component instance (AccountInternal), found by a method only it has.
+	function scheduledOrderView() {
+		const table = document.querySelector(TRANSACTION_TABLE);
+		return table
+			? (closestFiber(
+					table,
+					(f) =>
+						typeof (f.stateNode as { refetchTransactions?: unknown })?.refetchTransactions ===
+						"function",
+					150,
+				)?.stateNode ?? null)
+			: null;
+	}
+
+	// Actual's account view puts every scheduled transaction above the rest, whatever the sort. This
+	// wraps the view's render so the rows its AllTransactions hands the table come in date order.
+	let scheduledInOrder = false;
+	let orderedView = null;
+	let lastOrdered = null;
+
+	function ordered(rows, balances, dir) {
+		const last = lastOrdered;
+		if (last?.rows !== rows || last.balances !== balances || last.dir !== dir) {
+			lastOrdered = { rows, balances, dir, out: interleaveScheduled(rows, balances, dir) };
+		}
+		return lastOrdered.out;
+	}
+
+	function orderView(view) {
+		const render = Object.getPrototypeOf(view).render;
+		if (orderedView === view || typeof render !== "function") {
+			return;
+		}
+		unorderView();
+		view.render = function () {
+			const element = render.call(this);
+			const children = element?.props?.children;
+			const sort = this.state?.sort;
+			// Sorted by another column, Actual's order stays; so does any render that isn't the one read.
+			if (
+				!scheduledInOrder ||
+				typeof children !== "function" ||
+				!Array.isArray(element.props.transactions) ||
+				(sort?.field && sort.field !== "date")
+			) {
+				return element;
+			}
+			const dir = sort?.ascDesc === "asc" ? "asc" : "desc";
+			const inOrder = (rows, balances) => {
+				const out = ordered(rows, balances, dir);
+				return children(out.rows, out.balances);
+			};
+			return { ...element, props: { ...element.props, children: inOrder } };
+		};
+		orderedView = view;
+	}
+
+	function unorderView() {
+		if (orderedView) {
+			delete orderedView.render;
+			orderedView.forceUpdate();
+			orderedView = null;
+		}
+		lastOrdered = null;
+	}
+
+	document.addEventListener("abt:api:scheduled-date-order", (e) => {
+		const { id, inOrder } = parseDetail(e);
+		if (!id || !accept(id)) {
+			return;
+		}
+		scheduledInOrder = inOrder === true;
+		const view = scheduledOrderView();
+		if (typeof inOrder !== "boolean") {
+			unorderView();
+		} else if (view) {
+			orderView(view);
+			view.forceUpdate();
+		}
+		respond(id, !!view, null);
+	});
+	// ── End of scheduled-date-order ──────────────────────────────────────────────────────────────
 
 	// Marks the transaction rows Actual shows as new from a sync or import. That's its rows'
 	// `added` prop, which lives in React, out of content scripts' reach; its styling is a generated class.
