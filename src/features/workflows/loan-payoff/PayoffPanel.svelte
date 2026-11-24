@@ -67,6 +67,8 @@
 	let savedKey = $state("null");
 	let saving = $state(false);
 	let saveFailed = $state(false);
+	// The form as it stood when the line was removed, so the footer says so until it's edited.
+	let removedKey = $state<string | null>(null);
 
 	let nextExtra = 0;
 	let extras = $state<{ id: number; month: string; text: string }[]>([]);
@@ -110,6 +112,8 @@
 				},
 	);
 	const dirty = $derived(draft != null && JSON.stringify(draft) !== savedKey);
+	const saved = $derived(savedKey !== "null");
+	const justRemoved = $derived(removedKey != null && JSON.stringify(draft) === removedKey);
 
 	const owed = $derived(loan ? -loan.balance : 0);
 	const terms = $derived<LoanTerms | null>(
@@ -208,6 +212,7 @@
 		try {
 			await removeLoan(accountId);
 			savedKey = "null";
+			removedKey = JSON.stringify(draft);
 			await reloadDebts();
 		} catch {
 			saveFailed = true;
@@ -270,6 +275,7 @@
 		try {
 			await saveLoan(accountId, draft);
 			savedKey = JSON.stringify(draft);
+			removedKey = null;
 			await reloadDebts();
 		} catch {
 			saveFailed = true;
@@ -661,15 +667,21 @@
 		<footer class="lp__footer">
 			<span class="lp__muted" class:is-error={saveFailed}>
 				{#if saveFailed}
-					Couldn't save to the note.
+					Couldn't change the note.
+				{:else if justRemoved}
+					Removed from the account's note.
+				{:else if dirty && saved}
+					Changes not saved yet.
 				{:else if dirty}
-					Saves as a "loan:" line in the account's note.
-				{:else if savedKey !== "null" && draft}
+					Not in the account's note yet.
+				{:else if saved}
 					Saved in the account's note.
+				{:else}
+					Enter the rate and payment to save.
 				{/if}
 			</span>
 			<span class="lp__actions">
-				{#if savedKey !== "null"}
+				{#if saved}
 					<button
 						type="button"
 						class="abt-btn abt-btn--sm abt-btn--ghost"
@@ -686,7 +698,7 @@
 					disabled={!dirty || saving}
 					onclick={save}
 				>
-					Save
+					{justRemoved ? "Save again" : "Save"}
 				</button>
 			</span>
 		</footer>
