@@ -109,10 +109,11 @@
 		color: var(--abt-muted);
 	}
 
+	/* One row a series, its value at the far end, so hovering fills a gap rather than moving the labels. */
 	.pc__legend {
 		display: flex;
-		flex-wrap: wrap;
-		gap: var(--abt-space-1) var(--abt-space-4);
+		flex-direction: column;
+		gap: var(--abt-space-1);
 	}
 
 	.pc__key {
@@ -132,6 +133,7 @@
 	}
 
 	.pc__value {
+		margin-left: auto;
 		color: var(--abt-ink);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
