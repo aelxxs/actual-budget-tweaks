@@ -554,6 +554,18 @@
 				"group": null,
 				"writes": null,
 				"experimental": false
+			},
+			{
+				"key": "schedule-sort",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "all",
+				"label": "Sortable schedule columns",
+				"description": "Click Name or Next date in the schedules table to sort by it.",
+				"icon": "sortAlpha",
+				"group": null,
+				"writes": null,
+				"experimental": false
 			}
 		]
 	},

@@ -14,6 +14,9 @@ export const CELL = "[data-cellname]";
 export const TABLE = byTestId("table");
 /** Any modal, e.g. "schedule-edit-modal". */
 export const MODAL = '[data-testid$="-modal"]';
+/** A list page's header row, which Actual draws in its own wrapper just before the table. */
+export const headerRowOf = (table: Element) =>
+	table.previousElementSibling?.querySelector(`:scope > ${ROW}`) ?? null;
 /** Lets a cell name a row, e.g. a schedule's in the schedules table. */
 export const byFocusKey = (id: string) => `[data-focus-key="${id}"]`;
 export const FOCUS_KEY = "[data-focus-key]";

@@ -56,6 +56,7 @@ import { categoryTemplateInsights } from "./workflows/category-template-insights
 import { incomeBreakdown } from "./workflows/income-breakdown";
 import { keyboardShortcuts } from "./workflows/keyboard-shortcuts";
 import { modernReconcile } from "./workflows/reconcile";
+import { scheduleSort } from "./workflows/schedule-sort";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
@@ -182,6 +183,7 @@ export const scriptSections: SettingsSection[] = [
 					tagStyling,
 					resizableTransactionColumns,
 					showDailyAvailable,
+					scheduleSort,
 				],
 			},
 		],

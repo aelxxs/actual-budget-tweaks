@@ -3,6 +3,7 @@ import {
 	Keyboard,
 	AppWindow,
 	Archive,
+	ArrowDownAZ,
 	BadgeAlert,
 	Bell,
 	Bug,
@@ -156,6 +157,7 @@ const LUCIDE = {
 	hash: { component: Hash, strokeWidth: 1.5 },
 	wallet: { component: Wallet, strokeWidth: 1.5 },
 	list: { component: List, strokeWidth: 1.5 },
+	sortAlpha: { component: ArrowDownAZ, strokeWidth: 1.5 },
 	network: { component: Network, strokeWidth: 1.5 },
 	minus: { component: Minus, strokeWidth: 1.5 },
 	scan: { component: Scan, strokeWidth: 1.5 },
@@ -299,6 +301,11 @@ const DRAWN = {
 		viewBox: "0 0 24 24",
 		strokeWidth: 1.75,
 		body: '<path d="M14 17H5"/><path d="M19 7h-9"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
+	},
+	arrowDown: {
+		viewBox: "0 0 24 24",
+		strokeWidth: 2,
+		body: '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
 	},
 	chevronLeft: {
 		viewBox: "0 0 16 16",
