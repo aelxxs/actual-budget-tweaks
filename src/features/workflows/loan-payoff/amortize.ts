@@ -73,6 +73,8 @@ export function payoff(
 	terms: LoanTerms,
 	start: string,
 	extras: ExtraPayment[] = [],
+	/** Called with what's still owed after each payment. */
+	track?: (month: string, balance: number) => void,
 ): Payoff | null {
 	if (!(principal > 0)) {
 		return null;
@@ -120,9 +122,11 @@ export function payoff(
 			// The last payment also settles what has built up since the last posting.
 			const owed = balance + Math.round(accrued);
 			if (amount >= owed) {
+				track?.(key, 0);
 				return { payments, month: key, interest: interest + Math.round(accrued) };
 			}
 			balance -= amount;
+			track?.(key, balance);
 			// Months differ in length, so "is it shrinking" is asked a year apart.
 			if (payments % 12 === 0 && !pending.length) {
 				if (balance >= yearAgo) {
@@ -133,6 +137,34 @@ export function payoff(
 		}
 	}
 	return null;
+}
+
+export interface BalancePoint {
+	/** "YYYY-MM" */
+	month: string;
+	balance: number;
+}
+
+/**
+ * What's owed month by month, from `principal` in the start month down to nothing; a month with
+ * no payment yet repeats the one before. Null when the debt never clears.
+ */
+export function balances(
+	principal: number,
+	terms: LoanTerms,
+	start: string,
+	extras: ExtraPayment[] = [],
+): BalancePoint[] | null {
+	const points: BalancePoint[] = [{ month: start.slice(0, 7), balance: principal }];
+	const done = payoff(principal, terms, start, extras, (month, balance) => {
+		const last = points[points.length - 1];
+		if (last.month === month) {
+			last.balance = balance;
+		} else {
+			points.push({ month, balance });
+		}
+	});
+	return done ? points : null;
 }
 
 /** About a tenth of the payment, rounded to one figure: 200 for a payment of 1,860. */

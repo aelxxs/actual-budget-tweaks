@@ -17,7 +17,7 @@ async function load(file) {
 	return module.namespace;
 }
 
-const { payoff, scenarios, scenarioStep, paymentToFinishBy, impliedRate } =
+const { payoff, balances, scenarios, scenarioStep, paymentToFinishBy, impliedRate } =
 	await load("amortize.ts");
 const { readLoan, writeLoan } = await load("note.ts");
 
@@ -89,6 +89,22 @@ test("an extra payment shortens the loan and saves interest", () => {
 		{ month: "2025-11", amount: 400000 },
 	]);
 	assert.equal(late.payments, 20);
+});
+
+test("traces the balance month by month down to nothing", () => {
+	const points = balances(1000000, monthly, "2026-01-15");
+	const result = payoff(1000000, monthly, "2026-01-15");
+	assert.deepEqual(points[0], { month: "2026-01", balance: 1000000 });
+	assert.deepEqual(points.at(-1), { month: result.month, balance: 0 });
+	assert.equal(points.length, result.payments + 1);
+	for (let i = 1; i < points.length; i++) {
+		assert.ok(points[i].balance < points[i - 1].balance);
+		assert.ok(points[i].month > points[i - 1].month);
+	}
+	// A payment later in the start month updates that month rather than adding a second point.
+	const sameMonth = balances(100000, { ...monthly, rate: 0, paymentDay: 20 }, "2026-01-15");
+	assert.deepEqual(sameMonth[0], { month: "2026-01", balance: 70000 });
+	assert.equal(balances(1000000, { ...monthly, payment: 4000 }, "2026-01-15"), null);
 });
 
 test("scenarios run lowest payment first and drop one that isn't positive", () => {

@@ -17,12 +17,16 @@
 	import {
 		type DayCount,
 		type LoanTerms,
+		type Payoff,
+		balances,
 		impliedRate,
+		payoff,
 		paymentToFinishBy,
 		scenarioStep,
 		scenarios,
 	} from "./amortize";
 	import { type LedgerEntry, type Loan, loadLedger, loadLoan, saveLoan } from "./data";
+	import PayoffChart from "./PayoffChart.svelte";
 	import { MONTH_NAMES as MONTHS, monthName, span } from "./format";
 	import type { LoanConfig } from "./note";
 
@@ -111,6 +115,25 @@
 	const needed = $derived(
 		terms && owed > 0 ? paymentToFinishBy(owed, terms, today, target, extraList) : null,
 	);
+	// The same plan at the solved payment, and with no extra payments, to say what each one saves.
+	const goal = $derived(
+		terms && owed > 0 && needed != null && needed !== terms.payment
+			? { ...terms, payment: needed }
+			: null,
+	);
+	const goalPayoff = $derived(goal ? payoff(owed, goal, today, extraList) : null);
+	const plain = $derived(terms && owed > 0 && extraList.length ? payoff(owed, terms, today) : null);
+	const chart = $derived.by(() => {
+		const plan = terms && base ? balances(owed, terms, today, extraList) : null;
+		if (!plan) {
+			return [];
+		}
+		const other = goal && goalPayoff ? balances(owed, goal, today, extraList) : null;
+		return [
+			{ label: "Your plan", points: plan },
+			...(other ? [{ label: `Finish by ${monthName(target)}`, points: other }] : []),
+		];
+	});
 
 	const payeeNames = $derived(
 		[
@@ -212,6 +235,22 @@
 	</span>
 {/snippet}
 
+{#snippet versus(plan: Payoff, ref: Payoff)}
+	{@const saved = ref.interest - plan.interest}
+	{@const sooner = ref.payments - plan.payments}
+	{#if saved !== 0 || sooner !== 0}
+		<p class="lp__muted lp__versus">
+			{saved >= 0 ? "Saves" : "Costs"}
+			<span class="abt-privacy-number">{fmtMoney(Math.abs(saved))}</span>
+			{saved >= 0 ? "of interest" : "more interest"}{sooner > 0
+				? ` and finishes ${span(sooner)} sooner`
+				: sooner < 0
+					? ` and takes ${span(-sooner)} longer`
+					: ""}.
+		</p>
+	{/if}
+{/snippet}
+
 <div class="lp">
 	<div class="lp__scroll">
 		{#if !loaded}
@@ -230,6 +269,9 @@
 						</span>
 					{/if}
 				</div>
+				{#if chart.length}
+					<div class="lp__chart"><PayoffChart series={chart} /></div>
+				{/if}
 				{#if owed <= 0}
 					<Callout>Nothing is owed on this account.</Callout>
 				{:else if !terms}
@@ -341,8 +383,23 @@
 									<td class="abt-privacy-number">{fmtMoney(row.payment)}</td>
 									{#if row.payoff}
 										<td>{monthName(row.payoff.month)}</td>
-										<td>{span(row.payoff.payments)}</td>
-										<td class="abt-privacy-number">{fmtMoney(row.payoff.interest)}</td>
+										<td>
+											{span(row.payoff.payments)}
+											{#if base && row.payoff.payments !== base.payments}
+												<span class="lp__delta">
+													{span(Math.abs(base.payments - row.payoff.payments))}
+													{row.payoff.payments < base.payments ? "sooner" : "longer"}
+												</span>
+											{/if}
+										</td>
+										<td class="abt-privacy-number">
+											{fmtMoney(row.payoff.interest)}
+											{#if base && row.payoff.interest !== base.interest}
+												<span class="lp__delta">
+													{fmtMoney(row.payoff.interest - base.interest, { sign: true })}
+												</span>
+											{/if}
+										</td>
 									{:else}
 										<td colspan="3" class="lp__never">Never: under the interest</td>
 									{/if}
@@ -378,6 +435,9 @@
 								Use
 							</button>
 						</div>
+						{#if goalPayoff && base}
+							{@render versus(goalPayoff, base)}
+						{/if}
 					{/if}
 				</Section>
 
@@ -411,6 +471,9 @@
 								</li>
 							{/each}
 						</ul>
+						{#if plain && base}
+							{@render versus(base, plain)}
+						{/if}
 					{/if}
 					<div class="lp__answer">
 						<span class="lp__muted">One-off payments to try out. They aren't saved.</span>
@@ -626,7 +689,8 @@
 		font-size: var(--abt-text-sm);
 	}
 	.lp__field + .lp__answer,
-	.lp__extras + .lp__answer {
+	.lp__extras + .lp__answer,
+	.lp__versus + .lp__answer {
 		margin-top: var(--abt-space-3);
 	}
 
@@ -650,8 +714,21 @@
 		width: auto;
 	}
 
-	.lp__basis {
+	.lp__basis,
+	.lp__versus {
 		margin-top: var(--abt-space-2);
+	}
+
+	.lp__chart {
+		margin-top: var(--abt-space-4);
+	}
+
+	/* How a row differs from the payment as entered, under its own figure. */
+	.lp__delta {
+		display: block;
+		font-size: var(--abt-text-xs);
+		font-weight: 400;
+		color: var(--abt-muted);
 	}
 
 	.lp__footer {
