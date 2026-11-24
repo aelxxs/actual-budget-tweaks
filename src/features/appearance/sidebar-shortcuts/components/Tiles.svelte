@@ -606,7 +606,7 @@
 		position: relative;
 		height: 36px;
 		border: none;
-		border-radius: 10px; /* raw: fixed, with the sidebar search bar */
+		border-radius: var(--abt-radius);
 		background: var(--sc-bg);
 		color: var(--color-sidebarItemText, #e0e0e0);
 		display: flex;
