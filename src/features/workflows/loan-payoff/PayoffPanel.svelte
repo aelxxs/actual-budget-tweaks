@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { notify, send } from "@lib/actual/actual-api";
 	import Icon from "@lib/components/Icon.svelte";
 	import Callout from "@lib/components/panel/Callout.svelte";
 	import Row from "@lib/components/panel/Row.svelte";
@@ -19,13 +20,25 @@
 		type LoanTerms,
 		type Payoff,
 		balances,
+		expectedInterest,
 		impliedRate,
 		payoff,
 		paymentToFinishBy,
 		scenarioStep,
 		scenarios,
 	} from "./amortize";
-	import { type LedgerEntry, type Loan, loadLedger, loadLoan, saveLoan } from "./data";
+	import {
+		type Debt,
+		type LedgerEntry,
+		type Loan,
+		loadDebts,
+		loadLedger,
+		loadLoan,
+		postInterest,
+		removeLoan,
+		saveLoan,
+		watchTransactions,
+	} from "./data";
 	import PayoffChart from "./PayoffChart.svelte";
 	import { MONTH_NAMES as MONTHS, monthName, span } from "./format";
 	import type { LoanConfig } from "./note";
@@ -40,7 +53,9 @@
 
 	let loan = $state<Loan | null>(null);
 	let ledger = $state<LedgerEntry[]>([]);
+	let debts = $state<Debt[]>([]);
 	let loaded = $state(false);
+	let posting = $state(false);
 
 	let rateText = $state("");
 	let dayCount = $state<DayCount>("act365");
@@ -140,35 +155,92 @@
 			...new Set(ledger.filter((e) => e.amount < 0 && e.payee).map((e) => e.payee as string)),
 		].sort(),
 	);
-	const implied = $derived.by(() => {
+	// The ledger with the charges under the interest payee picked out; none while it isn't named.
+	const marked = $derived.by(() => {
 		const name = payee.trim().toLowerCase();
-		if (!loan || !name) {
-			return null;
-		}
-		return impliedRate(
-			loan.balance,
-			ledger.map((e) => ({
-				date: e.date,
-				amount: e.amount,
-				interest: (e.payee ?? "").toLowerCase() === name,
-			})),
-			dayCount,
-		);
+		return ledger.map((e) => ({
+			date: e.date,
+			amount: e.amount,
+			interest: !!name && (e.payee ?? "").toLowerCase() === name,
+		}));
 	});
+	const implied = $derived(
+		loan && payee.trim() ? impliedRate(loan.balance, marked, dayCount) : null,
+	);
+	const expected = $derived(
+		loan && owed > 0 && rate != null && validDay(interestDay)
+			? expectedInterest(loan.balance, marked, { rate, dayCount, interestDay }, today)
+			: null,
+	);
+	// Where every saved plan has ended; null while one of them never does.
+	const debtFree = $derived(
+		debts.every((d) => d.payoff)
+			? debts.reduce((max, d) => (d.payoff && d.payoff.month > max ? d.payoff.month : max), "")
+			: null,
+	);
 	const drifted = $derived(
 		implied != null && rate != null && Math.abs(implied.rate - rate) > DRIFT,
 	);
 
 	const percent = (r: number): string => `${fmtNumber(r * 100, { min: 2, max: 2 })}%`;
 
-	onMount(async () => {
-		void loadDatePrefs();
+	/** The balance and ledger again; what's typed into the form is left alone. */
+	async function reload() {
 		try {
-			await loadCurrency();
 			[loan, ledger] = await Promise.all([loadLoan(accountId), loadLedger(accountId)]);
 		} catch {
-			loan = null;
+			// Keeps what it had; before the first load that's nothing, and the panel says so.
 		}
+	}
+
+	async function reloadDebts() {
+		debts = await loadDebts().catch(() => debts);
+	}
+
+	$effect(() => (loaded ? watchTransactions(() => void reload()) : undefined));
+
+	async function remove() {
+		if (saving) {
+			return;
+		}
+		saving = true;
+		saveFailed = false;
+		try {
+			await removeLoan(accountId);
+			savedKey = "null";
+			await reloadDebts();
+		} catch {
+			saveFailed = true;
+		} finally {
+			saving = false;
+		}
+	}
+
+	async function post() {
+		if (!expected || posting) {
+			return;
+		}
+		const { date, amount } = expected;
+		posting = true;
+		try {
+			await postInterest(accountId, date, amount, payee);
+			void notify(
+				{ message: `Added ${fmtMoney(amount)} of interest on ${formatDayMonth(date)}.` },
+				// Undo reloads Actual's table itself, which brings the panel up to date.
+				{ title: "Undo", action: () => send("undo") },
+			);
+			await reload();
+		} catch (err) {
+			void notify({ type: "error", message: "Couldn't add the interest", pre: String(err) });
+		} finally {
+			posting = false;
+		}
+	}
+
+	onMount(async () => {
+		void loadDatePrefs();
+		await loadCurrency().catch(() => {});
+		await Promise.all([reload(), reloadDebts()]);
 		const config = loan?.config;
 		if (config) {
 			rateText = config.rate == null ? "" : rateInput(config.rate);
@@ -198,6 +270,7 @@
 		try {
 			await saveLoan(accountId, draft);
 			savedKey = JSON.stringify(draft);
+			await reloadDebts();
 		} catch {
 			saveFailed = true;
 		} finally {
@@ -485,6 +558,38 @@
 				</Section>
 			{/if}
 
+			{#if expected}
+				{@const due = expected.date <= today}
+				<Section title="Next interest">
+					<Row
+						name="Expected on {formatDayMonth(expected.date)}"
+						value={fmtMoney(expected.amount)}
+						strong
+					/>
+					<div class="lp__answer lp__after">
+						<span class="lp__muted">
+							{#if !due}
+								An estimate, taking the balance to stay as it is until then.
+							{:else if !payee.trim()}
+								Name the interest payee to add it to the account.
+							{:else}
+								Due, and not in the account yet.
+							{/if}
+						</span>
+						<button
+							type="button"
+							class="abt-btn abt-btn--sm"
+							disabled={!due || !payee.trim() || posting}
+							title={due ? "Adds it as an uncleared transaction" : "Once the day arrives"}
+							onclick={post}
+						>
+							<Icon name="plus" size={13} />
+							Add
+						</button>
+					</div>
+				</Section>
+			{/if}
+
 			<Section title="Rate check">
 				{#if !payee.trim()}
 					<p class="lp__muted">
@@ -525,6 +630,30 @@
 					{/if}
 				{/if}
 			</Section>
+
+			{#if debts.length > 1}
+				<Section title="All debts" count={debts.length}>
+					{#each debts as debt (debt.id)}
+						<Row
+							name={debt.name}
+							value={debt.payoff ? monthName(debt.payoff.month) : "Never"}
+							tone={debt.payoff ? undefined : "warning"}
+							sensitive
+						/>
+					{/each}
+					<Row name="Debt-free" value={debtFree ? monthName(debtFree) : "Never"} strong />
+					<p class="lp__muted lp__basis">
+						<span class="abt-privacy-number"
+							>{fmtMoney(debts.reduce((sum, d) => sum + d.owed, 0))}</span
+						>
+						owed in all, with
+						<span class="abt-privacy-number"
+							>{fmtMoney(debts.reduce((sum, d) => sum + (d.payoff?.interest ?? 0), 0))}</span
+						>
+						of interest to come on each account's saved plan.
+					</p>
+				</Section>
+			{/if}
 		{/if}
 	</div>
 
@@ -539,14 +668,27 @@
 					Saved in the account's note.
 				{/if}
 			</span>
-			<button
-				type="button"
-				class="abt-btn abt-btn--sm abt-tone-accent"
-				disabled={!dirty || saving}
-				onclick={save}
-			>
-				Save
-			</button>
+			<span class="lp__actions">
+				{#if savedKey !== "null"}
+					<button
+						type="button"
+						class="abt-btn abt-btn--sm abt-btn--ghost"
+						title="Takes the loan: line back out of the account's note"
+						disabled={saving}
+						onclick={remove}
+					>
+						Remove
+					</button>
+				{/if}
+				<button
+					type="button"
+					class="abt-btn abt-btn--sm abt-tone-accent"
+					disabled={!dirty || saving}
+					onclick={save}
+				>
+					Save
+				</button>
+			</span>
 		</footer>
 	{/if}
 </div>
@@ -715,7 +857,8 @@
 	}
 
 	.lp__basis,
-	.lp__versus {
+	.lp__versus,
+	.lp__after {
 		margin-top: var(--abt-space-2);
 	}
 
@@ -729,6 +872,12 @@
 		font-size: var(--abt-text-xs);
 		font-weight: 400;
 		color: var(--abt-muted);
+	}
+
+	.lp__actions {
+		display: flex;
+		flex-shrink: 0;
+		gap: var(--abt-space-2);
 	}
 
 	.lp__footer {

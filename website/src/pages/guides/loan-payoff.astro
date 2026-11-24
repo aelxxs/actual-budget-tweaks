@@ -1,0 +1,108 @@
+---
+import Base from "../../layouts/Base.astro";
+import "../../styles/docs.css";
+---
+
+<Base
+	title="Loan payoff | Actual Budget Tweaks"
+	description="See when a loan or line of credit is paid off and what it costs, in Actual Budget Tweaks."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/guides" class="docs__back">Back to guides</a>
+			<h1>Loan payoff</h1>
+			<p class="docs__lead">
+				Loan payoff works out when a loan, mortgage or line of credit is paid off and how much
+				interest it costs on the way. Actual keeps the balance; you tell the panel the rate and
+				the payment.
+			</p>
+		</header>
+
+		<section class="docs__section">
+			<h2>Setting up a loan</h2>
+			<p>Turn on Loan payoff in the Features section of Tweaks, then:</p>
+			<ol>
+				<li>Open an account that owes money and click <strong>Payoff</strong> in its toolbar.</li>
+				<li>Enter the annual rate and your monthly payment.</li>
+				<li>
+					Pick how interest is charged: <strong>Daily</strong> on each day's balance, as most
+					lines of credit do, or <strong>Monthly</strong> as a twelfth of the rate, as most fixed
+					loans do.
+				</li>
+				<li>Enter the days of the month the interest posts and the payment lands.</li>
+				<li>Click <strong>Save</strong>.</li>
+			</ol>
+			<p>
+				Once saved, the account shows when it will be paid off beside its balance. The figure
+				follows the balance as transactions are added.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Trying out changes</h2>
+			<ul>
+				<li>The chart shows what you owe each month until it reaches zero.</li>
+				<li>
+					<strong>Scenarios</strong> compares your payment with a lower and a higher one, and says
+					how much sooner or later each finishes and what it does to the interest.
+				</li>
+				<li>
+					<strong>Finish by</strong> takes a month and gives the monthly payment that clears the
+					debt by then. <strong>Use</strong> puts that payment in the form.
+				</li>
+				<li>
+					<strong>Extra payments</strong> adds one-off payments to the plan. They are for trying
+					out and aren't saved.
+				</li>
+			</ul>
+			<p>Nothing here changes the plan beside the balance until you click <strong>Save</strong>.</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Checking the interest</h2>
+			<p>
+				Enter the payee your lender's interest charges are posted under as the
+				<strong>Interest payee</strong>. The panel then uses those charges in two ways:
+			</p>
+			<ul>
+				<li>
+					<strong>Rate check</strong> works out the rate you were actually charged from recent
+					postings and warns when it has moved away from the rate you entered. Variable rates
+					change without notice, and this is where it shows.
+				</li>
+				<li>
+					<strong>Next interest</strong> shows the charge to expect on the next interest day. If
+					that day has passed and the charge isn't in the account, <strong>Add</strong> enters it
+					as an uncleared transaction, which you can undo from the notification.
+				</li>
+			</ul>
+		</section>
+
+		<section class="docs__section">
+			<h2>Several debts</h2>
+			<p>
+				When two or more accounts have a saved plan, <strong>All debts</strong> lists when each is
+				paid off and the month you are free of all of them.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Where the settings are kept</h2>
+			<p>The settings are saved as one line in the account's note:</p>
+			<pre><code>loan: rate=0.0514 daycount=act365 interestDay=20 payment=1860 paymentDay=23 interestPayee=RBC</code></pre>
+			<p>
+				The rest of the note is left as it is, and scripts using Actual's API can read the same
+				line. <strong>Remove</strong> takes the line back out.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>What it assumes</h2>
+			<ul>
+				<li>One rate and one payment from today onward, and no new borrowing.</li>
+				<li>The payment is the same every month, not a share of the balance.</li>
+				<li>Lenders round and count days in their own ways, so expect small differences.</li>
+			</ul>
+		</section>
+	</main>
+</Base>

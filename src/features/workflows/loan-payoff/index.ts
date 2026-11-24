@@ -1,10 +1,10 @@
 import { defineSetting } from "@features/types";
-import { ACCOUNT_BALANCE } from "@lib/actual-dom";
+import { ACCOUNT_BALANCE, TRANSACTION_TABLE } from "@lib/actual-dom";
 import { findAccountToolbar } from "@lib/actual/native-ui";
 import { currentAccountId } from "@lib/actual/pages";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
-import { type LoanStatus, loanStatus, onLoanSaved } from "./data";
+import { type LoanStatus, loanStatus, onLoanSaved, watchTransactions } from "./data";
 import { closePanel, destroyPanel, panelWasClosed } from "./panel";
 import PayoffButton from "./PayoffButton.svelte";
 import PayoffSummary from "./PayoffSummary.svelte";
@@ -12,7 +12,7 @@ import PayoffSummary from "./PayoffSummary.svelte";
 /*
  * On an account that owes money, or whose note has a `loan:` line: a Payoff button in the
  * toolbar, and beside the balance, where the saved plan ends. Both open a side panel that works
- * the plan out; the only thing it writes is that note line.
+ * the plan out. It writes that note line on Save, and an interest transaction when asked for one.
  */
 const OURS = "data-abt-loan-payoff";
 
@@ -22,12 +22,47 @@ let summary: (Mounted & { accountId: string }) | null = null;
 // What the open account's note and balance say takes a query, so it's kept until the account
 // changes or its settings are saved.
 let checked: { accountId: string; status: LoanStatus | null } | null = null;
+// Follows the open account's transactions, which move the balance the plan starts from.
+let watching: { table: Element | null; stop: () => void } | null = null;
 
 function teardown() {
 	button?.destroy();
 	button = null;
 	summary?.destroy();
 	summary = null;
+	watching?.stop();
+	watching = null;
+}
+
+/** Asks again, and redraws the summary only if the answer moved. */
+function recheck() {
+	const mine = checked;
+	if (!active || !mine?.status) {
+		return;
+	}
+	void loanStatus(mine.accountId)
+		.catch(() => null)
+		.then((status) => {
+			if (!status || checked !== mine || !active) {
+				return;
+			}
+			const moved = JSON.stringify(status.payoff) !== JSON.stringify(mine.status?.payoff);
+			mine.status = status;
+			if (moved) {
+				summary?.destroy();
+				summary = null;
+			}
+			sync();
+		});
+}
+
+function watchTable() {
+	const table = document.querySelector(TRANSACTION_TABLE);
+	if (watching?.table === table) {
+		return;
+	}
+	watching?.stop();
+	watching = { table, stop: watchTransactions(recheck) };
 }
 
 function check(accountId: string) {
@@ -94,13 +129,13 @@ function sync() {
 	const accountId = currentAccountId();
 	if (!accountId) {
 		checked = null;
-		if (button || summary) {
+		if (button || summary || watching) {
 			closePanel();
 			teardown();
 		}
 		return;
 	}
-	if ((button ?? summary) && (button ?? summary)?.accountId !== accountId) {
+	if (checked && checked.accountId !== accountId) {
 		closePanel();
 		teardown();
 	}
@@ -108,22 +143,20 @@ function sync() {
 		check(accountId);
 		return;
 	}
-	if (!checked.status?.loan) {
+	if (!checked.status) {
+		return;
+	}
+	// Watched on any account: one with nothing owed becomes a loan once it borrows.
+	watchTable();
+	if (!checked.status.loan) {
+		button?.destroy();
+		button = null;
+		summary?.destroy();
+		summary = null;
 		return;
 	}
 	placeButton(accountId);
 	placeSummary(accountId, checked.status);
-}
-
-/** The saved plan changed, so the summary is redrawn from it. */
-function refresh() {
-	const accountId = currentAccountId();
-	if (!active || !accountId) {
-		return;
-	}
-	summary?.destroy();
-	summary = null;
-	check(accountId);
 }
 
 export const loanPayoff = defineSetting({
@@ -135,7 +168,8 @@ export const loanPayoff = defineSetting({
 	icon: "interest",
 	experimental: true,
 	writes:
-		"Saves the loan's rate and payment as one line in the account's note when you press Save.",
+		"Saves the loan's rate and payment as one line in the account's note when you press Save, and adds an interest transaction when you ask for one.",
+	guide: "/guides/loan-payoff",
 	context: {
 		key: "loan-payoff",
 		defaultValue: false,
@@ -144,7 +178,7 @@ export const loanPayoff = defineSetting({
 		active = true;
 		sync();
 		const stop = watchDom(sync);
-		const stopSaved = onLoanSaved(refresh);
+		const stopSaved = onLoanSaved(recheck);
 		return () => {
 			active = false;
 			stop();

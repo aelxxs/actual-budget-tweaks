@@ -97,3 +97,13 @@ export function writeLoan(note: string | null | undefined, config: LoanConfig): 
 	}
 	return lines.join("\n");
 }
+
+/** The note without its `loan:` line; the rest stays as it was. */
+export function removeLoan(note: string | null | undefined): string {
+	const lines = (note ?? "").split("\n");
+	const at = findLine(lines);
+	if (at !== -1) {
+		lines.splice(at, 1);
+	}
+	return lines.join("\n");
+}

@@ -1,9 +1,10 @@
-import { calculate, query, send } from "@lib/actual/actual-api";
+import { calculate, query, refetchTransactions, send } from "@lib/actual/actual-api";
+import { TRANSACTION_TABLE } from "@lib/actual-dom";
 import { loadCurrency } from "@lib/format/currency";
 import { isoDate, isoDaysAgo } from "@lib/format/months";
 import { numberPrefs } from "@lib/format/number-format.svelte";
 import { type LoanTerms, type Payoff, payoff } from "./amortize";
-import { type LoanConfig, readLoan, writeLoan } from "./note";
+import { type LoanConfig, readLoan, removeLoan as removeLoanLine, writeLoan } from "./note";
 
 /** Far enough back for a few interest postings, quarterly ones included. */
 const LEDGER_DAYS = 400;
@@ -106,6 +107,112 @@ export async function saveLoan(accountId: string, config: LoanConfig): Promise<v
 	for (const listener of savedListeners) {
 		listener();
 	}
+}
+
+/** Takes the settings back out of the account's note. */
+export async function removeLoan(accountId: string): Promise<void> {
+	const note = await readNote(accountId);
+	if (note != null) {
+		await send("notes-save", { id: noteId(accountId), note: removeLoanLine(note) });
+	}
+	for (const listener of savedListeners) {
+		listener();
+	}
+}
+
+/**
+ * Calls back, once things settle, after the open account's transaction table changes: there's no
+ * event for a transaction being added or edited, but the table re-renders its rows.
+ */
+export function watchTransactions(callback: () => void, delay = 400): () => void {
+	const table = document.querySelector(TRANSACTION_TABLE);
+	if (!table) {
+		return () => {};
+	}
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const observer = new MutationObserver(() => {
+		clearTimeout(timer);
+		timer = setTimeout(callback, delay);
+	});
+	observer.observe(table, { childList: true, subtree: true });
+	return () => {
+		observer.disconnect();
+		clearTimeout(timer);
+	};
+}
+
+export interface Debt {
+	id: string;
+	name: string;
+	owed: number;
+	/** Null when its saved payment never clears it. */
+	payoff: Payoff | null;
+}
+
+/** Every open account that owes money and has a complete saved plan, soonest paid off first. */
+export async function loadDebts(): Promise<Debt[]> {
+	const [notes, accounts] = await Promise.all([
+		query<{ id: string; note: string | null }[]>("notes", {
+			filter: { id: { $like: "account-%" } },
+		}),
+		query<{ id: string; name: string }[]>("accounts", {
+			filter: { closed: false },
+			select: ["id", "name"],
+		}),
+		loadCurrency(),
+	]);
+	const today = isoDate();
+	const debts = await Promise.all(
+		(accounts ?? []).map(async (account): Promise<Debt | null> => {
+			const note = notes?.find((n) => n.id === noteId(account.id))?.note;
+			const terms = termsOf(readLoan(note));
+			if (!terms) {
+				return null;
+			}
+			const balance = await calculate<number>(
+				"transactions",
+				{ $sum: "$amount" },
+				{ filter: { account: account.id }, options: { splits: "none" } },
+			);
+			const owed = -(balance ?? 0);
+			return owed > 0
+				? { id: account.id, name: account.name, owed, payoff: payoff(owed, terms, today) }
+				: null;
+		}),
+	);
+	return debts
+		.filter((debt): debt is Debt => debt != null)
+		.sort((a, b) => (a.payoff?.month ?? "9999").localeCompare(b.payoff?.month ?? "9999"));
+}
+
+/**
+ * Adds an interest charge to the account, uncleared and run through rules so it's categorised
+ * like the lender's own. `amount` is what's charged, as a positive number.
+ */
+export async function postInterest(
+	accountId: string,
+	date: string,
+	amount: number,
+	payeeName: string | undefined,
+): Promise<void> {
+	const name = payeeName?.trim().toLowerCase();
+	const payees = name
+		? await query<{ id: string; name: string | null }[]>("payees", { select: ["id", "name"] })
+		: [];
+	const payee = payees?.find((p) => p.name?.toLowerCase() === name)?.id;
+	const transaction = await send("rules-run", {
+		transaction: {
+			id: crypto.randomUUID(),
+			account: accountId,
+			amount: -amount,
+			date,
+			...(payee ? { payee } : {}),
+			cleared: false,
+			notes: "Expected interest",
+		},
+	});
+	await send("transactions-batch-update", { added: [transaction] });
+	await refetchTransactions().catch(() => false);
 }
 
 /** The account's recent transactions, oldest first, for working out the rate it was charged. */

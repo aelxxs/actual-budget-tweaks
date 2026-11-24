@@ -300,3 +300,68 @@ export function impliedRate(
 		to: dateOf(postings[postings.length - 1] - 1),
 	};
 }
+
+export interface ExpectedInterest {
+	/** The day it's due to post, "YYYY-MM-DD". */
+	date: string;
+	amount: number;
+	/** True while days it covers are still to come, taken at today's balance. */
+	estimated: boolean;
+}
+
+/**
+ * The next interest charge that hasn't been posted: for the days since the last posting (a month,
+ * when there's none) up to the next interest day. `balance` and `rows` are as for impliedRate.
+ */
+export function expectedInterest(
+	balance: number,
+	rows: LedgerRow[],
+	terms: Pick<LoanTerms, "rate" | "dayCount" | "interestDay">,
+	today: string,
+): ExpectedInterest | null {
+	const now = dayNumber(today);
+	const moved = new Map<number, number>();
+	let latest = now;
+	let posted = -Infinity;
+	for (const row of rows) {
+		const day = dayNumber(row.date);
+		latest = Math.max(latest, day);
+		moved.set(day, (moved.get(day) ?? 0) + row.amount);
+		if (row.interest && row.amount < 0) {
+			posted = Math.max(posted, day);
+		}
+	}
+
+	const [year, month] = parseDate(today);
+	const interestDate = (y: number, m: number): number => {
+		const first = new Date(Date.UTC(y, m - 1, 1));
+		const [fy, fm] = [first.getUTCFullYear(), first.getUTCMonth() + 1];
+		return dayNumber(`${fy}-${pad(fm)}-${pad(Math.min(terms.interestDay, daysInMonth(fy, fm)))}`);
+	};
+	// This month's, unless it's already in the ledger; with no postings to go by, the next to come.
+	const current = interestDate(year, month);
+	const known = Number.isFinite(posted);
+	const due = (known ? posted >= current : current < now) ? interestDate(year, month + 1) : current;
+	const [dueYear, dueMonth] = parseDate(dateOf(due));
+	const from = known ? posted : interestDate(dueYear, dueMonth - 1);
+
+	const owedOn = new Map<number, number>();
+	let running = balance;
+	for (let day = latest; day >= from; day--) {
+		owedOn.set(day, Math.max(0, -running));
+		running -= moved.get(day) ?? 0;
+	}
+	const owed = (day: number): number => owedOn.get(day) ?? Math.max(0, -balance);
+
+	const rate = Math.max(0, terms.rate);
+	let amount = 0;
+	if (terms.dayCount === "act365") {
+		for (let day = from; day < due; day++) {
+			amount += (owed(day) * rate) / 365;
+		}
+	} else {
+		amount = (owed(due - 1) * rate) / 12;
+	}
+	amount = Math.round(amount);
+	return amount > 0 ? { date: dateOf(due), amount, estimated: due - 1 > now } : null;
+}

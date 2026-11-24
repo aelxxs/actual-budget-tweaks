@@ -96,7 +96,7 @@
 				"description": "Adds a Payoff button to accounts that owe money, showing when the debt clears and what it costs.",
 				"icon": "interest",
 				"group": null,
-				"writes": "Saves the loan's rate and payment as one line in the account's note when you press Save.",
+				"writes": "Saves the loan's rate and payment as one line in the account's note when you press Save, and adds an interest transaction when you ask for one.",
 				"experimental": true
 			}
 		]

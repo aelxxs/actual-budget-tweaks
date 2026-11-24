@@ -17,9 +17,16 @@ async function load(file) {
 	return module.namespace;
 }
 
-const { payoff, balances, scenarios, scenarioStep, paymentToFinishBy, impliedRate } =
-	await load("amortize.ts");
-const { readLoan, writeLoan } = await load("note.ts");
+const {
+	payoff,
+	balances,
+	scenarios,
+	scenarioStep,
+	paymentToFinishBy,
+	impliedRate,
+	expectedInterest,
+} = await load("amortize.ts");
+const { readLoan, writeLoan, removeLoan } = await load("note.ts");
 
 const monthly = { rate: 0.06, dayCount: "monthly", payment: 30000, paymentDay: 1, interestDay: 1 };
 const daily = {
@@ -245,4 +252,46 @@ test("writes the loan line without touching the rest of the note", () => {
 		'top\nloan: rate=0.0499 daycount=monthly interestDay=1 payment=1900.5 paymentDay=15 interestPayee="Royal Bank" lender=RBC\nbottom',
 	);
 	assert.deepEqual(readLoan(after), { ...config, interestPayee: "Royal Bank" });
+});
+
+test("removes the loan line and nothing else", () => {
+	assert.equal(removeLoan("top\nloan: rate=0.05 payment=100\nbottom"), "top\nbottom");
+	assert.equal(removeLoan("loan: rate=0.05"), "");
+	assert.equal(removeLoan("just a note"), "just a note");
+	assert.equal(removeLoan(null), "");
+});
+
+test("expects the next daily interest charge from the balances since the last one", () => {
+	// $36,500 owed throughout at 5%: $5 a day.
+	const terms = { rate: 0.05, dayCount: "act365", interestDay: 20 };
+	const rows = [{ date: "2026-11-20", amount: -15500, interest: true }];
+	// Posted on the 20th already, so the next is December's: 30 days, 26 of them still to come.
+	assert.deepEqual(expectedInterest(-3650000, rows, terms, "2026-11-24"), {
+		date: "2026-12-20",
+		amount: 15000,
+		estimated: true,
+	});
+	// The day has arrived with nothing posted: the whole period is known.
+	assert.deepEqual(expectedInterest(-3650000, rows, terms, "2026-12-21"), {
+		date: "2026-12-20",
+		amount: 15000,
+		estimated: false,
+	});
+	// A payment part-way through lowers the days after it.
+	const paid = [...rows, { date: "2026-12-05", amount: 1825000, interest: false }];
+	assert.equal(expectedInterest(-1825000, paid, terms, "2026-12-21").amount, 15 * 500 + 15 * 250);
+	// With no posting to start from, it covers the month before the interest day.
+	assert.deepEqual(expectedInterest(-3650000, [], terms, "2026-11-24"), {
+		date: "2026-12-20",
+		amount: 15000,
+		estimated: true,
+	});
+	assert.equal(expectedInterest(-3650000, [], terms, "2026-11-10").date, "2026-11-20");
+	assert.equal(expectedInterest(5000, [], terms, "2026-11-24"), null);
+});
+
+test("expects a monthly charge as a twelfth of the rate on the balance", () => {
+	const terms = { rate: 0.06, dayCount: "monthly", interestDay: 31 };
+	const found = expectedInterest(-1000000, [], terms, "2026-02-10");
+	assert.deepEqual(found, { date: "2026-02-28", amount: 5000, estimated: true });
 });
