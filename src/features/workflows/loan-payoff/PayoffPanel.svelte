@@ -11,7 +11,7 @@
 		parseMoney,
 	} from "@lib/format/currency";
 	import { formatDayMonth, loadDatePrefs } from "@lib/format/date-format.svelte";
-	import { addMonths, currentMonth, isoDate, parseMonth } from "@lib/format/months";
+	import { addMonths, currentMonth, isoDate } from "@lib/format/months";
 	import { numberPrefs } from "@lib/format/number-format.svelte";
 	import { onMount } from "svelte";
 	import {
@@ -23,26 +23,13 @@
 		scenarios,
 	} from "./amortize";
 	import { type LedgerEntry, type Loan, loadLedger, loadLoan, saveLoan } from "./data";
+	import { MONTH_NAMES as MONTHS, monthName, span } from "./format";
 	import type { LoanConfig } from "./note";
 
 	const { accountId }: { accountId: string } = $props();
 
 	/** How far the charged rate may sit from the configured one before it's called out. */
 	const DRIFT = 0.0025;
-	const MONTHS = [
-		"Jan",
-		"Feb",
-		"Mar",
-		"Apr",
-		"May",
-		"Jun",
-		"Jul",
-		"Aug",
-		"Sep",
-		"Oct",
-		"Nov",
-		"Dec",
-	];
 	const YEARS = 50;
 	const today = isoDate();
 	const thisYear = Number(today.slice(0, 4));
@@ -150,19 +137,6 @@
 	);
 
 	const percent = (r: number): string => `${fmtNumber(r * 100, { min: 2, max: 2 })}%`;
-
-	function monthName(key: string): string {
-		const { year, month } = parseMonth(key);
-		return `${MONTHS[month]} ${year}`;
-	}
-
-	function span(payments: number): string {
-		const years = Math.floor(payments / 12);
-		const months = payments % 12;
-		return [years ? `${years}y` : "", months || !years ? `${months}m` : ""]
-			.filter(Boolean)
-			.join(" ");
-	}
 
 	onMount(async () => {
 		void loadDatePrefs();

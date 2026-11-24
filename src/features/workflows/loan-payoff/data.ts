@@ -1,5 +1,8 @@
 import { calculate, query, send } from "@lib/actual/actual-api";
-import { isoDaysAgo } from "@lib/format/months";
+import { loadCurrency } from "@lib/format/currency";
+import { isoDate, isoDaysAgo } from "@lib/format/months";
+import { numberPrefs } from "@lib/format/number-format.svelte";
+import { type LoanTerms, type Payoff, payoff } from "./amortize";
 import { type LoanConfig, readLoan, writeLoan } from "./note";
 
 /** Far enough back for a few interest postings, quarterly ones included. */
@@ -49,16 +52,60 @@ export async function loadLoan(accountId: string): Promise<Loan | null> {
 	return { name: account.name, balance: balance ?? 0, config: readLoan(note) };
 }
 
-/** Whether the account gets a Payoff button: it owes money, or its note already has a loan line. */
-export async function isLoan(accountId: string): Promise<boolean> {
-	const loan = await loadLoan(accountId);
-	return !!loan && (loan.balance < 0 || loan.config != null);
+/** The note's settings as terms to run, or null while any of them is missing. */
+export function termsOf(config: LoanConfig | null): LoanTerms | null {
+	if (
+		!config ||
+		config.rate == null ||
+		!config.payment ||
+		config.paymentDay == null ||
+		config.interestDay == null
+	) {
+		return null;
+	}
+	return {
+		rate: config.rate,
+		dayCount: config.daycount ?? "act365",
+		payment: Math.round(config.payment * numberPrefs.scale),
+		paymentDay: config.paymentDay,
+		interestDay: config.interestDay,
+	};
+}
+
+export interface LoanStatus {
+	/** Whether the account gets a Payoff button: it owes money, or its note already has a loan line. */
+	loan: boolean;
+	/** Where the saved plan ends; null without one, or when its payment never clears the debt. */
+	payoff: Payoff | null;
+}
+
+export async function loanStatus(accountId: string): Promise<LoanStatus> {
+	const [loan] = await Promise.all([loadLoan(accountId), loadCurrency()]);
+	if (!loan) {
+		return { loan: false, payoff: null };
+	}
+	const terms = termsOf(loan.config);
+	return {
+		loan: loan.balance < 0 || loan.config != null,
+		payoff: terms ? payoff(-loan.balance, terms, isoDate()) : null,
+	};
+}
+
+const savedListeners = new Set<() => void>();
+
+/** Calls back after a loan's settings are saved to its note. */
+export function onLoanSaved(listener: () => void): () => void {
+	savedListeners.add(listener);
+	return () => savedListeners.delete(listener);
 }
 
 /** Writes the settings to the account's note. The note is read again first, in case it changed. */
 export async function saveLoan(accountId: string, config: LoanConfig): Promise<void> {
 	const note = await readNote(accountId);
 	await send("notes-save", { id: noteId(accountId), note: writeLoan(note, config) });
+	for (const listener of savedListeners) {
+		listener();
+	}
 }
 
 /** The account's recent transactions, oldest first, for working out the rate it was charged. */
