@@ -152,9 +152,8 @@ export interface Debt {
 /** Every open account that owes money and has a complete saved plan, soonest paid off first. */
 export async function loadDebts(): Promise<Debt[]> {
 	const [notes, accounts] = await Promise.all([
-		query<{ id: string; note: string | null }[]>("notes", {
-			filter: { id: { $like: "account-%" } },
-		}),
+		// Every note: Actual's query language can't match part of an id.
+		query<{ id: string; note: string | null }[]>("notes"),
 		query<{ id: string; name: string }[]>("accounts", {
 			filter: { closed: false },
 			select: ["id", "name"],
