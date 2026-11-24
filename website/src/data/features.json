@@ -86,6 +86,18 @@
 				"group": null,
 				"writes": null,
 				"experimental": true
+			},
+			{
+				"key": "loan-payoff",
+				"type": "checkbox",
+				"defaultValue": false,
+				"platform": "desktop",
+				"label": "Loan payoff",
+				"description": "Adds a Payoff button to accounts that owe money, showing when the debt clears and what it costs.",
+				"icon": "interest",
+				"group": null,
+				"writes": "Saves the loan's rate and payment as one line in the account's note when you press Save.",
+				"experimental": true
 			}
 		]
 	},

@@ -1,5 +1,6 @@
 import { getCurrentPath } from "@lib/dom/route-watcher";
 import { PAYEES_LINK, SETTINGS_LINK, SETTINGS_PAGE_LINK, SIDEBAR_NAV } from "@lib/actual-dom";
+import { UUID } from "@lib/ids";
 
 /** Known top-level routes in the Actual Budget app, matched as a `pathname` substring. */
 export enum Page {
@@ -111,4 +112,11 @@ export function mobileOnly(css: string): string {
 
 export function isMobileView(): boolean {
 	return !matchMedia(DESKTOP_QUERY).matches;
+}
+
+const ACCOUNT_PATH = new RegExp(`^/accounts/(${UUID})`);
+
+/** The id of the account whose page is open; null on any other page, the all-accounts views included. */
+export function currentAccountId(): string | null {
+	return getCurrentPath().match(ACCOUNT_PATH)?.[1] ?? null;
 }
