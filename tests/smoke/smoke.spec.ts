@@ -73,7 +73,7 @@ async function expectAnchors(page: Page, anchors: Record<string, string> = {}): 
 
 /**
  * Sets the server password, signs in, and creates a budget with an on- and an off-budget account
- * and a loan whose note has a saved payoff plan. Returns the loan's account id.
+ * and a loan with a saved payoff plan. Returns the loan's account id.
  */
 async function createBudget(page: Page): Promise<string> {
 	await page.goto("/");
@@ -97,10 +97,20 @@ async function createBudget(page: Page): Promise<string> {
 		await send("account-create", { name: "Checking", balance: 250000, offBudget: false });
 		await send("account-create", { name: "House", balance: 30000000, offBudget: true });
 		const loan = await send("account-create", { name: "Loan", balance: -5000, offBudget: true });
-		await send("notes-save", {
-			id: `account-${loan}`,
-			note: "Renovation\nloan: rate=0.06 daycount=monthly interestDay=1 payment=500 paymentDay=1 interestPayee=Bank",
+		// Stored the way the sidecar keeps it, and in the budget, whose copy wins on the next pull.
+		const plans = JSON.stringify({
+			[String(loan)]: {
+				rate: 0.06,
+				daycount: "monthly",
+				interestDay: 1,
+				payment: 500,
+				paymentDay: 1,
+				interestPayee: "Bank",
+			},
 		});
+		const prefs = (await send("load-prefs")) as { id: string };
+		localStorage.setItem(`local:loan-payoff-plans:${prefs.id}`, plans);
+		await send("preferences/save", { id: "abt:loan-payoff-plans", value: plans });
 		// Interest on the first of the last two months, so there's a rate to measure and this
 		// month's charge is due.
 		const payee = await send("payee-create", { name: "Bank" });
@@ -138,16 +148,14 @@ interface ActualPage {
 	};
 }
 
-/** An account's note, straight from the budget. */
-function accountNote(page: Page, accountId: string): Promise<string | null> {
+/** An account's saved loan settings, from the budget's copy that other devices read. */
+function savedLoan(page: Page, accountId: string): Promise<Record<string, unknown> | null> {
 	return page.evaluate(async (id) => {
-		const { $query, $q } = window as unknown as ActualPage;
-		const rows = await $query(
-			$q("notes")
-				.filter({ id: `account-${id}` })
-				.select("*"),
-		);
-		return (rows.data[0]?.note as string | undefined) ?? null;
+		const send = (
+			window as unknown as { $send: (name: string) => Promise<Record<string, string | null>> }
+		).$send;
+		const plans = (await send("preferences/get"))["abt:loan-payoff-plans"];
+		return (plans ? JSON.parse(plans) : {})[id] ?? null;
 	}, accountId);
 }
 
@@ -334,8 +342,8 @@ test("ABT on every page", async ({ page }) => {
 		await slider.fill(String(max));
 		await usePlan.click();
 		await expect.soft
-			.poll(() => accountNote(page, loan), { message: "the tried payment, saved" })
-			.toContain(`payment=${max / 100} `);
+			.poll(() => savedLoan(page, loan), { message: "the tried payment, saved" })
+			.toMatchObject({ payment: max / 100 });
 		await expect.soft(delta, "the trial is the plan now").toHaveCount(0);
 	});
 
@@ -348,10 +356,9 @@ test("ABT on every page", async ({ page }) => {
 		await save.click();
 		await expect.soft(settings, "saved and folded away").toContainText("7.00%");
 		await expect.soft(rate).toHaveCount(0);
-		// The line is rewritten in place; the rest of the note is the user's.
 		await expect.soft
-			.poll(() => accountNote(page, loan), { message: "the saved note" })
-			.toMatch(/^Renovation\nloan: rate=0\.07 .*interestPayee=Bank$/);
+			.poll(() => savedLoan(page, loan), { message: "the saved settings" })
+			.toMatchObject({ rate: 0.07, interestPayee: "Bank" });
 
 		await settings.click();
 		await rate.fill("9");
@@ -360,10 +367,8 @@ test("ABT on every page", async ({ page }) => {
 
 		await settings.click();
 		await panel.getByRole("button", { name: "Remove loan details" }).click();
-		await expect.soft(summary, "the summary goes with the line").toHaveCount(0);
-		await expect.soft
-			.poll(() => accountNote(page, loan), { message: "the note without its line" })
-			.toBe("Renovation");
+		await expect.soft(summary, "the summary goes with the settings").toHaveCount(0);
+		await expect.soft.poll(() => savedLoan(page, loan), { message: "removed" }).toBeNull();
 
 		// Back to setting up, with the details still filled in.
 		await panel.getByRole("button", { name: "Save and see payoff" }).click();

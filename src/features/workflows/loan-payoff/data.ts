@@ -1,15 +1,23 @@
-import { calculate, query, refetchTransactions, send } from "@lib/actual/actual-api";
+import {
+	calculate,
+	loadCurrentBudgetId,
+	query,
+	refetchTransactions,
+	send,
+} from "@lib/actual/actual-api";
+import { followBudgetValue } from "@lib/actual/budget-value";
 import { TRANSACTION_TABLE } from "@lib/actual-dom";
 import { loadCurrency } from "@lib/format/currency";
 import { isoDate } from "@lib/format/months";
 import { numberPrefs } from "@lib/format/number-format.svelte";
+import { getValue, setValue } from "@lib/store";
 import { type LedgerRow, type LoanTerms, type Payoff, accruedInterest, payoff } from "./amortize";
-import { type LoanConfig, readLoan, removeLoan as removeLoanLine, writeLoan } from "./note";
+import { type LoanConfig, toConfig } from "./config";
 
 export interface Loan {
 	/** As Actual keeps it: negative while money is owed. */
 	balance: number;
-	/** Null until its settings have been saved to the note. */
+	/** Null until its settings have been saved. */
 	config: LoanConfig | null;
 }
 
@@ -19,29 +27,51 @@ export interface LedgerEntry {
 	payee: string | null;
 }
 
-// Where Actual keeps an account's note.
-const noteId = (accountId: string): string => `account-${accountId}`;
+/*
+ * Every loan's settings, by account id. Kept per budget with ABT's other budget data, which
+ * settings sync shares with everyone who opens the budget (see BUDGET_SCOPED there).
+ */
+const PLANS_KEY = "loan-payoff-plans";
 
-async function readNote(accountId: string): Promise<string | null> {
-	const rows = await query<{ id: string; note: string | null }[]>("notes", {
-		filter: { id: noteId(accountId) },
-	});
-	return rows?.[0]?.note ?? null;
+async function plansKey(): Promise<string | null> {
+	const budgetId = await loadCurrentBudgetId().catch(() => undefined);
+	return budgetId ? `${PLANS_KEY}:${budgetId}` : null;
+}
+
+async function readPlans(key: string): Promise<Record<string, unknown>> {
+	const stored = await getValue<unknown>(key, null);
+	return typeof stored === "object" && stored !== null ? { ...stored } : {};
+}
+
+async function readConfig(accountId: string): Promise<LoanConfig | null> {
+	const key = await plansKey();
+	return key ? toConfig((await readPlans(key))[accountId]) : null;
+}
+
+/** Saves the plans as `change` leaves them. Read again first, in case another tab changed them. */
+async function writePlans(change: (plans: Record<string, unknown>) => void): Promise<void> {
+	const key = await plansKey();
+	if (!key) {
+		throw new Error("No budget is open");
+	}
+	const plans = await readPlans(key);
+	change(plans);
+	await setValue(key, plans);
 }
 
 export async function loadLoan(accountId: string): Promise<Loan> {
-	const [balance, note] = await Promise.all([
+	const [balance, config] = await Promise.all([
 		calculate<number>(
 			"transactions",
 			{ $sum: "$amount" },
 			{ filter: { account: accountId }, options: { splits: "none" } },
 		),
-		readNote(accountId),
+		readConfig(accountId),
 	]);
-	return { balance: balance ?? 0, config: readLoan(note) };
+	return { balance: balance ?? 0, config };
 }
 
-/** The note's settings as terms to run, or null while any of them is missing. */
+/** The saved settings as terms to run, or null while any of them is missing. */
 function termsOf(config: LoanConfig | null): LoanTerms | null {
 	if (
 		!config ||
@@ -85,7 +115,7 @@ export function planTerms(loan: Loan | null, ledger: LedgerEntry[]): LoanTerms |
 }
 
 export interface LoanStatus {
-	/** Whether the account gets a Payoff button: it owes money, or its note already has a loan line. */
+	/** Whether the account gets a Payoff button: it owes money, or has settings saved. */
 	loan: boolean;
 	/** Where the saved plan ends; null without one, or when its payment never clears the debt. */
 	payoff: Payoff | null;
@@ -101,32 +131,24 @@ export async function loanStatus(accountId: string): Promise<LoanStatus> {
 	};
 }
 
-const savedListeners = new Set<() => void>();
-
-/** Calls back after a loan's settings are saved to its note. */
-export function onLoanSaved(listener: () => void): () => void {
-	savedListeners.add(listener);
-	return () => savedListeners.delete(listener);
+/**
+ * Calls back when the open budget's loan settings change: saved or removed here, in another tab,
+ * or arriving from another device.
+ */
+export function followLoans(listener: () => void): () => void {
+	return followBudgetValue(PLANS_KEY, listener).stop;
 }
 
-/** Writes the settings to the account's note. The note is read again first, in case it changed. */
-export async function saveLoan(accountId: string, config: LoanConfig): Promise<void> {
-	const note = await readNote(accountId);
-	await send("notes-save", { id: noteId(accountId), note: writeLoan(note, config) });
-	for (const listener of savedListeners) {
-		listener();
-	}
+export function saveLoan(accountId: string, config: LoanConfig): Promise<void> {
+	return writePlans((plans) => {
+		plans[accountId] = config;
+	});
 }
 
-/** Takes the settings back out of the account's note. */
-export async function removeLoan(accountId: string): Promise<void> {
-	const note = await readNote(accountId);
-	if (note != null) {
-		await send("notes-save", { id: noteId(accountId), note: removeLoanLine(note) });
-	}
-	for (const listener of savedListeners) {
-		listener();
-	}
+export function removeLoan(accountId: string): Promise<void> {
+	return writePlans((plans) => {
+		delete plans[accountId];
+	});
 }
 
 /**

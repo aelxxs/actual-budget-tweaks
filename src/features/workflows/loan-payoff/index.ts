@@ -4,24 +4,24 @@ import { findAccountToolbar } from "@lib/actual/native-ui";
 import { currentAccountId } from "@lib/actual/pages";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
-import { type LoanStatus, loanStatus, onLoanSaved, watchTransactions } from "./data";
+import { type LoanStatus, followLoans, loanStatus, watchTransactions } from "./data";
 import { closePanel, destroyPanel, panelWasClosed } from "./panel";
 import PayoffButton from "./PayoffButton.svelte";
 import PayoffSummary from "./PayoffSummary.svelte";
 
 /*
- * On an account that owes money, or whose note has a `loan:` line: a Payoff button in the
- * toolbar, and beside the balance, where the saved plan ends. Both open a side panel that works
- * the plan out. It writes that note line when the settings or a tried payment are saved, and an
- * interest transaction when asked for one.
+ * On an account that owes money, or has loan settings saved: a Payoff button in the toolbar, and
+ * beside the balance, where the saved plan ends. Both open a side panel that works the plan out.
+ * The settings are ABT's own data; the one write to the budget is an interest transaction, when
+ * asked for one.
  */
 const OURS = "data-abt-loan-payoff";
 
 let active = false;
 let button: Mounted | null = null;
 let summary: Mounted | null = null;
-// What the open account's note and balance say takes a query, so it's kept until the account
-// changes or its settings are saved.
+// What the open account's settings and balance say takes a query, so it's kept until the
+// account changes or its settings are saved.
 let checked: { accountId: string; status: LoanStatus | null } | null = null;
 // Follows the open account's transactions, which move the balance the plan starts from.
 let watching: { table: Element | null; stop: () => void } | null = null;
@@ -165,8 +165,7 @@ export const loanPayoff = defineSetting({
 	group: "Accounts",
 	icon: "interest",
 	experimental: true,
-	writes:
-		"Saves the loan's rate and payment as one line in the account's note when you save them or use a payment you tried, and adds an interest transaction when you ask for one.",
+	writes: "Adds an interest transaction to the account when you ask for one.",
 	guide: "/guides/loan-payoff",
 	context: {
 		key: "loan-payoff",
@@ -176,7 +175,7 @@ export const loanPayoff = defineSetting({
 		active = true;
 		sync();
 		const stop = watchDom(sync);
-		const stopSaved = onLoanSaved(recheck);
+		const stopSaved = followLoans(recheck);
 		return () => {
 			active = false;
 			stop();

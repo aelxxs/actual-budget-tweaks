@@ -39,7 +39,7 @@
 	} from "./data";
 	import PayoffChart from "./PayoffChart.svelte";
 	import { MONTH_NAMES as MONTHS, monthName, ordinal, span } from "./format";
-	import type { LoanConfig } from "./note";
+	import type { LoanConfig } from "./config";
 
 	const { accountId }: { accountId: string } = $props();
 
@@ -55,7 +55,7 @@
 	let saving = $state(false);
 	let failed = $state(false);
 
-	// The settings form. The plan above it runs on what the note says, not on these, until saved.
+	// The settings form. The plan above it runs on what's saved, not on these.
 	let rateText = $state("");
 	let dayCount = $state<DayCount>("act365");
 	let paymentText = $state("");
@@ -111,7 +111,7 @@
 	const dirty = $derived(draft != null && JSON.stringify(draft) !== JSON.stringify(loan?.config));
 
 	const owed = $derived(loan ? -loan.balance : 0);
-	// The saved plan: what the note says, with the interest built up since the last posting.
+	// The saved plan, with the interest built up since the last posting.
 	const terms = $derived(planTerms(loan, ledger));
 	const plan = $derived(terms && owed > 0 ? payoff(owed, terms, today) : null);
 
@@ -194,7 +194,7 @@
 		payee = config.interestPayee ?? "";
 	}
 
-	/** The balance, ledger and note again; what's typed into the form is left alone. */
+	/** The balance, ledger and saved settings again; what's typed into the form is left alone. */
 	async function reload() {
 		try {
 			[loan, ledger] = await Promise.all([loadLoan(accountId), loadLedger(accountId)]);
@@ -205,7 +205,7 @@
 
 	$effect(() => (loaded ? watchTransactions(() => void reload()) : undefined));
 
-	/** Runs a change to the note, then reads it back so the plan follows what was written. */
+	/** Runs a change to the saved settings, then reads them back so the plan follows what was written. */
 	async function write(change: () => Promise<void>): Promise<boolean> {
 		if (saving) {
 			return false;
@@ -426,7 +426,7 @@
 		/>
 	</label>
 	{#if failed}
-		<p class="lp__muted lp__hint is-error">Couldn't change the account's note.</p>
+		<p class="lp__muted lp__hint is-error">Couldn't save the loan's details.</p>
 	{/if}
 {/snippet}
 
@@ -455,9 +455,7 @@
 				>
 					Save and see payoff
 				</button>
-				<p class="lp__muted">
-					Saved as a "loan:" line in the account's note. These move into Loan settings once saved.
-				</p>
+				<p class="lp__muted">These move into Loan settings once saved.</p>
 			</div>
 		</Section>
 	{:else}
@@ -692,7 +690,7 @@
 						<button
 							type="button"
 							class="abt-btn abt-btn--sm abt-btn--ghost abt-tone-danger"
-							title="Takes the loan: line back out of the account's note"
+							title="Forgets this account's loan details"
 							disabled={saving}
 							onclick={remove}
 						>

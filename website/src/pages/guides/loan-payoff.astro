@@ -107,11 +107,15 @@ import "../../styles/docs.css";
 
 		<section class="docs__section">
 			<h2>Where the settings are kept</h2>
-			<p>The settings are saved as one line in the account's note:</p>
-			<pre><code>loan: rate=0.0514 daycount=act365 interestDay=20 payment=1860 paymentDay=23 interestPayee=RBC</code></pre>
 			<p>
-				The rest of the note is left as it is, and scripts using Actual's API can read the same
-				line. <strong>Remove loan details</strong> in Loan settings takes the line back out.
+				Each loan's details are kept with Tweaks' other settings for the budget. They sync with
+				the budget, so they follow you to another device with Tweaks installed, and they are part
+				of a settings backup. <strong>Remove loan details</strong> in Loan settings forgets them
+				for that account.
+			</p>
+			<p>
+				Nothing is written to the account itself, apart from an interest transaction when you
+				click <strong>Add</strong>.
 			</p>
 		</section>
 

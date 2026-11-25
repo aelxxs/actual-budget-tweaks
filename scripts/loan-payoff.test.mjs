@@ -28,7 +28,7 @@ const {
 	expectedInterest,
 	accruedInterest,
 } = await load("amortize.ts");
-const { readLoan, writeLoan, removeLoan } = await load("note.ts");
+const { toConfig } = await load("config.ts");
 
 const monthly = { rate: 0.06, dayCount: "monthly", payment: 30000, paymentDay: 1, interestDay: 1 };
 const daily = {
@@ -135,59 +135,36 @@ test("solves for the payment that finishes by a month", () => {
 	assert.equal(paymentToFinishBy(5000000, monthly, "2026-01-15", "2025-12"), null);
 });
 
-test("reads the loan line from a note", () => {
-	const note =
-		"Mortgage, renews 2028\nloan: rate=0.0514 daycount=act365 interestDay=20 payment=1860 paymentDay=23 interestPayee=RBC\nmore";
-	assert.deepEqual(readLoan(note), {
+test("reads stored loan settings, leaving out what doesn't hold up", () => {
+	const config = {
 		rate: 0.0514,
 		daycount: "act365",
 		interestDay: 20,
-		payment: 1860,
+		payment: 1860.5,
 		paymentDay: 23,
-		interestPayee: "RBC",
-	});
-	assert.equal(readLoan("just a note"), null);
-	assert.equal(readLoan(null), null);
-	assert.deepEqual(readLoan("loan:"), {});
-	assert.deepEqual(
-		readLoan('Loan: rate=abc paymentDay=40 daycount=30/360 interestPayee="Royal Bank"'),
-		{
-			interestPayee: "Royal Bank",
-		},
-	);
-});
-
-test("writes the loan line without touching the rest of the note", () => {
-	const config = {
-		rate: 0.0499,
-		daycount: "monthly",
-		interestDay: 1,
-		payment: 1900.5,
-		paymentDay: 15,
+		interestPayee: "Royal Bank",
 	};
-	assert.equal(
-		writeLoan(null, config),
-		"loan: rate=0.0499 daycount=monthly interestDay=1 payment=1900.5 paymentDay=15",
-	);
-	assert.equal(
-		writeLoan("Renews 2028\n", config),
-		"Renews 2028\nloan: rate=0.0499 daycount=monthly interestDay=1 payment=1900.5 paymentDay=15",
-	);
-	// Keys another tool put on the line are kept; a payee with a space is quoted.
-	const before = "top\nloan: rate=0.05 lender=RBC payment=100\nbottom";
-	const after = writeLoan(before, { ...config, interestPayee: "Royal Bank" });
-	assert.equal(
-		after,
-		'top\nloan: rate=0.0499 daycount=monthly interestDay=1 payment=1900.5 paymentDay=15 interestPayee="Royal Bank" lender=RBC\nbottom',
-	);
-	assert.deepEqual(readLoan(after), { ...config, interestPayee: "Royal Bank" });
-});
+	assert.deepEqual(toConfig(config), config);
+	// Storage hands keys back sorted; they come out in one order, so two compare as text.
+	const sorted = Object.fromEntries(Object.entries(config).sort());
+	assert.equal(JSON.stringify(toConfig(sorted)), JSON.stringify(config));
 
-test("removes the loan line and nothing else", () => {
-	assert.equal(removeLoan("top\nloan: rate=0.05 payment=100\nbottom"), "top\nbottom");
-	assert.equal(removeLoan("loan: rate=0.05"), "");
-	assert.equal(removeLoan("just a note"), "just a note");
-	assert.equal(removeLoan(null), "");
+	assert.deepEqual(
+		toConfig({
+			rate: "0.05",
+			daycount: "30/360",
+			interestDay: 40,
+			payment: -5,
+			paymentDay: 14.6,
+			interestPayee: "  ",
+			lender: "RBC",
+		}),
+		{ paymentDay: 15 },
+	);
+	assert.deepEqual(toConfig({}), {});
+	for (const nothing of [null, undefined, "loan", 5, []]) {
+		assert.equal(toConfig(nothing), null);
+	}
 });
 
 test("expects the next daily interest charge from the balances since the last one", () => {
