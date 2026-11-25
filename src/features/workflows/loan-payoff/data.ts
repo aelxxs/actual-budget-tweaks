@@ -180,6 +180,15 @@ export async function postInterest(
 	await refetchTransactions().catch(() => false);
 }
 
+/** The budget's payees by name, without the ones Actual keeps for transfers between accounts. */
+export async function loadPayeeNames(): Promise<string[]> {
+	const payees = await query<{ name: string | null; transfer_acct: string | null }[]>("payees", {
+		select: ["name", "transfer_acct"],
+	});
+	const names = (payees ?? []).flatMap((p) => (p.name && !p.transfer_acct ? [p.name] : []));
+	return [...new Set(names)].sort((a, b) => a.localeCompare(b));
+}
+
 /**
  * Every transaction on the account, oldest first: the interest it's been charged comes from the
  * recent ones, and how far the debt has come down from all of them.

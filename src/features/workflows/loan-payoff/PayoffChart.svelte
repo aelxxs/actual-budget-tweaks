@@ -93,7 +93,10 @@
 			onpointermove={point}
 			onpointerleave={() => (hovered = null)}
 		>
-			<span class="pc__top abt-privacy-number">{fmtMoney(top, { short: true })}</span>
+			<!-- Privacy mode repositions the number itself, so the wrapper is what's placed. -->
+			<span class="pc__top">
+				<span class="abt-privacy-number">{fmtMoney(top, { short: true })}</span>
+			</span>
 			<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
 				<path class="pc__area" d="{path(lines[0])}L100,100L0,100Z" />
 				{#each lines.slice(1) as line, i (i)}

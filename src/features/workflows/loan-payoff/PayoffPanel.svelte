@@ -29,6 +29,7 @@
 		type Loan,
 		loadLedger,
 		loadLoan,
+		loadPayeeNames,
 		postInterest,
 		removeLoan,
 		saveLoan,
@@ -48,6 +49,7 @@
 
 	let loan = $state<Loan | null>(null);
 	let ledger = $state<LedgerEntry[]>([]);
+	let payees = $state<string[]>([]);
 	let loaded = $state(false);
 	let posting = $state(false);
 	let saving = $state(false);
@@ -169,11 +171,11 @@
 
 	const paidDown = $derived(loan && terms ? progress(loan.balance, ledger) : null);
 	const savedPayee = $derived(loan?.config?.interestPayee?.trim() ?? "");
-	const payeeNames = $derived(
-		[
-			...new Set(ledger.filter((e) => e.amount < 0 && e.payee).map((e) => e.payee as string)),
-		].sort(),
-	);
+	// Suggestions for the interest payee: the ones charging this account first, then the rest.
+	const payeeNames = $derived.by(() => {
+		const charging = ledger.flatMap((e) => (e.amount < 0 && e.payee ? [e.payee] : []));
+		return [...new Set([...charging.sort(), ...payees])];
+	});
 	const marked = $derived(markInterest(ledger, savedPayee));
 	const expected = $derived(
 		loan && terms && owed > 0 ? expectedInterest(loan.balance, marked, terms, today) : null,
@@ -306,6 +308,7 @@
 		await reload();
 		fill(loan?.config);
 		loaded = true;
+		payees = await loadPayeeNames().catch(() => []);
 	});
 </script>
 
@@ -719,7 +722,8 @@
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
-		padding: var(--abt-space-2) 0;
+		/* The first card has no heading over it, so the top is inset like the sides. */
+		padding: var(--abt-space-4) 0 var(--abt-space-2);
 	}
 
 	.lp__muted {
