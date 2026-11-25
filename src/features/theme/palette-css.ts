@@ -385,18 +385,19 @@ function dataCSS(keys: Record<string, string>): string {
 	return `:root {\n\t--abt-data: ${data};\n}\n`;
 }
 
-/** Light themes: controls raised over the page, a firmer wash, paler other months. */
+/** Light themes: controls raised over the page, a firmer wash, other months a step below. */
 const LIGHT_CSS = `
 	:root {
-		--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 15%);
 		/* A sidebar without its own colour matches the cards as they're shown. */
 		--color-sidebarBackground: var(--theme-sidebar, var(--color-budgetCurrentMonth));
+		--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 15%);
 		/* Group rows a step deeper, so they stand off the table. */
-		--color-budgetHeaderCurrentMonth: color-mix(in oklab, var(--ctp-base), var(--ctp-surface0) 65%);
+		--color-budgetHeaderCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-surface0) 55%);
 		/* Borders between surface0 and surface1, so they show beside the group rows. */
 		--abt-border-rest: color-mix(in oklab, var(--ctp-surface0), var(--ctp-surface1));
-		--color-budgetOtherMonth: color-mix(in oklab, var(--color-budgetCurrentMonth), white 50%);
-		--color-budgetHeaderOtherMonth: color-mix(in srgb, var(--ctp-mantle), var(--ctp-surface0) 35%);
+		/* A step below the near-white current month, as Actual's own light theme has them. */
+		--color-budgetOtherMonth: var(--ctp-base);
+		--color-budgetHeaderOtherMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-surface0) 55%);
 		/* Deep accents wash out at the dark themes' strength. */
 		--abt-wash: 22%;
 	}
