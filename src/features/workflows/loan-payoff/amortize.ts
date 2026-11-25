@@ -3,7 +3,10 @@
  * unit test can load it as it is.
  */
 
-/** How interest builds up: every day on that day's balance, or a twelfth of the rate once a month. */
+/**
+ * How interest builds up: every day on that day's balance (actual/365), as credit cards and lines
+ * of credit do, or a twelfth of the rate once a month, as mortgages and instalment loans do.
+ */
 export type DayCount = "act365" | "monthly";
 
 export interface LoanTerms {

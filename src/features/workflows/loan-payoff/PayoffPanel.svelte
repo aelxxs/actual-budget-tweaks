@@ -355,13 +355,13 @@
 		<div class="abt-seg abt-seg--sm" role="group" aria-labelledby="lp-accrues">
 			<button
 				type="button"
-				title="Charged every day on that day's balance (actual/365), as most lines of credit do"
+				title="Charged on each day's balance, as credit cards and lines of credit do"
 				aria-pressed={dayCount === "act365"}
 				onclick={() => (dayCount = "act365")}>Daily</button
 			>
 			<button
 				type="button"
-				title="A twelfth of the rate once a month, as most fixed loans do"
+				title="A twelfth of the yearly rate once a month, as mortgages and car loans do"
 				aria-pressed={dayCount === "monthly"}
 				onclick={() => (dayCount = "monthly")}>Monthly</button
 			>
