@@ -4,42 +4,58 @@
 	import type { BalancePoint } from "./amortize";
 	import { monthName } from "./format";
 
-	/** The first series is the plan itself; any after it are alternatives drawn behind it. */
-	const { series }: { series: { label: string; points: BalancePoint[] }[] } = $props();
+	/**
+	 * The first series is the plan itself; any after it are alternatives drawn behind it. `history`
+	 * is what was owed in the months before the plan starts, drawn ahead of it.
+	 */
+	const {
+		series,
+		history = [],
+	}: { series: { label: string; points: BalancePoint[] }[]; history?: BalancePoint[] } = $props();
 
+	const start = $derived(series[0]?.points[0]?.month);
+	const past = $derived(history.filter((point) => start != null && point.month < start));
+	// Where the plan starts on the month axis: today.
+	const now = $derived(past.length);
 	const months = $derived.by(() => {
-		const first = series[0]?.points[0]?.month;
-		if (!first) {
+		if (!start) {
 			return [];
 		}
 		const last = series.reduce((max, s) => {
 			const end = s.points[s.points.length - 1].month;
 			return end > max ? end : max;
-		}, first);
-		const all = [first];
+		}, start);
+		const all = [past[0]?.month ?? start];
 		while (all[all.length - 1] < last) {
 			all.push(addMonths(all[all.length - 1], 1));
 		}
 		return all;
 	});
 	// Each series on every month: carried over a month without a payment, nothing once paid off.
+	// Only the plan has a past; the alternatives start today.
 	const lines = $derived(
-		series.map((s) => {
-			const byMonth = new Map(s.points.map((p) => [p.month, p.balance]));
+		series.map((s, i) => {
+			const byMonth = new Map([...(i ? [] : past), ...s.points].map((p) => [p.month, p.balance]));
 			const end = s.points[s.points.length - 1].month;
-			let balance = s.points[0].balance;
-			return months.map((month) => {
+			let balance = (i ? s.points : past[0] ? past : s.points)[0].balance;
+			return months.map((month, at) => {
+				if (i && at < now) {
+					return null;
+				}
 				balance = month > end ? 0 : (byMonth.get(month) ?? balance);
 				return balance;
 			});
 		}),
 	);
-	const top = $derived(Math.max(1, ...lines.map((line) => line[0] ?? 0)));
+	const top = $derived(Math.max(1, ...lines.flat().map((balance) => balance ?? 0)));
 	const x = (i: number): number => (months.length > 1 ? (i / (months.length - 1)) * 100 : 0);
 	const y = (balance: number): number => (1 - balance / top) * 100;
-	const path = (line: number[]): string =>
+	const path = (line: (number | null)[], from = 0, to = line.length - 1): string =>
 		line
-			.map((balance, i) => `${i ? "L" : "M"}${x(i).toFixed(2)},${y(balance).toFixed(2)}`)
+			.slice(from, to + 1)
+			.map(
+				(balance, i) => `${i ? "L" : "M"}${x(from + i).toFixed(2)},${y(balance ?? 0).toFixed(2)}`,
+			)
 			.join("");
 
 	let hovered = $state<number | null>(null);
@@ -53,14 +69,19 @@
 </script>
 
 {#if months.length > 1}
-	<figure class="pc" aria-label="What's owed from now until it's paid off">
+	<figure
+		class="pc"
+		aria-label={now
+			? "What was owed in the past months, and from now until it's paid off"
+			: "What's owed from now until it's paid off"}
+	>
 		<figcaption class="pc__legend">
 			{#each series as s, i (s.label)}
 				<span class="pc__key">
 					<span class="pc__swatch" class:is-alt={i > 0} aria-hidden="true"></span>
 					<span>{s.label}</span>
-					{#if at != null}
-						<span class="pc__value abt-privacy-number">{fmtMoney(lines[i][at])}</span>
+					{#if at != null && lines[i][at] != null}
+						<span class="pc__value abt-privacy-number">{fmtMoney(lines[i][at] ?? 0)}</span>
 					{/if}
 				</span>
 			{/each}
@@ -75,19 +96,27 @@
 			<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
 				<path class="pc__area" d="{path(lines[0])}L100,100L0,100Z" />
 				{#each lines.slice(1) as line, i (i)}
-					<path class="pc__line is-alt" d={path(line)} />
+					<path class="pc__line is-alt" d={path(line, now)} />
 				{/each}
-				<path class="pc__line" d={path(lines[0])} />
+				{#if now}
+					<path class="pc__line" d={path(lines[0], 0, now)} />
+				{/if}
+				<path class="pc__line" class:is-ahead={now > 0} d={path(lines[0], now)} />
 			</svg>
+			{#if now}
+				<span class="pc__today" style:left="{x(now)}%"><span>Today</span></span>
+			{/if}
 			{#if at != null}
 				<span class="pc__cross" style:left="{x(at)}%"></span>
 				{#each lines as line, i (i)}
-					<span
-						class="pc__dot"
-						class:is-alt={i > 0}
-						style:left="{x(at)}%"
-						style:top="{y(line[at])}%"
-					></span>
+					{#if line[at] != null}
+						<span
+							class="pc__dot"
+							class:is-alt={i > 0}
+							style:left="{x(at)}%"
+							style:top="{y(line[at] ?? 0)}%"
+						></span>
+					{/if}
 				{/each}
 			{/if}
 		</div>
@@ -176,8 +205,27 @@
 		stroke-dasharray: 4 3;
 	}
 
+	/* With a past drawn solid before it, what's still to come is dashed. */
+	.pc__line.is-ahead {
+		stroke-dasharray: 5 3;
+	}
+
 	.pc__area {
 		fill: var(--abt-data-1);
+	}
+
+	/* Where the past ends and the plan begins, labelled at the foot where the line is clear of it. */
+	.pc__today {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		border-left: 1px solid var(--abt-ink-5);
+		pointer-events: none;
+	}
+	.pc__today span {
+		position: absolute;
+		bottom: var(--abt-space-1);
+		left: var(--abt-space-2);
 	}
 
 	.pc__cross {

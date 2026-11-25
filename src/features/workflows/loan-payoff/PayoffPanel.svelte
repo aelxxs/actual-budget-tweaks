@@ -21,6 +21,7 @@
 		type Payoff,
 		balances,
 		expectedInterest,
+		history,
 		impliedRate,
 		payoff,
 		paymentToFinishBy,
@@ -142,14 +143,18 @@
 	);
 	const goalPayoff = $derived(goal ? payoff(owed, goal, today, extraList) : null);
 	const plain = $derived(terms && owed > 0 && extraList.length ? payoff(owed, terms, today) : null);
+	const plan = $derived(terms && base ? balances(owed, terms, today, extraList) : null);
+	// No further back than the plan runs ahead, so the past doesn't crowd out a short payoff.
+	const past = $derived(
+		loan && plan ? history(loan.balance, ledger, today, Math.min(12, plan.length - 1)) : [],
+	);
 	const chart = $derived.by(() => {
-		const plan = terms && base ? balances(owed, terms, today, extraList) : null;
-		if (!plan) {
+		if (!terms || !plan) {
 			return [];
 		}
 		const other = goal && goalPayoff ? balances(owed, goal, today, extraList) : null;
 		return [
-			{ label: "Your plan", points: plan },
+			{ label: past.length ? "Balance" : "Your plan", points: plan },
 			...(other ? [{ label: `Finish by ${monthName(target)}`, points: other }] : []),
 		];
 	});
@@ -341,15 +346,25 @@
 				<div class="lp__hero">
 					<span class="lp__muted">Owed today</span>
 					<span class="lp__hero-amount abt-privacy-number">{fmtMoney(Math.max(0, owed))}</span>
-					{#if base}
-						<span class="lp__muted">
-							Paid off in {monthName(base.month)}, {span(base.payments)} from now, with
-							<span class="abt-privacy-number">{fmtMoney(base.interest)}</span> of interest.
-						</span>
-					{/if}
 				</div>
+				{#if base}
+					<dl class="lp__stats">
+						<div>
+							<dt>Paid off</dt>
+							<dd>{monthName(base.month)}</dd>
+							<dd class="lp__muted">{span(base.payments)} from now</dd>
+						</div>
+						<div>
+							<dt>Interest to come</dt>
+							<dd class="abt-privacy-number">{fmtMoney(base.interest)}</dd>
+							<dd class="lp__muted">
+								{plain ? "with the extra payments" : "on this plan"}
+							</dd>
+						</div>
+					</dl>
+				{/if}
 				{#if chart.length}
-					<div class="lp__chart"><PayoffChart series={chart} /></div>
+					<div class="lp__chart"><PayoffChart series={chart} history={past} /></div>
 				{/if}
 				{#if owed <= 0}
 					<Callout>Nothing is owed on this account.</Callout>
@@ -743,6 +758,28 @@
 
 	.lp__hero-amount {
 		font-size: 22px;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* The plan's two answers, side by side under what's owed. */
+	.lp__stats {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--abt-space-3);
+		margin: var(--abt-space-3) 0 0;
+		padding-top: var(--abt-space-3);
+		border-top: 1px solid var(--abt-line);
+	}
+	.lp__stats dt {
+		font-size: var(--abt-text-sm);
+		color: var(--abt-muted);
+	}
+	.lp__stats dd {
+		margin: 0;
+	}
+	.lp__stats dd:first-of-type {
+		font-size: var(--abt-text-xl);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 	}

@@ -20,6 +20,7 @@ async function load(file) {
 const {
 	payoff,
 	balances,
+	history,
 	scenarios,
 	scenarioStep,
 	paymentToFinishBy,
@@ -294,4 +295,26 @@ test("expects a monthly charge as a twelfth of the rate on the balance", () => {
 	const terms = { rate: 0.06, dayCount: "monthly", interestDay: 31 };
 	const found = expectedInterest(-1000000, [], terms, "2026-02-10");
 	assert.deepEqual(found, { date: "2026-02-28", amount: 5000, estimated: true });
+});
+
+test("walks the balance back to each earlier month's end", () => {
+	const rows = [
+		{ date: "2026-08-15", amount: -500000 },
+		{ date: "2026-09-23", amount: 100000 },
+		{ date: "2026-10-20", amount: -2000 },
+		{ date: "2026-10-23", amount: 100000 },
+		{ date: "2026-11-23", amount: 100000 },
+	];
+	// Owing 2,020 today; nothing was owed before August, so those months are left off.
+	assert.deepEqual(history(-202000, rows, "2026-11-24", 6), [
+		{ month: "2026-08", balance: 500000 },
+		{ month: "2026-09", balance: 400000 },
+		{ month: "2026-10", balance: 302000 },
+	]);
+	assert.deepEqual(history(-202000, rows, "2026-11-24", 1), [
+		{ month: "2026-10", balance: 302000 },
+	]);
+	assert.deepEqual(history(-202000, rows, "2026-11-24", 0), []);
+	// Across a year's end.
+	assert.equal(history(-1000, [], "2027-01-05", 2)[0].month, "2026-11");
 });

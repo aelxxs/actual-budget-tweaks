@@ -167,6 +167,32 @@ export function balances(
 	return done ? points : null;
 }
 
+/**
+ * What was owed at the end of each of the `months` months before today's, oldest first, walking
+ * back from `balance`; months before there was a debt are left off. `balance` is the account's
+ * balance with every row counted, and `rows` must reach back that far.
+ */
+export function history(
+	balance: number,
+	rows: { date: string; amount: number }[],
+	today: string,
+	months: number,
+): BalancePoint[] {
+	const [year, month] = parseDate(today);
+	const points: BalancePoint[] = [];
+	for (let back = 1; back <= months; back++) {
+		const first = new Date(Date.UTC(year, month - 1 - back, 1));
+		const key = `${first.getUTCFullYear()}-${pad(first.getUTCMonth() + 1)}`;
+		const since = rows.reduce(
+			(sum, row) => (row.date.slice(0, 7) > key ? sum + row.amount : sum),
+			0,
+		);
+		points.unshift({ month: key, balance: Math.max(0, since - balance) });
+	}
+	const start = points.findIndex((point) => point.balance > 0);
+	return start === -1 ? [] : points.slice(start);
+}
+
 /** About a tenth of the payment, rounded to one figure: 200 for a payment of 1,860. */
 export function scenarioStep(payment: number): number {
 	const raw = payment / 10;
