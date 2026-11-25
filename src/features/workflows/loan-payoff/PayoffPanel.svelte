@@ -535,7 +535,11 @@
 								type="button"
 								class="abt-btn abt-btn--sm"
 								disabled={needed === terms.payment}
-								onclick={() => (paymentText = formatMoneyInput(needed))}
+								onclick={() => {
+									// Holds the month still: left to follow the plan, it would move ahead again.
+									picked = target;
+									paymentText = formatMoneyInput(needed);
+								}}
 							>
 								Use
 							</button>
