@@ -73,7 +73,8 @@
 
 	let nextExtra = 0;
 	let extras = $state<{ id: number; month: string; text: string }[]>([]);
-	let target = $state(addMonths(currentMonth(), 60));
+	// The month picked under Finish by; until one is, it follows the plan.
+	let picked = $state<string | null>(null);
 
 	const decimalComma = $derived(numberPrefs.format.endsWith("-comma"));
 
@@ -132,6 +133,17 @@
 		terms && owed > 0 ? scenarios(owed, terms, today, scenarioStep(terms.payment), extraList) : [],
 	);
 	const base = $derived(rows.find((row) => row.payment === terms?.payment)?.payoff ?? null);
+	// A year ahead of the plan, or half-way there when it's shorter: the question the solver is for.
+	const target = $derived.by(() => {
+		if (picked) {
+			return picked;
+		}
+		if (!base) {
+			return addMonths(currentMonth(), 60);
+		}
+		const sooner = addMonths(base.month, -Math.min(12, Math.floor(base.payments / 2)));
+		return [sooner, `${thisYear + YEARS - 1}-12`].sort()[0];
+	});
 	const needed = $derived(
 		terms && owed > 0 ? paymentToFinishBy(owed, terms, today, target, extraList) : null,
 	);
@@ -261,12 +273,6 @@
 			interestDay = config.interestDay ?? interestDay;
 			payee = config.interestPayee ?? "";
 			savedKey = JSON.stringify(config);
-		}
-		// Starts a year ahead of the current plan, which is the question the solver is there for.
-		if (base) {
-			const sooner = addMonths(base.month, -12);
-			const latest = `${thisYear + YEARS - 1}-12`;
-			target = [sooner > currentMonth() ? sooner : base.month, latest].sort()[0];
 		}
 		loaded = true;
 	});
@@ -511,7 +517,7 @@
 				<Section title="Finish by">
 					<div class="lp__field">
 						<span>Paid off by the end of</span>
-						{@render monthField(target, (month) => (target = month), "Finish by")}
+						{@render monthField(target, (month) => (picked = month), "Finish by")}
 					</div>
 					{#if needed == null}
 						<Callout>No payment falls due before then.</Callout>
