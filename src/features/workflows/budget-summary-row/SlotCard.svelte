@@ -241,20 +241,13 @@
 						>
 					{/if}
 				</span>
-				{@const diff = compare ? totals.spent - compare.before : 0}
-				<span class="sr__sub" class:sr__wide={Math.abs(diff) >= 1}>
+				<span class="sr__sub">
 					{#if spentBudgeted > 0}
 						of <RollingNumber value={spentBudgeted} resetKey={sheet} class="abt-privacy-number" /> budgeted
 					{:else}
 						Nothing budgeted yet
 					{/if}
 				</span>
-				{#if compare && Math.abs(diff) >= 1}
-					<span class="sr__sub sr__narrow abt-num"
-						>{diff < 0 ? "↓" : "↑"}
-						<span class="abt-privacy-number">{fmtMoney(Math.abs(diff))}</span> vs {compare.month}</span
-					>
-				{/if}
 			{:else if id === "targets"}
 				{#if totals.goals}
 					{@const needs = totals.short.reduce((t, c) => t + c.shortfall, 0)}
@@ -639,7 +632,6 @@
 		margin: 3px 0;
 	}
 
-	.sr__narrow,
 	.sr__narrow-inline {
 		display: none;
 	}
@@ -647,9 +639,6 @@
 	@container sr-card (max-width: 240px) {
 		.sr__wide {
 			display: none;
-		}
-		.sr__narrow {
-			display: block;
 		}
 		.sr__narrow-inline {
 			display: inline;
