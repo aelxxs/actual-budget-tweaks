@@ -323,15 +323,20 @@
 	{@const saved = ref.interest - plan.interest}
 	{@const sooner = ref.payments - plan.payments}
 	{#if saved !== 0 || sooner !== 0}
-		<p class="lp__muted lp__versus">
-			{saved >= 0 ? "Saves" : "Costs"}
-			<span class="abt-privacy-number">{fmtMoney(Math.abs(saved))}</span>
-			{saved >= 0 ? "of interest" : "more interest"}{sooner > 0
-				? ` and finishes ${span(sooner)} sooner`
-				: sooner < 0
-					? ` and takes ${span(-sooner)} longer`
-					: ""}.
-		</p>
+		<dl class="lp__stats lp__stats--sm lp__versus">
+			<div>
+				<dt>{saved >= 0 ? "Interest saved" : "More interest"}</dt>
+				<dd class="abt-privacy-number">{fmtMoney(Math.abs(saved))}</dd>
+			</div>
+			<div>
+				<dt>{sooner >= 0 ? "Sooner by" : "Longer by"}</dt>
+				<dd>{span(Math.abs(sooner))}</dd>
+			</div>
+			<div>
+				<dt>Paid off</dt>
+				<dd>{monthName(plan.month)}</dd>
+			</div>
+		</dl>
 	{/if}
 {/snippet}
 
@@ -782,6 +787,20 @@
 		font-size: var(--abt-text-xl);
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* What an alternative changes: interest, time and the new date, in that order everywhere. */
+	.lp__stats--sm {
+		grid-template-columns: repeat(3, auto);
+		justify-content: space-between;
+		padding-top: 0;
+		border-top: 0;
+	}
+	.lp__stats--sm dt {
+		font-size: var(--abt-text-xs);
+	}
+	.lp__stats--sm dd:first-of-type {
+		font-size: var(--abt-text-base);
 	}
 
 	.lp__fields {
