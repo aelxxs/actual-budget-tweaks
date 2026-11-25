@@ -165,50 +165,6 @@ export function watchTransactions(callback: () => void, delay = 400): () => void
 	};
 }
 
-export interface Debt {
-	id: string;
-	name: string;
-	owed: number;
-	/** Null when its saved payment never clears it. */
-	payoff: Payoff | null;
-}
-
-/** Every open account that owes money and has a complete saved plan, soonest paid off first. */
-export async function loadDebts(): Promise<Debt[]> {
-	const [notes, accounts] = await Promise.all([
-		// Every note: Actual's query language can't match part of an id.
-		query<{ id: string; note: string | null }[]>("notes"),
-		query<{ id: string; name: string }[]>("accounts", {
-			filter: { closed: false },
-			select: ["id", "name"],
-		}),
-		loadCurrency(),
-	]);
-	const today = isoDate();
-	const debts = await Promise.all(
-		(accounts ?? []).map(async (account): Promise<Debt | null> => {
-			const note = notes?.find((n) => n.id === noteId(account.id))?.note;
-			const config = readLoan(note);
-			if (!termsOf(config)) {
-				return null;
-			}
-			const ledger = await loadLedger(account.id);
-			const balance = ledger.reduce((sum, entry) => sum + entry.amount, 0);
-			const terms = planTerms({ name: account.name, balance, config }, ledger);
-			if (!terms) {
-				return null;
-			}
-			const owed = -balance;
-			return owed > 0
-				? { id: account.id, name: account.name, owed, payoff: payoff(owed, terms, today) }
-				: null;
-		}),
-	);
-	return debts
-		.filter((debt): debt is Debt => debt != null)
-		.sort((a, b) => (a.payoff?.month ?? "9999").localeCompare(b.payoff?.month ?? "9999"));
-}
-
 /**
  * Adds an interest charge to the account, uncleared and run through rules so it's categorised
  * like the lender's own. `amount` is what's charged, as a positive number.

@@ -2,7 +2,6 @@
 	import { notify, send } from "@lib/actual/actual-api";
 	import Icon from "@lib/components/Icon.svelte";
 	import Callout from "@lib/components/panel/Callout.svelte";
-	import Row from "@lib/components/panel/Row.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import {
 		fmtMoney,
@@ -28,10 +27,8 @@
 		scenarioStep,
 	} from "./amortize";
 	import {
-		type Debt,
 		type LedgerEntry,
 		type Loan,
-		loadDebts,
 		loadLedger,
 		loadLoan,
 		postInterest,
@@ -55,7 +52,6 @@
 
 	let loan = $state<Loan | null>(null);
 	let ledger = $state<LedgerEntry[]>([]);
-	let debts = $state<Debt[]>([]);
 	let loaded = $state(false);
 	let posting = $state(false);
 	let saving = $state(false);
@@ -190,12 +186,6 @@
 	const expected = $derived(
 		loan && terms && owed > 0 ? expectedInterest(loan.balance, marked, terms, today) : null,
 	);
-	// Where every saved plan has ended; null while one of them never does.
-	const debtFree = $derived(
-		debts.every((d) => d.payoff)
-			? debts.reduce((max, d) => (d.payoff && d.payoff.month > max ? d.payoff.month : max), "")
-			: null,
-	);
 
 	function fill(config: LoanConfig | null | undefined) {
 		if (!config) {
@@ -219,10 +209,6 @@
 		}
 	}
 
-	async function reloadDebts() {
-		debts = await loadDebts().catch(() => debts);
-	}
-
 	$effect(() => (loaded ? watchTransactions(() => void reload()) : undefined));
 
 	/** Runs a change to the note, then reads it back so the plan follows what was written. */
@@ -234,7 +220,7 @@
 		failed = false;
 		try {
 			await change();
-			await Promise.all([reload(), reloadDebts()]);
+			await reload();
 			return true;
 		} catch {
 			failed = true;
@@ -325,7 +311,7 @@
 	onMount(async () => {
 		void loadDatePrefs();
 		await loadCurrency().catch(() => {});
-		await Promise.all([reload(), reloadDebts()]);
+		await reload();
 		fill(loan?.config);
 		loaded = true;
 	});
@@ -756,20 +742,6 @@
 				</div>
 			{/if}
 		</Section>
-
-		{#if debts.length > 1}
-			<Section title="All debts" count={debts.length} open={false}>
-				{#each debts as debt (debt.id)}
-					<Row
-						name={debt.name}
-						value={debt.payoff ? monthName(debt.payoff.month) : "Never"}
-						tone={debt.payoff ? undefined : "warning"}
-						sensitive
-					/>
-				{/each}
-				<Row name="Debt-free by" value={debtFree ? monthName(debtFree) : "Never"} strong />
-			</Section>
-		{/if}
 	{/if}
 </div>
 
