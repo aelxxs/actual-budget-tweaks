@@ -154,7 +154,8 @@
 				min += step;
 			}
 		}
-		const reach = Math.max(min + 4 * step, Math.min(3 * terms.payment, owed));
+		// Up to ten times the payment, and no further than clearing it in one.
+		const reach = Math.max(min + 4 * step, Math.min(10 * terms.payment, owed));
 		return { step, min, max: min + Math.ceil((reach - min) / step) * step };
 	});
 
