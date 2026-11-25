@@ -174,10 +174,6 @@
 	);
 
 	const paidDown = $derived(loan && terms ? progress(loan.balance, ledger) : null);
-	// Whether anything has been paid towards this debt yet.
-	const started = $derived(
-		!!paidDown && ledger.some((e) => e.amount > 0 && e.date >= paidDown.since),
-	);
 	const savedPayee = $derived(loan?.config?.interestPayee?.trim() ?? "");
 	const payeeNames = $derived(
 		[
@@ -564,22 +560,17 @@
 				{@const due = !!expected && expected.date <= today}
 				<div class="lp__next">
 					<div class="lp__line">
-						{#if !started}
-							<span>First payment {formatDayMonth(pays)}</span>
-							<span class="lp__figure abt-privacy-number">{fmtMoney(terms.payment)}</span>
+						<span>{pays.slice(0, 7) === today.slice(0, 7) ? "This month" : "Next payment"}</span>
+						{#if expected && expected.amount < terms.payment}
+							<span class="lp__split">
+								<strong class="abt-privacy-number"
+									>{fmtMoney(terms.payment - expected.amount)}</strong
+								>
+								principal ·
+								<span class="abt-privacy-number">{fmtMoney(expected.amount)}</span> interest
+							</span>
 						{:else}
-							<span>{pays.slice(0, 7) === today.slice(0, 7) ? "This month" : "Next payment"}</span>
-							{#if expected && expected.amount < terms.payment}
-								<span class="lp__split">
-									<strong class="abt-privacy-number"
-										>{fmtMoney(terms.payment - expected.amount)}</strong
-									>
-									principal ·
-									<span class="abt-privacy-number">{fmtMoney(expected.amount)}</span> interest
-								</span>
-							{:else}
-								<span class="lp__figure abt-privacy-number">{fmtMoney(terms.payment)}</span>
-							{/if}
+							<span class="lp__figure abt-privacy-number">{fmtMoney(terms.payment)}</span>
 						{/if}
 					</div>
 					{#if expected && due}
