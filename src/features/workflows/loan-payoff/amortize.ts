@@ -16,6 +16,11 @@ export interface LoanTerms {
 	paymentDay: number;
 	/** Day of the month interest is posted. */
 	interestDay: number;
+	/**
+	 * Daily interest already built up since the last posting and not in the balance yet; it posts
+	 * with the next one. See accruedInterest.
+	 */
+	accrued?: number;
 }
 
 /** A one-off payment on top of the regular one, made with that month's payment. */
@@ -79,7 +84,7 @@ export function payoff(
 	let [year, month, day] = parseDate(start);
 	let balance = principal;
 	// Daily interest not yet posted; fractions of a cent carry until the posting.
-	let accrued = 0;
+	let accrued = terms.dayCount === "act365" ? Math.max(0, terms.accrued ?? 0) : 0;
 	let interest = 0;
 	let payments = 0;
 	let yearAgo = Infinity;
@@ -365,16 +370,18 @@ export interface ExpectedInterest {
 	estimated: boolean;
 }
 
+type InterestTerms = Pick<LoanTerms, "rate" | "dayCount" | "interestDay">;
+
 /**
- * The next interest charge that hasn't been posted: for the days since the last posting (a month,
- * when there's none) up to the next interest day. `balance` and `rows` are as for impliedRate.
+ * The stretch the next unposted interest charge covers, from the last posting (a month before it
+ * falls due, when there's none) to the day it's due, with what was owed at the end of each day.
  */
-export function expectedInterest(
+function interestWindow(
 	balance: number,
 	rows: LedgerRow[],
-	terms: Pick<LoanTerms, "rate" | "dayCount" | "interestDay">,
+	terms: InterestTerms,
 	today: string,
-): ExpectedInterest | null {
+): { from: number; due: number; now: number; owed: (day: number) => number } {
 	const now = dayNumber(today);
 	const moved = new Map<number, number>();
 	let latest = now;
@@ -407,8 +414,20 @@ export function expectedInterest(
 		owedOn.set(day, Math.max(0, -running));
 		running -= moved.get(day) ?? 0;
 	}
-	const owed = (day: number): number => owedOn.get(day) ?? Math.max(0, -balance);
+	return { from, due, now, owed: (day) => owedOn.get(day) ?? Math.max(0, -balance) };
+}
 
+/**
+ * The next interest charge that hasn't been posted: for the days since the last posting (a month,
+ * when there's none) up to the next interest day. `balance` and `rows` are as for impliedRate.
+ */
+export function expectedInterest(
+	balance: number,
+	rows: LedgerRow[],
+	terms: InterestTerms,
+	today: string,
+): ExpectedInterest | null {
+	const { from, due, now, owed } = interestWindow(balance, rows, terms, today);
 	const rate = Math.max(0, terms.rate);
 	let amount = 0;
 	if (terms.dayCount === "act365") {
@@ -420,4 +439,27 @@ export function expectedInterest(
 	}
 	amount = Math.round(amount);
 	return amount > 0 ? { date: dateOf(due), amount, estimated: due - 1 > now } : null;
+}
+
+/**
+ * Daily interest built up from the last posting to today that the balance doesn't hold yet, for
+ * LoanTerms.accrued: without it a plan run from today's balance leaves those days out. Nothing
+ * for monthly interest, which is charged whole on its day.
+ */
+export function accruedInterest(
+	balance: number,
+	rows: LedgerRow[],
+	terms: InterestTerms,
+	today: string,
+): number {
+	if (terms.dayCount !== "act365") {
+		return 0;
+	}
+	const { from, now, owed } = interestWindow(balance, rows, terms, today);
+	const rate = Math.max(0, terms.rate);
+	let amount = 0;
+	for (let day = from; day < now; day++) {
+		amount += (owed(day) * rate) / 365;
+	}
+	return amount;
 }

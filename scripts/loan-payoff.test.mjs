@@ -27,6 +27,7 @@ const {
 	nextPayment,
 	impliedRate,
 	expectedInterest,
+	accruedInterest,
 } = await load("amortize.ts");
 const { readLoan, writeLoan, removeLoan } = await load("note.ts");
 
@@ -351,4 +352,31 @@ test("measures the debt against the most it's been since it was last clear", () 
 	});
 	assert.equal(progress(0, grown), null);
 	assert.equal(progress(5000, grown), null);
+});
+
+test("carries daily interest built up since the last posting into the plan", () => {
+	// 36,500 at 5%: five a day. Posted on the 20th; today is the 24th.
+	const terms = { rate: 0.05, dayCount: "act365", interestDay: 20 };
+	const rows = [{ date: "2026-11-20", amount: -15000, interest: true }];
+	assert.equal(accruedInterest(-3650000, rows, terms, "2026-11-24"), 4 * 500);
+	// With no posting to go by, from a month before the next one falls due.
+	assert.equal(accruedInterest(-3650000, [], terms, "2026-11-24"), 4 * 500);
+	// A payment part-way through counts the days before it at the higher balance.
+	const paid = [...rows, { date: "2026-11-22", amount: 1825000, interest: false }];
+	assert.equal(accruedInterest(-1825000, paid, terms, "2026-11-24"), 2 * 500 + 2 * 250);
+	assert.equal(accruedInterest(-3650000, rows, { ...terms, dayCount: "monthly" }, "2026-11-24"), 0);
+
+	// The plan then posts a whole month on the next interest day, as the lender will.
+	const plan = { ...terms, payment: 3700000, paymentDay: 20 };
+	const expected = expectedInterest(-3650000, rows, terms, "2026-11-24").amount;
+	const bare = payoff(3650000, plan, "2026-11-24");
+	const full = payoff(3650000, { ...plan, accrued: 2000 }, "2026-11-24");
+	assert.equal(full.interest - bare.interest, 2000);
+	assert.equal(full.interest, expected);
+	// Monthly interest has no days to carry.
+	const monthlyPlan = { ...plan, dayCount: "monthly" };
+	assert.deepEqual(
+		payoff(3650000, { ...monthlyPlan, accrued: 2000 }, "2026-11-24"),
+		payoff(3650000, monthlyPlan, "2026-11-24"),
+	);
 });

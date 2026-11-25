@@ -37,7 +37,8 @@
 		postInterest,
 		removeLoan,
 		saveLoan,
-		termsOf,
+		markInterest,
+		planTerms,
 		watchTransactions,
 	} from "./data";
 	import PayoffChart from "./PayoffChart.svelte";
@@ -116,8 +117,8 @@
 	const dirty = $derived(draft != null && JSON.stringify(draft) !== JSON.stringify(loan?.config));
 
 	const owed = $derived(loan ? -loan.balance : 0);
-	// The saved plan: what the note says.
-	const terms = $derived(termsOf(loan?.config ?? null));
+	// The saved plan: what the note says, with the interest built up since the last posting.
+	const terms = $derived(planTerms(loan, ledger));
 	const plan = $derived(terms && owed > 0 ? payoff(owed, terms, today) : null);
 
 	const extraList = $derived(
@@ -181,15 +182,7 @@
 			...new Set(ledger.filter((e) => e.amount < 0 && e.payee).map((e) => e.payee as string)),
 		].sort(),
 	);
-	// The ledger with the charges under the interest payee picked out; none while it isn't named.
-	const marked = $derived.by(() => {
-		const name = savedPayee.toLowerCase();
-		return ledger.map((e) => ({
-			date: e.date,
-			amount: e.amount,
-			interest: !!name && (e.payee ?? "").toLowerCase() === name,
-		}));
-	});
+	const marked = $derived(markInterest(ledger, savedPayee));
 	const implied = $derived(
 		loan && terms && savedPayee ? impliedRate(loan.balance, marked, terms.dayCount) : null,
 	);

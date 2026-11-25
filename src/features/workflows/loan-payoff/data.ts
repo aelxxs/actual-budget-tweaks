@@ -3,7 +3,7 @@ import { TRANSACTION_TABLE } from "@lib/actual-dom";
 import { loadCurrency } from "@lib/format/currency";
 import { isoDate } from "@lib/format/months";
 import { numberPrefs } from "@lib/format/number-format.svelte";
-import { type LoanTerms, type Payoff, payoff } from "./amortize";
+import { type LedgerRow, type LoanTerms, type Payoff, accruedInterest, payoff } from "./amortize";
 import { type LoanConfig, readLoan, removeLoan as removeLoanLine, writeLoan } from "./note";
 
 export interface Loan {
@@ -70,6 +70,29 @@ export function termsOf(config: LoanConfig | null): LoanTerms | null {
 	};
 }
 
+/** The ledger with the charges under the interest payee picked out; none while it isn't named. */
+export function markInterest(ledger: LedgerEntry[], payee: string | undefined): LedgerRow[] {
+	const name = payee?.trim().toLowerCase();
+	return ledger.map((e) => ({
+		date: e.date,
+		amount: e.amount,
+		interest: !!name && (e.payee ?? "").toLowerCase() === name,
+	}));
+}
+
+/**
+ * The saved plan's terms, with the daily interest built up since the last posting so the plan
+ * doesn't lose those days. Null while a setting is missing.
+ */
+export function planTerms(loan: Loan | null, ledger: LedgerEntry[]): LoanTerms | null {
+	const terms = termsOf(loan?.config ?? null);
+	if (!loan || !terms) {
+		return null;
+	}
+	const rows = markInterest(ledger, loan.config?.interestPayee);
+	return { ...terms, accrued: accruedInterest(loan.balance, rows, terms, isoDate()) };
+}
+
 export interface LoanStatus {
 	/** Whether the account gets a Payoff button: it owes money, or its note already has a loan line. */
 	loan: boolean;
@@ -78,11 +101,15 @@ export interface LoanStatus {
 }
 
 export async function loanStatus(accountId: string): Promise<LoanStatus> {
-	const [loan] = await Promise.all([loadLoan(accountId), loadCurrency()]);
+	const [loan, ledger] = await Promise.all([
+		loadLoan(accountId),
+		loadLedger(accountId),
+		loadCurrency(),
+	]);
 	if (!loan) {
 		return { loan: false, payoff: null };
 	}
-	const terms = termsOf(loan.config);
+	const terms = planTerms(loan, ledger);
 	return {
 		loan: loan.balance < 0 || loan.config != null,
 		payoff: terms ? payoff(-loan.balance, terms, isoDate()) : null,
@@ -161,16 +188,17 @@ export async function loadDebts(): Promise<Debt[]> {
 	const debts = await Promise.all(
 		(accounts ?? []).map(async (account): Promise<Debt | null> => {
 			const note = notes?.find((n) => n.id === noteId(account.id))?.note;
-			const terms = termsOf(readLoan(note));
+			const config = readLoan(note);
+			if (!termsOf(config)) {
+				return null;
+			}
+			const ledger = await loadLedger(account.id);
+			const balance = ledger.reduce((sum, entry) => sum + entry.amount, 0);
+			const terms = planTerms({ name: account.name, balance, config }, ledger);
 			if (!terms) {
 				return null;
 			}
-			const balance = await calculate<number>(
-				"transactions",
-				{ $sum: "$amount" },
-				{ filter: { account: account.id }, options: { splits: "none" } },
-			);
-			const owed = -(balance ?? 0);
+			const owed = -balance;
 			return owed > 0
 				? { id: account.id, name: account.name, owed, payoff: payoff(owed, terms, today) }
 				: null;
