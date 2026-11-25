@@ -96,7 +96,7 @@ async function createBudget(page: Page): Promise<string> {
 		).$send;
 		await send("account-create", { name: "Checking", balance: 250000, offBudget: false });
 		await send("account-create", { name: "House", balance: 30000000, offBudget: true });
-		const loan = await send("account-create", { name: "Loan", balance: -500000, offBudget: true });
+		const loan = await send("account-create", { name: "Loan", balance: -5000, offBudget: true });
 		await send("notes-save", {
 			id: `account-${loan}`,
 			note: "loan: rate=0.06 daycount=monthly interestDay=1 payment=500 paymentDay=1",
