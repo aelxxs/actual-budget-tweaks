@@ -21,6 +21,7 @@
 		type Payoff,
 		balances,
 		expectedInterest,
+		finishByDefault,
 		history,
 		impliedRate,
 		payoff,
@@ -133,7 +134,7 @@
 		terms && owed > 0 ? scenarios(owed, terms, today, scenarioStep(terms.payment), extraList) : [],
 	);
 	const base = $derived(rows.find((row) => row.payment === terms?.payment)?.payoff ?? null);
-	// A year ahead of the plan, or half-way there when it's shorter: the question the solver is for.
+	// Ahead of the plan, as far as the year picker reaches: the question the solver is for.
 	const target = $derived.by(() => {
 		if (picked) {
 			return picked;
@@ -141,8 +142,7 @@
 		if (!base) {
 			return addMonths(currentMonth(), 60);
 		}
-		const sooner = addMonths(base.month, -Math.min(12, Math.floor(base.payments / 2)));
-		return [sooner, `${thisYear + YEARS - 1}-12`].sort()[0];
+		return [finishByDefault(base), `${thisYear + YEARS - 1}-12`].sort()[0];
 	});
 	const needed = $derived(
 		terms && owed > 0 ? paymentToFinishBy(owed, terms, today, target, extraList) : null,

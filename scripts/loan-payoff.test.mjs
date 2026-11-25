@@ -24,6 +24,7 @@ const {
 	scenarios,
 	scenarioStep,
 	paymentToFinishBy,
+	finishByDefault,
 	impliedRate,
 	expectedInterest,
 } = await load("amortize.ts");
@@ -317,4 +318,23 @@ test("walks the balance back to each earlier month's end", () => {
 	assert.deepEqual(history(-202000, rows, "2026-11-24", 0), []);
 	// Across a year's end.
 	assert.equal(history(-1000, [], "2027-01-05", 2)[0].month, "2026-11");
+});
+
+test("starts the finish-by question ahead of the plan", () => {
+	const plan = (payments, month) => ({ payments, month, interest: 0 });
+	// A year ahead of a long plan, across the year's end.
+	assert.equal(finishByDefault(plan(36, "2029-11")), "2028-11");
+	assert.equal(finishByDefault(plan(24, "2028-03")), "2027-03");
+	// Half-way for a shorter one, and never before the first payment.
+	assert.equal(finishByDefault(plan(11, "2027-10")), "2027-05");
+	assert.equal(finishByDefault(plan(3, "2027-01")), "2026-12");
+	assert.equal(finishByDefault(plan(1, "2026-12")), "2026-12");
+});
+
+test("the default finish-by month asks for a higher payment that still clears the debt", () => {
+	const plan = payoff(3240589, daily, "2026-11-24");
+	const month = finishByDefault(plan);
+	const needed = paymentToFinishBy(3240589, daily, "2026-11-24", month);
+	assert.ok(needed > daily.payment);
+	assert.equal(payoff(3240589, { ...daily, payment: needed }, "2026-11-24").month, month);
 });

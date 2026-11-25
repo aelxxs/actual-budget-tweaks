@@ -248,6 +248,18 @@ export function paymentToFinishBy(
 	return high;
 }
 
+/**
+ * The month the "finish by" question starts on: a year ahead of the plan, or half-way there when
+ * the plan is shorter than two years. "YYYY-MM".
+ */
+export function finishByDefault(plan: Payoff): string {
+	const [year, month] = parseDate(`${plan.month}-01`);
+	const first = new Date(
+		Date.UTC(year, month - 1 - Math.min(12, Math.floor(plan.payments / 2)), 1),
+	);
+	return `${first.getUTCFullYear()}-${pad(first.getUTCMonth() + 1)}`;
+}
+
 export interface LedgerRow {
 	/** "YYYY-MM-DD" */
 	date: string;

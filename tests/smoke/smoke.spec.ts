@@ -71,8 +71,11 @@ async function expectAnchors(page: Page, anchors: Record<string, string> = {}): 
 	}
 }
 
-/** Sets the server password, signs in, and creates a budget with an on- and an off-budget account. */
-async function createBudget(page: Page): Promise<void> {
+/**
+ * Sets the server password, signs in, and creates a budget with an on- and an off-budget account
+ * and a loan whose note has a saved payoff plan. Returns the loan's account id.
+ */
+async function createBudget(page: Page): Promise<string> {
 	await page.goto("/");
 	const confirm = page.getByRole("textbox", { name: "Confirm password" });
 	await expect(confirm).toBeVisible();
@@ -87,12 +90,17 @@ async function createBudget(page: Page): Promise<void> {
 	await page.getByRole("button", { name: "Start budgeting" }).click();
 	await expect(page.locator(BUDGET_TABLE)).toBeVisible({ timeout: 30_000 });
 	await page.waitForFunction(() => typeof (window as { $send?: unknown }).$send === "function");
-	await page.evaluate(async () => {
+	return page.evaluate(async () => {
 		const send = (
 			window as unknown as { $send: (name: string, args?: unknown) => Promise<unknown> }
 		).$send;
 		await send("account-create", { name: "Checking", balance: 250000, offBudget: false });
 		await send("account-create", { name: "House", balance: 30000000, offBudget: true });
+		const loan = await send("account-create", { name: "Loan", balance: -500000, offBudget: true });
+		await send("notes-save", {
+			id: `account-${loan}`,
+			note: "loan: rate=0.06 daycount=monthly interestDay=1 payment=500 paymentDay=1",
+		});
 		// Newer Actual shows only a message, with no table, while the rules list is empty.
 		const added = await send("rule-add", {
 			stage: null,
@@ -103,6 +111,7 @@ async function createBudget(page: Page): Promise<void> {
 		if (added && typeof added === "object" && "error" in added) {
 			throw new Error(`rule-add failed: ${JSON.stringify(added)}`);
 		}
+		return String(loan);
 	});
 }
 
@@ -160,8 +169,9 @@ test("ABT on every page", async ({ page }) => {
 	test.setTimeout(300_000);
 	await page.setViewportSize({ width: 1400, height: 900 });
 	watchErrors(page);
+	let loan = "";
 	await test.step("set up", async () => {
-		await createBudget(page);
+		loan = await createBudget(page);
 		await enableEverything(page);
 	});
 
@@ -183,6 +193,16 @@ test("ABT on every page", async ({ page }) => {
 		await expectAttached(page, "[data-abt-account-id]");
 		await expect.soft(page.locator("[data-abt-live-sidebar]")).toContainText("House");
 		await expectAnchors(page, PAGE_ANCHORS["/accounts"]);
+	});
+
+	await visit(page, "loan account", async () => {
+		await page.goto(`/accounts/${loan}`);
+		const marked = page.locator("[data-abt-loan-payoff]");
+		await expect.soft(marked.filter({ hasText: "Paid off" }), "the payoff summary").toBeVisible();
+		const button = page.getByRole("button", { name: "Payoff", exact: true });
+		await expect.soft(button, "the Payoff button").toBeVisible();
+		await button.click();
+		await expect.soft(page.getByText("Interest to come"), "the payoff panel").toBeVisible();
 	});
 
 	await visit(page, "reports", async () => {
