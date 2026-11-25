@@ -498,6 +498,9 @@
 							<span class="abt-privacy-number">{fmtMoney(Math.abs(saved))}</span>
 							{saved > 0 ? "in interest" : "more in interest"}
 						</span>
+					{:else}
+						<!-- Its line is kept while there's nothing to say, so the card doesn't grow when there is. -->
+						<span class="lp__held" aria-hidden="true">&nbsp;</span>
 					{/if}
 				{/if}
 			</div>
@@ -770,6 +773,9 @@
 		font-size: var(--abt-text-sm);
 		font-weight: 500;
 		color: var(--color-budgetNumberPositive);
+	}
+	.lp__held {
+		font-size: var(--abt-text-sm);
 	}
 	.lp__delta.is-worse {
 		color: var(--color-warningText);

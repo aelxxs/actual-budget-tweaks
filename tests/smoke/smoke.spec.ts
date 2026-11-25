@@ -299,10 +299,13 @@ test("ABT on every page", async ({ page }) => {
 		const plan = (await headline.textContent()) ?? "";
 		await expect.soft(usePlan, "nothing to use yet").toBeDisabled();
 
+		const settled = (await settings.boundingBox())?.y;
 		await slider.fill((await slider.getAttribute("max")) ?? "");
 		await expect.soft(headline, "a higher payment finishes sooner").not.toHaveText(plan);
-		await expect.soft(delta.first()).toContainText("sooner");
+		// What trying adds has its room kept, so nothing under it moves as the slider does.
 		await expect.soft(panel.getByText("Trying"), "the trial on the chart").toBeVisible();
+		expect.soft((await settings.boundingBox())?.y, "the panel holds still").toBe(settled);
+		await expect.soft(delta.first()).toContainText("sooner");
 		await panel.getByRole("button", { name: "Reset" }).click();
 		await expect.soft(headline, "back on the plan").toHaveText(plan);
 		await expect.soft(delta).toHaveCount(0);

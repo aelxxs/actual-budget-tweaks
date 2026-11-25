@@ -147,6 +147,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--abt-space-1);
+		/* Room for a second series, so one being tried doesn't push the chart down. */
+		min-height: calc(2lh + var(--abt-space-1));
 	}
 
 	.pc__key {
