@@ -490,12 +490,15 @@
 						{span(shown.payments)} from now ·
 						<span class="abt-privacy-number">{fmtMoney(shown.interest)}</span>
 						{trying ? "interest" : "interest to come"}
-						{#if saved !== 0}
-							<span class="lp__delta abt-privacy-number" class:is-worse={saved < 0}>
-								{fmtMoney(-saved, { sign: true })}
-							</span>
-						{/if}
 					</span>
+					{#if saved !== 0}
+						<!-- A line of its own, so its length doesn't wrap the one above as the payment moves. -->
+						<span class="lp__delta" class:is-worse={saved < 0}>
+							{saved > 0 ? "Saves" : "Costs"}
+							<span class="abt-privacy-number">{fmtMoney(Math.abs(saved))}</span>
+							{saved > 0 ? "in interest" : "more in interest"}
+						</span>
+					{/if}
 				{/if}
 			</div>
 			{#if paidDown && paidDown.paid > 0}
@@ -528,16 +531,16 @@
 				<div class="lp__next">
 					<div class="lp__line">
 						<span>{pays.slice(0, 7) === today.slice(0, 7) ? "This month" : "Next payment"}</span>
-						{#if expected && expected.amount < pay}
-							<span class="lp__split">
-								<strong class="abt-privacy-number">{fmtMoney(pay - expected.amount)}</strong>
-								principal ·
-								<span class="abt-privacy-number">{fmtMoney(expected.amount)}</span> interest
-							</span>
-						{:else}
-							<span class="lp__figure abt-privacy-number">{fmtMoney(pay)}</span>
-						{/if}
+						<span class="lp__figure abt-privacy-number">{fmtMoney(pay)}</span>
 					</div>
+					{#if expected && expected.amount < pay}
+						<!-- On its own line: beside the label it wrapped, or didn't, with the amounts' width. -->
+						<div class="lp__split">
+							<strong class="abt-privacy-number">{fmtMoney(pay - expected.amount)}</strong>
+							principal ·
+							<span class="abt-privacy-number">{fmtMoney(expected.amount)}</span> interest
+						</div>
+					{/if}
 					{#if expected && due}
 						<div class="lp__line">
 							<span>Interest due {formatDayMonth(expected.date)}</span>
@@ -795,9 +798,11 @@
 		font-weight: 600;
 	}
 
-	/* What the next payment is made of. */
+	/* What the next payment is made of, under its amount. */
 	.lp__split {
+		margin-top: calc(-1 * var(--abt-space-1));
 		text-align: right;
+		white-space: nowrap;
 	}
 	.lp__split strong {
 		color: var(--abt-ink);
