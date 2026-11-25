@@ -388,7 +388,7 @@ function dataCSS(keys: Record<string, string>): string {
 /** Light themes: controls raised over the page, a firmer wash, paler other months. */
 const LIGHT_CSS = `
 	:root {
-		--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 55%);
+		--color-budgetCurrentMonth: color-mix(in oklab, var(--ctp-mantle), var(--ctp-base) 15%);
 		/* A sidebar without its own colour matches the cards as they're shown. */
 		--color-sidebarBackground: var(--theme-sidebar, var(--color-budgetCurrentMonth));
 		/* Group rows a step deeper, so they stand off the table. */
