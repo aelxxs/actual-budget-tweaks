@@ -71,6 +71,7 @@
 {#if months.length > 1}
 	<figure
 		class="pc"
+		class:has-alt={series.length > 1}
 		aria-label={now
 			? "What was owed in the past months, and from now until it's paid off"
 			: "What's owed from now until it's paid off"}
@@ -158,7 +159,7 @@
 		border-top: 2px solid var(--abt-data);
 	}
 	.pc__swatch.is-alt {
-		border-top: 2px dashed var(--abt-muted);
+		border-top: 2px dashed var(--abt-ink);
 	}
 
 	.pc__value {
@@ -199,10 +200,14 @@
 		stroke-linejoin: round;
 		vector-effect: non-scaling-stroke;
 	}
+	/* An alternative being tried takes the eye; the plan it's measured against steps back. */
 	.pc__line.is-alt {
-		stroke: var(--abt-muted);
-		stroke-width: 1.5;
-		stroke-dasharray: 4 3;
+		stroke: var(--abt-ink);
+		stroke-dasharray: 5 4;
+	}
+	.pc.has-alt .pc__line:not(.is-alt),
+	.pc.has-alt .pc__swatch:not(.is-alt) {
+		opacity: 0.45;
 	}
 
 	/* With a past drawn solid before it, what's still to come is dashed. */
@@ -249,7 +254,7 @@
 		pointer-events: none;
 	}
 	.pc__dot.is-alt {
-		background: var(--abt-muted);
+		background: var(--abt-ink);
 	}
 
 	.pc__axis {

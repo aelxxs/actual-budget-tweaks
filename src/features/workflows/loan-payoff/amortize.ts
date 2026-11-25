@@ -34,12 +34,6 @@ export interface Payoff {
 	interest: number;
 }
 
-export interface Scenario {
-	payment: number;
-	/** Null when that payment never clears the debt. */
-	payoff: Payoff | null;
-}
-
 /** Past this the debt counts as never paid off. */
 const MAX_YEARS = 100;
 
@@ -203,22 +197,6 @@ export function scenarioStep(payment: number): number {
 	return Math.round(raw / magnitude) * magnitude;
 }
 
-/** The same loan at a lower and a higher payment, `step` apart, lowest first. */
-export function scenarios(
-	principal: number,
-	terms: LoanTerms,
-	start: string,
-	step: number,
-	extras: ExtraPayment[] = [],
-): Scenario[] {
-	return [terms.payment - step, terms.payment, terms.payment + step]
-		.filter((payment, i, all) => payment > 0 && all.indexOf(payment) === i)
-		.map((payment) => ({
-			payment,
-			payoff: payoff(principal, { ...terms, payment }, start, extras),
-		}));
-}
-
 /** The smallest monthly payment that clears the debt by the end of `month`, or null if none can. */
 export function paymentToFinishBy(
 	principal: number,
@@ -248,16 +226,16 @@ export function paymentToFinishBy(
 	return high;
 }
 
-/**
- * The month the "finish by" question starts on: a year ahead of the plan, or half-way there when
- * the plan is shorter than two years. "YYYY-MM".
- */
-export function finishByDefault(plan: Payoff): string {
-	const [year, month] = parseDate(`${plan.month}-01`);
-	const first = new Date(
-		Date.UTC(year, month - 1 - Math.min(12, Math.floor(plan.payments / 2)), 1),
-	);
-	return `${first.getUTCFullYear()}-${pad(first.getUTCMonth() + 1)}`;
+/** The day the next payment lands, today's included: "YYYY-MM-DD". */
+export function nextPayment(today: string, paymentDay: number): string {
+	const [year, month, day] = parseDate(today);
+	const on = (y: number, m: number): string => {
+		const first = new Date(Date.UTC(y, m - 1, 1));
+		const [fy, fm] = [first.getUTCFullYear(), first.getUTCMonth() + 1];
+		return `${fy}-${pad(fm)}-${pad(Math.min(paymentDay, daysInMonth(fy, fm)))}`;
+	};
+	const thisMonth = on(year, month);
+	return Number(thisMonth.slice(8)) >= day ? thisMonth : on(year, month + 1);
 }
 
 export interface LedgerRow {

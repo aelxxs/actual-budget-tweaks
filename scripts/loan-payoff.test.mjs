@@ -21,10 +21,9 @@ const {
 	payoff,
 	balances,
 	history,
-	scenarios,
 	scenarioStep,
 	paymentToFinishBy,
-	finishByDefault,
+	nextPayment,
 	impliedRate,
 	expectedInterest,
 } = await load("amortize.ts");
@@ -116,16 +115,7 @@ test("traces the balance month by month down to nothing", () => {
 	assert.equal(balances(1000000, { ...monthly, payment: 4000 }, "2026-01-15"), null);
 });
 
-test("scenarios run lowest payment first and drop one that isn't positive", () => {
-	const rows = scenarios(1000000, monthly, "2026-01-15", 5000);
-	assert.deepEqual(
-		rows.map((r) => r.payment),
-		[25000, 30000, 35000],
-	);
-	assert.ok(rows[0].payoff.payments > rows[1].payoff.payments);
-	assert.ok(rows[1].payoff.interest > rows[2].payoff.interest);
-	assert.equal(scenarios(1000000, monthly, "2026-01-15", 30000).length, 2);
-	assert.equal(scenarios(1000000, monthly, "2026-01-15", 0).length, 1);
+test("steps payments by about a tenth, to one figure", () => {
 	assert.equal(scenarioStep(186000), 20000);
 	assert.equal(scenarioStep(5000), 500);
 	assert.equal(scenarioStep(0), 0);
@@ -320,21 +310,11 @@ test("walks the balance back to each earlier month's end", () => {
 	assert.equal(history(-1000, [], "2027-01-05", 2)[0].month, "2026-11");
 });
 
-test("starts the finish-by question ahead of the plan", () => {
-	const plan = (payments, month) => ({ payments, month, interest: 0 });
-	// A year ahead of a long plan, across the year's end.
-	assert.equal(finishByDefault(plan(36, "2029-11")), "2028-11");
-	assert.equal(finishByDefault(plan(24, "2028-03")), "2027-03");
-	// Half-way for a shorter one, and never before the first payment.
-	assert.equal(finishByDefault(plan(11, "2027-10")), "2027-05");
-	assert.equal(finishByDefault(plan(3, "2027-01")), "2026-12");
-	assert.equal(finishByDefault(plan(1, "2026-12")), "2026-12");
-});
-
-test("the default finish-by month asks for a higher payment that still clears the debt", () => {
-	const plan = payoff(3240589, daily, "2026-11-24");
-	const month = finishByDefault(plan);
-	const needed = paymentToFinishBy(3240589, daily, "2026-11-24", month);
-	assert.ok(needed > daily.payment);
-	assert.equal(payoff(3240589, { ...daily, payment: needed }, "2026-11-24").month, month);
+test("finds the day the next payment lands", () => {
+	assert.equal(nextPayment("2026-11-24", 20), "2026-12-20");
+	assert.equal(nextPayment("2026-11-24", 24), "2026-11-24");
+	assert.equal(nextPayment("2026-11-24", 28), "2026-11-28");
+	// A day the month doesn't have means its last, and December rolls into January.
+	assert.equal(nextPayment("2027-02-10", 31), "2027-02-28");
+	assert.equal(nextPayment("2026-12-15", 1), "2027-01-01");
 });

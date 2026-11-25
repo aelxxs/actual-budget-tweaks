@@ -271,11 +271,14 @@ test("ABT on every page", async ({ page }) => {
 	});
 
 	const panel = page.locator(".lp");
-	const summary = page.locator("[data-abt-loan-payoff]").filter({ hasText: "Paid off" });
+	const summary = page.locator("[data-abt-loan-payoff]").filter({ hasText: "Paid off by" });
 	const payoffButton = page.getByRole("button", { name: "Payoff", exact: true });
-	const rate = panel.getByLabel("Annual rate");
-	const payment = panel.getByLabel("Monthly payment");
-	const footer = panel.locator(".lp__footer");
+	// The payoff month the panel leads with, and what a change being tried does to it.
+	const headline = panel.locator(".lp__big");
+	const delta = panel.locator(".lp__delta");
+	const slider = panel.locator(".lp__slider");
+	const usePlan = panel.getByRole("button", { name: "Use this plan" });
+	const settings = panel.locator(".lp__summary");
 
 	await visit(page, "loan account", async () => {
 		await page.goto(`/accounts/${loan}`);
@@ -283,82 +286,97 @@ test("ABT on every page", async ({ page }) => {
 		await expect.soft(summary, "the payoff summary").toBeVisible();
 		await expect.soft(payoffButton, "the Payoff button").toBeVisible();
 		await payoffButton.click();
-		await expect
-			.soft(panel.getByText("Interest to come", { exact: true }), "the payoff panel")
-			.toBeVisible();
+		await expect.soft(panel.getByText("Paid off by"), "the payoff panel").toBeVisible();
 		await expect.soft(panel.locator("figure.pc"), "the balance chart").toBeVisible();
-		await expect.soft(panel.getByText("Charged recently"), "the rate check").toBeVisible();
-		await expect.soft(panel.getByText("Debt-free"), "the debts list").toBeVisible();
-		await expect.soft(panel.locator(".lp__footer")).toContainText("Saved in the account's note.");
+		await expect.soft(panel.getByText("Next payment"), "what's next").toBeVisible();
+		await expect.soft(settings, "the saved settings in a line").toContainText("6.00% · monthly");
+		await expect.soft(panel.getByText(/Charged .+ recently/), "the rate check").toBeVisible();
+		await expect.soft(panel.getByText("All debts"), "the debts list").toBeVisible();
 	});
 
 	await visit(page, "loan what-ifs", async () => {
-		// The big figure under "Interest to come".
-		const interest = panel.locator(".lp__stats:not(.lp__stats--sm) dd.abt-privacy-number");
-		const before = (await interest.textContent()) ?? "";
-		await rate.fill("12");
-		await expect.soft(interest, "a higher rate costs more interest").not.toHaveText(before);
-		await payment.fill("10");
-		await expect
-			.soft(panel.getByText("doesn't cover the interest"), "a payment under the interest")
-			.toBeVisible();
-		await rate.fill("6");
-		await payment.fill("500");
-		await expect.soft(interest, "back on the saved plan").toHaveText(before);
+		const plan = (await headline.textContent()) ?? "";
+		await expect.soft(usePlan, "nothing to use yet").toBeDisabled();
 
-		// Finish by starts ahead of the plan, so its payment is a higher one.
-		const use = panel.getByRole("button", { name: "Use", exact: true });
-		await expect.soft(use, "the finish-by payment").toBeEnabled();
-		await use.click();
-		await expect.soft(payment, "Use fills the payment in").not.toHaveValue("500");
-		await expect.soft(use).toBeDisabled();
-		await payment.fill("500");
+		await slider.fill((await slider.getAttribute("max")) ?? "");
+		await expect.soft(headline, "a higher payment finishes sooner").not.toHaveText(plan);
+		await expect.soft(delta.first()).toContainText("sooner");
+		await expect.soft(panel.getByText("Trying"), "the trial on the chart").toBeVisible();
+		await panel.getByRole("button", { name: "Reset" }).click();
+		await expect.soft(headline, "back on the plan").toHaveText(plan);
+		await expect.soft(delta).toHaveCount(0);
 
-		await panel
-			.locator(".lp__answer", { hasText: "One-off payments" })
-			.getByRole("button", { name: "Add" })
-			.click();
+		// A month sooner than the plan takes a higher payment.
+		const month = panel.getByLabel("Finish by: month");
+		const year = panel.getByLabel("Finish by: year");
+		const [m, y] = [Number(await month.inputValue()), Number(await year.inputValue())];
+		if (m === 1) {
+			await year.selectOption(String(y - 1));
+		}
+		await month.selectOption(String(m === 1 ? 12 : m - 1).padStart(2, "0"));
+		await expect.soft(delta.first(), "finishing by an earlier month").toContainText("1m sooner");
+		await expect.soft(usePlan).toBeEnabled();
+		await panel.getByRole("button", { name: "Reset" }).click();
+
+		await panel.getByRole("button", { name: "Add a payment" }).click();
 		await panel.getByLabel("Extra payment: amount").fill("1000");
-		await expect
-			.soft(panel.locator(".lp__extras ~ .lp__versus"), "what the extra payment saves")
-			.toContainText("Interest saved");
+		await expect.soft(delta.first(), "what an extra payment saves").toContainText("sooner");
+		await expect.soft(usePlan, "a one-off payment isn't a plan to save").toBeDisabled();
 		await panel.getByRole("button", { name: "Remove extra payment" }).click();
-		await expect.soft(panel.locator(".lp__extras")).toHaveCount(0);
+		await expect.soft(delta).toHaveCount(0);
+
+		const max = Number(await slider.getAttribute("max"));
+		await slider.fill(String(max));
+		await usePlan.click();
+		await expect.soft
+			.poll(() => accountNote(page, loan), { message: "the tried payment, saved" })
+			.toContain(`payment=${max / 100} `);
+		await expect.soft(delta, "the trial is the plan now").toHaveCount(0);
 	});
 
-	await visit(page, "loan note", async () => {
+	await visit(page, "loan settings", async () => {
+		const rate = panel.getByLabel("Annual rate");
+		const save = panel.getByRole("button", { name: "Save", exact: true });
+		await settings.click();
+		await expect.soft(save, "nothing changed yet").toBeDisabled();
 		await rate.fill("7");
-		await expect.soft(footer).toContainText("Changes not saved yet.");
-		await footer.getByRole("button", { name: "Save", exact: true }).click();
-		await expect.soft(footer).toContainText("Saved in the account's note.");
+		await save.click();
+		await expect.soft(settings, "saved and folded away").toContainText("7.00%");
+		await expect.soft(rate).toHaveCount(0);
 		// The line is rewritten in place; the rest of the note is the user's.
 		await expect.soft
 			.poll(() => accountNote(page, loan), { message: "the saved note" })
 			.toMatch(/^Renovation\nloan: rate=0\.07 .*interestPayee=Bank$/);
 
-		await footer.getByRole("button", { name: "Remove", exact: true }).click();
-		await expect.soft(footer).toContainText("Removed from the account's note.");
+		await settings.click();
+		await rate.fill("9");
+		await panel.getByRole("button", { name: "Cancel" }).click();
+		await expect.soft(settings, "cancelled").toContainText("7.00%");
+
+		await settings.click();
+		await panel.getByRole("button", { name: "Remove loan details" }).click();
 		await expect.soft(summary, "the summary goes with the line").toHaveCount(0);
 		await expect.soft
 			.poll(() => accountNote(page, loan), { message: "the note without its line" })
 			.toBe("Renovation");
 
-		await footer.getByRole("button", { name: "Save again", exact: true }).click();
-		await expect.soft(footer).toContainText("Saved in the account's note.");
+		// Back to setting up, with the details still filled in.
+		await panel.getByRole("button", { name: "Save and see payoff" }).click();
 		await expect.soft(summary, "the summary comes back").toBeVisible();
+		await expect.soft(settings).toContainText("7.00%");
 	});
 
 	await visit(page, "loan interest", async () => {
 		const count = await transactionCount(page, loan);
-		const add = panel
-			.locator(".lp__answer", { hasText: "Due, and not in the account yet." })
-			.getByRole("button", { name: "Add" });
-		await expect.soft(add, "this month's interest is due").toBeEnabled();
+		const next = panel.locator(".lp__next");
+		const add = next.getByRole("button", { name: "Add" });
+		await expect.soft(next.getByText("Interest due"), "this month's interest is due").toBeVisible();
 		await add.click();
 		await expect.soft(page.getByText(/Added .+ of interest/)).toBeVisible();
 		await expect.soft.poll(() => transactionCount(page, loan)).toBe(count + 1);
 		// With it in the account, the next one is a month away and not for adding yet.
-		await expect.soft(panel.getByText("An estimate, taking the balance")).toBeVisible();
+		await expect.soft(next.getByText("Next interest")).toBeVisible();
+		await expect.soft(add).toHaveCount(0);
 
 		// The toast's, by its text; the sidebar's own undo button is an icon.
 		await page.locator("button", { hasText: /^Undo$/ }).click();
@@ -366,8 +384,7 @@ test("ABT on every page", async ({ page }) => {
 	});
 
 	await visit(page, "loan follows transactions", async () => {
-		const owed = panel.locator(".lp__hero-amount");
-		const [chip, amount] = [await summary.textContent(), await owed.textContent()];
+		const [chip, month] = [await summary.textContent(), await headline.textContent()];
 		// Straight into the budget, as a bank sync or another device would: only Actual's own
 		// table says anything changed.
 		await page.evaluate(async (account) => {
@@ -385,7 +402,7 @@ test("ABT on every page", async ({ page }) => {
 				],
 			});
 		}, loan);
-		await expect.soft(owed, "the panel's balance").not.toHaveText(amount ?? "");
+		await expect.soft(headline, "the panel's plan").not.toHaveText(month ?? "");
 		await expect.soft(summary, "the summary's plan").not.toHaveText(chip ?? "");
 	});
 

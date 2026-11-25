@@ -30,50 +30,56 @@ import "../../styles/docs.css";
 					loans do.
 				</li>
 				<li>Enter the days of the month the interest posts and the payment lands.</li>
-				<li>Click <strong>Save</strong>.</li>
+				<li>Click <strong>Save and see payoff</strong>.</li>
 			</ol>
 			<p>
-				Once saved, the account shows when it will be paid off beside its balance. The figure
-				follows the balance as transactions are added.
+				Once saved, the account shows when it will be paid off beside its balance, and the panel
+				opens on the payoff month, the interest still to come and a chart of the balance down to
+				zero. Both follow the balance as transactions are added. The details fold away into
+				<strong>Loan settings</strong>, where you can change or remove them.
 			</p>
 		</section>
 
 		<section class="docs__section">
 			<h2>Trying out changes</h2>
+			<p>
+				<strong>Try a change</strong> runs the saved plan with something different, and shows
+				beside the payoff month how much sooner it finishes and what it does to the interest:
+			</p>
 			<ul>
-				<li>The chart shows what you owe each month until it reaches zero.</li>
+				<li><strong>Payment</strong> slides the monthly payment up or down.</li>
 				<li>
-					<strong>Scenarios</strong> compares your payment with a lower and a higher one, and says
-					how much sooner or later each finishes and what it does to the interest.
+					<strong>Finish by</strong> takes a month and sets the payment that clears the debt by
+					then.
 				</li>
 				<li>
-					<strong>Finish by</strong> takes a month and gives the monthly payment that clears the
-					debt by then. <strong>Use</strong> puts that payment in the form.
-				</li>
-				<li>
-					<strong>Extra payments</strong> adds one-off payments to the plan. They are for trying
-					out and aren't saved.
+					<strong>Extra payments</strong> adds one-off payments. They are for trying out and
+					aren't saved.
 				</li>
 			</ul>
-			<p>Nothing here changes the plan beside the balance until you click <strong>Save</strong>.</p>
+			<p>
+				Nothing changes the saved plan until you click <strong>Use this plan</strong>, which saves
+				the payment you tried. <strong>Reset</strong> goes back to the plan.
+			</p>
 		</section>
 
 		<section class="docs__section">
 			<h2>Checking the interest</h2>
 			<p>
 				Enter the payee your lender's interest charges are posted under as the
-				<strong>Interest payee</strong>. The panel then uses those charges in two ways:
+				<strong>Interest payee</strong> in Loan settings. The panel then uses those charges in two
+				ways:
 			</p>
 			<ul>
 				<li>
-					<strong>Rate check</strong> works out the rate you were actually charged from recent
-					postings and warns when it has moved away from the rate you entered. Variable rates
-					change without notice, and this is where it shows.
+					It works out the rate you were actually charged from recent postings and warns under
+					Loan settings when it has moved away from the rate you entered. Variable rates change
+					without notice, and this is where it shows.
 				</li>
 				<li>
-					<strong>Next interest</strong> shows the charge to expect on the next interest day. If
-					that day has passed and the charge isn't in the account, <strong>Add</strong> enters it
-					as an uncleared transaction, which you can undo from the notification.
+					Under the chart it shows the charge to expect on the next interest day. If that day has
+					passed and the charge isn't in the account, <strong>Add</strong> enters it as an
+					uncleared transaction, which you can undo from the notification.
 				</li>
 			</ul>
 		</section>
@@ -92,7 +98,7 @@ import "../../styles/docs.css";
 			<pre><code>loan: rate=0.0514 daycount=act365 interestDay=20 payment=1860 paymentDay=23 interestPayee=RBC</code></pre>
 			<p>
 				The rest of the note is left as it is, and scripts using Actual's API can read the same
-				line. <strong>Remove</strong> takes the line back out.
+				line. <strong>Remove loan details</strong> in Loan settings takes the line back out.
 			</p>
 		</section>
 

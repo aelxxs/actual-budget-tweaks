@@ -16,3 +16,9 @@ export function span(payments: number): string {
 	const months = payments % 12;
 	return [years ? `${years}y` : "", months || !years ? `${months}m` : ""].filter(Boolean).join(" ");
 }
+
+/** A day of the month as "1st", "22nd". */
+export function ordinal(day: number): string {
+	const teen = day % 100 >= 11 && day % 100 <= 13;
+	return `${day}${teen ? "th" : (["th", "st", "nd", "rd"][day % 10] ?? "th")}`;
+}

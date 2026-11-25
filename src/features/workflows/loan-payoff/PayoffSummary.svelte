@@ -13,10 +13,10 @@
 	title="On the saved rate and payment. Open the payoff plan."
 	onclick={() => openPanel(accountId)}
 >
-	<span class="ls__label">Paid off</span>
+	<span class="ls__label">Paid off by</span>
 	<span class="ls__value">{monthName(payoff.month)}</span>
 	<span class="ls__meta">
-		in {span(payoff.payments)} ·
+		· {span(payoff.payments)} from now ·
 		<span class="abt-privacy-number">{fmtMoney(payoff.interest)}</span> interest
 	</span>
 </button>
