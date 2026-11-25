@@ -365,6 +365,30 @@ test("ABT on every page", async ({ page }) => {
 		await expect.soft.poll(() => transactionCount(page, loan), { message: "undone" }).toBe(count);
 	});
 
+	await visit(page, "loan follows transactions", async () => {
+		const owed = panel.locator(".lp__hero-amount");
+		const [chip, amount] = [await summary.textContent(), await owed.textContent()];
+		// Straight into the budget, as a bank sync or another device would: only Actual's own
+		// table says anything changed.
+		await page.evaluate(async (account) => {
+			const send = (window as unknown as { $send: (name: string, args: unknown) => Promise<void> })
+				.$send;
+			await send("transactions-batch-update", {
+				added: [
+					{
+						id: crypto.randomUUID(),
+						account,
+						date: new Date().toISOString().slice(0, 10),
+						amount: 200000,
+						cleared: true,
+					},
+				],
+			});
+		}, loan);
+		await expect.soft(owed, "the panel's balance").not.toHaveText(amount ?? "");
+		await expect.soft(summary, "the summary's plan").not.toHaveText(chip ?? "");
+	});
+
 	await visit(page, "loan payoff off", async () => {
 		const account = page.locator("[data-abt-live-sidebar]").getByText("Loan", { exact: true });
 		await setLoanPayoff(page, false);
