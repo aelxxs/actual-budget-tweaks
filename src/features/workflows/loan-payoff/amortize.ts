@@ -187,6 +187,46 @@ export function history(
 	return start === -1 ? [] : points.slice(start);
 }
 
+export interface Progress {
+	/** The most that's been owed since the debt began. */
+	peak: number;
+	/** How far below that it is now. */
+	paid: number;
+	/** The day the debt began: the last one that started with nothing owed. "YYYY-MM-DD". */
+	since: string;
+}
+
+/**
+ * How far the debt has come down from the most it's been since the account last owed nothing,
+ * by each day's closing balance. Null when nothing is owed. `balance` is the account's balance
+ * with every row counted, and `rows` should be its whole history.
+ */
+export function progress(
+	balance: number,
+	rows: { date: string; amount: number }[],
+): Progress | null {
+	if (!(balance < 0)) {
+		return null;
+	}
+	const moved = new Map<string, number>();
+	for (const row of rows) {
+		moved.set(row.date, (moved.get(row.date) ?? 0) + row.amount);
+	}
+	const days = [...moved.keys()].sort().reverse();
+	let running = balance;
+	let peak = -balance;
+	let since = days[days.length - 1] ?? "";
+	for (const day of days) {
+		running -= moved.get(day) ?? 0;
+		if (running >= 0) {
+			since = day;
+			break;
+		}
+		peak = Math.max(peak, -running);
+	}
+	return { peak, paid: peak + balance, since };
+}
+
 /** About a tenth of the payment, rounded to one figure: 200 for a payment of 1,860. */
 export function scenarioStep(payment: number): number {
 	const raw = payment / 10;

@@ -21,6 +21,7 @@ const {
 	payoff,
 	balances,
 	history,
+	progress,
 	scenarioStep,
 	paymentToFinishBy,
 	nextPayment,
@@ -317,4 +318,37 @@ test("finds the day the next payment lands", () => {
 	// A day the month doesn't have means its last, and December rolls into January.
 	assert.equal(nextPayment("2027-02-10", 31), "2027-02-28");
 	assert.equal(nextPayment("2026-12-15", 1), "2027-01-01");
+});
+
+test("measures the debt against the most it's been since it was last clear", () => {
+	const rows = [
+		// An earlier debt, cleared in May: it doesn't count.
+		{ date: "2026-04-08", amount: -800000 },
+		{ date: "2026-05-14", amount: 800000 },
+		{ date: "2026-10-22", amount: -3381000 },
+		{ date: "2026-11-01", amount: 54079 },
+		{ date: "2026-11-20", amount: -13668 },
+		{ date: "2026-11-23", amount: 100000 },
+	];
+	assert.deepEqual(progress(-3240589, rows), {
+		peak: 3381000,
+		paid: 140411,
+		since: "2026-10-22",
+	});
+	// Interest can take it past what was borrowed; the peak is the most owed, not the first draw.
+	const grown = [
+		{ date: "2026-01-10", amount: -100000 },
+		{ date: "2026-02-01", amount: -2000 },
+		{ date: "2026-02-15", amount: 30000 },
+	];
+	assert.deepEqual(progress(-72000, grown), { peak: 102000, paid: 30000, since: "2026-01-10" });
+	// Nothing paid yet, an opening balance older than the rows, and nothing owed.
+	assert.equal(progress(-100000, [{ date: "2026-01-10", amount: -100000 }]).paid, 0);
+	assert.deepEqual(progress(-90000, [{ date: "2026-03-01", amount: 10000 }]), {
+		peak: 100000,
+		paid: 10000,
+		since: "2026-03-01",
+	});
+	assert.equal(progress(0, grown), null);
+	assert.equal(progress(5000, grown), null);
 });

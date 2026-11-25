@@ -288,7 +288,7 @@ test("ABT on every page", async ({ page }) => {
 		await payoffButton.click();
 		await expect.soft(panel.getByText("Paid off by"), "the payoff panel").toBeVisible();
 		await expect.soft(panel.locator("figure.pc"), "the balance chart").toBeVisible();
-		await expect.soft(panel.getByText("Next payment"), "what's next").toBeVisible();
+		await expect.soft(panel.getByText("First payment"), "what's next").toBeVisible();
 		await expect.soft(settings, "the saved settings in a line").toContainText("6.00% · monthly");
 		await expect.soft(panel.getByText(/Charged .+ recently/), "the rate check").toBeVisible();
 		await expect.soft(panel.getByText("All debts"), "the debts list").toBeVisible();
@@ -375,7 +375,7 @@ test("ABT on every page", async ({ page }) => {
 		await expect.soft(page.getByText(/Added .+ of interest/)).toBeVisible();
 		await expect.soft.poll(() => transactionCount(page, loan)).toBe(count + 1);
 		// With it in the account, the next one is a month away and not for adding yet.
-		await expect.soft(next.getByText("Next interest")).toBeVisible();
+		await expect.soft(next.getByText("Interest due")).toHaveCount(0);
 		await expect.soft(add).toHaveCount(0);
 
 		// The toast's, by its text; the sidebar's own undo button is an icon.
@@ -403,6 +403,8 @@ test("ABT on every page", async ({ page }) => {
 			});
 		}, loan);
 		await expect.soft(headline, "the panel's plan").not.toHaveText(month ?? "");
+		// With a payment in the account, the next one is split into what it's made of.
+		await expect.soft(panel.locator(".lp__split")).toContainText("principal");
 		await expect.soft(summary, "the summary's plan").not.toHaveText(chip ?? "");
 	});
 

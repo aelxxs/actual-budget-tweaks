@@ -1,13 +1,10 @@
 import { calculate, query, refetchTransactions, send } from "@lib/actual/actual-api";
 import { TRANSACTION_TABLE } from "@lib/actual-dom";
 import { loadCurrency } from "@lib/format/currency";
-import { isoDate, isoDaysAgo } from "@lib/format/months";
+import { isoDate } from "@lib/format/months";
 import { numberPrefs } from "@lib/format/number-format.svelte";
 import { type LoanTerms, type Payoff, payoff } from "./amortize";
 import { type LoanConfig, readLoan, removeLoan as removeLoanLine, writeLoan } from "./note";
-
-/** Far enough back for a few interest postings, quarterly ones included. */
-const LEDGER_DAYS = 400;
 
 export interface Loan {
 	name: string;
@@ -214,10 +211,13 @@ export async function postInterest(
 	await refetchTransactions().catch(() => false);
 }
 
-/** The account's recent transactions, oldest first, for working out the rate it was charged. */
+/**
+ * Every transaction on the account, oldest first: the rate it was charged comes from the recent
+ * ones, and how far the debt has come down from all of them.
+ */
 export async function loadLedger(accountId: string): Promise<LedgerEntry[]> {
 	const rows = await query<LedgerEntry[]>("transactions", {
-		filter: { account: accountId, date: { $gte: isoDaysAgo(LEDGER_DAYS) } },
+		filter: { account: accountId },
 		select: ["date", "amount", { payee: "payee.name" }],
 		options: { splits: "none" },
 	});

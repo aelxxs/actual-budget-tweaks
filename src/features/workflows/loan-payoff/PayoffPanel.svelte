@@ -24,6 +24,7 @@
 		nextPayment,
 		payoff,
 		paymentToFinishBy,
+		progress,
 		scenarioStep,
 	} from "./amortize";
 	import {
@@ -172,6 +173,11 @@
 			: [],
 	);
 
+	const paidDown = $derived(loan && terms ? progress(loan.balance, ledger) : null);
+	// Whether anything has been paid towards this debt yet.
+	const started = $derived(
+		!!paidDown && ledger.some((e) => e.amount > 0 && e.date >= paidDown.since),
+	);
 	const savedPayee = $derived(loan?.config?.interestPayee?.trim() ?? "");
 	const payeeNames = $derived(
 		[
@@ -530,26 +536,58 @@
 					</span>
 				{/if}
 			</div>
+			{#if paidDown && paidDown.paid > 0}
+				{@const share = Math.round((paidDown.paid / paidDown.peak) * 100)}
+				<div
+					class="lp__progress"
+					role="progressbar"
+					aria-label="Paid off"
+					aria-valuemin="0"
+					aria-valuemax="100"
+					aria-valuenow={share}
+					title="Down from the most owed since {formatDayMonth(paidDown.since)}"
+				>
+					<span style:width="{share}%"></span>
+				</div>
+				<div class="lp__line lp__muted">
+					<span><strong>{share}%</strong> paid off</span>
+					<span class="abt-privacy-number">
+						{fmtMoney(paidDown.paid)} of {fmtMoney(paidDown.peak)}
+					</span>
+				</div>
+			{/if}
 			{#if chart.length}
 				<div class="lp__chart"><PayoffChart series={chart} history={past} /></div>
 			{/if}
 			{#if owed > 0}
+				{@const pays = nextPayment(today, terms.paymentDay)}
+				{@const due = !!expected && expected.date <= today}
 				<div class="lp__next">
 					<div class="lp__line">
-						<span>Next payment {formatDayMonth(nextPayment(today, terms.paymentDay))}</span>
-						<span class="lp__figure abt-privacy-number">{fmtMoney(terms.payment)}</span>
+						{#if !started}
+							<span>First payment {formatDayMonth(pays)}</span>
+							<span class="lp__figure abt-privacy-number">{fmtMoney(terms.payment)}</span>
+						{:else}
+							<span>{pays.slice(0, 7) === today.slice(0, 7) ? "This month" : "Next payment"}</span>
+							{#if expected && expected.amount < terms.payment}
+								<span class="lp__split">
+									<strong class="abt-privacy-number"
+										>{fmtMoney(terms.payment - expected.amount)}</strong
+									>
+									principal ·
+									<span class="abt-privacy-number">{fmtMoney(expected.amount)}</span> interest
+								</span>
+							{:else}
+								<span class="lp__figure abt-privacy-number">{fmtMoney(terms.payment)}</span>
+							{/if}
+						{/if}
 					</div>
-					{#if expected}
-						{@const due = expected.date <= today}
+					{#if expected && due}
 						<div class="lp__line">
-							<span>
-								{due ? "Interest due" : "Next interest"}
-								{formatDayMonth(expected.date)}
-							</span>
+							<span>Interest due {formatDayMonth(expected.date)}</span>
 							<span class="lp__figure">
-								{#if expected.estimated}about{/if}
 								<span class="abt-privacy-number">{fmtMoney(expected.amount)}</span>
-								{#if due && savedPayee}
+								{#if savedPayee}
 									<button
 										type="button"
 										class="abt-btn abt-btn--sm"
@@ -795,6 +833,34 @@
 
 	.lp__chart {
 		margin-top: var(--abt-space-4);
+	}
+
+	/* How far the debt has come down from the most it's been. */
+	.lp__progress {
+		height: 6px;
+		margin: var(--abt-space-3) 0 var(--abt-space-1);
+		border-radius: var(--abt-radius-pill);
+		background: var(--abt-ink-2);
+		overflow: hidden;
+	}
+	.lp__progress span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--abt-data);
+	}
+	.lp__muted strong {
+		color: var(--abt-ink);
+		font-weight: 600;
+	}
+
+	/* What the next payment is made of. */
+	.lp__split {
+		text-align: right;
+	}
+	.lp__split strong {
+		color: var(--abt-ink);
+		font-weight: 500;
 	}
 
 	/* What happens next on the account, under the chart. */
