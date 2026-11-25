@@ -292,76 +292,6 @@ export interface LedgerRow {
 	interest: boolean;
 }
 
-export interface ImpliedRate {
-	/** Annual rate as a fraction. */
-	rate: number;
-	/** Interest postings it was worked out from. */
-	postings: number;
-	/** The first and last day of the balances behind it. */
-	from: string;
-	to: string;
-}
-
-/**
- * The rate the lender has actually been charging: each of the last `periods` interest postings
- * against the balance carried since the posting before it. `balance` is the account's balance
- * with every row in `rows` counted, and `rows` must reach back past the postings used.
- */
-export function impliedRate(
-	balance: number,
-	rows: LedgerRow[],
-	dayCount: DayCount,
-	periods = 3,
-): ImpliedRate | null {
-	const charged = new Map<number, number>();
-	const moved = new Map<number, number>();
-	let latest = -Infinity;
-	for (const row of rows) {
-		const day = dayNumber(row.date);
-		latest = Math.max(latest, day);
-		moved.set(day, (moved.get(day) ?? 0) + row.amount);
-		if (row.interest && row.amount < 0) {
-			charged.set(day, (charged.get(day) ?? 0) - row.amount);
-		}
-	}
-	// A posting needs the one before it to say which days it covers.
-	const postings = [...charged.keys()].sort((a, b) => a - b).slice(-(periods + 1));
-	if (postings.length < 2) {
-		return null;
-	}
-
-	// What was owed at the end of each day, walking back from today's balance.
-	const first = postings[0];
-	const owedOn = new Map<number, number>();
-	let running = balance;
-	for (let day = latest; day >= first; day--) {
-		owedOn.set(day, Math.max(0, -running));
-		running -= moved.get(day) ?? 0;
-	}
-
-	let interest = 0;
-	let balanceDays = 0;
-	let averages = 0;
-	for (let i = 1; i < postings.length; i++) {
-		let sum = 0;
-		for (let day = postings[i - 1]; day < postings[i]; day++) {
-			sum += owedOn.get(day) ?? 0;
-		}
-		interest += charged.get(postings[i]) ?? 0;
-		balanceDays += sum;
-		averages += sum / (postings[i] - postings[i - 1]);
-	}
-	if (!(balanceDays > 0)) {
-		return null;
-	}
-	return {
-		rate: dayCount === "act365" ? (interest / balanceDays) * 365 : (interest / averages) * 12,
-		postings: postings.length - 1,
-		from: dateOf(first),
-		to: dateOf(postings[postings.length - 1] - 1),
-	};
-}
-
 export interface ExpectedInterest {
 	/** The day it's due to post, "YYYY-MM-DD". */
 	date: string;
@@ -419,7 +349,8 @@ function interestWindow(
 
 /**
  * The next interest charge that hasn't been posted: for the days since the last posting (a month,
- * when there's none) up to the next interest day. `balance` and `rows` are as for impliedRate.
+ * when there's none) up to the next interest day. `balance` is the account's balance
+ * with every row in `rows` counted, and `rows` must reach back past the last posting.
  */
 export function expectedInterest(
 	balance: number,

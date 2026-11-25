@@ -25,7 +25,6 @@ const {
 	scenarioStep,
 	paymentToFinishBy,
 	nextPayment,
-	impliedRate,
 	expectedInterest,
 	accruedInterest,
 } = await load("amortize.ts");
@@ -134,70 +133,6 @@ test("solves for the payment that finishes by a month", () => {
 	}
 	// No payment date falls before the end of a month that's already over.
 	assert.equal(paymentToFinishBy(5000000, monthly, "2026-01-15", "2025-12"), null);
-});
-
-test("works the rate back out of daily interest postings", () => {
-	// $100,000 owed, 5% charged daily and posted on the 20th, $1,000 paid on the 23rd.
-	const rows = [];
-	let owed = 10000000;
-	let accrued = 0;
-	const day = new Date(Date.UTC(2026, 0, 1));
-	const opening = -owed;
-	for (let i = 0; i < 200; i++) {
-		day.setUTCDate(day.getUTCDate() + 1);
-		const date = day.toISOString().slice(0, 10);
-		accrued += (owed * 0.05) / 365;
-		if (day.getUTCDate() === 20) {
-			const posted = Math.round(accrued);
-			accrued = 0;
-			owed += posted;
-			rows.push({ date, amount: -posted, interest: true });
-		}
-		if (day.getUTCDate() === 23) {
-			owed -= 100000;
-			rows.push({ date, amount: 100000, interest: false });
-		}
-	}
-	const found = impliedRate(-owed, rows, "act365");
-	assert.equal(found.postings, 3);
-	assert.ok(Math.abs(found.rate - 0.05) < 0.0002, `rate was ${found.rate}`);
-	assert.ok(found.from < found.to);
-	// The opening balance isn't needed: only rows since the first posting used.
-	assert.ok(opening < 0);
-});
-
-test("works the rate back out of monthly interest postings", () => {
-	const rows = [];
-	let owed = 2000000;
-	for (let month = 1; month <= 6; month++) {
-		const posted = Math.round((owed * 0.072) / 12);
-		owed += posted;
-		rows.push({ date: `2026-0${month}-01`, amount: -posted, interest: true });
-		owed -= 50000;
-		rows.push({ date: `2026-0${month}-01`, amount: 50000, interest: false });
-	}
-	const found = impliedRate(-owed, rows, "monthly");
-	assert.ok(Math.abs(found.rate - 0.072) < 0.001, `rate was ${found.rate}`);
-});
-
-test("gives no implied rate without two postings to measure between", () => {
-	assert.equal(impliedRate(-100000, [], "act365"), null);
-	assert.equal(
-		impliedRate(-100000, [{ date: "2026-03-20", amount: -400, interest: true }], "act365"),
-		null,
-	);
-	// Payments under the same payee aren't interest.
-	assert.equal(
-		impliedRate(
-			-100000,
-			[
-				{ date: "2026-02-20", amount: 5000, interest: true },
-				{ date: "2026-03-20", amount: 5000, interest: true },
-			],
-			"act365",
-		),
-		null,
-	);
 });
 
 test("reads the loan line from a note", () => {

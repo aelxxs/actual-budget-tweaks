@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { notify, send } from "@lib/actual/actual-api";
 	import Icon from "@lib/components/Icon.svelte";
-	import Callout from "@lib/components/panel/Callout.svelte";
 	import Section from "@lib/components/panel/Section.svelte";
 	import {
 		fmtMoney,
@@ -19,7 +18,6 @@
 		balances,
 		expectedInterest,
 		history,
-		impliedRate,
 		nextPayment,
 		payoff,
 		paymentToFinishBy,
@@ -44,8 +42,6 @@
 
 	const { accountId }: { accountId: string } = $props();
 
-	/** How far the charged rate may sit from the saved one before it's called out. */
-	const DRIFT = 0.0025;
 	const YEARS = 50;
 	const today = isoDate();
 	const thisYear = Number(today.slice(0, 4));
@@ -179,10 +175,6 @@
 		].sort(),
 	);
 	const marked = $derived(markInterest(ledger, savedPayee));
-	const implied = $derived(
-		loan && terms && savedPayee ? impliedRate(loan.balance, marked, terms.dayCount) : null,
-	);
-	const drifted = $derived(!!implied && !!terms && Math.abs(implied.rate - terms.rate) > DRIFT);
 	const expected = $derived(
 		loan && terms && owed > 0 ? expectedInterest(loan.balance, marked, terms, today) : null,
 	);
@@ -358,13 +350,6 @@
 			%
 		</span>
 	</label>
-	{#if implied && terms}
-		<p class="lp__muted lp__hint">
-			Charged {percent(implied.rate)} recently, going by {implied.postings === 1
-				? "the last posting"
-				: `the last ${implied.postings} postings`}.
-		</p>
-	{/if}
 	<div class="lp__field">
 		<span id="lp-accrues">Accrues</span>
 		<div class="abt-seg abt-seg--sm" role="group" aria-labelledby="lp-accrues">
@@ -410,11 +395,7 @@
 	</label>
 	{#if !payee.trim()}
 		<p class="lp__muted lp__hint">
-			Name the payee interest is posted under to check the rate against what you're charged.
-		</p>
-	{:else if terms && savedPayee && !implied}
-		<p class="lp__muted lp__hint">
-			The rate is checked once this payee has two interest charges to measure between.
+			Name the payee interest is posted under, so the next charge is worked out from the last one.
 		</p>
 	{/if}
 
@@ -701,23 +682,6 @@
 				</span>
 				<Icon name="chevronDown" size={14} class="lp__chevron" />
 			</button>
-			{#if drifted && implied && !settingsOpen}
-				<Callout tone="warning">
-					<div class="lp__line">
-						<span>Charged {percent(implied.rate)} recently. The rate may have changed.</span>
-						<button
-							type="button"
-							class="abt-btn abt-btn--sm"
-							onclick={() => {
-								rateText = rateInput(Math.round(implied.rate * 1e4) / 1e4);
-								settingsOpen = true;
-							}}
-						>
-							Use {percent(implied.rate)}
-						</button>
-					</div>
-				</Callout>
-			{/if}
 			{#if settingsOpen}
 				<div class="lp__fields lp__settings">
 					{@render fields()}

@@ -196,8 +196,8 @@ export async function postInterest(
 }
 
 /**
- * Every transaction on the account, oldest first: the rate it was charged comes from the recent
- * ones, and how far the debt has come down from all of them.
+ * Every transaction on the account, oldest first: the interest it's been charged comes from the
+ * recent ones, and how far the debt has come down from all of them.
  */
 export async function loadLedger(accountId: string): Promise<LedgerEntry[]> {
 	const rows = await query<LedgerEntry[]>("transactions", {

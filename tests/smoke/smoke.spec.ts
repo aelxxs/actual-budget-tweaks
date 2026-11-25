@@ -285,7 +285,6 @@ test("ABT on every page", async ({ page }) => {
 		await expect.soft(panel.locator("figure.pc"), "the balance chart").toBeVisible();
 		await expect.soft(panel.getByText(/Next payment|This month/), "what's next").toBeVisible();
 		await expect.soft(settings, "the saved settings in a line").toContainText("6.00% · monthly");
-		await expect.soft(panel.getByText(/Charged .+ recently/), "the rate check").toBeVisible();
 	});
 
 	await visit(page, "loan what-ifs", async () => {

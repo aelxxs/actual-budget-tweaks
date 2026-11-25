@@ -64,24 +64,21 @@ import "../../styles/docs.css";
 		</section>
 
 		<section class="docs__section">
-			<h2>Checking the interest</h2>
+			<h2>Interest that hasn't been posted</h2>
 			<p>
 				Enter the payee your lender's interest charges are posted under as the
-				<strong>Interest payee</strong> in Loan settings. The panel then uses those charges in two
-				ways:
+				<strong>Interest payee</strong> in Loan settings. The panel then knows when interest was
+				last charged, and works out the next charge from the balance on each day since.
 			</p>
-			<ul>
-				<li>
-					It works out the rate you were actually charged from recent postings and warns under
-					Loan settings when it has moved away from the rate you entered. Variable rates change
-					without notice, and this is where it shows.
-				</li>
-				<li>
-					Under the chart it shows the charge to expect on the next interest day. If that day has
-					passed and the charge isn't in the account, <strong>Add</strong> enters it as an
-					uncleared transaction, which you can undo from the notification.
-				</li>
-			</ul>
+			<p>
+				If an interest day has passed and the charge isn't in the account, it's listed under the
+				chart, and <strong>Add</strong> enters it as an uncleared transaction, which you can undo
+				from the notification.
+			</p>
+			<p>
+				The rate isn't checked against what the lender charges, so update it in Loan settings when
+				a variable rate changes.
+			</p>
 		</section>
 
 		<section class="docs__section">
