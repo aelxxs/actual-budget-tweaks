@@ -99,7 +99,28 @@ async function createBudget(page: Page): Promise<string> {
 		const loan = await send("account-create", { name: "Loan", balance: -5000, offBudget: true });
 		await send("notes-save", {
 			id: `account-${loan}`,
-			note: "loan: rate=0.06 daycount=monthly interestDay=1 payment=500 paymentDay=1",
+			note: "Renovation\nloan: rate=0.06 daycount=monthly interestDay=1 payment=500 paymentDay=1 interestPayee=Bank",
+		});
+		// Interest on the first of the last two months, so there's a rate to measure and this
+		// month's charge is due.
+		const payee = await send("payee-create", { name: "Bank" });
+		const now = new Date();
+		const first = (back: number): string =>
+			new Date(Date.UTC(now.getFullYear(), now.getMonth() - back, 1)).toISOString().slice(0, 10);
+		await send("transactions-batch-update", {
+			added: [2, 1].map((back) => ({
+				id: crypto.randomUUID(),
+				account: loan,
+				date: first(back),
+				amount: -2500,
+				payee,
+				cleared: true,
+			})),
+		});
+		const car = await send("account-create", { name: "Car", balance: -2000, offBudget: true });
+		await send("notes-save", {
+			id: `account-${car}`,
+			note: "loan: rate=0.05 daycount=monthly interestDay=1 payment=200 paymentDay=1",
 		});
 		// Newer Actual shows only a message, with no table, while the rules list is empty.
 		const added = await send("rule-add", {
@@ -113,6 +134,60 @@ async function createBudget(page: Page): Promise<string> {
 		}
 		return String(loan);
 	});
+}
+
+interface ActualPage {
+	$query: (query: unknown) => Promise<{ data: Record<string, unknown>[] }>;
+	$q: (table: string) => {
+		filter: (filter: unknown) => { select: (fields: unknown) => unknown };
+	};
+}
+
+/** An account's note, straight from the budget. */
+function accountNote(page: Page, accountId: string): Promise<string | null> {
+	return page.evaluate(async (id) => {
+		const { $query, $q } = window as unknown as ActualPage;
+		const rows = await $query(
+			$q("notes")
+				.filter({ id: `account-${id}` })
+				.select("*"),
+		);
+		return (rows.data[0]?.note as string | undefined) ?? null;
+	}, accountId);
+}
+
+function transactionCount(page: Page, accountId: string): Promise<number> {
+	return page.evaluate(async (id) => {
+		const { $query, $q } = window as unknown as ActualPage;
+		return (await $query($q("transactions").filter({ account: id }).select("id"))).data.length;
+	}, accountId);
+}
+
+/** Actual's first-run toast sits over the side panel's footer. */
+async function dismissWelcome(page: Page): Promise<void> {
+	const welcome = page.getByText("Welcome to Actual!");
+	try {
+		await welcome.waitFor({ timeout: 5000 });
+		await page.getByRole("button", { name: "Close" }).first().click();
+		await welcome.waitFor({ state: "hidden" });
+	} catch {
+		// Not every Actual version shows it.
+	}
+}
+
+/** Loan payoff's switch in ABT's settings, set to `on`. */
+async function setLoanPayoff(page: Page, on: boolean): Promise<void> {
+	await openTweaks(page);
+	const features = page.getByRole("button", { name: /^Features(?: All on)?$/ });
+	if ((await features.getAttribute("aria-expanded")) === "false") {
+		await features.click();
+	}
+	const row = page.locator('.settings-page [data-testid="loan-payoff"]');
+	const toggle = row.locator('input[type="checkbox"]');
+	if ((await toggle.isChecked()) !== on) {
+		await row.locator(".abt-setting__label").click();
+	}
+	await (on ? expect(toggle).toBeChecked() : expect(toggle).not.toBeChecked());
 }
 
 /** ABT's settings: their own tab where Actual's settings have pages, else a card on the one page. */
@@ -195,14 +270,113 @@ test("ABT on every page", async ({ page }) => {
 		await expectAnchors(page, PAGE_ANCHORS["/accounts"]);
 	});
 
+	const panel = page.locator(".lp");
+	const summary = page.locator("[data-abt-loan-payoff]").filter({ hasText: "Paid off" });
+	const payoffButton = page.getByRole("button", { name: "Payoff", exact: true });
+	const rate = panel.getByLabel("Annual rate");
+	const payment = panel.getByLabel("Monthly payment");
+	const footer = panel.locator(".lp__footer");
+
 	await visit(page, "loan account", async () => {
 		await page.goto(`/accounts/${loan}`);
-		const marked = page.locator("[data-abt-loan-payoff]");
-		await expect.soft(marked.filter({ hasText: "Paid off" }), "the payoff summary").toBeVisible();
-		const button = page.getByRole("button", { name: "Payoff", exact: true });
-		await expect.soft(button, "the Payoff button").toBeVisible();
-		await button.click();
-		await expect.soft(page.getByText("Interest to come"), "the payoff panel").toBeVisible();
+		await dismissWelcome(page);
+		await expect.soft(summary, "the payoff summary").toBeVisible();
+		await expect.soft(payoffButton, "the Payoff button").toBeVisible();
+		await payoffButton.click();
+		await expect
+			.soft(panel.getByText("Interest to come", { exact: true }), "the payoff panel")
+			.toBeVisible();
+		await expect.soft(panel.locator("figure.pc"), "the balance chart").toBeVisible();
+		await expect.soft(panel.getByText("Charged recently"), "the rate check").toBeVisible();
+		await expect.soft(panel.getByText("Debt-free"), "the debts list").toBeVisible();
+		await expect.soft(panel.locator(".lp__footer")).toContainText("Saved in the account's note.");
+	});
+
+	await visit(page, "loan what-ifs", async () => {
+		// The big figure under "Interest to come".
+		const interest = panel.locator(".lp__stats:not(.lp__stats--sm) dd.abt-privacy-number");
+		const before = (await interest.textContent()) ?? "";
+		await rate.fill("12");
+		await expect.soft(interest, "a higher rate costs more interest").not.toHaveText(before);
+		await payment.fill("10");
+		await expect
+			.soft(panel.getByText("doesn't cover the interest"), "a payment under the interest")
+			.toBeVisible();
+		await rate.fill("6");
+		await payment.fill("500");
+		await expect.soft(interest, "back on the saved plan").toHaveText(before);
+
+		// Finish by starts ahead of the plan, so its payment is a higher one.
+		const use = panel.getByRole("button", { name: "Use", exact: true });
+		await expect.soft(use, "the finish-by payment").toBeEnabled();
+		await use.click();
+		await expect.soft(payment, "Use fills the payment in").not.toHaveValue("500");
+		await expect.soft(use).toBeDisabled();
+		await payment.fill("500");
+
+		await panel
+			.locator(".lp__answer", { hasText: "One-off payments" })
+			.getByRole("button", { name: "Add" })
+			.click();
+		await panel.getByLabel("Extra payment: amount").fill("1000");
+		await expect
+			.soft(panel.locator(".lp__extras ~ .lp__versus"), "what the extra payment saves")
+			.toContainText("Interest saved");
+		await panel.getByRole("button", { name: "Remove extra payment" }).click();
+		await expect.soft(panel.locator(".lp__extras")).toHaveCount(0);
+	});
+
+	await visit(page, "loan note", async () => {
+		await rate.fill("7");
+		await expect.soft(footer).toContainText("Changes not saved yet.");
+		await footer.getByRole("button", { name: "Save", exact: true }).click();
+		await expect.soft(footer).toContainText("Saved in the account's note.");
+		// The line is rewritten in place; the rest of the note is the user's.
+		await expect.soft
+			.poll(() => accountNote(page, loan), { message: "the saved note" })
+			.toMatch(/^Renovation\nloan: rate=0\.07 .*interestPayee=Bank$/);
+
+		await footer.getByRole("button", { name: "Remove", exact: true }).click();
+		await expect.soft(footer).toContainText("Removed from the account's note.");
+		await expect.soft(summary, "the summary goes with the line").toHaveCount(0);
+		await expect.soft
+			.poll(() => accountNote(page, loan), { message: "the note without its line" })
+			.toBe("Renovation");
+
+		await footer.getByRole("button", { name: "Save again", exact: true }).click();
+		await expect.soft(footer).toContainText("Saved in the account's note.");
+		await expect.soft(summary, "the summary comes back").toBeVisible();
+	});
+
+	await visit(page, "loan interest", async () => {
+		const count = await transactionCount(page, loan);
+		const add = panel
+			.locator(".lp__answer", { hasText: "Due, and not in the account yet." })
+			.getByRole("button", { name: "Add" });
+		await expect.soft(add, "this month's interest is due").toBeEnabled();
+		await add.click();
+		await expect.soft(page.getByText(/Added .+ of interest/)).toBeVisible();
+		await expect.soft.poll(() => transactionCount(page, loan)).toBe(count + 1);
+		// With it in the account, the next one is a month away and not for adding yet.
+		await expect.soft(panel.getByText("An estimate, taking the balance")).toBeVisible();
+
+		// The toast's, by its text; the sidebar's own undo button is an icon.
+		await page.locator("button", { hasText: /^Undo$/ }).click();
+		await expect.soft.poll(() => transactionCount(page, loan), { message: "undone" }).toBe(count);
+	});
+
+	await visit(page, "loan payoff off", async () => {
+		const account = page.locator("[data-abt-live-sidebar]").getByText("Loan", { exact: true });
+		await setLoanPayoff(page, false);
+		await account.first().click();
+		await expect(page).toHaveURL(new RegExp(loan));
+		await expect.soft(page.locator("[data-abt-loan-payoff]"), "nothing left behind").toHaveCount(0);
+		await expect.soft(panel).toHaveCount(0);
+
+		await setLoanPayoff(page, true);
+		await account.first().click();
+		await expect.soft(payoffButton, "back with the switch").toBeVisible();
+		await expect.soft(summary).toBeVisible();
 	});
 
 	await visit(page, "reports", async () => {
