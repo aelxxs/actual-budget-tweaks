@@ -17,7 +17,8 @@
 		onToggle,
 		children,
 	}: {
-		title: string;
+		/** Left out for a card that needs no heading; it can't then be collapsed. */
+		title?: string;
 		open?: boolean;
 		collapsible?: boolean;
 		/** Wraps the body in the bordered card; turn off for content that brings its own layout. */
@@ -42,7 +43,7 @@
 		onToggle?.(open);
 	}
 
-	const expanded = $derived(!collapsible || open);
+	const expanded = $derived(!collapsible || !title || open);
 </script>
 
 {#snippet headerContent()}
@@ -66,7 +67,9 @@
 {/snippet}
 
 <section class="section" data-open={expanded}>
-	{#if collapsible}
+	{#if !title}
+		<!-- No heading. -->
+	{:else if collapsible}
 		<button
 			type="button"
 			class="head"

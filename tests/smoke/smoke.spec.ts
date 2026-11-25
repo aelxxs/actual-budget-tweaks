@@ -306,6 +306,18 @@ test("ABT on every page", async ({ page }) => {
 		await expect.soft(headline, "back on the plan").toHaveText(plan);
 		await expect.soft(delta).toHaveCount(0);
 
+		// An amount between the slider's steps is typed.
+		const amount = panel.getByLabel("Payment amount");
+		await amount.fill("612.34");
+		await amount.press("Enter");
+		await expect.soft(delta.first(), "a typed payment").toContainText("sooner");
+		await expect.soft(amount).toHaveValue("612.34");
+		await amount.fill("1");
+		await amount.press("Enter");
+		await expect.soft(headline, "a payment under the interest").toHaveText("Never");
+		await panel.getByRole("button", { name: "Reset" }).click();
+		await expect.soft(headline).toHaveText(plan);
+
 		// A month sooner than the plan takes a higher payment.
 		const month = panel.getByLabel("Finish by: month");
 		const year = panel.getByLabel("Finish by: year");
@@ -405,6 +417,12 @@ test("ABT on every page", async ({ page }) => {
 		await expect.soft(headline, "the panel's plan").not.toHaveText(month ?? "");
 		// With a payment in the account, the next one is split into what it's made of.
 		await expect.soft(panel.locator(".lp__split")).toContainText("principal");
+		const split = (await panel.locator(".lp__split").textContent()) ?? "";
+		await slider.fill((await slider.getAttribute("max")) ?? "");
+		await expect
+			.soft(panel.locator(".lp__split"), "the payment being tried, split the same way")
+			.not.toHaveText(split);
+		await panel.getByRole("button", { name: "Reset" }).click();
 		await expect.soft(summary, "the summary's plan").not.toHaveText(chip ?? "");
 	});
 

@@ -470,7 +470,7 @@
 		<p class="lp__muted lp__pad">This account couldn't be read.</p>
 	{:else if !terms}
 		<!-- Setting up: nothing saved yet, so the details are the panel. -->
-		<Section title={loan.name} collapsible={false}>
+		<Section>
 			<div class="lp__hero">
 				<span class="lp__muted">Balance from account</span>
 				<span class="lp__big abt-privacy-number">{fmtMoney(Math.max(0, owed))}</span>
@@ -494,7 +494,7 @@
 			</div>
 		</Section>
 	{:else}
-		<Section title={loan.name} collapsible={false}>
+		<Section>
 			<div class="lp__hero">
 				{#if owed <= 0}
 					<span class="lp__muted">Paid off</span>
@@ -505,8 +505,8 @@
 					<span class="lp__muted">Paid off by</span>
 					<span class="lp__big">Never</span>
 					<span class="lp__muted">
-						<span class="abt-privacy-number">{fmtMoney(terms.payment)}</span> a month doesn't cover the
-						interest, so the balance keeps growing.
+						<span class="abt-privacy-number">{fmtMoney(trial ?? terms.payment)}</span> a month doesn't
+						cover the interest, so the balance keeps growing.
 					</span>
 				{:else}
 					{@const sooner = trying && plan ? plan.payments - shown.payments : 0}
@@ -558,20 +558,19 @@
 			{/if}
 			{#if owed > 0}
 				{@const pays = nextPayment(today, terms.paymentDay)}
+				{@const pay = trial ?? terms.payment}
 				{@const due = !!expected && expected.date <= today}
 				<div class="lp__next">
 					<div class="lp__line">
 						<span>{pays.slice(0, 7) === today.slice(0, 7) ? "This month" : "Next payment"}</span>
-						{#if expected && expected.amount < terms.payment}
+						{#if expected && expected.amount < pay}
 							<span class="lp__split">
-								<strong class="abt-privacy-number"
-									>{fmtMoney(terms.payment - expected.amount)}</strong
-								>
+								<strong class="abt-privacy-number">{fmtMoney(pay - expected.amount)}</strong>
 								principal ·
 								<span class="abt-privacy-number">{fmtMoney(expected.amount)}</span> interest
 							</span>
 						{:else}
-							<span class="lp__figure abt-privacy-number">{fmtMoney(terms.payment)}</span>
+							<span class="lp__figure abt-privacy-number">{fmtMoney(pay)}</span>
 						{/if}
 					</div>
 					{#if expected && due}
@@ -604,19 +603,34 @@
 					<span class="lp__aside">Not saved until you use it</span>
 				{/snippet}
 				<div class="lp__fields">
-					<label class="lp__field">
+					<div class="lp__field">
 						<span>Payment</span>
 						<input
 							class="lp__slider"
 							type="range"
+							aria-label="Payment"
 							min={slider.min}
 							max={slider.max}
 							step={slider.step}
 							value={trial ?? terms.payment}
 							oninput={(e) => slide(Number(e.currentTarget.value))}
 						/>
-						<span class="lp__figure abt-privacy-number">{fmtMoney(trial ?? terms.payment)}</span>
-					</label>
+						<!-- The slider moves in steps; an exact amount is typed here. -->
+						<input
+							class="abt-input lp__num abt-privacy-number"
+							inputmode="decimal"
+							autocomplete="off"
+							aria-label="Payment amount"
+							value={formatMoneyInput(trial ?? terms.payment)}
+							onchange={(e) => {
+								const typed = parseMoney(e.currentTarget.value);
+								if (typed != null && typed > 0) {
+									slide(typed);
+								}
+								e.currentTarget.value = formatMoneyInput(trial ?? terms.payment);
+							}}
+						/>
+					</div>
 					<div class="lp__field">
 						<span>Finish by</span>
 						{@render monthField(shown?.month ?? currentMonth(), finishBy, "Finish by")}
