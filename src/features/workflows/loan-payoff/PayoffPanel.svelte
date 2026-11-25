@@ -412,6 +412,10 @@
 		<p class="lp__muted lp__hint">
 			Name the payee interest is posted under to check the rate against what you're charged.
 		</p>
+	{:else if terms && savedPayee && !implied}
+		<p class="lp__muted lp__hint">
+			The rate is checked once this payee has two interest charges to measure between.
+		</p>
 	{/if}
 
 	<div class="lp__group lp__group--next">Payment</div>
