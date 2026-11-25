@@ -232,8 +232,8 @@ export function progress(
 	return { peak, paid: peak + balance, since };
 }
 
-/** About a tenth of the payment, rounded to one figure: 200 for a payment of 1,860. */
-export function scenarioStep(payment: number): number {
+/** A step to move a payment by: about a tenth of it, rounded to one figure. 200 for 1,860. */
+export function paymentStep(payment: number): number {
 	const raw = payment / 10;
 	if (!(raw >= 1)) {
 		return 0;

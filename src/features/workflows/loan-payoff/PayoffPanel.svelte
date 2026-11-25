@@ -22,7 +22,7 @@
 		payoff,
 		paymentToFinishBy,
 		progress,
-		scenarioStep,
+		paymentStep,
 	} from "./amortize";
 	import {
 		type LedgerEntry,
@@ -133,7 +133,7 @@
 		if (!terms || !(owed > 0)) {
 			return null;
 		}
-		const step = Math.max(1, Math.round(scenarioStep(terms.payment) / 2));
+		const step = Math.max(1, Math.round(paymentStep(terms.payment) / 2));
 		let min = terms.payment;
 		for (let i = 0; i < 40 && min - step > 0; i++) {
 			if (!payoff(owed, { ...terms, payment: min - step }, today)) {

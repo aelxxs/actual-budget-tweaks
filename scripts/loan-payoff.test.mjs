@@ -22,7 +22,7 @@ const {
 	balances,
 	history,
 	progress,
-	scenarioStep,
+	paymentStep,
 	paymentToFinishBy,
 	nextPayment,
 	expectedInterest,
@@ -117,9 +117,9 @@ test("traces the balance month by month down to nothing", () => {
 });
 
 test("steps payments by about a tenth, to one figure", () => {
-	assert.equal(scenarioStep(186000), 20000);
-	assert.equal(scenarioStep(5000), 500);
-	assert.equal(scenarioStep(0), 0);
+	assert.equal(paymentStep(186000), 20000);
+	assert.equal(paymentStep(5000), 500);
+	assert.equal(paymentStep(0), 0);
 });
 
 test("solves for the payment that finishes by a month", () => {

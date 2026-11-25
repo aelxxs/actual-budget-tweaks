@@ -5,7 +5,7 @@
 	import { monthName } from "./format";
 
 	/**
-	 * The first series is the plan itself; any after it are alternatives drawn behind it. `history`
+	 * The first series is the plan itself; any after it are changes being tried against it. `history`
 	 * is what was owed in the months before the plan starts, drawn ahead of it.
 	 */
 	const {

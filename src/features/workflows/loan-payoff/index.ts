@@ -12,13 +12,14 @@ import PayoffSummary from "./PayoffSummary.svelte";
 /*
  * On an account that owes money, or whose note has a `loan:` line: a Payoff button in the
  * toolbar, and beside the balance, where the saved plan ends. Both open a side panel that works
- * the plan out. It writes that note line on Save, and an interest transaction when asked for one.
+ * the plan out. It writes that note line when the settings or a tried payment are saved, and an
+ * interest transaction when asked for one.
  */
 const OURS = "data-abt-loan-payoff";
 
 let active = false;
-let button: (Mounted & { accountId: string }) | null = null;
-let summary: (Mounted & { accountId: string }) | null = null;
+let button: Mounted | null = null;
+let summary: Mounted | null = null;
 // What the open account's note and balance say takes a query, so it's kept until the account
 // changes or its settings are saved.
 let checked: { accountId: string; status: LoanStatus | null } | null = null;
@@ -87,7 +88,7 @@ function placeButton(accountId: string) {
 		return;
 	}
 	button?.destroy();
-	button = { ...mountToNodeWithReturn(PayoffButton, { accountId }), accountId };
+	button = mountToNodeWithReturn(PayoffButton, { accountId });
 	button.node.setAttribute(OURS, "");
 	// With the actions, before Actual's empty flex spacer.
 	const spacer = [...toolbar.children].find((c) => c.matches(":empty"));
@@ -113,10 +114,7 @@ function placeSummary(accountId: string, status: LoanStatus) {
 		return;
 	}
 	summary?.destroy();
-	summary = {
-		...mountToNodeWithReturn(PayoffSummary, { accountId, payoff: status.payoff }),
-		accountId,
-	};
+	summary = mountToNodeWithReturn(PayoffSummary, { accountId, payoff: status.payoff });
 	summary.node.setAttribute(OURS, "");
 	row.append(summary.node);
 }
@@ -168,7 +166,7 @@ export const loanPayoff = defineSetting({
 	icon: "interest",
 	experimental: true,
 	writes:
-		"Saves the loan's rate and payment as one line in the account's note when you press Save, and adds an interest transaction when you ask for one.",
+		"Saves the loan's rate and payment as one line in the account's note when you save them or use a payment you tried, and adds an interest transaction when you ask for one.",
 	guide: "/guides/loan-payoff",
 	context: {
 		key: "loan-payoff",

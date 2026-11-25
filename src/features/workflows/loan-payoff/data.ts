@@ -7,7 +7,6 @@ import { type LedgerRow, type LoanTerms, type Payoff, accruedInterest, payoff } 
 import { type LoanConfig, readLoan, removeLoan as removeLoanLine, writeLoan } from "./note";
 
 export interface Loan {
-	name: string;
 	/** As Actual keeps it: negative while money is owed. */
 	balance: number;
 	/** Null until its settings have been saved to the note. */
@@ -30,12 +29,8 @@ async function readNote(accountId: string): Promise<string | null> {
 	return rows?.[0]?.note ?? null;
 }
 
-export async function loadLoan(accountId: string): Promise<Loan | null> {
-	const [accounts, balance, note] = await Promise.all([
-		query<{ id: string; name: string }[]>("accounts", {
-			filter: { id: accountId },
-			select: ["id", "name"],
-		}),
+export async function loadLoan(accountId: string): Promise<Loan> {
+	const [balance, note] = await Promise.all([
 		calculate<number>(
 			"transactions",
 			{ $sum: "$amount" },
@@ -43,15 +38,11 @@ export async function loadLoan(accountId: string): Promise<Loan | null> {
 		),
 		readNote(accountId),
 	]);
-	const account = accounts?.[0];
-	if (!account) {
-		return null;
-	}
-	return { name: account.name, balance: balance ?? 0, config: readLoan(note) };
+	return { balance: balance ?? 0, config: readLoan(note) };
 }
 
 /** The note's settings as terms to run, or null while any of them is missing. */
-export function termsOf(config: LoanConfig | null): LoanTerms | null {
+function termsOf(config: LoanConfig | null): LoanTerms | null {
 	if (
 		!config ||
 		config.rate == null ||
@@ -101,15 +92,9 @@ export interface LoanStatus {
 }
 
 export async function loanStatus(accountId: string): Promise<LoanStatus> {
-	const [loan, ledger] = await Promise.all([
-		loadLoan(accountId),
-		loadLedger(accountId),
-		loadCurrency(),
-	]);
-	if (!loan) {
-		return { loan: false, payoff: null };
-	}
-	const terms = planTerms(loan, ledger);
+	const [loan] = await Promise.all([loadLoan(accountId), loadCurrency()]);
+	// The ledger only where there's a plan to run: this is asked of every account that's opened.
+	const terms = termsOf(loan.config) ? planTerms(loan, await loadLedger(accountId)) : null;
 	return {
 		loan: loan.balance < 0 || loan.config != null,
 		payoff: terms ? payoff(-loan.balance, terms, isoDate()) : null,
