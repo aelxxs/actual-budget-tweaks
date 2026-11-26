@@ -3,7 +3,7 @@
 	import { formatDate, loadDatePrefs } from "@lib/format/date-format.svelte";
 	import { isoDate } from "@lib/format/months";
 	import { getAccountName } from "./data";
-	import { scheduleAmount } from "@lib/actual/schedules";
+	import { scheduleAmountText } from "@lib/actual/schedules";
 	import type { LinkedSchedule } from "./types";
 
 	const { link, fallbackName = "" }: { link: LinkedSchedule; fallbackName?: string } = $props();
@@ -66,7 +66,9 @@
 		return unit ? `Every ${interval} ${unit}s` : null;
 	}
 
-	const amount = $derived(scheduleAmount(link.schedule._amount));
+	const amount = $derived(
+		scheduleAmountText(link.schedule._amount, link.schedule._amountOp) ?? fmtMoney(0),
+	);
 	const meta = $derived(
 		[...when(), frequency(), getAccountName(link.schedule._account)].filter(Boolean),
 	);
@@ -76,7 +78,7 @@
 <div class="sched__body">
 	<div class="sched__line">
 		<span class="sched__name">{link.schedule.name || fallbackName}</span>
-		<span class="sched__amt abt-privacy-number">{fmtMoney(amount ?? 0)}</span>
+		<span class="sched__amt abt-privacy-number">{amount}</span>
 	</div>
 	<div class="sched__meta">
 		{#each meta as part, i (i)}

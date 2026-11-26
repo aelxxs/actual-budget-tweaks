@@ -45,8 +45,10 @@ export interface OverviewSchedule {
 	id: string;
 	name: string;
 	nextDate: string;
-	/** Negative for money going out; null when the schedule has no fixed amount. */
+	/** Negative for money going out (the midpoint of a range); null when the schedule has no amount. */
 	amount: number | null;
+	/** The amount as shown: "~$50" for about, "$40–$60" for a range, a plus for income. */
+	label: string | null;
 }
 
 export interface OverviewData {

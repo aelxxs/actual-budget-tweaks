@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Calendar } from "@lucide/svelte";
-	import { scheduleAmount } from "@lib/actual/schedules";
+	import { scheduleAmountText } from "@lib/actual/schedules";
 	import { onMount } from "svelte";
 	import { query, navigate } from "@lib/actual/actual-api";
 	import { fmtMoney } from "@lib/format/currency";
+	import type { ScheduleAmountOp } from "@lib/types/actual-schema";
 
 	interface Schedule {
 		id: string;
@@ -14,6 +15,7 @@
 		_payee: string;
 		_account: string;
 		_amount: unknown;
+		_amountOp?: ScheduleAmountOp | null;
 	}
 
 	interface Payee {
@@ -24,7 +26,8 @@
 	interface UpcomingItem {
 		id: string;
 		name: string;
-		amount: number;
+		amount: unknown;
+		amountOp?: ScheduleAmountOp | null;
 		date: string;
 		daysUntil: number;
 	}
@@ -63,9 +66,15 @@
 				.filter((s) => !s.completed && !s.tombstone && s.next_date)
 				.map((s) => {
 					const days = daysUntil(s.next_date);
-					const amount = scheduleAmount(s._amount) ?? 0;
 					const name = s.name || payeeMap.get(s._payee) || "Unknown";
-					return { id: s.id, name, amount, date: s.next_date, daysUntil: days };
+					return {
+						id: s.id,
+						name,
+						amount: s._amount,
+						amountOp: s._amountOp,
+						date: s.next_date,
+						daysUntil: days,
+					};
 				})
 				.filter((s) => s.daysUntil >= 0)
 				.sort((a, b) => a.daysUntil - b.daysUntil)
@@ -119,7 +128,7 @@
 					</span>
 					<span class="sched__name">{item.name}</span>
 					<span class="sched__amt abt-privacy-number">
-						{fmtMoney(item.amount)}
+						{scheduleAmountText(item.amount, item.amountOp) ?? fmtMoney(0)}
 					</span>
 				</div>
 			{/each}

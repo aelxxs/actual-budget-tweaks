@@ -4,6 +4,7 @@ import { amountToCents } from "@lib/format/currency";
 import type { TemplateEntry } from "@lib/actual/templates/templates";
 import type { Category } from "@lib/actual/templates/priority-plan";
 import type { BudgetMove } from "@lib/actual/budget-moves";
+import { scheduleAmount, scheduleAmountText } from "@lib/actual/schedules";
 import type {
 	LongGoalRow,
 	MonthTrend,
@@ -233,7 +234,8 @@ export function upcomingSchedules(schedules: Schedule[], today = new Date()): Ov
 			id: s.id,
 			name: s.name ?? "Unnamed",
 			nextDate: s.next_date!,
-			amount: typeof s._amount === "number" ? s._amount : null,
+			amount: scheduleAmount(s._amount),
+			label: scheduleAmountText(s._amount, s._amountOp, { sign: true, unsigned: true }),
 		}));
 }
 

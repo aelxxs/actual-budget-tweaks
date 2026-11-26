@@ -632,11 +632,7 @@
 					{#each data.upcomingSchedules as s, i (s.id)}
 						<Row
 							name={s.name}
-							value={s.amount === null
-								? undefined
-								: s.amount > 0
-									? `+${fmtMoney(s.amount)}`
-									: fmtMoney(-s.amount)}
+							value={s.label ?? undefined}
 							tone={s.amount !== null && s.amount > 0 ? "positive" : undefined}
 						>
 							{#snippet leading()}
