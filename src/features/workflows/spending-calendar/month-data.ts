@@ -43,7 +43,7 @@ function occurrenceMatchStart(s: Schedule, occurrenceDate: string): string {
 }
 
 /**
- * Whether a past occurrence was eventually paid. Actual links a posted transaction
+ * Whether an occurrence up to today was paid. Actual links a posted transaction
  * back to its schedule, so that link — not payee text — decides this. The month's
  * own transactions can't answer it alone: a bill paid late lands outside the month
  * being viewed, so this asks for anything linked at or after the match window.
@@ -280,13 +280,13 @@ export function createMonthLoader() {
 			);
 		}
 
-		// Drop past occurrences that were eventually paid, so a bill only reads as
-		// missed for as long as it actually is one.
+		// Drop occurrences up to today that were paid, so a bill only reads as missed
+		// or upcoming until it is. Actual keeps next_date on today when it's paid today.
 		const posted = new Set<string>();
 		await Promise.all(
 			visibleSchedules.flatMap((s) =>
 				Array.from(occurrences.get(s.id) ?? new Set<string>(), async (date) => {
-					if (date >= todayIso) {
+					if (date > todayIso) {
 						return;
 					}
 					if (await wasOccurrencePosted(s, date)) {
@@ -352,7 +352,11 @@ export function createMonthLoader() {
 									}
 									const dates =
 										s._date && typeof s._date !== "string" ? await loadUpcomingDates(s, count) : [];
-									return projectSchedule(s, dates, effect, todayIso, endDate);
+									const projected = projectSchedule(s, dates, effect, todayIso, endDate);
+									const paidToday =
+										projected.some((p) => p.date === todayIso) &&
+										(posted.has(`${s.id}|${todayIso}`) || (await wasOccurrencePosted(s, todayIso)));
+									return paidToday ? projected.filter((p) => p.date !== todayIso) : projected;
 								}),
 						)
 					: [];
