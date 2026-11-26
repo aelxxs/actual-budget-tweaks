@@ -633,6 +633,42 @@ select.abt-select-arrow {
 	box-shadow: 0 0 0 3px var(--abt-accent-3);
 }
 
+/* A field with fixed text inside its border, such as a currency symbol or a unit: the wrapper
+   draws the field, and the input inside it is bare. */
+.abt-affix {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--abt-space-1);
+	cursor: text;
+}
+
+.abt-affix > input {
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	outline: none;
+}
+
+.abt-affix:focus-within {
+	border-color: color-mix(in srgb, var(--abt-accent) 60%, transparent);
+}
+
+.abt-affix.is-invalid {
+	border-color: var(--abt-danger-4);
+}
+
+.abt-affix__text {
+	flex: none;
+	color: var(--abt-muted);
+	white-space: nowrap;
+}
+
 .abt-input::placeholder {
 	color: var(--color-pageTextSubdued);
 }

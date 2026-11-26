@@ -41,6 +41,7 @@
 	import { monthName, ordinal, span } from "./format";
 	import MonthPicker from "@lib/components/MonthPicker.svelte";
 	import Picker from "@lib/components/Picker.svelte";
+	import Affix from "@lib/components/Affix.svelte";
 	import type { LoanConfig } from "./config";
 
 	const { accountId }: { accountId: string } = $props();
@@ -349,17 +350,16 @@
 	<div class="lp__group">Interest</div>
 	<label class="lp__field">
 		<span>Annual rate</span>
-		<span class="lp__unit">
+		<Affix suffix="%" class="lp__num" invalid={rateText !== "" && rate == null}>
 			<input
-				class="abt-input abt-input--num lp__num"
+				class="abt-input--num"
 				inputmode="decimal"
 				autocomplete="off"
 				placeholder={decimalComma ? "5,14" : "5.14"}
 				aria-invalid={rateText !== "" && rate == null}
 				bind:value={rateText}
 			/>
-			%
-		</span>
+		</Affix>
 	</label>
 	<div class="lp__field">
 		<span id="lp-accrues">Accrues</span>
@@ -413,14 +413,16 @@
 	<div class="lp__group lp__group--next">Payment</div>
 	<label class="lp__field">
 		<span>Monthly amount</span>
-		<input
-			class="abt-input abt-input--num lp__num abt-privacy-number"
-			inputmode="decimal"
-			autocomplete="off"
-			placeholder={decimalComma ? "0,00" : "0.00"}
-			aria-invalid={paymentText !== "" && payment == null}
-			bind:value={paymentText}
-		/>
+		<Affix money class="lp__num" invalid={paymentText !== "" && payment == null}>
+			<input
+				class="abt-input--num abt-privacy-number"
+				inputmode="decimal"
+				autocomplete="off"
+				placeholder={decimalComma ? "0,00" : "0.00"}
+				aria-invalid={paymentText !== "" && payment == null}
+				bind:value={paymentText}
+			/>
+		</Affix>
 	</label>
 	<label class="lp__field">
 		<span>On day</span>
@@ -596,20 +598,22 @@
 							oninput={(e) => slide(Number(e.currentTarget.value))}
 						/>
 						<!-- The slider moves in steps; an exact amount is typed here. -->
-						<input
-							class="abt-input abt-input--num lp__num abt-privacy-number"
-							inputmode="decimal"
-							autocomplete="off"
-							aria-label="Payment amount"
-							value={formatMoneyInput(trial ?? terms.payment)}
-							onchange={(e) => {
-								const typed = parseMoney(e.currentTarget.value);
-								if (typed != null && typed > 0) {
-									slide(typed);
-								}
-								e.currentTarget.value = formatMoneyInput(trial ?? terms.payment);
-							}}
-						/>
+						<Affix money suffix="/mo" class="lp__num lp__num--wide">
+							<input
+								class="abt-input--num abt-privacy-number"
+								inputmode="decimal"
+								autocomplete="off"
+								aria-label="Payment amount"
+								value={formatMoneyInput(trial ?? terms.payment)}
+								onchange={(e) => {
+									const typed = parseMoney(e.currentTarget.value);
+									if (typed != null && typed > 0) {
+										slide(typed);
+									}
+									e.currentTarget.value = formatMoneyInput(trial ?? terms.payment);
+								}}
+							/>
+						</Affix>
 					</div>
 					<div class="lp__field">
 						<span>Finish by</span>
@@ -639,14 +643,16 @@
 										(month) => (extra.month = month),
 										"Extra payment",
 									)}
-									<input
-										class="abt-input abt-input--num lp__num abt-privacy-number"
-										inputmode="decimal"
-										autocomplete="off"
-										placeholder="Amount"
-										aria-label="Extra payment: amount"
-										bind:value={extra.text}
-									/>
+									<Affix money class="lp__num lp__num--fill">
+										<input
+											class="abt-input--num abt-privacy-number"
+											inputmode="decimal"
+											autocomplete="off"
+											placeholder="Amount"
+											aria-label="Extra payment: amount"
+											bind:value={extra.text}
+										/>
+									</Affix>
 									<button
 										type="button"
 										class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
@@ -897,15 +903,11 @@
 		margin-top: calc(-1 * var(--abt-space-1));
 	}
 
-	.lp__unit {
-		display: flex;
-		align-items: center;
-		gap: var(--abt-space-2);
-		color: var(--abt-muted);
-	}
-
-	.lp__num {
+	.lp__field :global(.lp__num) {
 		width: 96px;
+	}
+	.lp__field :global(.lp__num--wide) {
+		width: 124px;
 	}
 
 	.lp__day {
@@ -941,9 +943,8 @@
 		gap: var(--abt-space-2);
 	}
 
-	.lp__extras .lp__num {
+	.lp__extras :global(.lp__num--fill) {
 		flex: 1;
-		width: auto;
 	}
 
 	.lp__actions {

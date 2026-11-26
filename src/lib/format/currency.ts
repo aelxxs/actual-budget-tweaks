@@ -119,6 +119,12 @@ export function fmtNumber(n: number, digits: { min?: number; max?: number } = {}
 	}).format(n);
 }
 
+/** The currency symbol's text before and after the digits; both empty when no currency is set. */
+export function currencyAffix(): { before: string; after: string } {
+	const [before = "", after = ""] = withSymbol("\u0000").split("\u0000");
+	return { before: before.trim(), after: after.trim() };
+}
+
 /** Puts the currency symbol around already-formatted digits where the browser's locale puts it. */
 function withSymbol(digits: string): string {
 	if (!numberPrefs.currency) {
