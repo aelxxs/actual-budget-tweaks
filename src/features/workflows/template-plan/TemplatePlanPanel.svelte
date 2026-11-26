@@ -85,6 +85,7 @@
 	bind:value={templatePlanState.activeTab}
 	onChange={(tab) => {
 		setValue(TAB_STORAGE_KEY, tab);
+		templatePlanState.customizingCards = false;
 		templatePlanState.onTabChange?.(tab);
 	}}
 >

@@ -180,6 +180,9 @@
 			removeEventListener("pointercancel", onHandleUp);
 			document.removeEventListener("keydown", onKey, true);
 			templatePlanState.highlightCard = null;
+			// Moved out of its block, so Svelte doesn't remove it when an outer block goes.
+			// eslint-disable-next-line svelte/no-dom-manipulating
+			layer.remove();
 		};
 	});
 
