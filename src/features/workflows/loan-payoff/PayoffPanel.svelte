@@ -415,6 +415,7 @@
 				searchLabel="Search payees"
 				noun="payees"
 				clearLabel="None"
+				size="sm"
 				onPick={(name) => (payee = name ?? "")}
 			/>
 		</span>

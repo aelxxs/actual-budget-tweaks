@@ -30,6 +30,7 @@
 		attention = false,
 		clearLabel,
 		icon,
+		size = "md",
 		onPick,
 	}: {
 		sections: PickerSection[];
@@ -47,6 +48,8 @@
 		clearLabel?: string;
 		/** Drawn before a name, in the trigger and in the list. */
 		icon?: Snippet<[string | null]>;
+		/** "sm" for a compact panel, matching its smaller text. */
+		size?: "md" | "sm";
 		onPick: (id: string | null) => void;
 	} = $props();
 
@@ -170,7 +173,7 @@
 </button>
 
 {#if open}
-	<div class="menu abt-popover" use:portal bind:this={menu}>
+	<div class="menu abt-popover" class:is-sm={size === "sm"} use:portal bind:this={menu}>
 		<span class="search">
 			<SearchField
 				label={searchLabel}
@@ -297,6 +300,16 @@
 		font-size: var(--abt-text-md);
 		text-align: left;
 		cursor: pointer;
+	}
+	.menu.is-sm {
+		width: 240px;
+		font-size: var(--abt-text-sm);
+	}
+	.menu.is-sm .option {
+		font-size: var(--abt-text-sm);
+	}
+	.menu.is-sm .group {
+		font-size: var(--abt-text-xs);
 	}
 	.option.clear {
 		color: var(--abt-muted);
