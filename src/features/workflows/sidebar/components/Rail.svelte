@@ -7,6 +7,7 @@
 	import { dispatch, navigate } from "@lib/actual/actual-api";
 	import { Page, matchesPage, pagePath } from "@lib/actual/pages";
 	import IconPickerPopover from "@lib/components/IconPickerPopover.svelte";
+	import { initials, nameEmoji } from "@lib/format/initials";
 	import { lastShown, rememberShown } from "@lib/last-shown";
 	import { storedValue } from "@lib/stored.svelte";
 	import {
@@ -185,25 +186,7 @@
 		moreOpen = true;
 	}
 
-	const budgetInitials = $derived(
-		budgetName
-			.split(/\s+/)
-			.map((w) => w[0])
-			.join("")
-			.slice(0, 2)
-			.toUpperCase(),
-	);
-
-	function accountInitials(name: string): string {
-		const words = name.trim().split(/\s+/);
-		if (words.length >= 2) {
-			return (words[0][0] + words[1][0]).toUpperCase();
-		}
-		return name
-			.replace(/[^a-z0-9]/gi, "")
-			.slice(0, 2)
-			.toUpperCase();
-	}
+	const budgetInitials = $derived(initials(budgetName, 1));
 
 	// The same groups, order and collapsed state as the account list.
 	// Starting from the last load's, shared with the account list, which also keeps them.
@@ -295,8 +278,10 @@
 		<span class="abt-emoji rtile-emoji" role="img" aria-label={icon.value}>{icon.value}</span>
 	{:else if icon}
 		<img class="rtile-img" src={icon.value} alt="" />
+	{:else if nameEmoji(account.name)}
+		<span class="abt-emoji rtile-emoji" aria-hidden="true">{nameEmoji(account.name)}</span>
 	{:else}
-		{mini ? accountInitials(account.name).slice(0, 1) : accountInitials(account.name)}
+		{mini ? initials(account.name).slice(0, 1) : initials(account.name)}
 	{/if}
 {/snippet}
 

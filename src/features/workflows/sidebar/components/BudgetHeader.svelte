@@ -30,6 +30,7 @@
 		setBudgetIcon,
 	} from "../lib/budgets";
 	import { type SyncStatus, syncStatus, trackSyncStatus } from "../lib/sync-status.svelte";
+	import { initials } from "@lib/format/initials";
 	import { createLogger } from "@lib/logger";
 
 	const log = createLogger("sidebar");
@@ -63,14 +64,7 @@
 	let iconPickerOpen = $state(false);
 	let iconAnchorRect = $state<DOMRect | undefined>(undefined);
 
-	const budgetInitials = $derived(
-		displayName
-			.split(/\s+/)
-			.map((w) => w[0])
-			.join("")
-			.slice(0, 2)
-			.toUpperCase(),
-	);
+	const budgetInitials = $derived(initials(displayName, 1));
 
 	const currentFile = $derived(files.find((f) => f.id === currentId));
 
