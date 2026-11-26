@@ -6,6 +6,7 @@
 	import { formatDayMonth } from "@lib/format/date-format.svelte";
 	import { onMount, untrack } from "svelte";
 	import { CheckCheck } from "@lucide/svelte";
+	import { cachedIcons, loadIconCache, watchAccountIcons } from "@lib/account-icons";
 	import { query } from "@lib/actual/actual-api";
 	import type { Account } from "@lib/types/actual-schema";
 	import { syncAccounts } from "@features/workflows/sidebar/lib/data";
@@ -30,9 +31,12 @@
 	let errors = $state<Record<string, boolean>>({});
 	let loaded = $state(false);
 
+	let icons = $state(cachedIcons() ?? {});
 	onMount(() => {
 		void loadCategoryGroups().then((g) => (groups = g));
+		void loadIconCache().then((v) => (icons = v));
 	});
+	$effect(() => watchAccountIcons((v) => (icons = v)));
 
 	// Loads what the queue lists and this panel hasn't read yet, so a sync landing while it's open
 	// shows up too. Transactions gone from the budget are dropped from the queue.
@@ -208,7 +212,13 @@
 							class="abt-btn abt-btn--sm abt-btn--pill"
 							aria-pressed={only === a.id}
 							onclick={() => (only = a.id)}
-							>{a.name} <span class="chip-count">{a.count}</span></button
+						>
+							{#if icons[a.id]?.type === "emoji"}
+								<span class="abt-emoji chip-icon" aria-hidden="true">{icons[a.id].value}</span>
+							{:else if icons[a.id]}
+								<img class="chip-icon" src={icons[a.id].value} alt="" />
+							{/if}
+							{a.name} <span class="chip-count">{a.count}</span></button
 						>
 					{/each}
 				</div>
@@ -342,6 +352,13 @@
 		border-color: var(--abt-accent-4);
 		background: var(--abt-accent-2);
 		color: var(--abt-accent-text);
+	}
+	.chip-icon {
+		--abt-emoji-size: 14px;
+		width: 14px;
+		height: 14px;
+		border-radius: var(--abt-radius-sm);
+		object-fit: cover;
 	}
 	.chip-count {
 		font-variant-numeric: tabular-nums;
