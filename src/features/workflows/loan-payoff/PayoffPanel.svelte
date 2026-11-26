@@ -156,6 +156,11 @@
 		const reach = Math.max(min + 4 * step, Math.min(10 * terms.payment, owed));
 		return { step, min, max: min + Math.ceil((reach - min) / step) * step };
 	});
+	// Rows only appear from "Add a payment", so a new row's amount is what to type next.
+	function focusOnAdd(node: HTMLInputElement) {
+		node.focus();
+	}
+
 	const sliderFill = $derived.by(() => {
 		if (!slider || !terms) {
 			return "0%";
@@ -201,6 +206,12 @@
 	const expected = $derived(
 		loan && terms && owed > 0 ? expectedInterest(loan.balance, marked, terms, today) : null,
 	);
+
+	/** A typed amount in Actual's number format once the field is left; left alone if it doesn't parse. */
+	function tidyMoney(text: string): string {
+		const cents = parseMoney(text);
+		return cents == null ? text : formatMoneyInput(cents);
+	}
 
 	function fill(config: LoanConfig | null | undefined) {
 		if (!config) {
@@ -421,6 +432,7 @@
 				placeholder={decimalComma ? "0,00" : "0.00"}
 				aria-invalid={paymentText !== "" && payment == null}
 				bind:value={paymentText}
+				onblur={() => (paymentText = tidyMoney(paymentText))}
 			/>
 		</Affix>
 	</label>
@@ -638,21 +650,31 @@
 						<ul class="lp__extras">
 							{#each extras as extra, i (extra.id)}
 								<li>
-									{@render monthField(
-										extra.month,
-										(month) => (extra.month = month),
-										"Extra payment",
-									)}
-									<Affix money class="lp__num lp__num--fill">
+									<Affix
+										money
+										class="lp__extra-amount"
+										invalid={extra.text.trim() !== "" && parseMoney(extra.text) == null}
+									>
 										<input
 											class="abt-input--num abt-privacy-number"
 											inputmode="decimal"
 											autocomplete="off"
 											placeholder="Amount"
 											aria-label="Extra payment: amount"
+											aria-invalid={extra.text.trim() !== "" && parseMoney(extra.text) == null}
 											bind:value={extra.text}
+											onblur={() => (extra.text = tidyMoney(extra.text))}
+											use:focusOnAdd
 										/>
 									</Affix>
+									<span class="lp__muted">in</span>
+									<span class="lp__extra-month">
+										{@render monthField(
+											extra.month,
+											(month) => (extra.month = month),
+											"Extra payment",
+										)}
+									</span>
 									<button
 										type="button"
 										class="abt-btn abt-btn--sm abt-btn--icon abt-btn--ghost"
@@ -943,7 +965,16 @@
 		gap: var(--abt-space-2);
 	}
 
-	.lp__extras :global(.lp__num--fill) {
+	.lp__extras :global(.lp__extra-amount) {
+		flex: none;
+		width: 112px;
+	}
+	.lp__extra-month {
+		display: flex;
+		flex: 1;
+		min-width: 0;
+	}
+	.lp__extra-month :global(.field) {
 		flex: 1;
 	}
 
