@@ -32,6 +32,7 @@
 		maxYear,
 		loadMarks,
 		variant = "title",
+		label: ariaLabel,
 	}: {
 		year: number;
 		month: number;
@@ -46,8 +47,11 @@
 		maxYear?: number;
 		/** Status dots for one picker year, keyed by month index. */
 		loadMarks?: (year: number) => Promise<Partial<Record<number, MonthMark>>>;
-		/** "title" is the calendar's page heading; "compact" sits inline in a toolbar. */
-		variant?: "title" | "compact";
+		/** "title" is the calendar's page heading; "compact" sits inline in a toolbar; "field" is a
+		 * form field beside other inputs. */
+		variant?: "title" | "compact" | "field";
+		/** What the month is for, when nothing beside the button says so. */
+		label?: string;
 	} = $props();
 
 	let pickerYear = $state(new Date().getFullYear());
@@ -100,18 +104,19 @@
 
 <button
 	type="button"
-	class="title"
+	class={variant === "field" ? "field abt-input" : "title"}
 	class:is-compact={variant === "compact"}
 	aria-haspopup="dialog"
 	aria-expanded={open}
+	aria-label={ariaLabel ? `${ariaLabel}: ${label}` : undefined}
 	bind:this={button}
 	onclick={() => {
 		pickerYear = year;
 		open = !open;
 	}}
 >
-	{#if shortLabel === label}
-		{label}
+	{#if shortLabel === label || variant === "field"}
+		{variant === "field" ? shortLabel : label}
 	{:else}
 		<span class="title__long">{label}</span><span class="title__short">{shortLabel}</span>
 	{/if}
@@ -200,12 +205,27 @@
 	.title[aria-expanded="true"] {
 		background: var(--abt-fill-hover);
 	}
-	.title :global(.abt-month-chevron) {
+	.title :global(.abt-month-chevron),
+	.field :global(.abt-month-chevron) {
 		opacity: 0.45;
 		transition: transform 0.15s;
 	}
-	.title[aria-expanded="true"] :global(.abt-month-chevron) {
+	.title[aria-expanded="true"] :global(.abt-month-chevron),
+	.field[aria-expanded="true"] :global(.abt-month-chevron) {
 		transform: rotate(180deg);
+	}
+
+	.field {
+		display: inline-flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--abt-space-2);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+	.field[aria-expanded="true"] {
+		border-color: var(--abt-accent-4);
 	}
 
 	.picker {

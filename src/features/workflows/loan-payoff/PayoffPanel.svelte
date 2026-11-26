@@ -38,7 +38,9 @@
 		watchTransactions,
 	} from "./data";
 	import PayoffChart from "./PayoffChart.svelte";
-	import { MONTH_NAMES as MONTHS, monthName, ordinal, span } from "./format";
+	import { monthName, ordinal, span } from "./format";
+	import MonthPicker from "@lib/components/MonthPicker.svelte";
+	import Picker from "@lib/components/Picker.svelte";
 	import type { LoanConfig } from "./config";
 
 	const { accountId }: { accountId: string } = $props();
@@ -153,6 +155,13 @@
 		const reach = Math.max(min + 4 * step, Math.min(10 * terms.payment, owed));
 		return { step, min, max: min + Math.ceil((reach - min) / step) * step };
 	});
+	const sliderFill = $derived.by(() => {
+		if (!slider || !terms) {
+			return "0%";
+		}
+		const at = (trial ?? terms.payment) - slider.min;
+		return `${Math.min(100, Math.max(0, (at / (slider.max - slider.min || 1)) * 100))}%`;
+	});
 
 	const points = $derived(terms && plan ? balances(owed, terms, today) : null);
 	const trialPoints = $derived(
@@ -171,10 +180,21 @@
 
 	const paidDown = $derived(loan && terms ? progress(loan.balance, ledger) : null);
 	const savedPayee = $derived(loan?.config?.interestPayee?.trim() ?? "");
-	// Suggestions for the interest payee: the ones charging this account first, then the rest.
-	const payeeNames = $derived.by(() => {
-		const charging = ledger.flatMap((e) => (e.amount < 0 && e.payee ? [e.payee] : []));
-		return [...new Set([...charging.sort(), ...payees])];
+	// Choices for the interest payee: the ones charging this account first, then the rest.
+	const payeeSections = $derived.by(() => {
+		const charging = [
+			...new Set(ledger.flatMap((e) => (e.amount < 0 && e.payee ? [e.payee] : []))),
+		].sort();
+		const rest = payees.filter((p) => !charging.includes(p));
+		const items = (names: string[]) => names.map((name) => ({ id: name, name }));
+		return [
+			{
+				id: "charging",
+				name: charging.length ? "Charging this account" : undefined,
+				items: items(charging),
+			},
+			{ id: "all", name: charging.length ? "All payees" : undefined, items: items(rest) },
+		];
 	});
 	const marked = $derived(markInterest(ledger, savedPayee));
 	const expected = $derived(
@@ -313,28 +333,16 @@
 </script>
 
 {#snippet monthField(value: string, set: (month: string) => void, label: string)}
-	<span class="lp__month">
-		<select
-			class="abt-input"
-			aria-label="{label}: month"
-			value={value.slice(5)}
-			onchange={(e) => set(`${value.slice(0, 4)}-${e.currentTarget.value}`)}
-		>
-			{#each MONTHS as name, i (name)}
-				<option value={String(i + 1).padStart(2, "0")}>{name}</option>
-			{/each}
-		</select>
-		<select
-			class="abt-input"
-			aria-label="{label}: year"
-			value={value.slice(0, 4)}
-			onchange={(e) => set(`${e.currentTarget.value}-${value.slice(5)}`)}
-		>
-			{#each { length: YEARS } as _, i (i)}
-				<option value={String(thisYear + i)}>{thisYear + i}</option>
-			{/each}
-		</select>
-	</span>
+	<MonthPicker
+		variant="field"
+		{label}
+		year={Number(value.slice(0, 4))}
+		month={Number(value.slice(5, 7)) - 1}
+		minYear={thisYear}
+		maxYear={thisYear + YEARS - 1}
+		isDisabled={(y, m) => `${y}-${String(m + 1).padStart(2, "0")}` < currentMonth()}
+		onpick={(y, m) => set(`${y}-${String(m + 1).padStart(2, "0")}`)}
+	/>
 {/snippet}
 
 {#snippet fields()}
@@ -343,7 +351,7 @@
 		<span>Annual rate</span>
 		<span class="lp__unit">
 			<input
-				class="abt-input lp__num"
+				class="abt-input abt-input--num lp__num"
 				inputmode="decimal"
 				autocomplete="off"
 				placeholder={decimalComma ? "5,14" : "5.14"}
@@ -373,7 +381,7 @@
 	<label class="lp__field">
 		<span>Posts on day</span>
 		<input
-			class="abt-input lp__day"
+			class="abt-input abt-input--num lp__day"
 			type="number"
 			min="1"
 			max="31"
@@ -381,21 +389,21 @@
 			bind:value={interestDay}
 		/>
 	</label>
-	<label class="lp__field">
+	<div class="lp__field">
 		<span>Interest payee</span>
-		<input
-			class="abt-input lp__payee"
-			autocomplete="off"
-			placeholder="Optional"
-			list="lp-payees"
-			bind:value={payee}
-		/>
-		<datalist id="lp-payees">
-			{#each payeeNames as name (name)}
-				<option value={name}></option>
-			{/each}
-		</datalist>
-	</label>
+		<span class="lp__payee">
+			<Picker
+				sections={payeeSections}
+				value={payee.trim() || null}
+				label="Interest payee"
+				placeholder="Optional"
+				searchLabel="Search payees"
+				noun="payees"
+				clearLabel="None"
+				onPick={(name) => (payee = name ?? "")}
+			/>
+		</span>
+	</div>
 	{#if !payee.trim()}
 		<p class="lp__muted lp__hint">
 			Name the payee interest is posted under, so the next charge is worked out from the last one.
@@ -406,7 +414,7 @@
 	<label class="lp__field">
 		<span>Monthly amount</span>
 		<input
-			class="abt-input lp__num abt-privacy-number"
+			class="abt-input abt-input--num lp__num abt-privacy-number"
 			inputmode="decimal"
 			autocomplete="off"
 			placeholder={decimalComma ? "0,00" : "0.00"}
@@ -417,7 +425,7 @@
 	<label class="lp__field">
 		<span>On day</span>
 		<input
-			class="abt-input lp__day"
+			class="abt-input abt-input--num lp__day"
 			type="number"
 			min="1"
 			max="31"
@@ -577,8 +585,9 @@
 					<div class="lp__field">
 						<span>Payment</span>
 						<input
-							class="lp__slider"
+							class="abt-range lp__slider"
 							type="range"
+							style:--abt-range-fill={sliderFill}
 							aria-label="Payment"
 							min={slider.min}
 							max={slider.max}
@@ -588,7 +597,7 @@
 						/>
 						<!-- The slider moves in steps; an exact amount is typed here. -->
 						<input
-							class="abt-input lp__num abt-privacy-number"
+							class="abt-input abt-input--num lp__num abt-privacy-number"
 							inputmode="decimal"
 							autocomplete="off"
 							aria-label="Payment amount"
@@ -631,7 +640,7 @@
 										"Extra payment",
 									)}
 									<input
-										class="abt-input lp__num abt-privacy-number"
+										class="abt-input abt-input--num lp__num abt-privacy-number"
 										inputmode="decimal"
 										autocomplete="off"
 										placeholder="Amount"
@@ -865,8 +874,8 @@
 		font-size: var(--abt-text-sm);
 	}
 
-	.lp__field .abt-input,
-	.lp__extras .abt-input {
+	.lp__field :global(.abt-input),
+	.lp__extras :global(.abt-input) {
 		--abt-btn-h: 26px;
 		font-size: var(--abt-text-sm);
 	}
@@ -897,17 +906,15 @@
 
 	.lp__num {
 		width: 96px;
-		text-align: right;
-		font-variant-numeric: tabular-nums;
 	}
 
 	.lp__day {
 		width: 56px;
-		text-align: right;
 	}
 
 	.lp__payee {
-		width: 140px;
+		display: flex;
+		width: 160px;
 	}
 
 	.abt-input[aria-invalid="true"] {
@@ -917,12 +924,6 @@
 	.lp__slider {
 		flex: 1;
 		min-width: 0;
-		accent-color: var(--abt-accent);
-	}
-
-	.lp__month {
-		display: flex;
-		gap: var(--abt-space-2);
 	}
 
 	.lp__extras {
