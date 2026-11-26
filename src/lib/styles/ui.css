@@ -529,17 +529,29 @@
 	transition: border-color 0.1s;
 }
 
-/* Native select arrows sit flush with the edge in Chrome; draw one with room to breathe. */
+/* Native select arrows sit flush with the edge in Chrome. This draws the chevron the other
+   dropdowns use, as two diagonal strokes, so it takes the theme's ink. */
 select.abt-input,
 select.abt-select-arrow {
+	--abt-caret: var(--abt-muted);
 	appearance: none;
 	padding-right: calc(var(--abt-space-3) + 14px);
 	background-image:
-		linear-gradient(45deg, transparent 50%, var(--abt-muted) 50%),
-		linear-gradient(135deg, var(--abt-muted) 50%, transparent 50%);
+		linear-gradient(
+			45deg,
+			transparent calc(50% - 0.6px),
+			var(--abt-caret) calc(50% - 0.6px) calc(50% + 0.6px),
+			transparent calc(50% + 0.6px)
+		),
+		linear-gradient(
+			135deg,
+			transparent calc(50% - 0.6px),
+			var(--abt-caret) calc(50% - 0.6px) calc(50% + 0.6px),
+			transparent calc(50% + 0.6px)
+		);
 	background-position:
-		calc(100% - 15px) 50%,
-		calc(100% - 10px) 50%;
+		calc(100% - 15px) calc(50% + 1px),
+		calc(100% - 10px) calc(50% + 1px);
 	background-size: 5px 5px;
 	background-repeat: no-repeat;
 	cursor: pointer;
