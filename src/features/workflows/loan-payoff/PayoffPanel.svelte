@@ -189,7 +189,11 @@
 	// Choices for the interest payee: the ones charging this account first, then the rest.
 	const payeeSections = $derived.by(() => {
 		const charging = [
-			...new Set(ledger.flatMap((e) => (e.amount < 0 && e.payee ? [e.payee] : []))),
+			...new Set(
+				ledger.flatMap((e) =>
+					e.amount < 0 && e.payee && !e.starting_balance_flag ? [e.payee] : [],
+				),
+			),
 		].sort();
 		const rest = payees.filter((p) => !charging.includes(p));
 		const items = (names: string[]) => names.map((name) => ({ id: name, name }));

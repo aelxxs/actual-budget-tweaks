@@ -25,6 +25,8 @@ export interface LedgerEntry {
 	date: string;
 	amount: number;
 	payee: string | null;
+	/** The account's opening balance, which Actual flags when the account is made. */
+	starting_balance_flag?: boolean;
 }
 
 /*
@@ -218,7 +220,7 @@ export async function loadPayeeNames(): Promise<string[]> {
 export async function loadLedger(accountId: string): Promise<LedgerEntry[]> {
 	const rows = await query<LedgerEntry[]>("transactions", {
 		filter: { account: accountId },
-		select: ["date", "amount", { payee: "payee.name" }],
+		select: ["date", "amount", "starting_balance_flag", { payee: "payee.name" }],
 		options: { splits: "none" },
 	});
 	return (rows ?? []).sort((a, b) => a.date.localeCompare(b.date));
