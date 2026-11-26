@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CategoryIcon from "@lib/components/CategoryIcon.svelte";
-	import Icon from "@lib/components/Icon.svelte";
+	import SearchField from "@lib/components/SearchField.svelte";
 	import type { Searchable } from "./data";
 
 	let {
@@ -52,29 +52,15 @@
 </script>
 
 <div class="search">
-	<span class="search__icon" aria-hidden="true"><Icon name="search" size={14} /></span>
-	<input
-		class="abt-input"
-		type="search"
+	<SearchField
+		label="Find an account, category or payee"
 		placeholder="Find a node"
-		aria-label="Find an account, category or payee"
 		bind:value={query}
 		oninput={() => (active = 0)}
 		onkeydown={onKey}
 		onfocus={() => (searching = true)}
 		onblur={() => (searching = false)}
 	/>
-	{#if query}
-		<button
-			type="button"
-			class="search__clear"
-			aria-label="Clear search"
-			onpointerdown={(e) => e.preventDefault()}
-			onclick={() => (query = "")}
-		>
-			<Icon name="close" size={12} />
-		</button>
-	{/if}
 	{#if searching && results.length}
 		<!-- Keeps focus in the field, so a click on a result lands before the list closes. -->
 		<div
@@ -105,57 +91,15 @@
 <style>
 	.search {
 		position: relative;
-	}
-
-	.search__icon {
-		position: absolute;
-		top: 50%;
-		left: var(--abt-space-3);
-		display: inline-flex;
-		color: var(--abt-muted);
-		transform: translateY(-50%);
-		pointer-events: none;
-	}
-
-	.search .abt-input {
+		display: flex;
 		width: 220px;
-		padding-left: calc(var(--abt-space-3) + 20px);
-		padding-right: 28px; /* raw: room for the clear button */
 	}
 
 	/* Narrows with the header's short labels in GraphView. */
 	@container (max-width: 1080px) {
-		.search .abt-input {
+		.search {
 			width: 160px;
 		}
-	}
-
-	/* Chrome's own clear button is blue on every theme; this one follows the field's ink. */
-	.search .abt-input::-webkit-search-cancel-button {
-		appearance: none;
-	}
-
-	.search__clear {
-		position: absolute;
-		top: 50%;
-		right: var(--abt-space-2);
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 20px;
-		height: 20px;
-		padding: 0;
-		border: none;
-		border-radius: var(--abt-radius-sm);
-		background: none;
-		color: var(--abt-muted);
-		transform: translateY(-50%);
-		cursor: pointer;
-	}
-
-	.search__clear:hover {
-		background: var(--abt-fill-hover);
-		color: var(--color-pageText);
 	}
 
 	.search__results {

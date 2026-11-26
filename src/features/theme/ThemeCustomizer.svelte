@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+	import SearchField from "@lib/components/SearchField.svelte";
 	import { FEATURED_THEMES, themes } from "@lib/design";
 	import { getValue, setValue, watchValue } from "@lib/store";
 	import { type Mounted, mountToNodeWithReturn, mountToPanelBody } from "@lib/dom/svelte";
@@ -609,12 +610,13 @@
 				</div>
 			{/if}
 			<div class="controls">
-				<input
-					class="abt-input search"
-					type="search"
-					placeholder="Search themes and makers…"
-					bind:value={searchQuery}
-				/>
+				<span class="search">
+					<SearchField
+						label="Search themes and makers"
+						placeholder="Search themes and makers…"
+						bind:value={searchQuery}
+					/>
+				</span>
 				<div class="abt-seg abt-seg--sm" role="group" aria-label="Light or dark themes">
 					{#each [["all", "All"], ["dark", "Dark"], ["light", "Light"]] as [value, label] (value)}
 						<button
@@ -863,6 +865,7 @@
 		margin-bottom: calc(-1 * var(--abt-space-2));
 	}
 	.search {
+		display: flex;
 		flex: 1;
 		min-width: 180px;
 	}

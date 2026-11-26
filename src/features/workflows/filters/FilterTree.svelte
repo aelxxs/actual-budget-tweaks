@@ -14,7 +14,7 @@
 
 <script lang="ts" generics="T extends TreeItem">
 	import Tick from "@lib/components/Tick.svelte";
-	import { Search } from "@lucide/svelte";
+	import SearchField from "@lib/components/SearchField.svelte";
 	import type { Snippet } from "svelte";
 
 	const {
@@ -86,9 +86,13 @@
 		return { shown, checked: shown === items.length, mixed: shown > 0 && shown < items.length };
 	}
 
-	function focusSearch(node: HTMLInputElement) {
-		requestAnimationFrame(() => node.focus());
-	}
+	let searchInput = $state<HTMLInputElement | null>(null);
+	$effect(() => {
+		const node = searchInput;
+		if (node) {
+			requestAnimationFrame(() => node.focus());
+		}
+	});
 </script>
 
 {#snippet header(label: string, items: T[], depth: number)}
@@ -130,17 +134,7 @@
 {/snippet}
 
 <div class="ft__bar">
-	<span class="ft__search">
-		<Search size={14} strokeWidth={1.75} />
-		<input
-			class="abt-input"
-			type="search"
-			placeholder="Search {noun}"
-			aria-label="Search {noun}"
-			bind:value={search}
-			use:focusSearch
-		/>
-	</span>
+	<SearchField label="Search {noun}" bind:value={search} bind:input={searchInput} />
 	<button
 		type="button"
 		class="abt-btn abt-btn--sm abt-btn--ghost"
@@ -176,26 +170,6 @@
 		align-items: center;
 		gap: var(--abt-space-2);
 		padding: var(--abt-space-1) var(--abt-space-1) var(--abt-space-2);
-	}
-
-	.ft__search {
-		position: relative;
-		display: flex;
-		flex: 1;
-		align-items: center;
-		min-width: 0;
-		color: var(--abt-muted);
-	}
-
-	.ft__search :global(svg) {
-		position: absolute;
-		left: var(--abt-space-3);
-		pointer-events: none;
-	}
-
-	.ft__search input {
-		flex: 1;
-		padding-left: calc(var(--abt-space-3) + 20px);
 	}
 
 	.ft__list {

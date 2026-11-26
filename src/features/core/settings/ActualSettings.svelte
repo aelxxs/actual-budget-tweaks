@@ -1,4 +1,5 @@
 <script lang="ts">
+	import SearchField from "@lib/components/SearchField.svelte";
 	import { openOnboarding } from "@features/core/onboarding";
 	import { showReleaseNotes } from "@features/core/release-notification";
 	import {
@@ -516,13 +517,7 @@
 {/snippet}
 
 {#snippet filterControls()}
-	<input
-		type="search"
-		class="abt-input search-input"
-		placeholder="Filter settings"
-		bind:value={query}
-		aria-label="Filter settings"
-	/>
+	<SearchField label="Filter settings" bind:value={query} />
 	<button
 		type="button"
 		class="abt-btn abt-btn--sm abt-btn--pill"
@@ -1121,10 +1116,6 @@
 		display: flex;
 		align-items: center;
 		gap: var(--abt-space-3);
-	}
-
-	.search-input {
-		flex: 1 1 auto;
 	}
 
 	.search-meta {

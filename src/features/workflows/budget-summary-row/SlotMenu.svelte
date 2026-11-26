@@ -16,10 +16,10 @@
 		PiggyBank,
 		Pin,
 		ReceiptText,
-		Search,
 		Target,
 		TrendingUp,
 	} from "@lucide/svelte";
+	import SearchField from "@lib/components/SearchField.svelte";
 	import { onMount } from "svelte";
 	import { backOut, cubicOut } from "svelte/easing";
 	import { fade, fly } from "svelte/transition";
@@ -272,14 +272,10 @@
 					<span class="sm__title">Pin a category or group</span>
 				</button>
 				<span class="sm__search">
-					<Search size={14} strokeWidth={1.75} />
-					<input
-						class="abt-input"
-						type="search"
-						placeholder="Search categories and groups"
-						aria-label="Search categories and groups"
+					<SearchField
+						label="Search categories and groups"
 						bind:value={query}
-						bind:this={search}
+						bind:input={search}
 						onkeydown={(e) => {
 							if (e.key === "Enter" && matches.length) {
 								onPick("pinned", matches[0].id);
@@ -481,21 +477,8 @@
 
 	/* The category list follows the calendar filter's (FilterTree): its search, headings and indent. */
 	.sm__search {
-		position: relative;
 		display: flex;
-		align-items: center;
 		padding: 0 var(--abt-space-1) var(--abt-space-2);
-		color: var(--abt-muted);
-	}
-	.sm__search :global(svg) {
-		position: absolute;
-		left: calc(var(--abt-space-1) + var(--abt-space-3));
-		pointer-events: none;
-	}
-	.sm__search input {
-		flex: 1;
-		min-width: 0;
-		padding-left: calc(var(--abt-space-3) + 20px);
 	}
 
 	.sm__group {
