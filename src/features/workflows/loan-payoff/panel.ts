@@ -1,0 +1,48 @@
+import { sidepanel } from "@features/core/side-panel";
+import { type Mounted, mountToPanelBody } from "@lib/dom/svelte";
+import PayoffPanel from "./PayoffPanel.svelte";
+
+const PANEL_KEY = "loan-payoff";
+
+let current:
+	| (Mounted & {
+			accountId: string;
+			/** The panel mounts its body after opening, so it only counts as closed once it was shown. */
+			shown: boolean;
+	  })
+	| null = null;
+
+export function openPanel(accountId: string): void {
+	if (current?.accountId !== accountId) {
+		destroyPanel();
+	}
+	if (!current) {
+		current = { ...mountToPanelBody(PayoffPanel, { accountId }), accountId, shown: false };
+	}
+	current.shown = false;
+	sidepanel.open({ title: "Loan payoff", bodyNode: current.node, key: PANEL_KEY });
+}
+
+/** True once the panel was shown and then closed, or another feature took its place. */
+export function panelWasClosed(): boolean {
+	if (!current) {
+		return false;
+	}
+	if (current.node.isConnected) {
+		current.shown = true;
+	}
+	return current.shown && !current.node.isConnected;
+}
+
+export function closePanel(): void {
+	sidepanel.close(PANEL_KEY);
+	destroyPanel();
+}
+
+export function destroyPanel(): void {
+	if (!current) {
+		return;
+	}
+	current.destroy();
+	current = null;
+}

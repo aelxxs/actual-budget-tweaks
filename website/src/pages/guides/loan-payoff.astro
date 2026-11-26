@@ -1,0 +1,131 @@
+---
+import Base from "../../layouts/Base.astro";
+import "../../styles/docs.css";
+---
+
+<Base
+	title="Loan payoff | Actual Budget Tweaks"
+	description="See when a loan or line of credit is paid off and what it costs, in Actual Budget Tweaks."
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/guides" class="docs__back">Back to guides</a>
+			<h1>Loan payoff</h1>
+			<p class="docs__lead">
+				Loan payoff works out when a loan, mortgage or line of credit is paid off and how much
+				interest it costs on the way. Actual keeps the balance; you tell the panel the rate and
+				the payment.
+			</p>
+		</header>
+
+		<section class="docs__section">
+			<h2>Setting up a loan</h2>
+			<p>Turn on Loan payoff in the Features section of Tweaks, then:</p>
+			<ol>
+				<li>Open an account that owes money and click <strong>Payoff</strong> in its toolbar.</li>
+				<li>Enter the annual rate and your monthly payment.</li>
+				<li>
+					Pick how interest is charged: <strong>Daily</strong> on each day's balance, as credit
+					cards and lines of credit do, or <strong>Monthly</strong> as a twelfth of the yearly
+					rate, as mortgages and car loans do.
+				</li>
+				<li>Enter the days of the month the interest posts and the payment lands.</li>
+				<li>Click <strong>Save and see payoff</strong>.</li>
+			</ol>
+			<p>
+				Once saved, the account shows when it will be paid off beside its balance, and the details
+				fold away into <strong>Loan settings</strong>, where you can change or remove them. Both
+				the panel and the figure beside the balance follow the account as transactions are added.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Reading the plan</h2>
+			<ul>
+				<li>
+					<strong>Paid off by</strong> is the month of the last payment, with how long that is from
+					now and the interest still to come.
+				</li>
+				<li>
+					The bar shows how far the debt has come down from the most it's been since the account
+					last owed nothing. On a line of credit you borrow from again, it starts over from there.
+				</li>
+				<li>
+					The chart shows what you owed over the past year and what you'll owe each month until it
+					reaches zero.
+				</li>
+				<li>
+					<strong>Next payment</strong> splits your next payment into what goes to the principal
+					and what goes to interest.
+				</li>
+			</ul>
+		</section>
+
+		<section class="docs__section">
+			<h2>Trying out changes</h2>
+			<p>
+				<strong>Try a change</strong> runs the saved plan with something different, and shows
+				beside the payoff month how much sooner it finishes and what it does to the interest:
+			</p>
+			<ul>
+				<li>
+					<strong>Payment</strong> slides the monthly payment up or down. Type in the box beside it
+					for an exact amount.
+				</li>
+				<li>
+					<strong>Finish by</strong> takes a month and sets the payment that clears the debt by
+					then.
+				</li>
+				<li>
+					<strong>Extra payments</strong> adds one-off payments. They are for trying out and
+					aren't saved.
+				</li>
+			</ul>
+			<p>
+				Nothing changes the saved plan until you click <strong>Use this plan</strong>, which saves
+				the payment you tried. <strong>Reset</strong> goes back to the plan.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Interest that hasn't been posted</h2>
+			<p>
+				Enter the payee your lender's interest charges are posted under as the
+				<strong>Interest payee</strong> in Loan settings. The panel then knows when interest was
+				last charged, and works out the next charge from the balance on each day since.
+			</p>
+			<p>
+				If an interest day has passed and the charge isn't in the account, it's listed under the
+				chart, and <strong>Add</strong> enters it as an uncleared transaction, which you can undo
+				from the notification.
+			</p>
+			<p>
+				The rate isn't checked against what the lender charges, so update it in Loan settings when
+				a variable rate changes.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>Where the settings are kept</h2>
+			<p>
+				Each loan's details are kept with Tweaks' other settings for the budget. They sync with
+				the budget, so they follow you to another device with Tweaks installed, and they are part
+				of a settings backup. <strong>Remove loan details</strong> in Loan settings forgets them
+				for that account.
+			</p>
+			<p>
+				Nothing is written to the account itself, apart from an interest transaction when you
+				click <strong>Add</strong>.
+			</p>
+		</section>
+
+		<section class="docs__section">
+			<h2>What it assumes</h2>
+			<ul>
+				<li>One rate and one payment from today onward, and no new borrowing.</li>
+				<li>The payment is the same every month, not a share of the balance.</li>
+				<li>Lenders round and count days in their own ways, so expect small differences.</li>
+			</ul>
+		</section>
+	</main>
+</Base>

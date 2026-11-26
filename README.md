@@ -58,6 +58,7 @@ Adds optional themes, layout controls and workflow tools to Actual Budget. Each 
 - **Budget Insights:** a side panel showing where this month stands, how ready next month is, and priority planning.
 - **Spending Calendar:** daily spending and upcoming schedules on a month calendar.
 - **Reconcile panel and Sync recap:** reconcile in a side panel, and review and categorize what a bank sync brought in.
+- **Loan payoff:** when a debt clears and what it costs, with what-if payments and the next payment split into principal and interest.
 - **Privacy styles:** hide amounts as scribbles or dots, at their real length or a fixed one.
 
 [See all features →](https://abt.alexis.lol/#features)

@@ -58,6 +58,8 @@ const BUDGET_SCOPED: BudgetScoped[] = [
 	perBudgetKey("summary-slots", true),
 	// Imports waiting for review: the budget's work, so shared by everyone who opens it.
 	perBudgetKey("sync-recap-queue"),
+	// Each loan's rate and payment: about the budget's accounts, so shared the same way.
+	perBudgetKey("loan-payoff-plans"),
 	{
 		// One map here for every budget; each budget keeps only its own icon, null once removed.
 		remote: "budget-icon",

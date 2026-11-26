@@ -1,9 +1,8 @@
 import { defineSetting } from "@features/types";
 import { navigate } from "@lib/actual/actual-api";
-import { UUID } from "@lib/ids";
 import { watchDom } from "@lib/dom/dom-watcher";
 import { findAccountToolbar } from "@lib/actual/native-ui";
-import { getCurrentPath } from "@lib/dom/route-watcher";
+import { currentAccountId } from "@lib/actual/pages";
 import { type Mounted, mountToNodeWithReturn } from "@lib/dom/svelte";
 import { NATIVE_LOCK } from "./dom";
 import { closePanel, destroyPanel, openPanel, panelWasClosed } from "./panel";
@@ -17,7 +16,6 @@ import { cancel, reconcile } from "./state.svelte";
 const OURS = "data-abt-reconcile";
 // Marked in JS: a `div:has(<lock path>)` rule made every div on the page search its subtree.
 const HIDDEN_LOCK = "data-abt-native-lock";
-const ACCOUNT_PATH = new RegExp(`^/accounts/(${UUID})`);
 
 const CSS = `
 	[${HIDDEN_LOCK}] {
@@ -29,10 +27,6 @@ let mounted: (Mounted & { accountId: string }) | null = null;
 let hiddenLock: Element | null = null;
 // Asked for from elsewhere: the panel waits for the button, since arriving at an account closes it.
 let requested: string | null = null;
-
-export function currentAccountId(): string | null {
-	return getCurrentPath().match(ACCOUNT_PATH)?.[1] ?? null;
-}
 
 /** Goes to the account and opens its reconcile panel. */
 export function reconcileAccount(accountId: string): void {
