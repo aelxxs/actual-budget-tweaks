@@ -66,6 +66,10 @@ function parseChangelog(md: string, count: number): Release[] {
 }
 
 const releases = parseChangelog(raw, 3);
+
+// The first few by name, the rest as a count, so the line stays one sentence.
+const credit = contributors.slice(0, 3);
+const others = contributors.length - credit.length;
 const base = import.meta.env.BASE_URL;
 ---
 
@@ -99,18 +103,19 @@ const base = import.meta.env.BASE_URL;
 		<div class="community__grid" data-reveal>
 			<div class="community__col">
 				<span class="tag">Contributors</span>
-				<div class="contributors__list">
-					{contributors.map(c => (
-						<a href={c.html_url} target="_blank" rel="noopener" class="contributor" title={c.login}>
-							<img src={c.avatar_url} alt={c.login} width="44" height="44" loading="lazy" />
-							<span>{c.login}</span>
+				<div class="pile">
+					{contributors.map((c) => (
+						<a href={c.html_url} target="_blank" rel="noopener" class="pile__face" data-name={c.login} aria-label={c.login}>
+							<img src={c.avatar_url} alt="" width="56" height="56" loading="lazy" />
 						</a>
 					))}
-					<a href="https://github.com/aelxxs/actual-budget-tweaks" target="_blank" rel="noopener" class="contributor contributor--you" title="Contribute">
-						<span class="contributor__plus">+</span>
-						<span>You?</span>
-					</a>
+					<a href="https://github.com/aelxxs/actual-budget-tweaks/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" class="pile__face pile__you" data-name="You?" aria-label="Contribute a tweak">+</a>
 				</div>
+				{credit.length > 0 && (
+					<p class="pile__credit">
+						{credit.map((c, i) => [i === 0 ? "" : i === credit.length - 1 && others === 0 ? " and " : ", ", <a href={c.html_url} target="_blank" rel="noopener">{c.login}</a>])}{others > 0 ? ` and ${others} ${others === 1 ? "other" : "others"}` : ""} helped build ABT.
+					</p>
+				)}
 			</div>
 
 			<div class="community__col">
@@ -209,64 +214,101 @@ const base = import.meta.env.BASE_URL;
 	}
 
 	/* ── Contributors ── */
-	.contributors__list {
+	/* Overlapping avatars, each cut out of the page with a ring, lifting on hover with its name. */
+	.pile {
 		display: flex;
-		gap: 1rem;
-		flex-wrap: wrap;
+		padding-block: 1.75rem 0.25rem;
+		padding-inline-start: 14px;
 	}
 
-	.contributor {
+	.pile__face {
+		position: relative;
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		gap: 0.35rem;
+		justify-content: center;
+		inline-size: 56px;
+		block-size: 56px;
+		margin-inline-start: -14px;
+		border-radius: 50%;
+		border: 3px solid var(--bg);
+		background: var(--bg-alt);
 		text-decoration: none;
 		transition: translate 0.2s;
 	}
 
-	.contributor:hover {
-		translate: 0 -3px;
+	.pile__face img {
+		inline-size: 100%;
+		block-size: 100%;
+		border-radius: 50%;
 	}
 
-	.contributor img {
+	.pile__face:hover,
+	.pile__face:focus-visible {
+		z-index: 1;
+		translate: 0 -4px;
+	}
+
+	.pile__face::after {
+		content: attr(data-name);
+		position: absolute;
+		inset-block-end: calc(100% + 8px);
+		inset-inline-start: 50%;
+		translate: -50% 4px;
+		padding: 0.2rem 0.5rem;
+		border-radius: var(--radius-sm);
+		background: var(--text);
+		color: var(--bg);
+		font-family: var(--mono);
+		font-size: 0.75rem;
+		white-space: nowrap;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.15s, translate 0.15s;
+	}
+
+	.pile__face:hover::after,
+	.pile__face:focus-visible::after {
+		opacity: 1;
+		translate: -50% 0;
+	}
+
+	/* Overlaps and rings like the avatars, with the dashed outline drawn inside the ring. */
+	.pile__you {
+		background: var(--bg);
+		color: var(--text-tertiary);
+		font-size: 1.3rem;
+	}
+
+	.pile__you::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border: 2px dashed var(--border-strong);
 		border-radius: 50%;
-		border: 2px solid var(--border);
 		transition: border-color 0.2s;
 	}
 
-	.contributor:hover img {
-		border-color: var(--accent);
-	}
-
-	.contributor span {
-		font-size: 0.8rem;
-		color: var(--text-secondary);
-		font-family: var(--mono);
-	}
-
-	.contributor:hover span {
+	.pile__you:hover {
 		color: var(--accent);
 	}
 
-	.contributor--you {
-		opacity: 0.5;
-		transition: opacity 0.2s, translate 0.2s;
+	.pile__you:hover::before {
+		border-color: var(--accent);
 	}
 
-	.contributor--you:hover {
-		opacity: 1;
+	.pile__credit {
+		margin-block-start: 1rem;
+		font-size: 0.9rem;
+		color: var(--text-secondary);
 	}
 
-	.contributor__plus {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		inline-size: 44px;
-		block-size: 44px;
-		border-radius: 50%;
-		border: 2px dashed var(--border-strong);
-		font-size: 1.2rem;
-		color: var(--text-tertiary);
+	.pile__credit a {
+		color: var(--text);
+		font-weight: 500;
+	}
+
+	.pile__credit a:hover {
+		color: var(--accent);
 	}
 
 	/* ── What's new timeline ── */
