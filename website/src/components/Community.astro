@@ -3,7 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 const res = await fetch("https://api.github.com/repos/aelxxs/actual-budget-tweaks/contributors");
-const contributors: { login: string; avatar_url: string; html_url: string }[] = res.ok ? await res.json() : [];
+// The release workflow commits as github-actions[bot], which isn't anyone to credit.
+const contributors: { login: string; avatar_url: string; html_url: string; type: string }[] = (
+	res.ok ? await res.json() : []
+).filter((c: { type: string }) => c.type !== "Bot");
 
 const raw = fs.readFileSync(path.resolve("../CHANGELOG.md"), "utf-8");
 
@@ -16,7 +19,12 @@ interface Release {
 	version: string;
 	compareUrl: string;
 	changes: Change[];
+	/** The rest of the release's features and fixes, past the ones shown. */
+	more: number;
 }
+
+// A few lines per release keep the column level with the contributors beside it.
+const SHOWN = 4;
 
 function parseChangelog(md: string, count: number): Release[] {
 	const releases: Release[] = [];
@@ -48,7 +56,9 @@ function parseChangelog(md: string, count: number): Release[] {
 		}
 
 		if (changes.length > 0) {
-			releases.push({ version, compareUrl, changes });
+			const features = changes.filter((c) => c.type === "enhancement");
+			const lead = (features.length ? features : changes).slice(0, SHOWN);
+			releases.push({ version, compareUrl, changes: lead, more: changes.length - lead.length });
 		}
 	}
 
@@ -56,6 +66,7 @@ function parseChangelog(md: string, count: number): Release[] {
 }
 
 const releases = parseChangelog(raw, 3);
+const base = import.meta.env.BASE_URL;
 ---
 
 <section class="community" data-reveal>
@@ -100,7 +111,7 @@ const releases = parseChangelog(raw, 3);
 			<div class="community__col">
 				<span class="tag">Latest releases</span>
 				<div class="wn__timeline">
-					{releases.map(r => (
+					{releases.map((r, i) => (
 						<div class="wn-release">
 							<div class="wn-release__marker"></div>
 							<div class="wn-release__content">
@@ -113,13 +124,26 @@ const releases = parseChangelog(raw, 3);
 										</li>
 									))}
 								</ul>
+								{r.more > 0 && (
+									<a
+										href={i === 0 ? `${base}latest` : `https://github.com/aelxxs/actual-budget-tweaks/releases/tag/${r.version}`}
+										target={i === 0 ? undefined : "_blank"}
+										rel={i === 0 ? undefined : "noopener"}
+										class="wn-release__more"
+									>
+										and {r.more} more {r.more === 1 ? "change" : "changes"}
+									</a>
+								)}
 							</div>
 						</div>
 					))}
 				</div>
-				<a href="https://github.com/aelxxs/actual-budget-tweaks/releases" target="_blank" rel="noopener" class="wn__all">
-					View all releases
-				</a>
+				<div class="cluster wn__links" style="--cluster-gap:1.25rem">
+					<a href={`${base}latest`} class="wn__all">What's new</a>
+					<a href="https://github.com/aelxxs/actual-budget-tweaks/releases" target="_blank" rel="noopener" class="wn__all">
+						All releases
+					</a>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -304,12 +328,25 @@ const releases = parseChangelog(raw, 3);
 	.wn-dot--enhancement { background: var(--color-pos); }
 	.wn-dot--fix { background: var(--accent); }
 
-	.wn__all {
-		display: inline-block;
+	.wn__links {
 		margin-block-start: 1rem;
+		padding-inline-start: 20px;
+	}
+
+	.wn__all {
 		font-size: 0.82rem;
 		font-weight: 500;
-		padding-inline-start: 20px;
+	}
+
+	.wn-release__more {
+		display: inline-block;
+		margin-block-start: 0.35rem;
+		font-size: 0.82rem;
+		color: var(--text-tertiary);
+	}
+
+	.wn-release__more:hover {
+		color: var(--accent);
 	}
 
 	@media (max-width: 768px) {
