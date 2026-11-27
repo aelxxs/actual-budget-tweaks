@@ -8,7 +8,8 @@ import { chromium } from "@playwright/test";
  * Regenerates the guide screenshots: a throwaway Actual behind the sidecar, a seeded demo budget at
  * a fixed date, then each shot driven and annotated. Needs Docker and `pnpm build`.
  *
- * `--home` makes the home page's hero comparison instead, and `--readme` the README's screenshots.
+ * `--home` makes the home page's hero comparison instead, `--readme` the README's screenshots, and
+ * `--store` the Chrome Web Store's (exactly 1280×800, into store/).
  * `--export [file.zip]` saves the README's budget, with its account icons and sidebar shortcuts, for
  * Actual's Import file > Actual, and takes no shots.
  */
@@ -23,6 +24,7 @@ const IMAGE = `actualbudget/actual-server:${process.env.ACTUAL_TAG ?? "latest"}`
 const PASSWORD = "abt-docs-shots";
 const HERO = resolve(ROOT, "website/public/images");
 const README_IMAGES = resolve(ROOT, "images");
+const STORE_IMAGES = resolve(ROOT, "store");
 const TODAY = "2026-06-24";
 const BUDGET_TABLE = '[data-testid="budget-table"]';
 const INSIGHTS_TABS = "[data-abt-side-drawer-sidebar] .abt-tabs__tab";
@@ -908,6 +910,212 @@ async function readmeShots(page, seeded) {
 	await snap("calendar-light");
 }
 
+/** The store's screenshots: at its one size, in Daylight, one page or panel each. */
+async function storeShots(page) {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	mkdirSync(STORE_IMAGES, { recursive: true });
+	const input = page.locator(".cp-input");
+	const hideAlerts = () =>
+		page.addStyleTag({ content: '[role="alert"] { display: none !important; }' });
+	const budget = async () => {
+		await page.goto(`${BASE}/budget`);
+		await page.locator(BUDGET_TABLE).waitFor();
+		await dismissWelcome(page);
+		await hideAlerts();
+		await page.waitForTimeout(1500);
+	};
+	const run = async (command, ready) => {
+		await page.keyboard.press("Control+k");
+		await input.fill(command);
+		await page.keyboard.press("Enter");
+		await page.locator(ready).first().waitFor();
+	};
+	const snap = async (name) => {
+		await page.mouse.move(640, 10);
+		await page.waitForTimeout(2500);
+		const path = resolve(STORE_IMAGES, `${name}.png`);
+		await page.screenshot({ path });
+		console.log(`wrote ${path}`);
+	};
+
+	// With a panel open, the full sidebar leaves too little room for the summary cards in a row.
+	const collapse = (on) =>
+		page.evaluate((on) => localStorage.setItem("abt-sidebar-collapsed", String(on)), on);
+	await collapse(true);
+	await budget();
+	await run("insights", INSIGHTS_TABS);
+	await snap("1-budget");
+	await collapse(false);
+
+	await budget();
+	await run("spending calendar", ".cal-page");
+	await snap("2-calendar");
+
+	await run("graph", ".gv");
+	await snap("3-graph");
+
+	await collapse(true);
+	await budget();
+	await run("create theme", ".studio");
+	// The studio starts from Midnight; the store is shown in Daylight throughout.
+	await page.locator('.studio .preset[title="Start from Daylight"]').click();
+	await snap("4-theme-studio");
+	await collapse(false);
+
+	await page.goto(`${BASE}/settings/general#tweaks`);
+	await page.locator(".settings-page").waitFor();
+	await hideAlerts();
+	await snap("5-tweaks");
+
+	await promoTiles(page);
+}
+
+/** The store's promo tiles: real cards from the budget in Daylight, at double resolution. */
+async function promoTiles(page) {
+	const icon = readFileSync(resolve(ROOT, "public/icon.svg"), "utf8");
+
+	await page.evaluate(() => localStorage.setItem("abt-sidebar-collapsed", "true"));
+	await page.goto(`${BASE}/budget`);
+	await page.locator(BUDGET_TABLE).waitFor();
+	await page.addStyleTag({ content: '[role="alert"] { display: none !important; }' });
+	await page.keyboard.press("Control+k");
+	await page.locator(".cp-input").fill("insights");
+	await page.keyboard.press("Enter");
+	await page.locator('.abt-card-slot[data-card="trend"]').waitFor();
+	await page.mouse.move(640, 10);
+	await page.waitForTimeout(3000);
+
+	const colors = await page.evaluate(() => {
+		const style = getComputedStyle(document.documentElement);
+		const read = (name) => style.getPropertyValue(name).trim();
+		return {
+			ink: read("--color-pageText"),
+			accent: read("--color-sidebarItemAccentSelected"),
+			muted: read("--color-pageTextSubdued"),
+		};
+	});
+
+	// Sharp when shown at their own size or a little larger.
+	const cdp = await page.context().newCDPSession(page);
+	await cdp.send("Emulation.setDeviceMetricsOverride", {
+		width: 1280,
+		height: 800,
+		deviceScaleFactor: 2,
+		mobile: false,
+	});
+	await page.waitForTimeout(1000);
+	const crop = async (selector, hasText) => {
+		const el = page.locator(selector, hasText ? { hasText } : {}).first();
+		const { width, height } = await el.boundingBox();
+		const data = (await el.screenshot()).toString("base64");
+		return { ratio: height / width, src: `data:image/png;base64,${data}` };
+	};
+	const cards = {
+		toBudget: await crop("[data-abt-to-budget-note]"),
+		spent: await crop(".sr__card", /spent/i),
+		ahead: await crop(".sr__card", /next month|covered/i),
+		// The cards alone: their headings would bring the panel's background with them.
+		month: await crop('.abt-card-slot[data-card="this-month"] .card'),
+		trend: await crop('.abt-card-slot[data-card="trend"] .card'),
+	};
+	await cdp.send("Emulation.clearDeviceMetricsOverride");
+	await cdp.detach();
+	const img = ({ src }, width) => `<img src="${src}" style="width:${width}px">`;
+
+	// Two columns ending on the same line: the summary cards share one width, sized to match the
+	// height of the Insights cards beside them.
+	const GAP = 18;
+	const right = 440;
+	const height = right * (cards.month.ratio + cards.trend.ratio) + GAP;
+	const left = (height - GAP * 2) / (cards.toBudget.ratio + cards.spent.ratio + cards.ahead.ratio);
+
+	const base = `
+		* { box-sizing: border-box; margin: 0; }
+		html, body { width: 100%; height: 100%; }
+		body {
+			display: flex; align-items: center; overflow: hidden;
+			/* Darker than the cards, so they stand out when the tile is shown small. */
+			background: color-mix(in srgb, ${colors.accent} 9%, #d9dce3); color: ${colors.ink};
+			font-family: -apple-system, system-ui, sans-serif;
+		}
+		.icon svg { display: block; width: 100%; height: 100%; }
+		.for { color: ${colors.accent}; font-weight: 500; }
+		.name { font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+		.muted { color: ${colors.muted}; }
+		img {
+			display: block; border-radius: 10px;
+			box-shadow: 0 6px 20px rgba(30, 25, 60, 0.12), 0 1px 3px rgba(30, 25, 60, 0.1);
+		}
+	`;
+	const tile = async (name, width, height, html) => {
+		await page.setViewportSize({ width, height });
+		await page.setContent(`<style>${base}</style>${html}`);
+		await page.waitForTimeout(300);
+		const path = resolve(STORE_IMAGES, `${name}.png`);
+		await page.screenshot({ path });
+		console.log(`wrote ${path}`);
+	};
+
+	await tile(
+		"promo-marquee",
+		1400,
+		560,
+		`<style>
+			body { padding-left: 88px; gap: 56px; }
+			.text { flex: 0 0 420px; }
+			.icon { width: 88px; height: 88px; margin-bottom: 36px; }
+			.for { font-size: 26px; margin-bottom: 6px; }
+			.name { font-size: 78px; margin-bottom: 22px; }
+			.line { font-size: 24px; line-height: 1.35; margin-bottom: 28px; }
+			.small { font-size: 16px; }
+			.cards { display: flex; gap: ${GAP}px; }
+			.col { display: flex; flex-direction: column; gap: ${GAP}px; }
+		</style>
+		<div class="text">
+			<div class="icon">${icon}</div>
+			<div class="for">Actual Budget</div>
+			<div class="name">Tweaks</div>
+			<div class="line">Themes, insights and a redesigned budget page</div>
+			<div class="small muted">Unofficial · works with your Actual server</div>
+		</div>
+		<div class="cards">
+			<div class="col">
+				${img(cards.toBudget, left)}${img(cards.spent, left)}${img(cards.ahead, left)}
+			</div>
+			<div class="col">${img(cards.month, right)}${img(cards.trend, right)}</div>
+		</div>`,
+	);
+
+	await tile(
+		"promo-small",
+		440,
+		280,
+		`<style>
+			body { padding-left: 32px; gap: 24px; }
+			.text { flex: 0 0 168px; }
+			.icon { width: 64px; height: 64px; margin-bottom: 18px; }
+			.for { font-size: 16px; margin-bottom: 4px; }
+			.name { font-size: 44px; }
+			/* From the top edge down, running off the bottom rather than the top. */
+			.cards { display: flex; flex-direction: column; gap: 12px; align-self: flex-start; padding-top: 28px; }
+		</style>
+		<div class="text">
+			<div class="icon">${icon}</div>
+			<div class="for">Actual Budget</div>
+			<div class="name">Tweaks</div>
+		</div>
+		<div class="cards">${img(cards.toBudget, 240)}${img(cards.trend, 240)}</div>`,
+	);
+}
+
+/** The savings budget left unassigned, which Months ahead counts towards the months after June. */
+async function fundAhead(page, { categoryIds }) {
+	await page.evaluate(
+		(category) => window.$send("budget/budget-amount", { month: "2025-12", category, amount: 0 }),
+		categoryIds.Savings,
+	);
+}
+
 /** Enough left in savings for every template, so the hero isn't a month of overspending. */
 async function fundJune(page, { categoryIds }) {
 	const send = (name, args) =>
@@ -924,6 +1132,7 @@ async function fundJune(page, { categoryIds }) {
 
 const home = process.argv.includes("--home");
 const readme = process.argv.includes("--readme");
+const store = process.argv.includes("--store");
 const exportAt = process.argv.indexOf("--export");
 const exportPath =
 	exportAt === -1
@@ -938,7 +1147,8 @@ const browser = await chromium.launch();
 try {
 	const context = await browser.newContext({
 		viewport: { width: 1400, height: 860 },
-		deviceScaleFactor: 2,
+		// The store takes its exact size in pixels, not a sharper double.
+		deviceScaleFactor: store ? 1 : 2,
 		colorScheme: "light",
 		// A service worker's requests would get past the route that blocks ABT's files.
 		serviceWorkers: home ? "block" : "allow",
@@ -1016,15 +1226,18 @@ async function exportBudget(page, path) {
 }
 
 async function shoot(page, seeded) {
-	if (home || readme) {
+	if (home || readme || store) {
 		await fundJune(page, seeded);
+	}
+	if (store) {
+		await fundAhead(page, seeded);
 	}
 	// The guides keep Insights' default cards: their overview shows the automations strip.
 	await applySettings(
 		page,
 		seeded,
-		readme ? README_SETTINGS : home ? HOME_SETTINGS : SETTINGS,
-		readme || home ? DEMO.budgetScoped : {},
+		readme ? README_SETTINGS : home || store ? HOME_SETTINGS : SETTINGS,
+		readme || home || store ? DEMO.budgetScoped : {},
 	);
 	await page.reload();
 	await page.waitForFunction(() => typeof window.$send === "function");
@@ -1033,6 +1246,8 @@ async function shoot(page, seeded) {
 		await heroShots(page);
 	} else if (readme) {
 		await readmeShots(page, seeded);
+	} else if (store) {
+		await storeShots(page);
 	} else {
 		await reconcileShot(page, seeded);
 		await paletteShots(page);

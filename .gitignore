@@ -37,3 +37,4 @@ sidebar-test/*
 # Playwright smoke test output
 playwright-report/
 test-results/
+store/
