@@ -323,13 +323,31 @@ test("ABT on every page", async ({ page }) => {
 		await expect.soft(headline).toHaveText(plan);
 
 		// A month sooner than the plan takes a higher payment.
-		const month = panel.getByLabel("Finish by: month");
-		const year = panel.getByLabel("Finish by: year");
-		const [m, y] = [Number(await month.inputValue()), Number(await year.inputValue())];
-		if (m === 1) {
-			await year.selectOption(String(y - 1));
+		const finishBy = panel.getByRole("button", { name: /^Finish by: / });
+		const [name] = (await finishBy.getAttribute("aria-label"))!
+			.replace("Finish by: ", "")
+			.split(" ");
+		const months = [
+			"Jan",
+			"Feb",
+			"Mar",
+			"Apr",
+			"May",
+			"Jun",
+			"Jul",
+			"Aug",
+			"Sep",
+			"Oct",
+			"Nov",
+			"Dec",
+		];
+		const m = months.indexOf(name.slice(0, 3));
+		await finishBy.click();
+		const picker = page.getByRole("dialog", { name: "Jump to month" });
+		if (m === 0) {
+			await picker.getByRole("button", { name: "Previous year" }).click();
 		}
-		await month.selectOption(String(m === 1 ? 12 : m - 1).padStart(2, "0"));
+		await picker.getByRole("button", { name: months[(m + 11) % 12], exact: true }).click();
 		await expect.soft(delta.first(), "finishing by an earlier month").toContainText("1m sooner");
 		await expect.soft(usePlan).toBeEnabled();
 		await panel.getByRole("button", { name: "Reset" }).click();
