@@ -32,7 +32,8 @@ export default defineConfig({
 	modules: ["@wxt-dev/module-svelte"],
 	manifest: {
 		name: "Actual Budget – Tweaks",
-		description: "",
+		description:
+			"Tweaks for Actual Budget: an insights panel, a spending calendar, guided reconciling, new themes and a redesigned sidebar.",
 		permissions: ["storage", "tabs"],
 		browser_specific_settings: {
 			gecko: geckoSettings,
