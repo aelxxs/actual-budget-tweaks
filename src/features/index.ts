@@ -57,6 +57,7 @@ import { incomeBreakdown } from "./workflows/income-breakdown";
 import { keyboardShortcuts } from "./workflows/keyboard-shortcuts";
 import { loanPayoff } from "./workflows/loan-payoff";
 import { modernReconcile } from "./workflows/reconcile";
+import { scheduledDateOrder } from "./workflows/scheduled-date-order";
 import { experimentalSidebar, experimentalSidebarLayout } from "./workflows/sidebar";
 import { customizeSidebarEntry } from "./workflows/sidebar/customize-entry";
 import { liveSidebarNotice } from "./workflows/sidebar/notice";
@@ -181,6 +182,7 @@ export const scriptSections: SettingsSection[] = [
 				items: [
 					alternatingTransactionRows,
 					rowStatus,
+					scheduledDateOrder,
 					tagStyling,
 					resizableTransactionColumns,
 					showDailyAvailable,
