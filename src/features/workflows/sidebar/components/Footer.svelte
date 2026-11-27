@@ -17,6 +17,8 @@
 
 	/** Oldest linked account's last sync, read live from Actual, never stored. */
 	let lastSync = $state<number | null>(null);
+	// The hint's clock, moved on hover rather than by a timer, so "5m ago" doesn't freeze.
+	let now = $state(Date.now());
 
 	async function loadLastSync() {
 		const ids = linked.map((a) => a.id);
@@ -42,8 +44,16 @@
 		}
 	});
 
+	// Actual's automatic sync, or another device, can sync without this sidebar seeing it.
+	function refreshHint() {
+		now = Date.now();
+		if (!syncing) {
+			void loadLastSync();
+		}
+	}
+
 	function ago(time: number): string {
-		const mins = Math.round((Date.now() - time) / 60000);
+		const mins = Math.round((now - time) / 60000);
 		if (mins < 1) {
 			return "just now";
 		}
@@ -108,6 +118,8 @@
 				disabled={syncing}
 				aria-label={syncTip}
 				use:tooltip={{ text: syncTip, hint: syncHint, placement: "top" }}
+				onpointerenter={refreshHint}
+				onfocus={refreshHint}
 				onclick={sync}
 			>
 				<RefreshCw strokeWidth={1.8} />
