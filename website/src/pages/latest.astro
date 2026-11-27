@@ -1,0 +1,137 @@
+---
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import Base from "../layouts/Base.astro";
+import "../styles/docs.css";
+
+const REPO = "aelxxs/actual-budget-tweaks";
+
+// The newest version in the changelog changelogen writes on each release; the site redeploys after.
+const changelog = readFileSync(resolve(process.cwd(), "../CHANGELOG.md"), "utf8");
+const latest = changelog.split(/^## /m)[1] ?? "";
+const version = latest.split("\n")[0].trim();
+
+// Only what someone using ABT would notice; refactors, chores and the contributor list stay out.
+const SHOWN = [
+	{ match: "Enhancements", title: "New" },
+	{ match: "Fixes", title: "Fixes" },
+	{ match: "Styles", title: "Polish" },
+];
+
+const escape = (text: string) =>
+	text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const sections = latest
+	.split(/^### /m)
+	.slice(1)
+	.map((block) => {
+		const [heading, ...lines] = block.split("\n");
+		const kind = SHOWN.find((s) => heading.includes(s.match));
+		const items = lines
+			.filter((line) => line.startsWith("- "))
+			.map((line) =>
+				line
+					.slice(2)
+					.replace(/(\s*\(\[[0-9a-f]{7,}\]\([^)]+\)\))+\s*$/, "")
+					.replace(/^\*\*[^*]+:\*\*\s*/, ""),
+			)
+			.map((item) => escape(item).replace(/`([^`]+)`/g, "<code>$1</code>"));
+		return kind && items.length ? { title: kind.title, items } : null;
+	})
+	.filter((s): s is { title: string; items: string[] } => s !== null);
+
+// New in full; fixes and polish behind one line, so a long release still reads short.
+const shown = sections.filter((s) => s.title === "New");
+const folded = sections.filter((s) => s.title !== "New");
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const foldedLabel = folded
+	.map((s) =>
+		s.title === "Fixes"
+			? plural(s.items.length, "fix", "fixes")
+			: plural(s.items.length, "polish change", "polish changes"),
+	)
+	.join(" and ");
+
+// The release date isn't in the changelog, and the deploy's checkout has no tags to read it from.
+let date: string | null = null;
+try {
+	const res = await fetch(`https://api.github.com/repos/${REPO}/releases/tags/${version}`);
+	if (res.ok) {
+		const { published_at } = await res.json();
+		date = new Date(published_at).toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		});
+	}
+} catch {
+	// Shown without a date.
+}
+---
+
+<Base
+	title={`What's new in ${version} | Actual Budget Tweaks`}
+	description={`What changed in Actual Budget Tweaks ${version}.`}
+>
+	<main class="docs center">
+		<header class="docs__header stack stack--sm">
+			<a href="/" class="docs__back">Back to home</a>
+			<h1>What's new in {version}</h1>
+			{date && <p class="docs__lead">Released {date}</p>}
+		</header>
+
+		{
+			shown.map((section) => (
+				<section class="docs__section">
+					<h2>{section.title}</h2>
+					<ul>
+						{section.items.map((item) => (
+							<li set:html={item} />
+						))}
+					</ul>
+				</section>
+			))
+		}
+
+		{
+			folded.length > 0 && (
+				<details class="docs__section more">
+					<summary>Show {foldedLabel}</summary>
+					{folded.map((section) => (
+						<section>
+							<h2>{section.title}</h2>
+							<ul>
+								{section.items.map((item) => (
+									<li set:html={item} />
+								))}
+							</ul>
+						</section>
+					))}
+				</details>
+			)
+		}
+
+		<section class="docs__section">
+			<p>
+				<a href={`https://github.com/${REPO}/releases`} target="_blank" rel="noopener"
+					>Earlier versions on GitHub</a
+				>
+			</p>
+		</section>
+	</main>
+</Base>
+
+<style>
+	.more summary {
+		width: fit-content;
+		color: var(--accent);
+		font-weight: 500;
+		cursor: pointer;
+	}
+	.more[open] summary {
+		margin-bottom: 1rem;
+	}
+	.more section + section {
+		margin-top: 1.5rem;
+	}
+</style>
