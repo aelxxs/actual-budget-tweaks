@@ -1,6 +1,122 @@
 # Changelog
 
 
+## v0.1.112
+
+[compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.111...v0.1.112)
+
+### 🚀 Enhancements
+
+- Show how old Reconcile's synced bank balance is, with Sync now once it's a day old, and say when the statement balance matches what's cleared ([09ed4a7](https://github.com/aelxxs/actual-budget-tweaks/commit/09ed4a7))
+- Option to hide the budget header's column totals when month cards show them ([fe35c64](https://github.com/aelxxs/actual-budget-tweaks/commit/fe35c64))
+- Pin a category group, an In categories card, Spent compared with last month, and a today mark on the pinned bar; cards fold their extras into three lines when narrow ([b11309d](https://github.com/aelxxs/actual-budget-tweaks/commit/b11309d))
+- Open ABT's Tweaks from the sidebar's settings menu, which now always opens ([30b9621](https://github.com/aelxxs/actual-budget-tweaks/commit/30b9621))
+- Pick a category icon from a curated set of line icons, drawn muted in the theme's colours ([0f2f187](https://github.com/aelxxs/actual-budget-tweaks/commit/0f2f187))
+- The sync recap's caught-up state shows when each bank account last synced, with a Sync now button ([3e3ca95](https://github.com/aelxxs/actual-budget-tweaks/commit/3e3ca95))
+- A Payoff panel on accounts that owe money, showing when the debt clears, what it costs and the payment a target month needs ([0f98a3a](https://github.com/aelxxs/actual-budget-tweaks/commit/0f98a3a))
+- Show where the saved payoff plan ends beside the account's balance ([268bb21](https://github.com/aelxxs/actual-budget-tweaks/commit/268bb21))
+- The payoff panel charts the balance down to zero and says what each alternative saves ([c3b58cf](https://github.com/aelxxs/actual-budget-tweaks/commit/c3b58cf))
+- Loan payoff follows new transactions, adds the interest that's due, lists every debt's payoff and can be removed from the note ([7047dce](https://github.com/aelxxs/actual-budget-tweaks/commit/7047dce))
+- The payoff chart leads in with the past year's balance, and the panel heads with the payoff date and interest to come ([97af884](https://github.com/aelxxs/actual-budget-tweaks/commit/97af884))
+- The payoff panel leads with the payoff date, tries changes in one card and folds the loan's settings away ([f6ee9e8](https://github.com/aelxxs/actual-budget-tweaks/commit/f6ee9e8))
+- The payoff panel shows how far the debt has come down and what the next payment is made of ([9dfc4d8](https://github.com/aelxxs/actual-budget-tweaks/commit/9dfc4d8))
+- Sync recap's account chips show each account's icon ([241569b](https://github.com/aelxxs/actual-budget-tweaks/commit/241569b))
+- Number field and slider primitives ([6e23078](https://github.com/aelxxs/actual-budget-tweaks/commit/6e23078))
+- Fields can show the budget's currency symbol and a unit inside them, used by the loan payoff panel ([686b975](https://github.com/aelxxs/actual-budget-tweaks/commit/686b975))
+- The Insights shortcut closes the panel when it's already open ([f7c40fa](https://github.com/aelxxs/actual-budget-tweaks/commit/f7c40fa))
+- The website has a What's new page for the latest release ([822c497](https://github.com/aelxxs/actual-budget-tweaks/commit/822c497))
+
+### 🩹 Fixes
+
+- Keep an imported settings file from being undone by the open budget, and keep ABT on this server when the file came from another ([0eaefb8](https://github.com/aelxxs/actual-budget-tweaks/commit/0eaefb8))
+- Give a sidebar of its own border lines firmed against its own background, so Theme Studio's Borders slider no longer turns a dark sidebar's lines near white ([10d1886](https://github.com/aelxxs/actual-budget-tweaks/commit/10d1886))
+- Keep tints visible on light palette themes, which had made the fill token a solid surface ([72563c0](https://github.com/aelxxs/actual-budget-tweaks/commit/72563c0))
+- Silence Svelte's stale-assignment warning in the category icons store ([2ddfc99](https://github.com/aelxxs/actual-budget-tweaks/commit/2ddfc99))
+- Restore the budget table header's bottom border, lost when the Borders setting moved into the base styles ([e429773](https://github.com/aelxxs/actual-budget-tweaks/commit/e429773))
+- Show how long ago an account synced in its hover card, which read Actual's millisecond timestamp as a date ([d5e1fcd](https://github.com/aelxxs/actual-budget-tweaks/commit/d5e1fcd))
+- Keep the payoff chart's legend still while hovering ([020545c](https://github.com/aelxxs/actual-budget-tweaks/commit/020545c))
+- Read every note for the debts list, as Actual's queries can't match part of an id ([064ebdf](https://github.com/aelxxs/actual-budget-tweaks/commit/064ebdf))
+- The payoff panel's footer says what state the note is in, removed included ([0e31bb2](https://github.com/aelxxs/actual-budget-tweaks/commit/0e31bb2))
+- The payoff panel's finish-by month starts ahead of the plan on a new loan too ([64cfe68](https://github.com/aelxxs/actual-budget-tweaks/commit/64cfe68))
+- Using the finish-by payment keeps its month, rather than moving ahead of the new plan ([5ca9948](https://github.com/aelxxs/actual-budget-tweaks/commit/5ca9948))
+- An input with a list of suggestions shows a dropdown arrow, not the date picker's calendar ([2e43396](https://github.com/aelxxs/actual-budget-tweaks/commit/2e43396))
+- The payoff panel shows the next payment the same way before the first one ([1c9ae5b](https://github.com/aelxxs/actual-budget-tweaks/commit/1c9ae5b))
+- The payoff panel's payment slider reaches ten times the payment ([7f08b54](https://github.com/aelxxs/actual-budget-tweaks/commit/7f08b54))
+- The payoff panel takes a typed payment, splits the one being tried and drops the repeated account name ([1c1ed6a](https://github.com/aelxxs/actual-budget-tweaks/commit/1c1ed6a))
+- A payoff plan counts the daily interest built up since the last posting ([ec70d7f](https://github.com/aelxxs/actual-budget-tweaks/commit/ec70d7f))
+- Loan settings say why the charged rate isn't shown yet ([42147f2](https://github.com/aelxxs/actual-budget-tweaks/commit/42147f2))
+- Loan payoff explains daily and monthly interest by the kinds of account that use them ([2408353](https://github.com/aelxxs/actual-budget-tweaks/commit/2408353))
+- The payoff chart's top figure stays put in privacy mode, the first card is inset like the rest, and any payee can be picked for interest ([73db604](https://github.com/aelxxs/actual-budget-tweaks/commit/73db604))
+- The payoff panel's figures keep their lines as a payment is tried ([562bff9](https://github.com/aelxxs/actual-budget-tweaks/commit/562bff9))
+- The payoff panel keeps room for what trying a change adds, so nothing moves when it appears ([fa705dd](https://github.com/aelxxs/actual-budget-tweaks/commit/fa705dd))
+- The collapsed accounts rail shows an emoji from the account's name instead of a broken character ([3817d55](https://github.com/aelxxs/actual-budget-tweaks/commit/3817d55))
+- A schedule paid on its due day no longer also shows as upcoming in the Spending Calendar ([d624573](https://github.com/aelxxs/actual-budget-tweaks/commit/d624573))
+- Insights' Coming up shows schedules with a range or approximate amount, as $40–$60 or ~$50 ([5800b15](https://github.com/aelxxs/actual-budget-tweaks/commit/5800b15))
+- Loan payoff no longer suggests the opening balance's payee as the one charging interest ([d753a8f](https://github.com/aelxxs/actual-budget-tweaks/commit/d753a8f))
+- The insights card settings menu closes when you switch tabs instead of staying stuck open ([20ba10b](https://github.com/aelxxs/actual-budget-tweaks/commit/20ba10b))
+- The sidebar's Last synced hint stays current, including syncs Actual ran on its own ([18ba318](https://github.com/aelxxs/actual-budget-tweaks/commit/18ba318))
+
+### 💅 Refactors
+
+- Drop the Large and Pill corner steps, which ABT's capped radius tokens made look like Rounder (now Large) ([fd6e602](https://github.com/aelxxs/actual-budget-tweaks/commit/fd6e602))
+- Fold the Borders setting into the base styles, where the borders replace Actual's shadows, and draw the top bar's line from the titlebar ([ecb6c27](https://github.com/aelxxs/actual-budget-tweaks/commit/ecb6c27))
+- Type component props on the destructured variable, as newer Svelte no longer takes a type argument on $props ([1703d4c](https://github.com/aelxxs/actual-budget-tweaks/commit/1703d4c))
+- Drop the payoff panel's list of every debt ([70392d2](https://github.com/aelxxs/actual-budget-tweaks/commit/70392d2))
+- Drop the payoff panel's check of the rate against interest charged ([a9d5983](https://github.com/aelxxs/actual-budget-tweaks/commit/a9d5983))
+- Loan payoff reads an account's ledger only where there's a plan, and drops what the reworked panel left unused ([8d69f98](https://github.com/aelxxs/actual-budget-tweaks/commit/8d69f98))
+- Loan payoff keeps each loan's settings with ABT's budget data, not in the account's note ([0cd22fc](https://github.com/aelxxs/actual-budget-tweaks/commit/0cd22fc))
+- CategoryPicker's searchable list becomes a general Picker ([80b5788](https://github.com/aelxxs/actual-budget-tweaks/commit/80b5788))
+
+### 🏡 Chore
+
+- Update Firefox auto-update manifest for v0.1.111 ([48a7cb7](https://github.com/aelxxs/actual-budget-tweaks/commit/48a7cb7))
+- Take docs screenshots with the demo settings, light Daylight theme and built-in Midnight for dark shots ([b545691](https://github.com/aelxxs/actual-budget-tweaks/commit/b545691))
+- Regenerate guide, home and README screenshots ([80182b9](https://github.com/aelxxs/actual-budget-tweaks/commit/80182b9))
+- Take docs screenshots in built-in Daylight instead of a custom Studio theme ([c46afad](https://github.com/aelxxs/actual-budget-tweaks/commit/c46afad))
+- Regenerate screenshots in built-in Daylight ([a361b17](https://github.com/aelxxs/actual-budget-tweaks/commit/a361b17))
+- Test the default finish-by month, and open a loan account's payoff panel in the smoke test ([385f759](https://github.com/aelxxs/actual-budget-tweaks/commit/385f759))
+- The smoke test's loan owes an amount its payment can clear ([2ee8930](https://github.com/aelxxs/actual-budget-tweaks/commit/2ee8930))
+- The smoke test drives loan payoff's what-ifs, note, interest and switch ([b683c51](https://github.com/aelxxs/actual-budget-tweaks/commit/b683c51))
+- The smoke test checks loan payoff follows a transaction added behind it ([eb0d5f1](https://github.com/aelxxs/actual-budget-tweaks/commit/eb0d5f1))
+- The loan payoff guide explains how to read the plan ([715c7b6](https://github.com/aelxxs/actual-budget-tweaks/commit/715c7b6))
+- Docs-shots makes the Chrome Web Store screenshots and promo tiles with --store ([61bac91](https://github.com/aelxxs/actual-budget-tweaks/commit/61bac91))
+- Abt.alexis.lol/support redirects to the support thread in Actual's Discord ([e0cb043](https://github.com/aelxxs/actual-budget-tweaks/commit/e0cb043))
+- The extension has a short description, which the Chrome Web Store shows as its summary ([84f5fc2](https://github.com/aelxxs/actual-budget-tweaks/commit/84f5fc2))
+- The website, README and What's new page link to sponsoring ABT ([af1a3db](https://github.com/aelxxs/actual-budget-tweaks/commit/af1a3db))
+- Short links on abt.alexis.lol for sponsoring, Ko-fi, the repo and the Chrome listing ([0c7cb9d](https://github.com/aelxxs/actual-budget-tweaks/commit/0c7cb9d))
+- Docs-shots --home also takes the landing page's feature screenshots, on a funded budget, and retries pages Actual rate-limits ([b1aafe1](https://github.com/aelxxs/actual-budget-tweaks/commit/b1aafe1))
+- The smoke test picks the loan's finish-by month with ABT's month picker ([b736680](https://github.com/aelxxs/actual-budget-tweaks/commit/b736680))
+
+### 🎨 Styles
+
+- Follow Actual's wording: goals for what a category needs and automations for its rules, keeping templates for Actual's template actions ([184678c](https://github.com/aelxxs/actual-budget-tweaks/commit/184678c))
+- Replace the last sparkle icons with plain ones, and drop the glow from the sidebar's drop lines ([4f10ce5](https://github.com/aelxxs/actual-budget-tweaks/commit/4f10ce5))
+- Draw account emoji as system emoji text, like category emoji and Actual, in place of Twemoji images from a CDN ([0c30888](https://github.com/aelxxs/actual-budget-tweaks/commit/0c30888))
+- Lift group rows in dark themes so they stand off the budget table instead of matching a hovered row ([f439f71](https://github.com/aelxxs/actual-budget-tweaks/commit/f439f71))
+- Redraw tooltips with a rounded arrow, theme and sidebar colours and a short delay, and stop the browser's own tooltip showing over them ([2eb3d22](https://github.com/aelxxs/actual-budget-tweaks/commit/2eb3d22))
+- Drop tooltips that only repeat what a control already shows ([439d58c](https://github.com/aelxxs/actual-budget-tweaks/commit/439d58c))
+- Keep overdue amounts in the account hover card plain, and darken the Overdue heading so it reads on a light card ([1e4729a](https://github.com/aelxxs/actual-budget-tweaks/commit/1e4729a))
+- Summary cards split the row's slack evenly, the calm actions card takes less, and To Budget's figure steps down on a narrow row without changing the row's height ([667ab19](https://github.com/aelxxs/actual-budget-tweaks/commit/667ab19))
+- The sidebar search bar and shortcut tiles follow the Rounded corners setting ([06789d7](https://github.com/aelxxs/actual-budget-tweaks/commit/06789d7))
+- What an alternative payoff plan changes reads as three figures: interest, time and the new date ([bee8a9f](https://github.com/aelxxs/actual-budget-tweaks/commit/bee8a9f))
+- The narrow Spent card keeps its budgeted line, dropping the comparison with last month ([f6b300c](https://github.com/aelxxs/actual-budget-tweaks/commit/f6b300c))
+- Light themes' cards sit closer to white ([8a5f1da](https://github.com/aelxxs/actual-budget-tweaks/commit/8a5f1da))
+- Light themes' other months sit a step below the near-white current month, with one group row colour across months ([5fdedee](https://github.com/aelxxs/actual-budget-tweaks/commit/5fdedee))
+- Select dropdowns draw the same chevron as ABT's other dropdowns ([8db35b5](https://github.com/aelxxs/actual-budget-tweaks/commit/8db35b5))
+- Search fields share one clear button that follows the theme ([874a76c](https://github.com/aelxxs/actual-budget-tweaks/commit/874a76c))
+- Loan payoff picks months and the interest payee with ABT's own pickers, and uses the shared number and slider styles ([7855e0f](https://github.com/aelxxs/actual-budget-tweaks/commit/7855e0f))
+- Loan payoff's extra payments read as an amount in a month, and amounts tidy to the budget's number format when you leave a field ([44e4f2d](https://github.com/aelxxs/actual-budget-tweaks/commit/44e4f2d))
+- The interest payee list is sized to the payoff panel's text ([c2ef110](https://github.com/aelxxs/actual-budget-tweaks/commit/c2ef110))
+- The To Budget figure is one size at every width, with less space above it ([592ffc6](https://github.com/aelxxs/actual-budget-tweaks/commit/592ffc6))
+- The home page lists a few highlights per release and leaves the release bot out of contributors ([9d2eb86](https://github.com/aelxxs/actual-budget-tweaks/commit/9d2eb86))
+- The home page shows contributors as overlapping avatars with a line crediting them ([72fd8a9](https://github.com/aelxxs/actual-budget-tweaks/commit/72fd8a9))
+- The landing page's feature cards show real screenshots on a dark backdrop, in a new order, with a fresh hero ([7308122](https://github.com/aelxxs/actual-budget-tweaks/commit/7308122))
+
+### ❤️ Contributors
+
+- Alexis Vielma <alexis.vielma.us@gmail.com>
+- Junyuan Zheng ([@junyuanz1](https://github.com/junyuanz1))
+
 ## v0.1.111
 
 [compare changes](https://github.com/aelxxs/actual-budget-tweaks/compare/v0.1.110...v0.1.111)
