@@ -182,6 +182,15 @@ export function openInsights(tab?: InsightsTab): void {
 	}
 }
 
+/** Closes Insights when it's open here, else opens it as `openInsights` does. */
+export function toggleInsights(): void {
+	if (drawerOpen && isBudgetPage() && sidepanel.isOpen(PANEL_KEY)) {
+		closePanel();
+	} else {
+		openInsights();
+	}
+}
+
 // ── Drawer open/close ─────────────────────────────────────────────────
 let drawerOpen = false;
 let drawerMounted = false;
