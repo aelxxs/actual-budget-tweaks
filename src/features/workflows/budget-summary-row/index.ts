@@ -502,17 +502,12 @@ const FULL_CSS = `
 		text-align: left !important;
 		padding-left: 0 !important;
 	}
-	/* A step heavier than Actual's 400, so the plain card's figure still leads the row. */
+	/* Under Actual's 30px, so it leads the row without crowding its card, and a step heavier
+	   than Actual's 400, so the plain card's figure still stands out. */
 	${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
+		font-size: 25px !important; /* raw: between the cards' 16px values and Actual's 30px */
 		font-weight: 550 !important;
-		/* Fixed, so the smaller narrow figure keeps the row's height. */
-		line-height: 33px; /* raw: 1.1 of Actual's 30px */
-	}
-	/* The row's biggest figure needs less on a narrow card. */
-	@container abt-month-cards (max-width: 1000px) {
-		${ENVELOPE} ${SUMMARY_CARD} ${TO_BUDGET_CELL} {
-			font-size: 24px !important; /* raw: one step under Actual's 30px figure */
-		}
+		line-height: 28px; /* raw: about 1.1 of 25px */
 	}
 	/* A line under the figure saying what it means, like the other cards' second lines. */
 	${ENVELOPE} ${SUMMARY_CARD} > :last-child[data-abt-to-budget-note]::after {
@@ -528,9 +523,10 @@ const FULL_CSS = `
 		justify-content: flex-start;
 		padding-top: calc(var(--abt-space-3) + 3px) !important;
 	}
-	/* Drawn like the other cards' labels; Actual's own text stays in the DOM, hidden. */
+	/* Drawn like the other cards' labels; Actual's own text stays in the DOM, hidden. Its box
+	   runs 4px past the text, so a small margin puts the figure level with the other cards'. */
 	${ENVELOPE} ${SUMMARY_CARD} [${TO_BUDGET_LABEL_ATTR}] {
-		margin-bottom: var(--abt-space-2) !important;
+		margin-bottom: var(--abt-space-1) !important;
 		font-size: 0 !important;
 		line-height: 14px;
 	}
