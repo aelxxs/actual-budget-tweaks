@@ -43,6 +43,7 @@
     <li><a href="#about-the-project">About the project</a></li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#support">Support</a></li>
     <li><a href="#license">License</a></li>
   </ol>
 </details>
@@ -127,6 +128,14 @@ Adding a new tweak usually takes about 5 minutes; see [CONTRIBUTING.md](CONTRIBU
 <a href="https://github.com/aelxxs/actual-budget-tweaks/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=aelxxs/actual-budget-tweaks" alt="contrib.rocks image" />
 </a>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- SUPPORT -->
+
+## Support
+
+ABT is free and always will be. If it's made budgeting a little nicer, you can [sponsor it on GitHub](https://github.com/sponsors/aelxxs), [leave a tip on Ko-fi](https://ko-fi.com/aelxxs), or star the repo. ABT is built on [Actual](https://actualbudget.org), which you can [support on Open Collective](https://opencollective.com/actual).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

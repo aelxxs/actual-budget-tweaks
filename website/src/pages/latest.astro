@@ -5,6 +5,7 @@ import Base from "../layouts/Base.astro";
 import "../styles/docs.css";
 
 const REPO = "aelxxs/actual-budget-tweaks";
+const base = import.meta.env.BASE_URL;
 
 // The newest version in the changelog changelogen writes on each release; the site redeploys after.
 const changelog = readFileSync(resolve(process.cwd(), "../CHANGELOG.md"), "utf8");
@@ -118,6 +119,26 @@ try {
 				>
 			</p>
 		</section>
+
+		<section class="support">
+			<img class="support__icon" src={`${base}icon/icon.svg`} alt="" width="44" height="44" />
+			<div class="support__body">
+				<h2 class="support__title">ABT is free and always will be</h2>
+				<p class="support__text">
+					It's maintained by one person. If this update helped, consider chipping in.
+				</p>
+				<div class="support__actions">
+					<a class="btn btn--primary" href="https://github.com/sponsors/aelxxs" target="_blank" rel="noopener">
+						<svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+						Sponsor on GitHub
+					</a>
+					<a class="btn btn--secondary" href="https://ko-fi.com/aelxxs" target="_blank" rel="noopener">
+						<svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v2" /><path d="M14 2v2" /><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1" /><path d="M6 2v2" /></svg>
+						Tip on Ko-fi
+					</a>
+				</div>
+			</div>
+		</section>
 	</main>
 </Base>
 
@@ -133,5 +154,39 @@ try {
 	}
 	.more section + section {
 		margin-top: 1.5rem;
+	}
+	.support {
+		display: flex;
+		gap: 1.25rem;
+		align-items: flex-start;
+		margin-block-start: 2.5rem;
+		padding: 1.75rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+	}
+	.support__icon {
+		flex-shrink: 0;
+		border-radius: 10px;
+	}
+	.support__title {
+		margin: 0 0 0.35rem;
+		font-size: 1.15rem;
+	}
+	.support__text {
+		margin: 0 0 1.1rem;
+		color: var(--text-secondary);
+		text-wrap: pretty;
+	}
+	.support__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+	@media (max-width: 520px) {
+		.support {
+			flex-direction: column;
+			padding: 1.5rem;
+		}
 	}
 </style>

@@ -3,14 +3,25 @@ const year = new Date().getFullYear();
 
 const base = import.meta.env.BASE_URL;
 
-const links = [
-	{ label: "Guides", href: `${base}guides`, internal: true },
-	{ label: "What's new", href: `${base}latest`, internal: true },
-	{ label: "Self-hosting", href: `${base}self-hosting`, internal: true },
-	{ label: "Privacy", href: `${base}privacy`, internal: true },
-	{ label: "Source", href: "https://github.com/aelxxs/actual-budget-tweaks" },
-	{ label: "Chrome", href: "https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm" },
-	{ label: "Firefox", href: "https://github.com/aelxxs/actual-budget-tweaks/releases/latest" },
+const groups = [
+	{
+		title: "Learn",
+		links: [
+			{ label: "Guides", href: `${base}guides`, internal: true },
+			{ label: "What's new", href: `${base}latest`, internal: true },
+			{ label: "Self-hosting", href: `${base}self-hosting`, internal: true },
+			{ label: "Privacy", href: `${base}privacy`, internal: true },
+		],
+	},
+	{
+		title: "Get ABT",
+		links: [
+			{ label: "Chrome", href: "https://chromewebstore.google.com/detail/actual-budget-%E2%80%93-tweaks/oknpncidmkhkphpbkamccnobdpibegmm" },
+			{ label: "Firefox", href: "https://github.com/aelxxs/actual-budget-tweaks/releases/latest" },
+			{ label: "Source", href: "https://github.com/aelxxs/actual-budget-tweaks" },
+			{ label: "Support ABT", href: "https://github.com/sponsors/aelxxs" },
+		],
+	},
 ];
 ---
 
@@ -24,11 +35,16 @@ const links = [
 				<span class="footer__sep" aria-hidden="true">&middot;</span>
 				<span>{year}</span>
 			</div>
-			<div class="cluster" style="--cluster-gap:1.25rem">
-				{links.map(l => (
-					<a href={l.href} target={l.internal ? undefined : "_blank"} rel={l.internal ? undefined : "noopener"} class="footer__link">{l.label}</a>
+			<nav class="footer__groups" aria-label="Footer">
+				{groups.map((g) => (
+					<div class="footer__group">
+						<span class="footer__title">{g.title}</span>
+						{g.links.map((l) => (
+							<a href={l.href} target={l.internal ? undefined : "_blank"} rel={l.internal ? undefined : "noopener"} class="footer__link">{l.label}</a>
+						))}
+					</div>
 				))}
-			</div>
+			</nav>
 		</div>
 	</div>
 </footer>
@@ -41,6 +57,27 @@ const links = [
 
 	.footer__inner {
 		justify-content: space-between;
+		align-items: flex-start;
+	}
+
+	.footer__groups {
+		display: grid;
+		grid-template-columns: repeat(2, auto);
+		gap: 3rem;
+	}
+
+	.footer__group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.footer__title {
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
 	}
 
 	.footer__meta {
@@ -75,11 +112,17 @@ const links = [
 		color: var(--accent);
 	}
 
-	@media (max-width: 480px) {
+	/* Stacked on a phone: the name, then the two columns side by side. */
+	@media (max-width: 600px) {
 		.footer__inner {
 			flex-direction: column;
-			text-align: center;
-			justify-content: center;
+			gap: 1.75rem;
+		}
+
+		.footer__groups {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1.5rem;
+			inline-size: 100%;
 		}
 	}
 </style>
