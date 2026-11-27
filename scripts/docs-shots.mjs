@@ -261,6 +261,25 @@ async function startStack() {
 	};
 }
 
+/**
+ * Loads a page and waits for it to be ready, trying again after a pause when it doesn't come up:
+ * a run that reloads Actual many times in a row gets rate-limited (429) and a blank page.
+ */
+async function visit(page, url, ready) {
+	for (let tries = 0; ; tries++) {
+		await page.goto(url);
+		try {
+			await ready().waitFor({ timeout: 15_000 });
+			return;
+		} catch (error) {
+			if (tries === 4) {
+				throw error;
+			}
+			await page.waitForTimeout(15_000);
+		}
+	}
+}
+
 async function createBudget(page) {
 	await page.goto(BASE);
 	const confirm = page.getByPlaceholder("Confirm password");
@@ -750,7 +769,9 @@ async function inspectorShots(page, seeded) {
 	const panel = "[data-abt-side-drawer-sidebar]";
 	const options = { room: 0, cutout: true };
 	const inspect = async (account, id) => {
-		await page.goto(`${BASE}/accounts/${seeded.accountIds[account]}`);
+		await visit(page, `${BASE}/accounts/${seeded.accountIds[account]}`, () =>
+			page.getByRole("button", { name: "Inspect" }),
+		);
 		await page.getByRole("button", { name: "Inspect" }).click();
 		await page.locator(panel).waitFor();
 		await page.locator(`[data-focus-key="${id}"] [data-testid="select"]`).click();
@@ -774,8 +795,7 @@ async function recapShots(page, { accountIds }) {
 		page.evaluate(([name, args]) => window.$send(name, args), [name, args]);
 	// Tall enough for every account's list above the footer.
 	await page.setViewportSize({ width: 1400, height: 1100 });
-	await page.goto(`${BASE}/budget`);
-	await page.locator(BUDGET_TABLE).waitFor();
+	await visit(page, `${BASE}/budget`, () => page.locator(BUDGET_TABLE));
 	await page.waitForTimeout(1500);
 
 	const result = { added: [], matched: [], failed: [] };
@@ -825,19 +845,21 @@ async function recapShots(page, { accountIds }) {
 async function heroShots(page) {
 	await page.setViewportSize({ width: 1500, height: 853 });
 	const open = async () => {
-		await page.goto(`${BASE}/budget`);
-		await page.locator(BUDGET_TABLE).waitFor();
+		await visit(page, `${BASE}/budget`, () => page.locator(BUDGET_TABLE));
 		await dismissWelcome(page);
 		await page.waitForTimeout(2000);
 	};
+	const insights = async () => {
+		await page.keyboard.press("Control+k");
+		await page.locator(".cp-input").fill("insights");
+		await page.keyboard.press("Enter");
+		await page.locator(INSIGHTS_TABS).first().waitFor();
+		await page.mouse.move(700, 20);
+		await dismissWelcome(page);
+		await page.waitForTimeout(3000);
+	};
 	await open();
-	await page.keyboard.press("Control+k");
-	await page.locator(".cp-input").fill("insights");
-	await page.keyboard.press("Enter");
-	await page.locator(INSIGHTS_TABS).first().waitFor();
-	await page.mouse.move(700, 20);
-	await dismissWelcome(page);
-	await page.waitForTimeout(3000);
+	await insights();
 	await page.screenshot({ path: resolve(HERO, "hero-abt.png") });
 
 	await page.route("**/abt/**", (route) => route.abort());
@@ -846,6 +868,50 @@ async function heroShots(page) {
 	await page.waitForTimeout(800);
 	await page.screenshot({ path: resolve(HERO, "hero-actual.png") });
 	await page.unroute("**/abt/**");
+
+	await featureShots(page, { open, insights });
+}
+
+/** The landing page's feature cards: Insights, the calendar, the sidebar and the Tweaks settings. */
+async function featureShots(page, { open, insights }) {
+	const dir = resolve(HERO, "features");
+	mkdirSync(dir, { recursive: true });
+	await open();
+	// A strip of the budget beside it, so the dark sidebar has an edge against the card.
+	const sidebar = await page.locator("[data-abt-live-sidebar]").boundingBox();
+	await page.screenshot({
+		path: resolve(dir, "sidebar.png"),
+		clip: { x: sidebar.x, y: sidebar.y, width: sidebar.width + 48, height: 560 },
+	});
+
+	await insights();
+	await page
+		.locator("[data-abt-side-drawer-sidebar]")
+		.screenshot({ path: resolve(dir, "insights.png") });
+
+	await page.keyboard.press("Control+k");
+	await page.locator(".cp-input").fill("spending calendar");
+	await page.keyboard.press("Enter");
+	await page.locator(".cal-page").waitFor();
+	await page.mouse.move(700, 20);
+	await page.waitForTimeout(2000);
+	await page.locator(".cal-page").screenshot({ path: resolve(dir, "calendar.png") });
+
+	const tweaks = page.locator("[data-abt-tweaks-host]");
+	await visit(page, `${BASE}/settings/general#tweaks`, () => tweaks);
+	await page.waitForTimeout(1500);
+	const box = await tweaks.boundingBox();
+	// Some of the page around it, so its header isn't flush with the image's edge.
+	const margin = 20;
+	await page.screenshot({
+		path: resolve(dir, "tweaks.png"),
+		clip: {
+			x: box.x - margin,
+			y: box.y - margin,
+			width: box.width + margin * 2,
+			height: Math.min(box.height, 560) + margin,
+		},
+	});
 }
 
 /** Dark, then light, in one session: settings sync would undo the theme change on a reload. */
@@ -1229,7 +1295,8 @@ async function shoot(page, seeded) {
 	if (home || readme || store) {
 		await fundJune(page, seeded);
 	}
-	if (store) {
+	// The store and home page show it covered ahead, not a nearly empty next month.
+	if (store || home) {
 		await fundAhead(page, seeded);
 	}
 	// The guides keep Insights' default cards: their overview shows the automations strip.
