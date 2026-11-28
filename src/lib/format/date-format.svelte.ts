@@ -77,6 +77,24 @@ export function formatDate(value: Date | string): string {
 		.replace("dd", String(d.getDate()).padStart(2, "0"));
 }
 
+/** The ISO date ("2026-10-05") of text written in the user's format, or null if it isn't one. */
+export function parseDate(text: string): string | null {
+	watchDatePrefs();
+	const order: string[] = [];
+	const pattern = prefs.dateFormat
+		.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+		.replace(/yyyy|MM|dd/g, (token) => {
+			order.push(token);
+			return token === "yyyy" ? "(\\d{4})" : "(\\d{1,2})";
+		});
+	const match = order.length === 3 ? new RegExp(`^${pattern}$`).exec(text.trim()) : null;
+	if (!match) {
+		return null;
+	}
+	const part = (token: string) => match[order.indexOf(token) + 1].padStart(2, "0");
+	return `${part("yyyy")}-${part("MM")}-${part("dd")}`;
+}
+
 /** A date with the month named, ordered like the user's format: "5 Oct" or "Oct 5". */
 export function formatDayMonth(value: Date | string, month: "short" | "long" = "short"): string {
 	watchDatePrefs();
